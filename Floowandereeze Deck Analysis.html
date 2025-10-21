@@ -64,6 +64,7 @@
             border-radius: 0.5rem;
             padding: 0.5rem;
             border: 2px dashed #bae6fd;
+            cursor: pointer;
         }
         .pro-icon { color: #10b981; }
         .con-icon { color: #f43f5e; }
@@ -239,6 +240,27 @@
             .ygo-home-button i {
                 font-size: 18px;
             }
+        }
+        
+        /* Card Popup Styles */
+        #card-popup {
+            background-color: #ffffff;
+            border-color: #0c4a6e;
+            color: #0c4a6e;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        #card-popup h3 {
+            color: #0c4a6e;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        #card-popup p {
+            color: #0c4a6e;
+        }
+        #card-popup-stats {
+            color: #fbbf24;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -518,33 +540,136 @@
 
 
             // --- SCRIPT FOR CARD IMAGES ---
-            async function fetchAndDisplayCardImage(cardName, containerId) {
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+            let lastShown = 0;
+            let currentCard = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
 
                 const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
 
                 try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
                     const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error(`API error: ${response.status}`);
                     const data = await response.json();
-                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-
-                    if (imageUrl) {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = cardName;
-                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
-                        container.innerHTML = '';
-                        container.appendChild(img);
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
                     } else {
-                        throw new Error("Image URL not found in API response.");
+                        throw new Error("Card data not found in API response.");
                     }
                 } catch (error) {
-                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
                 }
             }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn transition-opacity duration-500 opacity-0';
+                    img.onload = () => {
+                        img.classList.remove('opacity-0');
+                    };
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (currentCard === cardName) {
+                    hidePopup();
+                    return;
+                }
+                hidePopup(); // Ensure any existing popup is hidden first
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-gray-300">${cardType}</p>
+                        <div class="w-full h-px bg-gray-600 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+                lastShown = Date.now();
+                currentCard = cardName;
+            }
+
+            function hidePopup() {
+                if (Date.now() - lastShown < 100) return; // Ignore hide calls immediately after showing
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                    currentCard = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
 
             const cardsToLoad = {
                 'robina-img-container': 'Floowandereeze & Robina',
@@ -555,10 +680,11 @@
             };
 
             for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
-                fetchAndDisplayCardImage(cardName, containerId);
+                fetchAndProcessCardData(cardName, containerId);
             }
         });
     </script>
+    <div id="card-popup" class="fixed z-50 bg-gray-800 text-white p-4 rounded-lg shadow-lg border-2 border-[#0c4a6e] max-w-xs max-h-96 overflow-y-auto pointer-events-none opacity-0 transition-opacity duration-200"></div>
 </body>
 </html>
 
