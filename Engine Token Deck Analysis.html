@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engine Token Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0e1a; /* Dark Navy Blue */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a2035; /* Darker Slate Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3c4b82;
+            backdrop-filter: blur(10px);
+        }
+        .info-card {
+            background-color: rgba(26, 32, 53, 0.8);
+            border: 1px solid #4a5c9a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a3457;
+            color: #a7b7e8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            border: 1px dashed #4a5c9a;
+        }
+        .text-accent { color: #67e8f9; } /* Bright Cyan */
+        .heading-underline {
+            border-bottom: 2px solid #67e8f9;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        /* Animated Banner */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a0e1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3c4b82;
+        }
+        #circuit-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 14, 26, 0.4) 0%, rgba(10, 14, 26, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(103, 232, 249, 0.7);
+            font-family: 'Roboto Mono', monospace;
+        }
+        
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Banner -->
+        <header class="banner-header text-center">
+            <canvas id="circuit-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">"Engine Token" Archetype</h1>
+            <p class="text-lg md:text-xl text-cyan-200">A Deep Dive into the Classic Machine Archetype</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The "Engine" archetype is a small, interconnected series of DARK and EARTH Machine monsters centered around the generation and use of <strong class="text-accent">"Engine Tokens"</strong>. This archetype provides a fascinating look at an older design philosophy in the Yu-Gi-Oh! TCG, one focused on a slower, more deliberate setup of resources through monster effects that trigger upon leaving the field. While its mechanics have been outpaced by the modern game, its core concepts of resource generation and archetypal synergy are foundational to the game's design.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Machinery -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Core Machinery: Generators and Support</h2>
+            <div class="space-y-8">
+                <!-- Fiendish Engine Ω -->
+                <div class="card info-card p-6 flex flex-col md:flex-row items-center gap-6">
+                    <div id="fiendish-engine-img" class="card-image-container card-placeholder">Fiendish Engine Ω</div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-accent mb-2">Fiendish Engine Ω</h3>
+                        <p class="text-blue-200">The archetype's boss monster, this Level 8 DARK Machine boasts 2800 ATK. Its token-generating effect is slow, summoning a single "Engine Token" during your End Phase. Its other effect allows it to gain 1000 ATK for a turn at the cost of destroying itself during the End Phase. This combination of slow resource generation and self-destructive power highlights the archetype's inefficiency in the modern game.</p>
+                    </div>
+                </div>
+
+                <!-- Core Generators -->
+                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card info-card p-4 text-center">
+                         <h4 class="text-lg font-bold text-accent mb-2">Motor Shell</h4>
+                         <div id="motor-shell-img" class="card-image-container card-placeholder mx-auto mb-2">Motor Shell</div>
+                         <p class="text-sm text-blue-200">The most straightforward generator. When sent from the field to the Graveyard, it Special Summons one "Engine Token" in Attack Position.</p>
+                    </div>
+                     <div class="card info-card p-4 text-center">
+                         <h4 class="text-lg font-bold text-accent mb-2">Motor Kaiser</h4>
+                         <div id="motor-kaiser-img" class="card-image-container card-placeholder mx-auto mb-2">Motor Kaiser</div>
+                         <p class="text-sm text-blue-200">Offers proactive control by letting you destroy one monster you control to Special Summon an "Engine Token", creating synergy with Motor Shell.</p>
+                    </div>
+                     <div class="card info-card p-4 text-center">
+                         <h4 class="text-lg font-bold text-accent mb-2">Motor Frenzy</h4>
+                         <div id="motor-frenzy-img" class="card-image-container card-placeholder mx-auto mb-2">Motor Frenzy</div>
+                         <p class="text-sm text-blue-200">Provides the biggest reward of two tokens, but requires it to have been Tribute Summoned before being sent to the Graveyard, making it the slowest option.</p>
+                    </div>
+                </div>
+
+                <!-- Two-for-One Repair Job -->
+                <div class="card info-card p-6 flex flex-col md:flex-row items-center gap-6">
+                    <div id="repair-job-img" class="card-image-container card-placeholder">Two-for-One Repair Job</div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-accent mb-2">Two-for-One Repair Job</h3>
+                        <p class="text-blue-200">This Spell card is the lynchpin of the strategy. By banishing a DARK Machine from your Graveyard, you can Special Summon any monster that mentions "Engine Token" from your hand, Deck, or Graveyard. This provides crucial consistency and allows you to access key pieces to start or extend your plays.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategy and Legacy -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategy and Legacy</h2>
+             <div class="card p-6">
+                 <p class="text-blue-200">
+                    The intended strategy revolves around getting these Machine monsters onto the field and subsequently into the Graveyard to generate tokens. A player might Normal Summon <strong class="text-accent">Motor Shell</strong>, then use <strong class="text-accent">Motor Kaiser's</strong> effect to destroy it, summoning two tokens. The <strong class="text-accent">Motor Shell</strong> in the Graveyard then becomes fodder to activate <strong class="text-accent">Two-for-One Repair Job</strong>, allowing the player to summon another piece from the deck and continue building their board. While the internal synergy is clear, the archetype's reliance on slow, multi-card interactions and its low-impact payoff have left it as a relic of a past era, unable to keep pace with the speed and power of the modern game.
+                 </p>
+            </div>
+        </section>
+
+
+        <!-- TCG Banlist Impact -->
+        <section class="animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact: Unrestricted</h2>
+            <div class="card p-6 bg-green-900 bg-opacity-30 border-green-500">
+                <p class="text-gray-300 text-center">
+                    The "Engine Token" archetype and all of its related cards are currently <strong class="text-green-400 font-bold">unrestricted</strong> in the TCG. None of its components are on the Forbidden & Limited list, allowing the strategy to be played at its full, albeit modest, power level.
+                </p>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animated Circuit Banner
+            const canvas = document.getElementById('circuit-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let width, height, particles;
+                const particleCount = 100;
+
+                const setCanvasSize = () => {
+                    width = canvas.width = canvas.offsetWidth;
+                    height = canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * width;
+                        this.y = Math.random() * height;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.speedY = (Math.random() - 0.5) * 0.5;
+                        this.size = Math.random() * 2 + 1;
+                    }
+
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.x < 0 || this.x > width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > height) this.speedY *= -1;
+                    }
+
+                    draw() {
+                        ctx.fillStyle = '#67e8f9';
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function connect() {
+                    let opacity;
+                    for (let a = 0; a < particles.length; a++) {
+                        for (let b = a + 1; b < particles.length; b++) {
+                            const distance = Math.sqrt(
+                                Math.pow(particles[a].x - particles[b].x, 2) +
+                                Math.pow(particles[a].y - particles[b].y, 2)
+                            );
+
+                            if (distance < 100) {
+                                opacity = 1 - (distance / 100);
+                                ctx.strokeStyle = `rgba(103, 232, 249, ${opacity})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[a].x, particles[a].y);
+                                ctx.lineTo(particles[b].x, particles[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, width, height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    connect();
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // Card Image Fetcher
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.classList.remove('card-placeholder');
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                }
+            }
+
+            const cardsToLoad = {
+                'fiendish-engine-img': 'Fiendish Engine Ω',
+                'motor-kaiser-img': 'Motor Kaiser',
+                'motor-shell-img': 'Motor Shell',
+                'motor-frenzy-img': 'Motor Frenzy',
+                'repair-job-img': 'Two-for-One Repair Job',
+            };
+
+            for (const [id, name] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(name, id);
+            }
+        });
+    </script>
+</body>
+</html>
+

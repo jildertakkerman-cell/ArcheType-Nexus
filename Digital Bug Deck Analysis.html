@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Bug Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617; /* Midnight Blue */
+            color: #e0f2fe; /* Light Cyan/Blue */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(14, 23, 49, 0.6); /* Translucent dark blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #0ea5e9; /* Sky Blue Border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(14, 23, 49, 0.8);
+            border: 1px solid #38bdf8;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #0c4a6e;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #0c4a6e;
+            border: 1px dashed #38bdf8;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #67e8f9; } /* Bright Cyan */
+        .arrow-color { color: #67e8f9; }
+        .heading-underline {
+            border-bottom: 2px solid #67e8f9;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #67e8f9;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #67e8f9;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #67e8f9;
+        }
+
+        /* --- DIGITAL BUG ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #020617;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #0ea5e9;
+        }
+
+        #digital-rain-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(2, 6, 23, 0.4) 0%, rgba(2, 6, 23, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            font-family: 'Roboto Mono', monospace;
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(14, 165, 233, 0.7);
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="digital-rain-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">DIGITAL BUG</h1>
+            <p class="text-lg md:text-xl text-cyan-200">System Analysis of the Insect Xyz Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-sky-200">
+                    The <strong class="text-accent font-bold">Digital Bug</strong> series is a unique LIGHT Insect-Type strategy focused on manipulating battle positions to generate advantage and swarm the field for Xyz Summons. The archetype's core mechanic is its ability to change monsters to Defense Position to trigger effects and enable powerful OTK (One-Turn Kill) scenarios. However, the deck is defined by a critical restriction: its monsters can only be used for the Xyz Summon of Insect-Type monsters, creating a xenophobic and self-contained system. While fragile, mastering its intricate operational flow reveals a surprisingly resilient and explosive strategy.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Mainframe Arsenal Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Mainframe Arsenal</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bug text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Core Main Deck Bugs</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Digital Bug Registrider</h4>
+                            <p class="text-sm text-sky-200">The modern powerhouse. Special Summons itself and modulates levels to 5 or 7, enabling direct access to the deck's boss monsters.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Digital Bug Websolder</h4>
+                            <p class="text-sm text-sky-200">A versatile extender and enabler that can change another bug's position to trigger its effect while summoning another from hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Digital Bug Centibit</h4>
+                            <p class="text-sm text-sky-200">The primary swarm starter. When changed to Defense Position, it summons any Level 3 Insect from the deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Xyz & Spells -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-sitemap text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Xyz Hierarchy & System Utilities</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Digital Bug Rhinosebus</h4>
+                            <p class="text-sm text-sky-200">The Rank 7 boss monster. Inflicts piercing damage and provides Quick Effect destruction of the opponent's strongest monster.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Digital Bug Corebage</h4>
+                            <p class="text-sm text-sky-200">The Rank 5 problem solver. Offers powerful non-destruction removal by shuffling a Defense Position monster into the deck.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Bug Emergency</h4>
+                            <p class="text-sm text-sky-200">A crucial Trap that provides recovery from the Graveyard and offers another way to modulate levels for direct Xyz Summons.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Registrider Ignition Sequence</h2>
+            <p class="text-sky-200 mb-8 text-center max-w-2xl mx-auto">
+                This is the deck's most efficient opening, using its modern support to summon the main boss monster immediately. This combo bypasses the flawed, resource-intensive rank-up mechanic and ensures the boss monster retains the powerful effects granted by its <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Digital+Bug&stype=1" target="_blank" class="lore-link">on-field materials</a>.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="centibit-img-container" class="card-image-container flex-shrink-0 card-placeholder">Digital Bug Centibit</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#020617] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Normal Summon & Extend</h3>
+                            </div>
+                            <p class="text-sky-200">Normal Summon a Level 3 Insect (e.g., <strong class="text-accent">Centibit</strong>). Activate <strong class="text-accent">Digital Bug Registrider</strong> from your hand to Special Summon it.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="registrider-img-container" class="card-image-container flex-shrink-0 card-placeholder">Digital Bug Registrider</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#020617] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Level Modulation</h3>
+                            </div>
+                            <p class="text-sky-200">Activate <strong class="text-accent">Registrider's</strong> on-field effect, targeting itself and your other Insect. Declare Level 7, making both monsters Level 7.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="rhinosebus-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Digital Bug Rhinosebus</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#020617] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Direct Xyz Summon</h3>
+                            </div>
+                            <p class="text-sky-200">Overlay your two Level 7 monsters to directly Xyz Summon <strong class="text-accent">Digital Bug Rhinosebus</strong>, now equipped with powerful granted effects from its materials.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Output</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Rhinosebus -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Digital Bug Rhinosebus</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="rhinosebus-img-container" class="card-image-container card-placeholder">Digital Bug Rhinosebus</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-sky-200">
+                        <li><strong class="text-accent">Piercing Damage:</strong> Inflicts battle damage when attacking Defense Position monsters.</li>
+                        <li><strong class="text-accent">Quick-Effect Destruction:</strong> Can detach 1 material to destroy the opponent's monster(s) with the highest DEF.</li>
+                        <li><strong class="text-accent">Granted Effects:</strong> Gains modular abilities from its materials, like +1000 ATK or the ability to attack all defense position monsters.</li>
+                    </ul>
+                </div>
+                <!-- Cicada King -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Number 3: Cicada King</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="cicada-king-img-container" class="card-image-container card-placeholder">Number 3: Cicada King</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-sky-200">
+                        <li><strong class="text-accent">Monster Negation:</strong> Provides a crucial monster effect negate by detaching a material.</li>
+                        <li><strong class="text-accent">Generic Option:</strong> As a generic Insect Xyz, it's a key piece for hybrid builds to establish a board with more than one interruption.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-sky-200">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">Explosive OTK Potential:</strong> Can clear boards and win in a single Battle Phase with the right setup.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Good Recovery:</strong> Cards like Cocoondenser and Bug Emergency provide strong recursion from the Graveyard.</li>
+                        <li><span class="pro-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-green-300">Strong Synergy:</strong> Functions well as a supplementary engine in broader Insect strategies (e.g., Beetrooper).</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-sky-200">
+                        <li><span class="con-icon"><i class="fas fa-link"></i></span> <strong class="text-red-300">The Link Monster Problem:</strong> The core strategy is completely ineffective against Link Monsters, which cannot be in Defense Position.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Normal Summon Reliant:</strong> Very vulnerable to hand traps that negate the first Normal Summon, often ending the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">Inconsistent:</strong> Lacks an in-archetype searcher for its vital Spell/Trap support, making it prone to "bricky" hands.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-sky-200">
+                        <li><span class="neutral-icon"><i class="fas fa-bug"></i></span> <strong class="text-accent">Beetrooper Engine:</strong> Provides the swarming power needed to fuel Digital Bug combos and offers an escape to powerful Link monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-asterisk"></i></span> <strong class="text-accent">Generic Insect Support:</strong> Cards like Galaxy Worm and Resonance Insect patch consistency issues and provide more starters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">FULL POWER:</strong> The Digital Bug archetype itself has no direct hits on the banlist and is at full power. However, its optimal historical builds have been indirectly weakened by the banning of key generic support cards.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All Main Deck Digital Bug monsters (3 copies each)</li>
+                            <li>All Digital Bug Xyz monsters (3 copies each)</li>
+                            <li>All "Bug" Spell/Trap support</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Relevant Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Block Dragon (Forbidden)</strong> - Hurt all Rock-based combo decks.</li>
+                            <li><strong class="text-red-400">Spright Elf (Forbidden)</strong> - A powerful generic extender the deck could make.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core Digital Bug engine is untouched, the loss of generic boss monsters and extenders has lowered the deck's overall power ceiling, reinforcing its status as a rogue or casual strategy rather than a meta contender.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DIGITAL RAIN ANIMATION ---
+            const canvas = document.getElementById('digital-rain-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let w = canvas.width = canvas.offsetWidth;
+                let h = canvas.height = canvas.offsetHeight;
+                let cols = Math.floor(w / 20) + 1;
+                let ypos = Array(cols).fill(0);
+
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                function matrix() {
+                    ctx.fillStyle = 'rgba(2, 6, 23, 0.05)';
+                    ctx.fillRect(0, 0, w, h);
+
+                    ctx.fillStyle = '#0ea5e9';
+                    ctx.font = '15pt monospace';
+
+                    ypos.forEach((y, ind) => {
+                        const text = String.fromCharCode(Math.random() * 128);
+                        const x = ind * 20;
+                        ctx.fillText(text, x, y);
+                        if (y > 100 + Math.random() * 10000) {
+                            ypos[ind] = 0;
+                        } else {
+                            ypos[ind] = y + 20;
+                        }
+                    });
+                }
+                setInterval(matrix, 50);
+
+                window.addEventListener('resize', () => {
+                    w = canvas.width = canvas.offsetWidth;
+                    h = canvas.height = canvas.offsetHeight;
+                    cols = Math.floor(w / 20) + 1;
+                    ypos = Array(cols).fill(0);
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'centibit-img-container': 'Digital Bug Centibit',
+                'registrider-img-container': 'Digital Bug Registrider',
+                'rhinosebus-img-container-combo': 'Digital Bug Rhinosebus',
+                'rhinosebus-img-container': 'Digital Bug Rhinosebus',
+                'cicada-king-img-container': 'Number 3: Cicada King',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

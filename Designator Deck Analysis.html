@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Designator Thematic Series Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A0F; /* Near-black */
+            color: #E0E7FF; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(22, 25, 40, 0.8); /* Dark blue-gray with transparency */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #AC1A2F; /* Accent red border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card, .key-card {
+            background-color: rgba(30, 33, 50, 0.7);
+            border: 1px solid #c8203a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1a1633;
+            color: #e0e7ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #AC1A2F;
+        }
+        .small-card-placeholder {
+            background-color: #1a1633;
+            color: #e0e7ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            width: 96px; /* w-24 */
+            height: 140px; /* Approximate card aspect ratio */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #AC1A2F;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f87171; } /* Fiery Red/Pink for accents */
+        .heading-font { font-family: 'Orbitron', sans-serif; }
+        .lore-link {
+            color: #f87171;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f87171;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f87171;
+        }
+        .chain-link {
+            background-color: #333;
+            color: white;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+            border: 2px solid #555;
+            margin: 0 auto;
+        }
+        .chain-arrow {
+            font-size: 2rem;
+            color: #666;
+            margin: 0.5rem 0;
+        }
+
+        /* --- DESIGNATOR ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0A0A0F;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #AC1A2F;
+        }
+
+        #scanner-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 10, 15, 0.4) 0%, rgba(10, 10, 15, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(248, 113, 113, 0.7);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="scanner-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-font">DESIGNATOR</h1>
+            <p class="text-lg md:text-xl text-red-200">A Deep Dive into Targeted Control</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-font">Introduction: The Designator Philosophy</h2>
+                <p class="text-indigo-200">
+                    Unlike traditional archetypes, the <strong class="text-accent font-bold"><a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&keyword=designator" target="_blank" class="lore-link">Designator</a></strong> series is not a playable deck engine but a design philosophy. It's a group of powerful, unrelated cards united by a single mechanic: declaring a card name to exert precise, game-altering control. Their power is not in synergy with each other, but in their ability to interact with the entire card pool, offering proactive and reactive solutions to known threats.
+                </p>
+            </div>
+        </section>
+
+        <!-- Reactive Guardians Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-font">The Reactive Guardians</h2>
+            <p class="text-center text-indigo-200 mb-8 max-w-3xl mx-auto">These cards are the essential shields of modern Yu-Gi-Oh!, activated in response to an opponent's action to protect your own combos from disruption and ensure your game plan succeeds.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Crossout Designator -->
+                <div class="card p-6 key-card">
+                    <h3 class="text-2xl font-bold text-accent mb-2 text-center">Crossout Designator <span class="text-yellow-400 text-lg font-semibold">(Limited)</span></h3>
+                    <div class="flex justify-center my-4">
+                        <div id="crossout-img-container" class="card-image-container w-40 h-auto card-placeholder">Crossout Designator</div>
+                    </div>
+                    <ul class="space-y-2 text-indigo-200 list-disc list-inside">
+                        <li><strong class="text-white">Effect:</strong> Declare a card name, banish it from your Main Deck, and negate its effects and the effects of cards with the same name for the turn.</li>
+                        <li><strong class="text-white">Primary Use:</strong> The ultimate "combo insurance" against hand traps like <strong class="text-accent">Nibiru, the Primal Being</strong> and <strong class="text-accent">Infinite Impermanence</strong>, which <strong class="text-white">Called by the Grave</strong> cannot stop.</li>
+                        <li><strong class="text-white">Advanced Use:</strong> Unrivaled in mirror matches, allowing you to negate your opponent's core engine pieces.</li>
+                        <li><strong class="text-white">Strategic Cost:</strong> Requires you to run copies of the cards you want to negate (a "Crossout Package"), which can decrease deck consistency.</li>
+                    </ul>
+                </div>
+                <!-- Called by the Grave -->
+                <div class="card p-6 key-card">
+                    <h3 class="text-2xl font-bold text-accent mb-2 text-center">Called by the Grave <span class="text-yellow-400 text-lg font-semibold">(Limited)</span></h3>
+                     <div class="flex justify-center my-4">
+                        <div id="called-by-img-container" class="card-image-container w-40 h-auto card-placeholder">Called by the Grave</div>
+                    </div>
+                    <ul class="space-y-2 text-indigo-200 list-disc list-inside">
+                        <li><strong class="text-white">Effect:</strong> Target a monster in your opponent's GY, banish it, and negate its effects (and same-named monsters) until the end of the next turn.</li>
+                        <li><strong class="text-white">Primary Use:</strong> The quintessential answer to hand traps that hit the GY as cost, like <strong class="text-accent">Ash Blossom & Joyous Spring</strong>.</li>
+                        <li><strong class="text-white">Advanced Use:</strong> Acts as powerful graveyard disruption, banishing key combo pieces or revival targets during your opponent's turn.</li>
+                        <li><strong class="text-white">Strategic Advantage:</strong> No intrinsic deck-building cost and provides a longer, two-turn window of negation.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enabling an Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-font">How Designators Enable an Endboard</h2>
+            <p class="text-center text-indigo-200 mb-8 max-w-3xl mx-auto">Designator cards don't build your board; they ensure it gets built. They function as a defensive shield, negating an opponent's interruption at a critical chokepoint. This sequence illustrates their role as combo enablers:</p>
+            
+            <div class="relative md:p-8">
+                <!-- Vertical connecting line -->
+                <div class="absolute left-1/2 top-0 bottom-0 w-1 bg-gray-700/50 transform -translate-x-1/2 hidden md:block"></div>
+
+                <!-- Step 1: The Play -->
+                <div class="mb-12 relative">
+                    <div class="absolute left-1/2 top-1/2 w-16 h-16 bg-red-500/20 rounded-full transform -translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
+                    <div class="bg-gray-800/50 p-4 md:p-6 rounded-xl border border-gray-700 shadow-xl flex items-center gap-4 md:gap-6 relative">
+                        <div class="absolute -left-6 top-1/2 transform -translate-y-1/2 flex items-center justify-center w-12 h-12 bg-gray-900 border-2 border-red-500 rounded-full text-red-400 font-bold text-xl heading-font">
+                            1
+                        </div>
+                        <div id="bonfire-img-container" class="small-card-placeholder flex-shrink-0">Bonfire</div>
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-lg text-white mb-1">Chain Link 1: The Play</h4>
+                            <p class="text-indigo-200 text-sm md:text-base">Player A activates a critical starter card, like <strong class="text-accent">Bonfire</strong>, to begin their combo.</p>
+                        </div>
+                        <i class="fas fa-search text-3xl md:text-4xl text-sky-400 opacity-50 ml-auto"></i>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center my-4 md:hidden">
+                    <i class="fas fa-arrow-down text-3xl text-gray-700"></i>
+                </div>
+
+                <!-- Step 2: The Interruption -->
+                <div class="mb-12 relative">
+                     <div class="absolute left-1/2 top-1/2 w-16 h-16 bg-blue-500/20 rounded-full transform -translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
+                    <div class="bg-gray-800/50 p-4 md:p-6 rounded-xl border border-gray-700 shadow-xl flex items-center gap-4 md:gap-6 relative">
+                         <div class="absolute -left-6 top-1/2 transform -translate-y-1/2 flex items-center justify-center w-12 h-12 bg-gray-900 border-2 border-blue-500 rounded-full text-blue-400 font-bold text-xl heading-font">
+                            2
+                        </div>
+                        <div id="ash-blossom-img-container" class="small-card-placeholder flex-shrink-0">Ash Blossom</div>
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-lg text-white mb-1">Chain Link 2: The Interruption</h4>
+                            <p class="text-indigo-200 text-sm md:text-base">Player B responds by chaining a hand trap, like <strong class="text-accent">Ash Blossom</strong>, to negate the starter.</p>
+                        </div>
+                         <i class="fas fa-ban text-3xl md:text-4xl text-red-500 opacity-50 ml-auto"></i>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center my-4 md:hidden">
+                    <i class="fas fa-arrow-down text-3xl text-gray-700"></i>
+                </div>
+
+                <!-- Step 3: The Counter -->
+                <div class="mb-12 relative">
+                    <div class="absolute left-1/2 top-1/2 w-16 h-16 bg-green-500/20 rounded-full transform -translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
+                    <div class="bg-gray-800/50 p-4 md:p-6 rounded-xl border border-gray-700 shadow-xl flex items-center gap-4 md:gap-6 relative">
+                        <div class="absolute -left-6 top-1/2 transform -translate-y-1/2 flex items-center justify-center w-12 h-12 bg-gray-900 border-2 border-green-500 rounded-full text-green-400 font-bold text-xl heading-font">
+                            3
+                        </div>
+                        <div id="crossout-chain-img-container" class="small-card-placeholder flex-shrink-0">Crossout Designator</div>
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-lg text-white mb-1">Chain Link 3: The Designator Shield</h4>
+                            <p class="text-indigo-200 text-sm md:text-base">Player A chains their Reactive Guardian, <strong class="text-accent">Crossout Designator</strong>, to negate the hand trap.</p>
+                        </div>
+                        <i class="fas fa-shield-alt text-3xl md:text-4xl text-green-400 opacity-50 ml-auto"></i>
+                    </div>
+                </div>
+
+                <!-- Resolution -->
+                <div class="relative mt-8">
+                    <div class="bg-gradient-to-br from-green-900/50 to-gray-800/50 p-6 rounded-xl border border-green-500 shadow-2xl text-center">
+                        <h3 class="text-2xl font-bold text-white mb-4 heading-font flex items-center justify-center"><i class="fas fa-check-circle text-green-400 mr-3"></i>Resolution: Combo Success</h3>
+                        <p class="text-indigo-200"><strong class="text-white">The chain resolves backwards:</strong> <strong class="text-accent">Crossout Designator</strong> negates <strong class="text-accent">Ash Blossom</strong>, allowing <strong class="text-accent">Bonfire</strong> to resolve successfully. Player A's combo proceeds, leading to their intended endboard.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+         <!-- Proactive Strikers Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-font">The Proactive Strikers</h2>
+             <p class="text-center text-indigo-200 mb-8 max-w-3xl mx-auto">These cards operate on preemptive assault, aiming to dismantle an opponent's strategy before it can begin. They require metagame knowledge and carry a higher risk profile.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- D.D. Designator -->
+                <div class="card p-6 key-card">
+                    <h3 class="text-2xl font-bold text-accent mb-2 text-center">D.D. Designator <span class="text-green-400 text-lg font-semibold">(Unlimited)</span></h3>
+                    <div class="flex justify-center my-4">
+                        <div id="dd-img-container" class="card-image-container w-40 h-auto card-placeholder">D.D. Designator</div>
+                    </div>
+                    <ul class="space-y-2 text-indigo-200 list-disc list-inside">
+                        <li><strong class="text-white">Effect:</strong> Declare a name. Look at your opponent's hand; if they have it, banish it. If not, you banish a random card from your hand.</li>
+                        <li><strong class="text-white">Strategic Niche:</strong> A high-risk, high-reward side deck card for Games 2 and 3, used to rip a known key card from the opponent's hand.</li>
+                         <li><strong class="text-white">Synergy:</strong> As a Normal Spell, it is searchable by <strong class="text-accent">Triple Tactics Thrust</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Prohibition -->
+                <div class="card p-6 key-card">
+                    <h3 class="text-2xl font-bold text-accent mb-2 text-center">Prohibition <span class="text-green-400 text-lg font-semibold">(Unlimited)</span></h3>
+                     <div class="flex justify-center my-4">
+                        <div id="prohibition-img-container" class="card-image-container w-40 h-auto card-placeholder">Prohibition</div>
+                    </div>
+                    <ul class="space-y-2 text-indigo-200 list-disc list-inside">
+                        <li><strong class="text-white">Effect:</strong> A Continuous Spell that locks a declared card, preventing it from being summoned, set, or activated.</li>
+                        <li><strong class="text-white">Strategic Use:</strong> A proactive floodgate when going first, best used to shut down a known combo piece or a powerful board breaker like <strong class="text-accent">Evenly Matched</strong>.</li>
+                         <li><strong class="text-white">Weakness:</strong> As a Continuous Spell, it is highly vulnerable to common Spell/Trap removal.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-6 text-center">
+                    The most powerful Designator cards are carefully managed on the Forbidden & Limited list to maintain game balance. Their status directly reflects their metagame impact.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 Copy)</h4>
+                        <ul class="space-y-1 text-sm text-gray-300">
+                            <li>Crossout Designator</li>
+                            <li>Called by the Grave</li>
+                        </ul>
+                    </div>
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited (3 Copies)</h4>
+                        <ul class="space-y-1 text-sm text-gray-300">
+                            <li>D.D. Designator</li>
+                            <li>Prohibition</li>
+                        </ul>
+                    </div>
+                     <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Related & Limited</h4>
+                        <ul class="space-y-1 text-sm text-gray-300">
+                             <li>Triple Tactics Talent</li>
+                             <li>Bonfire</li>
+                        </ul>
+                    </div>
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Related & Unlimited</h4>
+                        <ul class="space-y-1 text-sm text-gray-300">
+                            <li>Triple Tactics Thrust</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-gray-800 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The limitation of <strong class="text-accent">Crossout Designator</strong> and <strong class="text-accent">Called by the Grave</strong> ensures that combo protection is powerful but not always guaranteed. Players must carefully decide which to include, as they cannot consistently rely on drawing them, making the game more interactive and less one-sided.</li>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- SCANNER ANIMATION ---
+            const canvas = document.getElementById('scanner-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let frame = 0;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                function draw() {
+                    frame++;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Grid
+                    ctx.strokeStyle = 'rgba(255, 0, 0, 0.1)';
+                    ctx.lineWidth = 1;
+                    for (let i = 0; i < canvas.width; i += 20) {
+                        ctx.beginPath();
+                        ctx.moveTo(i, 0);
+                        ctx.lineTo(i, canvas.height);
+                        ctx.stroke();
+                    }
+                    for (let i = 0; i < canvas.height; i += 20) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, i);
+                        ctx.lineTo(canvas.width, i);
+                        ctx.stroke();
+                    }
+
+                    // Scanner line
+                    const scannerY = (frame * 2) % (canvas.height + 40) - 20;
+                    const gradient = ctx.createLinearGradient(0, scannerY - 20, 0, scannerY);
+                    gradient.addColorStop(0, 'transparent');
+                    gradient.addColorStop(0.5, 'rgba(255, 0, 0, 0.7)');
+                    gradient.addColorStop(1, 'transparent');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, scannerY - 20, canvas.width, 40);
+
+                    ctx.strokeStyle = '#FF0000';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, scannerY);
+                    ctx.lineTo(canvas.width, scannerY);
+                    ctx.stroke();
+
+                    requestAnimationFrame(draw);
+                }
+
+                setCanvasSize();
+                draw();
+                window.addEventListener('resize', setCanvasSize);
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+            
+            const cardsToLoad = {
+                'crossout-img-container': 'Crossout Designator',
+                'called-by-img-container': 'Called by the Grave',
+                'bonfire-img-container': 'Bonfire',
+                'ash-blossom-img-container': 'Ash Blossom & Joyous Spring',
+                'crossout-chain-img-container': 'Crossout Designator',
+                'dd-img-container': 'D.D. Designator',
+                'prohibition-img-container': 'Prohibition',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

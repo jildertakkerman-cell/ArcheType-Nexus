@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Die Roll Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Dark charcoal background */
+            color: #e0e0e0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%232a2a2a' fill-opacity='0.4'%3E%3Crect x='0' y='0' width='50' height='50'/%3E%3Crect x='50' y='50' width='50' height='50'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(30, 20, 20, 0.7); /* Dark, semi-transparent mahogany */
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(200, 160, 120, 0.2); /* Faint gold border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(40, 30, 30, 0.7);
+            border: 1px solid rgba(200, 160, 120, 0.3);
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3d2c2c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3d2c2c;
+            border: 1px dashed #b89b74;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ffd700; } /* Gold accent */
+        .arrow-color { color: #ffd700; }
+        .heading-underline {
+            border-bottom: 2px solid #ffd700;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ffd700;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffd700;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ffd700;
+        }
+
+        /* --- New Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a3c2a;
+        }
+        #dice-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(30, 20, 20, 0.4) 0%, rgba(30, 20, 20, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        }
+        .banner-header h1 {
+             font-family: 'Cinzel Decorative', serif;
+        }
+
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #4a3c2a 0%, #8c7853 50%, #4a3c2a 100%);
+            color: white; border: 2px solid #c8b68b; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(200, 182, 139, 0.3), 0 0 20px rgba(200, 182, 139, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(200, 182, 139, 0.5), 0 0 30px rgba(200, 182, 139, 0.3);
+            border-color: #ffd700;
+        }
+        .ygo-home-button i {
+            font-size: 22px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="dice-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Die Roll</h1>
+            <p class="text-lg md:text-xl text-yellow-200">The Art of Controlled Chaos</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Embracing Probability</h2>
+                <p class="text-gray-300">
+                    In the highly structured landscape of modern Yu-Gi-Oh!, there exists a unique outlier: the "Die Roll" strategy. This is not a formal archetype but a player-defined style, a collection of cards unified by a single foundational mechanic: 
+                    <a href="https://yugipedia.com/wiki/Dice" target="_blank" class="lore-link">the rolling of a six-sided die</a>. 
+                    Long considered a "gimmick," the strategy has evolved through potent support, transforming it into a coherent, albeit unpredictable, engine. Its strength lies in creating unique and explosive game states that can overwhelm an unprepared opponent, offering a rewarding experience for duelists who appreciate the thrill of calculated risk.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Core Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dungeon text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Dice Dungeon</h3>
+                    </div>
+                    <p class="text-sm text-gray-300">A Field Spell that, upon activation, lets the player add one "Dimension Dice" from their Deck to their hand. This guaranteed search immediately sets up the deck's most important play and provides the bedrock for its consistency.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dice-d20 text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Dimension Dice</h3>
+                    </div>
+                    <p class="text-sm text-gray-300">The premier monster tutor. By tributing one monster while a die roll card (like Dice Dungeon) is on the field, it allows the player to Special Summon any monster from their Deck that has a die roll effect, providing direct access to the deck's entire suite of key monsters.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The Orgoth Opening</h2>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="dungeon-img-container" class="card-image-container flex-shrink-0 card-placeholder">Dice Dungeon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#3d2c2c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate & Search</h3>
+                            </div>
+                            <p class="text-gray-300">Activate <strong class="text-accent">Dice Dungeon</strong>. Use its effect to search <strong class="text-accent">Dimension Dice</strong> from your Deck and Normal Summon any monster to use as tribute fodder.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-4"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="dimension-img-container" class="card-image-container flex-shrink-0 card-placeholder">Dimension Dice</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#3d2c2c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Tribute & Summon</h3>
+                            </div>
+                            <p class="text-gray-300">Activate <strong class="text-accent">Dimension Dice</strong>, tributing your monster to Special Summon the deck's primary boss, <strong class="text-accent">Orgoth the Relentless</strong>, directly from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-4"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="orgoth-img-container" class="card-image-container flex-shrink-0 card-placeholder">Orgoth the Relentless</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#3d2c2c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Establish the Threat</h3>
+                            </div>
+                            <p class="text-gray-300">The end board consists of <strong class="text-accent">Orgoth the Relentless</strong> and <strong class="text-accent">Dice Dungeon</strong>. This simple sequence establishes a formidable threat on turn one, ready to use its powerful effects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">End Board Analysis: The Calculated Gamble</h2>
+            
+            <div class="card p-6 relative overflow-hidden">
+                <div class="absolute -top-1/2 -left-1/2 w-full h-full opacity-5" style="background-image: radial-gradient(circle, #ffd700 1px, transparent 1px); background-size: 20px 20px;"></div>
+        
+                <p class="text-gray-300 text-center mb-8 max-w-3xl mx-auto z-10 relative">
+                    The endboards produced by the Die Roll strategy have distinct strengths and critical weaknesses. A typical board consists of a single, powerful threat supplemented by continuous disruption, but it remains vulnerable to modern board-breaking cards.
+                </p>
+
+                <!-- Central Showcase -->
+                <div class="flex flex-col items-center mb-10">
+                    <div class="pro-con-card p-4 rounded-lg shadow-lg relative" style="box-shadow: 0 0 35px rgba(255, 215, 0, 0.25);">
+                         <div class="absolute top-0 left-0 w-full h-full border-2 border-yellow-400/50 rounded-lg animate-pulse"></div>
+                        <div class="flex flex-col sm:flex-row items-center gap-4">
+                            <div id="orgoth-endboard-img-container" class="w-32 sm:w-40 flex-shrink-0 card-placeholder">Orgoth the Relentless</div>
+                            <div class="text-center sm:text-left">
+                                <h4 class="font-bold text-white text-lg">Central Threat: Orgoth the Relentless</h4>
+                                <p class="text-sm text-gray-300 max-w-xs">A formidable boss with high ATK and potential protection or card advantage, forcing an immediate answer.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strengths vs Vulnerabilities -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-8">
+                    
+                    <!-- Strengths Column -->
+                    <div class="flex flex-col gap-6">
+                        <h3 class="text-2xl font-bold text-green-400 text-center"><i class="fas fa-thumbs-up mr-2"></i>The Upside: Board Support</h3>
+                        <!-- Cuben -->
+                        <div class="pro-con-card p-3 rounded-lg flex items-center gap-4 transition-transform hover:scale-105 duration-300">
+                            <div id="cuben-img-container" class="w-24 flex-shrink-0 card-placeholder">Cuben</div>
+                            <div>
+                                <h4 class="font-bold text-white">Continuous Disruption</h4>
+                                <p class="text-sm text-gray-300">Cards like <strong class="text-accent">Cuben</strong> can act as temporary floodgates.</p>
+                            </div>
+                        </div>
+                        <!-- Snipe Hunter -->
+                        <div class="pro-con-card p-3 rounded-lg flex items-center gap-4 transition-transform hover:scale-105 duration-300">
+                            <div id="snipe-hunter-img-container" class="w-24 flex-shrink-0 card-placeholder">Snipe Hunter</div>
+                            <div>
+                                <h4 class="font-bold text-white">Repeatable Removal</h4>
+                                <p class="text-sm text-gray-300"><strong class="text-accent">Snipe Hunter</strong> can dismantle boards if unchecked.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weaknesses Column -->
+                    <div class="flex flex-col gap-6">
+                        <h3 class="text-2xl font-bold text-red-400 text-center"><i class="fas fa-exclamation-triangle mr-2"></i>The Downside: Critical Counters</h3>
+                        <!-- Kaiju -->
+                         <div class="pro-con-card p-3 rounded-lg flex items-center gap-4 transition-transform hover:scale-105 duration-300">
+                            <div id="kaiju-img-container" class="w-24 flex-shrink-0 card-placeholder">Gameciel</div>
+                            <div>
+                                <h4 class="font-bold text-white">Non-Destruction Removal</h4>
+                                <p class="text-sm text-gray-300"><strong class="text-accent">Kaijus</strong> tribute the main boss monster, bypassing all protection.</p>
+                            </div>
+                        </div>
+                        <!-- Droplet -->
+                         <div class="pro-con-card p-3 rounded-lg flex items-center gap-4 transition-transform hover:scale-105 duration-300">
+                            <div id="droplet-img-container" class="w-24 flex-shrink-0 card-placeholder">Forbidden Droplet</div>
+                            <div>
+                                <h4 class="font-bold text-white">Board-Wide Negation</h4>
+                                <p class="text-sm text-gray-300"><strong class="text-accent">Forbidden Droplet</strong> renders the entire board inert for a turn.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;" class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High-Impact Payoffs:</strong> Cards like Orgoth and Snipe Hunter can single-handedly control the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Unexpected Plays:</strong> The deck's inherent randomness can catch opponents off guard and create unsolvable boards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-toolbox"></i></span> <strong class="text-green-300">Toolbox Nature:</strong> Dimension Dice can summon the perfect monster for any situation, from removal to hand control.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="con-icon"><i class="fas fa-dice-one"></i></span> <strong class="text-red-300">Inherent Variance:</strong> Despite mitigation tools, the deck can still fail due to unfavorable die rolls.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Fragile Board:</strong> Lacks multiple negates and relies on single, powerful threats that can be easily outed.</li>
+                         <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Normal Summon Reliant:</strong> The core combo requires a monster on board to tribute, which can be easily disrupted.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Hybrid Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="neutral-icon"><i class="fas fa-car"></i></span> <strong class="text-accent">Speedroid:</strong> Helps to quickly summon the Rank 5 Xyz Monster <strong class="text-accent">Number 67</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-robot"></i></span> <strong class="text-accent">Morphtronic:</strong> Floods the board with monsters, providing ample tribute fodder for Dimension Dice.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-skull"></i></span> <strong class="text-accent">Zombie World:</strong> Provides recursive tribute fodder and turns Snipe Hunter's discard cost into an advantage.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-10 md:my-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4 bg-red-900/30 border-red-500">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Number 67: Pair-a-Dice Smasher (0 copies)</strong> - The deck's ultimate probability controller is banned.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4 bg-yellow-900/30 border-yellow-500">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                           <li><strong class="text-yellow-400">Terraforming (1 copy)</strong> - Limits consistency in searching the Field Spell.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900/30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core engine of <strong class="text-accent">Dice Dungeon</strong>, <strong class="text-accent">Dimension Dice</strong>, and key monsters like <strong class="text-accent">Orgoth</strong> and <strong class="text-accent">Snipe Hunter</strong> remain unrestricted, the prohibition of Number 67 removes the deck's only way to guarantee a die roll outcome, significantly lowering its competitive ceiling and forcing it to rely more on other mitigation tools like <strong class="text-accent">That Six</strong>.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Dice Banner Animation ---
+            const canvas = document.getElementById('dice-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let dice = [];
+                const diceCount = 20;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Die {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 20 + 10;
+                        this.speedX = (Math.random() - 0.5) * 2;
+                        this.speedY = (Math.random() - 0.5) * 2;
+                        this.rotation = Math.random() * 360;
+                        this.rotationSpeed = (Math.random() - 0.5);
+                        this.opacity = Math.random() * 0.3 + 0.1;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        this.rotation += this.rotationSpeed;
+
+                        if (this.x > canvas.width + this.size || this.x < -this.size || this.y > canvas.height + this.size || this.y < -this.size) {
+                           this.x = Math.random() * canvas.width;
+                           this.y = -this.size;
+                        }
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.globalAlpha = this.opacity;
+                        ctx.strokeStyle = '#ffd700';
+                        ctx.lineWidth = 2;
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.rotation * Math.PI / 180);
+                        ctx.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                        ctx.restore();
+                    }
+                }
+
+                function initDice() {
+                    dice = [];
+                    for (let i = 0; i < diceCount; i++) {
+                        dice.push(new Die());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    dice.forEach(d => {
+                        d.update();
+                        d.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initDice();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initDice();
+                });
+            }
+
+            // --- Card Image Fetcher ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'dungeon-img-container': 'Dice Dungeon',
+                'dimension-img-container': 'Dimension Dice',
+                'orgoth-img-container': 'Orgoth the Relentless',
+                // New Endboard Images
+                'orgoth-endboard-img-container': 'Orgoth the Relentless',
+                'cuben-img-container': 'Cuben',
+                'snipe-hunter-img-container': 'Snipe Hunter',
+                'kaiju-img-container': 'Gameciel, the Sea Turtle Kaiju',
+                'droplet-img-container': 'Forbidden Droplet'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

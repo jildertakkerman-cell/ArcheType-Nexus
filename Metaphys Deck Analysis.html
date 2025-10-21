@@ -82,6 +82,7 @@
             border-radius: 1rem;
             padding: 0.5rem;
             box-shadow: 0 0 18px 4px rgba(167,139,250,0.18);
+            cursor: pointer;
         }
         .text-accent {
             color: #f59e0b; /* Golden Amber */
@@ -150,6 +151,38 @@
             box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4), 0 0 30px rgba(245, 158, 11, 0.3);
         }
         .ygo-home-button i { font-size: 22px; text-shadow: 0 0 10px rgba(245, 158, 11, 0.8); }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(237, 233, 254, 0.95);
+            border: 1px solid #f59e0b;
+            border-radius: 0.75rem;
+            color: #1e1b4b;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #fbbf24; /* Light amber accent */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #f59e0b;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -354,56 +387,147 @@
                 });
             }
 
-            // --- Card Image Fetching ---
-            async function fetchAndDisplayCardImage(cardName, containerId) {
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
                 const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
                 try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
                     const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API error`);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
                     const data = await response.json();
-                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-                    if (imageUrl) {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = cardName;
-                        img.className = 'card-image';
-                        container.innerHTML = '';
-                        // Add cosmic icon overlay for core cards
-                        let icon = '';
-                        switch(cardName) {
-                            case 'Metaphys Nephthys':
-                                icon = `<svg class='card-icon' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='#f0abfc' stroke='#a5b4fc' stroke-width='2'/><path d='M16 8 L20 24 L12 24 Z' fill='#ede9fe'/></svg>`;
-                                break;
-                            case 'Metaphys Tyrant Dragon':
-                                icon = `<svg class='card-icon' viewBox='0 0 32 32'><ellipse cx='16' cy='16' rx='14' ry='10' fill='#a5b4fc' stroke='#f0abfc' stroke-width='2'/><path d='M16 10 L24 22 L8 22 Z' fill='#ede9fe'/></svg>`;
-                                break;
-                            case 'Metaphys Daedalus':
-                                icon = `<svg class='card-icon' viewBox='0 0 32 32'><rect x='6' y='6' width='20' height='20' rx='8' fill='#ede9fe' stroke='#a5b4fc' stroke-width='2'/><circle cx='16' cy='16' r='6' fill='#f0abfc'/></svg>`;
-                                break;
-                            case 'Asymmetaphys':
-                                icon = `<svg class='card-icon' viewBox='0 0 32 32'><polygon points='16,4 28,28 4,28' fill='#a5b4fc' stroke='#f0abfc' stroke-width='2'/></svg>`;
-                                break;
-                            case 'Metaphys Dimension':
-                                icon = `<svg class='card-icon' viewBox='0 0 32 32'><rect x='8' y='8' width='16' height='16' rx='4' fill='#f0abfc' stroke='#a5b4fc' stroke-width='2'/></svg>`;
-                                break;
-                            case 'Aloof Lupine':
-                                icon = `<svg class='card-icon' viewBox='0 0 32 32'><ellipse cx='16' cy='20' rx='10' ry='6' fill='#ede9fe' stroke='#a5b4fc' stroke-width='2'/><circle cx='16' cy='12' r='6' fill='#a5b4fc'/></svg>`;
-                                break;
-                            case 'Metaphys Horus':
-                                icon = `<svg class='card-icon' viewBox='0 0 32 32'><rect x='10' y='10' width='12' height='12' rx='3' fill='#f0abfc' stroke='#a5b4fc' stroke-width='2'/></svg>`;
-                                break;
-                        }
-                        container.innerHTML = icon;
-                        container.appendChild(img);
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
                     } else {
-                        throw new Error("Image not found");
+                        throw new Error("Card data not found in API response.");
                     }
                 } catch (error) {
-                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
                 }
             }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'card-image';
+                    container.innerHTML = '';
+                    // Add cosmic icon overlay for core cards
+                    let icon = '';
+                    switch(cardInfo.name) {
+                        case 'Metaphys Nephthys':
+                            icon = `<svg class='card-icon' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='#f0abfc' stroke='#a5b4fc' stroke-width='2'/><path d='M16 8 L20 24 L12 24 Z' fill='#ede9fe'/></svg>`;
+                            break;
+                        case 'Metaphys Tyrant Dragon':
+                            icon = `<svg class='card-icon' viewBox='0 0 32 32'><ellipse cx='16' cy='16' rx='14' ry='10' fill='#a5b4fc' stroke='#f0abfc' stroke-width='2'/><path d='M16 10 L24 22 L8 22 Z' fill='#ede9fe'/></svg>`;
+                            break;
+                        case 'Metaphys Daedalus':
+                            icon = `<svg class='card-icon' viewBox='0 0 32 32'><rect x='6' y='6' width='20' height='20' rx='8' fill='#ede9fe' stroke='#a5b4fc' stroke-width='2'/><circle cx='16' cy='16' r='6' fill='#f0abfc'/></svg>`;
+                            break;
+                        case 'Asymmetaphys':
+                            icon = `<svg class='card-icon' viewBox='0 0 32 32'><polygon points='16,4 28,28 4,28' fill='#a5b4fc' stroke='#f0abfc' stroke-width='2'/></svg>`;
+                            break;
+                        case 'Metaphys Dimension':
+                            icon = `<svg class='card-icon' viewBox='0 0 32 32'><rect x='8' y='8' width='16' height='16' rx='4' fill='#f0abfc' stroke='#a5b4fc' stroke-width='2'/></svg>`;
+                            break;
+                        case 'Aloof Lupine':
+                            icon = `<svg class='card-icon' viewBox='0 0 32 32'><ellipse cx='16' cy='20' rx='10' ry='6' fill='#ede9fe' stroke='#a5b4fc' stroke-width='2'/><circle cx='16' cy='12' r='6' fill='#a5b4fc'/></svg>`;
+                            break;
+                        case 'Metaphys Horus':
+                            icon = `<svg class='card-icon' viewBox='0 0 32 32'><rect x='10' y='10' width='12' height='12' rx='3' fill='#f0abfc' stroke='#a5b4fc' stroke-width='2'/></svg>`;
+                            break;
+                    }
+                    container.innerHTML = icon;
+                    container.appendChild(img);
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-amber-600">${cardType}</p>
+                        <div class="w-full h-px bg-amber-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
 
             const cardsToLoad = {
                 'nephthys-img': 'Metaphys Nephthys',
@@ -416,8 +540,8 @@
                 'daedalus-end-img': 'Metaphys Daedalus'
             };
 
-            for (const [id, name] of Object.entries(cardsToLoad)) {
-                fetchAndDisplayCardImage(name, id);
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
             }
             
             // --- Banlist Check ---
@@ -460,5 +584,7 @@
             checkBanlist();
         });
     </script>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
 </body>
 </html>

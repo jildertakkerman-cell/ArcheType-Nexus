@@ -58,6 +58,7 @@
             border-radius: 0.75rem;
             padding: 0.5rem;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
         }
         .text-accent { color: #d63384; } /* Vibrant pink */
         .lore-link {
@@ -136,6 +137,22 @@
         .ygo-home-button i {
             font-size: 24px;
             text-shadow: 0 0 8px rgba(0,0,0,0.2);
+        }
+        #card-popup {
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            word-wrap: break-word;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #f472b6;
+        }
+        #card-popup p {
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
@@ -305,6 +322,12 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
             const canvas = document.getElementById('sweet-particles');
             if(canvas){
                 const ctx = canvas.getContext('2d');
@@ -366,33 +389,118 @@
                 });
             }
 
-            async function fetchAndDisplayCardImage(cardName, containerId) {
+            async function fetchAndProcessCardData(cardName, containerId) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
 
                 const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
 
                 try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
                     const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error(`API error: ${response.status}`);
                     const data = await response.json();
-                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-
-                    if (imageUrl) {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = cardName;
-                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
-                        container.innerHTML = '';
-                        container.appendChild(img);
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
                     } else {
-                        throw new Error("Image URL not found.");
+                        throw new Error("Card data not found in API response.");
                     }
                 } catch (error) {
-                    console.error(`Failed to fetch image for "${cardName}":`, error);
-                    container.innerHTML = `<div class="card-placeholder flex items-center justify-center p-2 animate-fadeIn">${cardName}</div>`;
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
                 }
             }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'card-image';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-pink-300">${cardType}</p>
+                        <div class="w-full h-px bg-pink-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
 
             const cardsToLoad = {
                 'anjelly-img': 'Madolche Anjelly',
@@ -405,9 +513,10 @@
             };
 
             for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
-                fetchAndDisplayCardImage(cardName, containerId);
+                fetchAndProcessCardData(cardName, containerId);
             }
-        });
     </script>
+    <div id="card-popup" class="fixed z-50 bg-gray-900 bg-opacity-95 text-white p-4 rounded-lg shadow-2xl max-w-sm max-h-96 overflow-y-auto opacity-0 transition-opacity duration-200 pointer-events-none border-2 border-pink-500">
+    </div>
 </body>
 </html>

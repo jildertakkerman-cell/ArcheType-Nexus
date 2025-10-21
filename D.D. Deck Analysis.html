@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D.D. Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f23; /* Deep space blue/purple */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(29, 27, 60, 0.7); /* Translucent dark purple */
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #5a4a9c; /* Purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(40, 36, 80, 0.7);
+            border: 1px solid #7c6dcc;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #282450;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px #1d1b3c;
+            border: 1px dashed #7c6dcc;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f472b6; } /* Vibrant Pink/Magenta */
+        .arrow-color { color: #f472b6; }
+        .heading-underline {
+            border-bottom: 2px solid #f472b6;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f472b6;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f472b6;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f472b6;
+        }
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0f0f23;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #5a4a9c;
+        }
+        #rift-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(15, 15, 35, 0.4) 0%, rgba(15, 15, 35, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(244, 114, 182, 0.7);
+        }
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="#" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="rift-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">D.D. (Different Dimension)</h1>
+            <p class="text-lg md:text-xl text-pink-200">Pioneers of the Banish Zone</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">"D.D." (Different Dimension)</strong> series is a thematic collection of cards, not a modern archetype, that introduced and explored the mechanic of banishing. These cards are defined by their ability to interact with the "Different Dimension," a conceptual space that translates to the banish zone in gameplay. While lacking cohesive searchers, the series provides a toolbox of individual cards—from powerful hand traps like <strong class="text-accent">D.D. Crow</strong> to self-recurring monsters like <strong class="text-accent">D.D. Survivor</strong>. Their legacy is in pioneering a fundamental game mechanic and enabling unique control and FTK strategies that have left a lasting impact on the game's history. It is crucial to distinguish this classic series from the unrelated modern "D/D" archetype.
+                </p>
+            </div>
+        </section>
+
+        <!-- The D.D. Arsenal Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Denizens of the Void</h2>
+             <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">The "D.D." series is a diverse collection of monsters, spells, and traps that pioneered interaction with the banish zone. The complete list of <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=D.D.&stype=1&ctype=&starfr=&starto=&atkfr=&atkto=&deffr=&defto=&othercon=2" target="_blank" class="lore-link">cards from the Different Dimension</a> each serve a unique purpose, from removal to resource recursion.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Vanguard: Battle Removers</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">D.D. Warrior Lady</h4>
+                            <p class="text-sm text-indigo-200">A legendary staple. After battling, she can banish both herself and the opponent's monster, providing a universal answer to indestructible or floating threats.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">D.D. Assailant</h4>
+                            <p class="text-sm text-indigo-200">Similar to Warrior Lady, but its effect is mandatory. When destroyed by battle, it banishes the opposing monster and itself.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Travelers: Recurring Resources</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">D.D. Survivor</h4>
+                            <p class="text-sm text-indigo-200">If banished while face-up, it returns to the field during the End Phase. A key piece for banish-focused control decks.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">D.D. Scout Plane</h4>
+                            <p class="text-sm text-indigo-200">Functions similarly to Survivor, returning from the banish zone during the End Phase if it was banished that turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Apex Predator: D.D. Crow -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-white mb-4 text-center">Apex Predator: D.D. Crow</h2>
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="dd-crow-img-container" class="card-image-container flex-shrink-0 card-placeholder">D.D. Crow</div>
+                    <p class="text-indigo-200 flex-grow">
+                        Arguably the most impactful "D.D." card in modern Yu-Gi-Oh!, <strong class="text-accent">D.D. Crow</strong> is a timeless hand trap. As a Quick Effect, it can be discarded from the hand to banish any one card in the opponent's Graveyard. This simple yet powerful form of disruption can stop revival effects, break up combo chains, and deny resources. Its versatility and lack of restrictions have kept it relevant in countless formats, making it the true enduring legacy of the "D.D." series.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategic Implementations Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Implementations</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Macro Monarch -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">"Macro Monarch" Control</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="macro-cosmos-img-container" class="card-image-container card-placeholder">Macro Cosmos</div>
+                    </div>
+                    <p class="text-indigo-200">This classic anti-meta strategy used floodgates like <strong class="text-accent">Macro Cosmos</strong> and <strong class="text-accent">Dimensional Fissure</strong> to banish all cards instead of sending them to the GY. This crippled most decks while empowering cards like <strong class="text-accent">D.D. Survivor</strong>, which would endlessly return to the field. Combined with powerful Tribute Summon monsters, this strategy suffocated opponents by denying their primary resource zone.</p>
+                </div>
+                <!-- D.D. Dynamite FTK -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">"D.D. Dynamite" FTK</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dd-dynamite-img-container" class="card-image-container card-placeholder">D.D. Dynamite</div>
+                    </div>
+                    <p class="text-indigo-200">A notorious First-Turn-Kill strategy, particularly in Best-of-One formats. The combo uses <strong class="text-accent">Banquet of Millions</strong> to banish the opponent's entire Extra Deck, then activates multiple copies of <strong class="text-accent">D.D. Dynamite</strong> to inflict massive burn damage (300 per banished card), often winning the game before the opponent can take a turn.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-star"></i></span> <strong class="text-green-300">Foundational Mechanic:</strong> Pioneered the banish zone as an interactive area of the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-tools"></i></span> <strong class="text-green-300">Timeless Staples:</strong> D.D. Crow remains one of the best generic hand traps available.</li>
+                        <li><span class="pro-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-green-300">Anti-Meta Potential:</strong> The core concepts enable powerful strategies that counter Graveyard-heavy formats.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-link-slash"></i></span> <strong class="text-red-300">No Archetypal Synergy:</strong> Lacks modern searchers, extenders, and a unified boss monster.</li>
+                        <li><span class="con-icon"><i class="fas fa-hourglass-end"></i></span> <strong class="text-red-300">Outdated Designs:</strong> Many "D.D." monsters are too slow or have stats too low for the modern game.</li>
+                        <li><span class="con-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-red-300">Inconsistent Strategies:</strong> Decks built around the series can be disjointed and lack a single, focused win condition.</li>
+                    </ul>
+                </div>
+                <!-- Legacy -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Enduring Legacy</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent">D.D. Crow:</strong> A format-defining hand trap that continues to see widespread competitive play.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-scroll"></i></span> <strong class="text-accent">D.D.R.:</strong> A potent extender in decks that use banishing as a cost or engine requirement.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-book-open"></i></span> <strong class="text-accent">Design Philosophy:</strong> The series laid the conceptual groundwork for all modern banish-focused archetypes.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mt-10 md:mt-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    Most "D.D." cards are unrestricted, but a key piece of their history is forbidden.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Return from the Different Dimension (0 copies)</strong></li>
+                            <li class="text-xs">This powerful trap, once a staple for explosive endgame pushes in banish decks, is now forbidden.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">D.D. Crow (3 copies)</strong> - Fully available as a staple hand trap.</li>
+                            <li><strong class="text-green-300">Most "D.D." Monsters</strong> (Warrior Lady, Survivor, etc.) are at 3 copies.</li>
+                            <li><strong class="text-green-300">D.D. Dynamite (3 copies)</strong> - The FTK remains theoretically possible.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-indigo-900 bg-opacity-30 rounded border-l-4 border-indigo-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core "D.D." toolbox is available, the loss of "Return from the Different Dimension" prevents the theme from performing the massive board swarms it was once known for. The legacy lives on through individual tech cards rather than a unified deck.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DIMENSIONAL RIFT ANIMATION ---
+            const canvas = document.getElementById('rift-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x || Math.random() * canvas.width;
+                        this.y = y || Math.random() * canvas.height;
+                        this.vx = (Math.random() - 0.5) * 1.5;
+                        this.vy = (Math.random() - 0.5) * 1.5;
+                        this.radius = Math.random() * 2 + 0.5;
+                        this.color = `rgba(244, 114, 182, ${Math.random() * 0.6 + 0.2})`;
+                    }
+                    update() {
+                        const dx = this.x - canvas.width / 2;
+                        const dy = this.y - canvas.height / 2;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        // Pull towards center
+                        this.vx -= dx / dist * 0.05;
+                        this.vy -= dy / dist * 0.05;
+                        
+                        this.x += this.vx;
+                        this.y += this.vy;
+
+                        if (dist < 20) {
+                           this.x = Math.random() * canvas.width;
+                           this.y = Math.random() * canvas.height;
+                           this.vx = (Math.random() - 0.5) * 1.5;
+                           this.vy = (Math.random() - 0.5) * 1.5;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.fillStyle = 'rgba(15, 15, 35, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'dd-crow-img-container': 'D.D. Crow',
+                'macro-cosmos-img-container': 'Macro Cosmos',
+                'dd-dynamite-img-container': 'D.D. Dynamite',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

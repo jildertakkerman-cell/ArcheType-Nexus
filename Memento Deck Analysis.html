@@ -61,6 +61,7 @@
             border-radius: 0.5rem;
             padding: 0.5rem;
             box-shadow: 0 0 10px #383838;
+            cursor: pointer;
         }
         .pro-icon { color: #4ade80; }
         .con-icon { color: #f87171; }
@@ -149,6 +150,67 @@
         .ygo-home-button i {
             font-size: 22px; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
         }
+
+        /* Popup styles */
+        .card-popup {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #a78bfa;
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            word-wrap: break-word;
+        }
+
+        .card-popup.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .card-popup img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .card-popup h3 {
+            color: #6366f1;
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .card-popup p {
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+
+        .card-popup .card-type {
+            color: #666;
+            font-style: italic;
+        }
+
+        .card-popup .card-description {
+            color: #333;
+            margin-top: 8px;
+        }
+
+        .card-popup .card-stats {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -415,6 +477,113 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const cardDataCache = {};
+    let currentPopupCard = null;
+    let popupVisible = false;
+
+    async function fetchCardData(cardName) {
+        if (cardDataCache[cardName]) {
+            return cardDataCache[cardName];
+        }
+
+        const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const data = await response.json();
+            const card = data?.data?.[0];
+            if (card) {
+                cardDataCache[cardName] = card;
+                return card;
+            }
+        } catch (error) {
+            console.error(`Failed to fetch data for "${cardName}":`, error);
+        }
+        return null;
+    }
+
+    function showPopup(cardName, event) {
+        if (popupVisible && currentPopupCard === cardName) {
+            hidePopup();
+            return;
+        }
+
+        fetchCardData(cardName).then(card => {
+            if (!card) return;
+
+            const popup = document.getElementById('card-popup');
+            const imageUrl = card.card_images?.[0]?.image_url;
+
+            let statsHtml = '';
+            if (card.atk !== undefined) statsHtml += `<strong>ATK:</strong> ${card.atk} `;
+            if (card.def !== undefined) statsHtml += `<strong>DEF:</strong> ${card.def}`;
+            if (card.level) statsHtml += `<br><strong>Level:</strong> ${card.level}`;
+            if (card.attribute) statsHtml += `<br><strong>Attribute:</strong> ${card.attribute}`;
+            if (card.race) statsHtml += `<br><strong>Race:</strong> ${card.race}`;
+
+            popup.innerHTML = `
+                ${imageUrl ? `<img src="${imageUrl}" alt="${cardName}">` : ''}
+                <h3>${card.name}</h3>
+                <p class="type">${card.type}${card.race ? ` / ${card.race}` : ''}</p>
+                <p>${card.desc.replace(/\r\n/g, '<br>')}</p>
+                ${statsHtml ? `<p class="stats">${statsHtml.replace(/<br><strong>/g, ' ').replace(/<\/strong>/g, '').replace(/<strong>/g, '')}</p>` : ''}
+            `;
+
+            popup.classList.add('show');
+            popupVisible = true;
+            currentPopupCard = cardName;
+            movePopup(event);
+        });
+    }
+
+    function hidePopup() {
+        const popup = document.getElementById('card-popup');
+        popup.classList.remove('show');
+        popupVisible = false;
+        currentPopupCard = null;
+    }
+
+    function movePopup(event) {
+        if (!popupVisible) return;
+
+        const popup = document.getElementById('card-popup');
+        const popupWidth = 400;
+        const popupHeight = 600;
+        const margin = 10;
+
+        let x = event.clientX + margin;
+        let y = event.clientY + margin;
+
+        if (x + popupWidth > window.innerWidth) {
+            x = event.clientX - popupWidth - margin;
+        }
+
+        if (y + popupHeight > window.innerHeight) {
+            y = event.clientY - popupHeight - margin;
+        }
+
+        popup.style.left = `${x}px`;
+        popup.style.top = `${y}px`;
+    }
+
+    document.addEventListener('click', (event) => {
+        const popup = document.getElementById('card-popup');
+        if (!popup.contains(event.target) && !event.target.closest('.card-placeholder')) {
+            setTimeout(() => {
+                if (!popup.contains(document.elementFromPoint(event.clientX, event.clientY))) {
+                    hidePopup();
+                }
+            }, 100);
+        }
+    });
+
+    document.addEventListener('mousemove', (event) => {
+        if (popupVisible) {
+            movePopup(event);
+        }
+    });
+
     const cardsToLoad = {
         'tatsunootoshigo-img': 'Mementotlan Tatsunootoshigo',
         'ghattic-img': 'Mementotlan Ghattic',
@@ -424,9 +593,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     for (const [id, name] of Object.entries(cardsToLoad)) {
         fetchAndDisplayCardImage(name, id);
+        const container = document.getElementById(id);
+        if (container) {
+            container.addEventListener('click', (event) => {
+                event.stopPropagation();
+                showPopup(name, event);
+            });
+        }
     }
 });
 </script>
-
-</body>
+    <div id="card-popup" class="popup"></div></body>
 </html>

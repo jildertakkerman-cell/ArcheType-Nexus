@@ -56,6 +56,7 @@
             border-radius: 0.5rem;
             padding: 0.5rem;
             border: 2px dashed #34495e;
+            cursor: pointer;
         }
         .pro-icon { color: #2ecc71; }
         .con-icon { color: #e74c3c; }
@@ -138,6 +139,66 @@
         .ygo-home-button i {
             font-size: 22px;
             text-shadow: 0 0 10px rgba(241, 196, 15, 0.8);
+        }
+
+        /* Popup styles */
+        .card-popup {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #34495e;
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            word-wrap: break-word;
+        }
+
+        .card-popup.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .card-popup img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .card-popup h3 {
+            color: #34495e;
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .card-popup p {
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+
+        .card-popup .card-type {
+            color: #666;
+            font-style: italic;
+        }
+
+        .card-popup .card-description {
+            color: #333;
+            margin-top: 8px;
+        }
+
+        .card-popup .card-stats {
+            background: rgba(52, 73, 94, 0.1);
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 8px;
         }
 
     </style>
@@ -320,9 +381,14 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            async function fetchAndDisplayCardImage(cardName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
+            const cardDataCache = {};
+            let currentPopupCard = null;
+            let popupVisible = false;
+
+            async function fetchCardData(cardName) {
+                if (cardDataCache[cardName]) {
+                    return cardDataCache[cardName];
+                }
 
                 const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
 
@@ -330,7 +396,24 @@
                     const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error(`API error: ${response.status}`);
                     const data = await response.json();
-                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    const card = data?.data?.[0];
+                    if (card) {
+                        cardDataCache[cardName] = card;
+                        return card;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                }
+                return null;
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                try {
+                    const card = await fetchCardData(cardName);
+                    const imageUrl = card?.card_images?.[0]?.image_url;
 
                     if (imageUrl) {
                         const img = document.createElement('img');
@@ -348,6 +431,87 @@
                 }
             }
 
+            function showPopup(cardName, event) {
+                if (popupVisible && currentPopupCard === cardName) {
+                    hidePopup();
+                    return;
+                }
+
+                fetchCardData(cardName).then(card => {
+                    if (!card) return;
+
+                    const popup = document.getElementById('card-popup');
+                    const imageUrl = card.card_images?.[0]?.image_url;
+
+                    let statsHtml = '';
+                    if (card.atk !== undefined) statsHtml += `<strong>ATK:</strong> ${card.atk} `;
+                    if (card.def !== undefined) statsHtml += `<strong>DEF:</strong> ${card.def}`;
+                    if (card.level) statsHtml += `<br><strong>Level:</strong> ${card.level}`;
+                    if (card.attribute) statsHtml += `<br><strong>Attribute:</strong> ${card.attribute}`;
+                    if (card.race) statsHtml += `<br><strong>Race:</strong> ${card.race}`;
+
+                    popup.innerHTML = `
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${cardName}">` : ''}
+                        <h3>${card.name}</h3>
+                        <p class="card-type">${card.type}${card.race ? ` / ${card.race}` : ''}</p>
+                        <p class="card-description">${card.desc}</p>
+                        ${statsHtml ? `<div class="card-stats">${statsHtml}</div>` : ''}
+                    `;
+
+                    popup.classList.add('show');
+                    popupVisible = true;
+                    currentPopupCard = cardName;
+                    movePopup(event);
+                });
+            }
+
+            function hidePopup() {
+                const popup = document.getElementById('card-popup');
+                popup.classList.remove('show');
+                popupVisible = false;
+                currentPopupCard = null;
+            }
+
+            function movePopup(event) {
+                if (!popupVisible) return;
+
+                const popup = document.getElementById('card-popup');
+                const popupWidth = 400;
+                const popupHeight = 600;
+                const margin = 10;
+
+                let x = event.clientX + margin;
+                let y = event.clientY + margin;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - margin;
+                }
+
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - margin;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            document.addEventListener('click', (event) => {
+                const popup = document.getElementById('card-popup');
+                if (!popup.contains(event.target) && !event.target.closest('.card-placeholder')) {
+                    setTimeout(() => {
+                        if (!popup.contains(document.elementFromPoint(event.clientX, event.clientY))) {
+                            hidePopup();
+                        }
+                    }, 100);
+                }
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                if (popupVisible) {
+                    movePopup(event);
+                }
+            });
+
             const cardsToLoad = {
                 'ophiel-img-container': 'Megalith Ophiel',
                 'hagith-img-container': 'Megalith Hagith',
@@ -358,8 +522,17 @@
 
             for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
                 fetchAndDisplayCardImage(cardName, containerId);
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        showPopup(cardName, event);
+                    });
+                }
             }
         });
     </script>
+    <div id="card-popup" class="fixed z-50 bg-gray-900 bg-opacity-95 text-white p-4 rounded-lg shadow-2xl max-w-sm max-h-96 overflow-y-auto opacity-0 transition-opacity duration-200 pointer-events-none border-2 border-slate-500">
+    </div>
 </body>
 </html>

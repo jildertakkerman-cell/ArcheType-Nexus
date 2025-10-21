@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doriado Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e7ff;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(30, 30, 40, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a5568;
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(45, 55, 72, 0.7);
+            border: 1px solid #718096;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2d3748;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2d3748;
+            border: 1px dashed #718096;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #9f7aea; } /* Purple accent for magic */
+        .arrow-color { color: #9f7aea; }
+        .heading-underline {
+            border-bottom: 2px solid #9f7aea;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #9f7aea;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #9f7aea;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #9f7aea;
+        }
+        
+        /* Banner styles */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a5568;
+        }
+
+        #elemental-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 26, 26, 0.4) 0%, rgba(26, 26, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(159, 122, 234, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="elemental-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">DORIADO</h1>
+            <p class="text-lg md:text-xl text-purple-200">Analysis of the Elemental Lineage</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The "Doriado" series is not a conventional archetype, but a thematic lineage of monsters united by a singular concept: <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=doriado&stype=1" target="_blank" class="lore-link">mastery over the elemental Attributes</a>. This collection—a Ritual monster, a Pendulum monster, and a powerful Nomi monster—forms the basis for unique and challenging strategies. Their power is not in isolation but in their synergistic potential with each other and a vast pool of generic support that enables their demanding mechanics.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Elemental Conclave -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Elemental Conclave</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Elemental Mistress Doriado</h3>
+                    <p class="text-sm text-indigo-200">The elemental nexus. As a Ritual Monster, her continuous effect treats her as WIND, WATER, FIRE, and EARTH simultaneously, enabling powerful support cards that require multiple attributes on the field.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Dark Doriado</h3>
+                    <p class="text-sm text-indigo-200">The pendulum oracle. Its monster effect allows you to stack the top of your deck with one monster of each of the four main elements, giving you unparalleled control over your future draws.</p>
+                </div>
+                <div class="card p-6 lg:col-span-1 md:col-span-2">
+                    <h3 class="text-lg font-bold text-accent mb-2">Elemental Grace Doriado</h3>
+                    <p class="text-sm text-indigo-200">The ascended matriarch. This boss monster requires 6+ different Attributes in the graveyards to be summoned and can negate opponent's summons multiple times in a turn.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Strategy: Mistress Control -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Blueprint: Mistress Control</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                This strategy focuses on summoning Elemental Mistress Doriado to enable the devastating trap card, Fuh-Rin-Ka-Zan, which mimics four of the most powerful banned spell cards in the game's history.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="manju-img-container" class="card-image-container flex-shrink-0 card-placeholder">Manju of the Ten Thousand Hands</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Search the Ritual</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Manju of the Ten Thousand Hands</strong> to search for either <strong class="text-accent">Elemental Mistress Doriado</strong> or her Ritual Spell, <strong class="text-accent">Doriado's Blessing</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="mistress-doriado-img-container" class="card-image-container flex-shrink-0 card-placeholder">Elemental Mistress Doriado</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon the Nexus</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent">Doriado's Blessing</strong>, tributing Manju, to Ritual Summon <strong class="text-accent">Elemental Mistress Doriado</strong>. Her effect makes her count as all four main Attributes.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="fuh-rin-ka-zan-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fuh-Rin-Ka-Zan</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Set the Payoff</h3>
+                            </div>
+                            <p class="text-indigo-200">Set <strong class="text-accent">Fuh-Rin-Ka-Zan</strong>. With Elemental Mistress Doriado on the field, its activation condition is met, allowing you to destroy all opposing monsters, spells/traps, discard 2 cards, or draw 2 cards on your opponent's turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ideal End Boards</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Mistress Control End Board -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">End Board: Mistress Control</h3>
+                    <div class="flex-grow flex flex-col justify-center items-center p-4 rounded-lg bg-black bg-opacity-20 mb-4 space-y-4">
+                        <!-- Monster Zone -->
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2 uppercase tracking-widest text-center">Monster Zone</p>
+                            <div class="flex justify-center gap-4">
+                                <div id="mistress-endboard-img" class="w-32 h-48 card-placeholder flex-shrink-0"></div>
+                            </div>
+                        </div>
+                        <!-- S&T Zone -->
+                        <div>
+                            <p class="text-sm text-gray-400 mt-4 mb-2 uppercase tracking-widest text-center">Spell & Trap Zone</p>
+                            <div class="flex justify-center gap-4">
+                                <div class="w-32 h-48 rounded-lg bg-purple-900 bg-opacity-50 border-2 border-purple-500 flex items-center justify-center" title="Set Fuh-Rin-Ka-Zan">
+                                    <i class="fas fa-question text-5xl text-purple-300 opacity-70"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                         <p class="text-indigo-200 mb-2">A single low-stat monster backed by the game-winning potential of a set <strong class="text-accent">Fuh-Rin-Ka-Zan</strong>.</p>
+                         <p class="text-sm text-gray-400">High-risk, high-reward. Fragile but devastating if unresolved.</p>
+                    </div>
+                </div>
+
+                <!-- Grace Turbo End Board -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">End Board: Grace Turbo</h3>
+                    <div class="flex-grow flex flex-col justify-center items-center p-4 rounded-lg bg-black bg-opacity-20 mb-4 space-y-4">
+                        <!-- Monster Zone -->
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2 uppercase tracking-widest text-center">Monster Zone</p>
+                            <div class="flex justify-center gap-4">
+                                <div id="grace-endboard-img" class="w-32 h-48 card-placeholder flex-shrink-0"></div>
+                                <div id="sp-little-knight-img" class="w-32 h-48 card-placeholder flex-shrink-0"></div>
+                            </div>
+                        </div>
+                        <!-- Graveyard -->
+                        <div>
+                            <p class="text-sm text-gray-400 mt-4 mb-2 uppercase tracking-widest text-center">Graveyard (Fuel)</p>
+                             <div class="flex justify-center gap-3 text-2xl">
+                                <span title="FIRE"><i class="fas fa-fire text-red-500"></i></span>
+                                <span title="WATER"><i class="fas fa-water text-blue-400"></i></span>
+                                <span title="WIND"><i class="fas fa-wind text-green-400"></i></span>
+                                <span title="EARTH"><i class="fas fa-mountain text-yellow-600"></i></span>
+                                <span title="LIGHT"><i class="fas fa-sun text-yellow-300"></i></span>
+                                <span title="DARK"><i class="fas fa-moon text-gray-400"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                         <p class="text-indigo-200 mb-2">An imposing 3000+ ATK boss monster with multiple, non-once-per-turn summon negations, often backed by another disruption like <strong class="text-accent">S:P Little Knight</strong>.</p>
+                         <p class="text-sm text-gray-400">Resource-intensive but creates a powerful, oppressive board.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-question-circle"></i></span> <strong class="text-green-300">Element of Surprise:</strong> As a rogue strategy, opponents are unlikely to know your choke points.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bomb"></i></span> <strong class="text-green-300">High-Impact Payoffs:</strong> A resolved Fuh-Rin-Ka-Zan or Elemental Grace Doriado can win the game on the spot.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Engine Compatibility:</strong> Can be integrated with various powerful generic engines (Ritual, Sky Striker, Lightsworn).</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Normal Summon Reliance:</strong> Key combos often depend on a single Normal Summon, making them vulnerable to hand traps.</li>
+                        <li><span class="con-icon"><i class="fas fa-recycle"></i></span> <strong class="text-red-300">Graveyard Dependency:</strong> The Grace Turbo strategy is completely shut down by Graveyard-hate like D.D. Crow or Dimension Shifter.</li>
+                        <li><span class="con-icon"><i class="fas fa-shield-slash"></i></span> <strong class="text-red-300">Fragile Boards:</strong> The Mistress Control setup is easily dismantled by simple Spell/Trap removal or monster negation.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-fighter-jet"></i></span> <strong class="text-accent">Sky Striker Engine:</strong> The most efficient way to summon Elemental Grace Doriado, providing all 6 attributes from a one-card starter.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-book-open"></i></span> <strong class="text-accent">Ritual Support:</strong> Generic searchers like Manju and Preparation of Rites are mandatory for the Mistress Control variant.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent">Elementsaber Engine:</strong> A slower but thematically appropriate partner for filling the Graveyard with attributes over time.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="my-10 md:my-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">FULLY UNRESTRICTED:</strong> The entire core "Doriado" archetype and its direct support cards are not on the Forbidden & Limited list.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Core Cards (3 copies each)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Elemental Mistress Doriado</li>
+                            <li>Dark Doriado</li>
+                            <li>Elemental Grace Doriado</li>
+                            <li>Doriado's Blessing</li>
+                            <li>Fuh-Rin-Ka-Zan</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Engine Considerations</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                           <li>Key Ritual searchers are unrestricted.</li>
+                           <li>Some powerful generic engines (e.g., Sky Striker) may have limited cards.</li>
+                           <li>The deck's power comes from combining unlimited cards in unique ways.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> As a fully unrestricted rogue strategy, Doriado's strength is its creativity. While its core is at full power, its competitive viability depends on the player's skill in piloting it and adapting its build with other powerful, generic cards that may be on the banlist.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ELEMENTAL ORB BANNER ANIMATION ---
+            const canvas = document.getElementById('elemental-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const colors = ['#ff4848', '#488dff', '#f5d442', '#52d96d', '#ffffff', '#3b3b3b']; // FIRE, WATER, EARTH, WIND, LIGHT, DARK
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = Math.random() * 2 - 1;
+                        this.speedY = Math.random() * 2 - 1;
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.size > 0.1) this.size -= 0.02;
+                        if (this.size <= 0.1) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.size = Math.random() * 2 + 1;
+                            this.speedX = Math.random() * 2 - 1;
+                            this.speedY = Math.random() * 2 - 1;
+                        }
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'manju-img-container': 'Manju of the Ten Thousand Hands',
+                'mistress-doriado-img-container': 'Elemental Mistress Doriado',
+                'fuh-rin-ka-zan-img-container': 'Fuh-Rin-Ka-Zan',
+                'mistress-endboard-img': 'Elemental Mistress Doriado',
+                'grace-endboard-img': 'Elemental Grace Doriado',
+                'sp-little-knight-img': 'S:P Little Knight'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

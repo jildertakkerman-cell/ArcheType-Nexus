@@ -68,6 +68,7 @@
             border-radius: 0.5rem;
             padding: 0.5rem;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            cursor: pointer;
         }
         .pro-icon { color: #34d399; }
         .con-icon { color: #ef4444; }
@@ -177,6 +178,19 @@
         @media (max-width: 768px) {
             .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
             .ygo-home-button i { font-size: 18px; }
+        }
+        #card-popup {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            word-wrap: break-word;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #fde047;
         }
     </style>
 </head>
@@ -331,6 +345,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
             // --- Banner Animation ---
             const canvas = document.getElementById('keyhole-banner');
             if (canvas) {
@@ -401,42 +421,135 @@
                 container.appendChild(placeholder);
             }
 
-            async function fetchCardImage(cardName, containerId) {
+            async function fetchAndProcessCardData(cardName, containerId) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
                 const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
                 try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
                     const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error('Network response was not ok.');
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
                     const data = await response.json();
-                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-                    if (imageUrl) {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = cardName;
-                        img.className = 'card-image';
-                        container.innerHTML = '';
-                        container.appendChild(img);
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
                     } else {
-                        createPlaceholder(cardName, containerId);
+                        throw new Error("Card data not found in API response.");
                     }
                 } catch (error) {
-                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
                     createPlaceholder(cardName, containerId);
                 }
             }
-            
-            // Endboard Images
-            fetchCardImage('Magikey Fiend - Transfurlmine', 'transfurlmine-img-container');
-            fetchCardImage('Magikey Unlocking', 'unlocking-img-container');
 
-            // Combo Images
-            fetchCardImage('Magikey World', 'world-img-container');
-            fetchCardImage('Magikey Mechmusket - Batosbuster', 'batosbuster-img-container');
-            fetchCardImage('Maginificent Magikey Mafteal', 'mafteal-img-container');
-            fetchCardImage('Magikey Fiend - Transfurlmine', 'transfurlmine-combo-img-container');
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'card-image';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     createPlaceholder(cardInfo.name, container.id);
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-purple-300">${cardType}</p>
+                        <div class="w-full h-px bg-purple-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+            
+            const cardsToLoad = {
+                'transfurlmine-img-container': 'Magikey Fiend - Transfurlmine',
+                'unlocking-img-container': 'Magikey Unlocking',
+                'world-img-container': 'Magikey World',
+                'batosbuster-img-container': 'Magikey Mechmusket - Batosbuster',
+                'mafteal-img-container': 'Maginificent Magikey Mafteal',
+                'transfurlmine-combo-img-container': 'Magikey Fiend - Transfurlmine',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
         });
     </script>
+    <div id="card-popup" class="fixed z-50 bg-gray-900 bg-opacity-95 text-white p-4 rounded-lg shadow-2xl max-w-sm max-h-96 overflow-y-auto opacity-0 transition-opacity duration-200 pointer-events-none border-2 border-purple-500">
+    </div>
 </body>
 </html>
 

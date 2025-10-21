@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Djinn of Rituals Engine Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #100c1c; /* Deep, dark purple */
+            color: #e0d8ff; /* Light lavender */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(22, 16, 40, 0.8); /* Darker purple, slightly transparent */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #5a3d8e; /* Lighter purple border */
+            backdrop-filter: blur(8px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(30, 22, 55, 0.8);
+            border: 1px solid #7c5acd;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2057;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2057;
+            border: 1px dashed #7c5acd;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #818cf8; }
+        .text-accent { color: #c4b5fd; } /* Light violet for accents */
+        .arrow-color { color: #a78bfa; }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #c4b5fd;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c4b5fd;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #c4b5fd;
+        }
+
+        /* --- DJINN ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #100c1c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #5a3d8e;
+        }
+
+        #wisp-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(16, 12, 28, 0.4) 0%, rgba(16, 12, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(196, 181, 253, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+        }
+
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="wisp-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Djinn of Rituals</h1>
+            <p class="text-lg md:text-xl text-purple-200">An Engine of Spectral Servants</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-200">
+                    The <strong class="text-accent font-bold">"Djinn of Rituals"</strong> series is not a standalone archetype but a powerful support engine for any Ritual-based strategy. Comprised of DARK Fiend monsters, these spectral servants empower Ritual Monsters by being banished from the Graveyard during the summon. Each Djinn imparts a unique, continuous effect that is notoriously difficult to negate, making them a cornerstone of historical lockdown strategies. While the infamous "Djinn Lock" has been dismantled by the Forbidden & Limited List, the remaining <a href="https://yugipedia.com/wiki/Djinn" target="_blank" class="lore-link">Djinn cards</a> still offer potent protection and utility for modern Ritual decks.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Djinn Roster</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 bg-red-900/40 border-red-500">
+                    <h3 class="text-xl font-bold text-red-400 mb-2">Djinn Releaser of Rituals <span class="text-sm">(FORBIDDEN)</span></h3>
+                    <p class="text-purple-200">The engine's ultimate payload. Its imparted effect creates a one-sided "floodgate" preventing the opponent from Special Summoning. Its power was so format-warping that it was Forbidden.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Djinn Demolisher of Rituals</h3>
+                    <p class="text-purple-200">The strongest legal Djinn. Granting targeting protection is invaluable against the most common forms of removal.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Djinn Disserere of Rituals</h3>
+                    <p class="text-purple-200">Provides complete immunity to all Trap effects, protecting against common threats like Infinite Impermanence.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Djinn Presider of Rituals</h3>
+                    <p class="text-purple-200">A valuable tool for generating card advantage by allowing you to draw a card when the Ritual Monster destroys a monster by battle.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Djinn Cursenchanter of Rituals</h3>
+                    <p class="text-purple-200">A situational but powerful floodgate that negates the effects of all face-up Synchro Monsters.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Djinn Prognosticator of Rituals</h3>
+                    <p class="text-purple-200">Applies pressure by forcing the opponent to discard a card when the Ritual Monster inflicts battle damage.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Historical Blueprint: The Nekroz Djinn Lock</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">
+                The most notorious use of this engine was in the 2015 Nekroz deck. This remarkably consistent combo used now-forbidden cards to establish a lock on turn one, preventing the opponent from playing the game.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="lavalval-chain-img-container" class="card-image-container flex-shrink-0 card-placeholder">Lavalval Chain</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Enabler</h3>
+                            </div>
+                            <p class="text-purple-200">Summon <strong class="text-accent">Lavalval Chain</strong> (now Forbidden). Use its effect to detach a material and send <strong class="text-accent">Djinn Releaser of Rituals</strong> from the Deck to the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="nekroz-cycle-img-container" class="card-image-container flex-shrink-0 card-placeholder">Nekroz Cycle</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Ritual</h3>
+                            </div>
+                            <p class="text-purple-200">Activate a Ritual Spell like <strong class="text-accent">Nekroz Cycle</strong>. When prompted for tributes, banish the Level 3 <strong class="text-accent">Djinn Releaser of Rituals</strong> from the GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="nekroz-clausolas-img-container" class="card-image-container flex-shrink-0 card-placeholder">Nekroz of Clausolas</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Lock</h3>
+                            </div>
+                            <p class="text-purple-200">Summon a Ritual Monster like the Level 3 <strong class="text-accent">Nekroz of Clausolas</strong>. It hits the field with the imparted effect, and your opponent is now locked out of Special Summoning.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Modern Assembly Line: Forging the Protected Boss</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">
+                Without its historical tools, the modern Djinn engine focuses on a more direct path: using specific enablers to prepare the Graveyard, then summoning a single, nigh-unstoppable Ritual Monster.
+            </p>
+
+            <div class="flex flex-col items-center gap-4">
+                <!-- Step 1: Enablers -->
+                <div class="text-center w-full">
+                    <h3 class="text-2xl font-bold text-accent mb-2">Step 1: Prepare the Graveyard</h3>
+                    <p class="text-purple-200">Use enablers to send the desired Djinns from Deck to GY.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
+                    <div class="card p-4 combo-step-card">
+                        <div class="flex items-center gap-4">
+                            <div id="cherubini-img-container" class="w-24 flex-shrink-0 card-placeholder">Cherubini</div>
+                            <div>
+                                <h4 class="font-bold text-white text-lg">Cherubini, Ebon Angel</h4>
+                                <p class="text-sm text-purple-200">The most efficient way to send Level 3 Fiends like <strong class="text-accent">Demolisher</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-4 combo-step-card">
+                        <div class="flex items-center gap-4">
+                            <div id="foolish-burial-img-container" class="w-24 flex-shrink-0 card-placeholder">Foolish Burial</div>
+                            <div>
+                                <h4 class="font-bold text-white text-lg">Foolish Burial</h4>
+                                <p class="text-sm text-purple-200">A generic, though Limited, option to send any Djinn to the GY.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-4">
+                    <svg class="h-12 w-12 arrow-color animate-bounce" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+
+                <!-- Step 2: The Result -->
+                <div class="text-center w-full">
+                    <h3 class="text-2xl font-bold text-accent mb-2">Step 2: The Summon & Imparted Power</h3>
+                    <p class="text-purple-200">Ritual Summon, banishing Djinns to grant powerful effects.</p>
+                </div>
+
+                <div class="card p-6 w-full max-w-3xl">
+                    <div class="flex flex-col lg:flex-row items-center gap-6">
+                        <div id="demise-img-container" class="w-48 flex-shrink-0 card-placeholder">Demise, King of Armageddon</div>
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-white text-2xl mb-2 text-center lg:text-left">End Board: A Resilient King</h4>
+                            <p class="text-purple-200 mb-4 text-center lg:text-left">By Ritual Summoning a boss monster like <strong class="text-accent">Demise, King of Armageddon</strong>, you can use multiple Djinns to create a layered defense.</p>
+                            <div class="border-t border-purple-700 pt-4">
+                                <p class="font-bold text-accent mb-2">Example Protection Package:</p>
+                                <ul class="space-y-2">
+                                    <li class="flex items-center">
+                                        <i class="fas fa-shield-alt text-green-400 mr-3"></i>
+                                        <p class="text-sm text-purple-200"><strong class="text-white">Djinn Demolisher of Rituals:</strong> Grants targeting immunity.</p>
+                                    </li>
+                                    <li class="flex items-center">
+                                        <i class="fas fa-ban text-blue-400 mr-3"></i>
+                                        <p class="text-sm text-purple-200"><strong class="text-white">Djinn Disserere of Rituals:</strong> Grants Trap immunity.</p>
+                                    </li>
+                                </ul>
+                                <p class="mt-4 text-sm text-center lg:text-left text-purple-300">The resulting monster is incredibly difficult to remove, making its powerful board-wiping effect almost guaranteed to resolve.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Resilient Protection:</strong> Imparted effects are not activated and persist through cards like Skill Drain.</li>
+                        <li><span class="pro-icon"><i class="fas fa-magic"></i></span> <strong class="text-green-300">Generic Utility:</strong> Can be splashed into almost any Ritual-focused deck to bolster its boss monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-history"></i></span> <strong class="text-green-300">Powerful Legacy:</strong> The "Djinn Lock" was one of the most oppressive strategies in the game's history.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Graveyard Hate:</strong> Highly vulnerable to cards that prevent banishing from the GY, like Necrovalley or D.D. Crow.</li>
+                        <li><span class="con-icon"><i class="fas fa-crosshairs"></i></span> <strong class="text-red-300">Reliance on Setup:</strong> Requires specific cards to send the Djinns to the GY, which can be inconsistent.</li>
+                        <li><span class="con-icon"><i class="fas fa-balance-scale-right"></i></span> <strong class="text-red-300">Level Mismatch:</strong> The odd levels of the Djinns can make Ritual Summoning Level 6, 8, or 10 monsters inefficient.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">TCG Banlist Impact</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Djinn Releaser: FORBIDDEN.</strong> The heart of the lockdown strategy is banned.</li>
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Lavalval Chain: FORBIDDEN.</strong> The most consistent enabler is also banned.</li>
+                        <li><span class="pro-icon"><i class="fas fa-check"></i></span> <strong class="text-green-300">Other Djinns: Unlimited.</strong> The protective Djinns remain fully available for use.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">CRITICAL IMPACT:</strong> The Djinn of Rituals engine has been fundamentally altered by the TCG banlist, shifting its role from a dominant lockdown strategy to a niche protection tool.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Djinn Releaser of Rituals (0 copies)</strong> - The core lockdown piece of the engine.</li>
+                            <li><strong class="text-red-400">Lavalval Chain (0 copies)</strong> - The most consistent historical enabler for sending Djinns to the GY.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All other "Djinn" monsters (3 copies each)</li>
+                            <li>Djinn Demolisher of Rituals</li>
+                            <li>Djinn Disserere of Rituals</li>
+                            <li>Generic Ritual support like Manju and Preparation of Rites</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With "Djinn Releaser of Rituals" forbidden, the engine's primary win condition is gone. The strategy can no longer prevent the opponent from playing the game. Its modern application is purely for protection, relying on cards like "Djinn Demolisher of Rituals" to make boss monsters more resilient, but its overall impact on the meta is negligible compared to its dominant past.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DJINN WISP ANIMATION
+            const canvas = document.getElementById('wisp-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let wisps = [];
+                const wispCount = 20;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Wisp {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.radius = Math.random() * 2 + 1;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.speedY = (Math.random() - 0.5) * 0.5;
+                        this.color = `rgba(196, 181, 253, ${Math.random() * 0.5 + 0.2})`;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        // Glow effect
+                        ctx.shadowColor = this.color;
+                        ctx.shadowBlur = 10;
+                    }
+                }
+
+                function initWisps() {
+                    wisps = [];
+                    for (let i = 0; i < wispCount; i++) {
+                        wisps.push(new Wisp());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.shadowBlur = 0; // Reset blur for clearing
+                    wisps.forEach(wisp => {
+                        wisp.update();
+                        wisp.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                initWisps();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initWisps();
+                });
+            }
+
+            // CARD IMAGE FETCHER
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'lavalval-chain-img-container': 'Lavalval Chain',
+                'nekroz-cycle-img-container': 'Nekroz Cycle',
+                'nekroz-clausolas-img-container': 'Nekroz of Clausolas',
+                'cherubini-img-container': 'Cherubini, Ebon Angel of the Burning Abyss',
+                'foolish-burial-img-container': 'Foolish Burial',
+                'demise-img-container': 'Demise, King of Armageddon',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
