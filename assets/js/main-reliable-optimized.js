@@ -522,6 +522,6 @@ class ArchetypeLoader {
 }
 
 // Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     new ArchetypeLoader();
 });

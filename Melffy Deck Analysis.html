@@ -343,146 +343,13 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const popup = document.getElementById('card-popup');
-            let activePopup = null;
-            let cardDataCache = {};
-
-            // Card image loader with caching
-            async function fetchAndProcessCardData(cardName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-
-                if (cardDataCache[cardName]) {
-                    displayCardImage(cardDataCache[cardName], container);
-                    return;
-                }
-
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
-                try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API returned status: ${response.status}`);
-                    const data = await response.json();
-                    const cardInfo = data?.data?.[0];
-                    
-                    if (cardInfo) {
-                        cardDataCache[cardName] = cardInfo;
-                        displayCardImage(cardInfo, container);
-                    } else {
-                        throw new Error("Card data not found in API response.");
-                    }
-                } catch (error) {
-                    console.error(`Failed to fetch data for "${cardName}":`, error);
-                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
-                }
-            }
-
-            function displayCardImage(cardInfo, container) {
-                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
-                 if (imageUrl) {
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.alt = cardInfo.name;
-                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
-                    container.innerHTML = '';
-                    container.appendChild(img);
-                } else {
-                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
-                }
-            }
-            
-            function showPopup(event, cardName) {
-                event.stopPropagation();
-                if (!popup) return;
-                const cardInfo = cardDataCache[cardName];
-                if (!cardInfo) return;
-
-                let stats = '';
-                let atkDef = [];
-                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
-                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
-                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
-                if(atkDef.length > 0) {
-                    stats = `<p class="stats">${atkDef.join(' ')}</p>`;
-                }
-                
-                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
-
-                popup.innerHTML = `
-                    <img src="${cardInfo.card_images?.[0]?.image_url}" alt="${cardInfo.name}">
-                    <h3>${cardInfo.name}</h3>
-                    <p class="type">${cardType}</p>
-                    <p>${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
-                    ${stats}
-                `;
-                
-                movePopup(event);
-                popup.classList.add('show');
-                activePopup = popup;
-            }
-
-            function hidePopup() {
-                if (activePopup) {
-                    activePopup.classList.remove('show');
-                    activePopup = null;
-                }
-            }
-
-            function movePopup(event) {
-                if (!popup) return;
-                const popupWidth = 400;
-                const popupHeight = 600;
-                const cushion = 20;
-
-                let x = event.clientX + cushion;
-                let y = event.clientY + cushion;
-
-                if (x + popupWidth > window.innerWidth) {
-                    x = event.clientX - popupWidth - cushion;
-                }
-                if (y + popupHeight > window.innerHeight) {
-                    y = event.clientY - popupHeight - cushion;
-                }
-
-                popup.style.left = `${x}px`;
-                popup.style.top = `${y}px`;
-            }
-
-            // Global click listener to close the popup
-            document.addEventListener('click', (event) => {
-                if (activePopup && !activePopup.contains(event.target)) {
-                    hidePopup();
-                }
-            });
-
-            // Mouse move listener for popup positioning
-            document.addEventListener('mousemove', (event) => {
-                if (activePopup) {
-                    movePopup(event);
-                }
-            });
-
-            const cardsToLoad = {
+        document.addEventListener('DOMContentLoaded', () => {
+            CardLoader.loadCards({
                 'catty-img-container': 'Melffy Catty',
                 'puppy-img-container': 'Melffy Puppy',
                 'wally-img-container': 'Melffy Wally',
-            };
+            });
 
-            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
-                fetchAndProcessCardData(cardName, containerId);
-                // Add click event listener to the container
-                const container = document.getElementById(containerId);
-                if (container) {
-                    container.addEventListener('click', (event) => {
-                        event.stopPropagation();
-                        if (activePopup && activePopup === popup) {
-                            hidePopup();
-                        } else {
-                            showPopup(event, cardName);
-                        }
-                    });
-                }
-            }
             // Banlist Check - Kashtira style
             const keyCards = [
                 "Melffy Catty", "Melffy Puppy", "Melffy Wally", "Rescue Cat", "Obedience Schooled", 
@@ -551,6 +418,5 @@
     <div id="card-popup" class="popup"></div>
 </body>
 </html>
-
 
 
