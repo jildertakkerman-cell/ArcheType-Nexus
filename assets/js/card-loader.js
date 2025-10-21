@@ -83,7 +83,7 @@ const CardLoader = (function() {
             
             if (cardInfo) {
                 // Build image URL from YOUR storage
-                cardInfo.hosted_image_url = `${CONFIG.IMAGE_BASE_URL}/${cardInfo.id}.jpg`;
+                cardInfo.hosted_image_url = `${CONFIG.IMAGE_BASE_URL}/${cardInfo.id}.png`;
                 cardDataCache[cardName] = cardInfo;
                 displayCardImage(cardInfo, container);
             } else {
@@ -146,8 +146,8 @@ const CardLoader = (function() {
         img.onerror = function() {
             // Try PNG extension
             if (imageUrl.endsWith('.jpg')) {
-                const pngUrl = imageUrl.replace('.jpg', '.png');
-                console.warn(`JPG not found, trying PNG: ${pngUrl}`);
+                const pngUrl = imageUrl.replace('.png', '.jpg');
+                console.warn(`PNG not found, trying JPG: ${pngUrl}`);
                 img.src = pngUrl;
                 img.onerror = function() {
                     console.error(`Image not found: ${cardInfo.name} (ID: ${cardInfo.id})`);
