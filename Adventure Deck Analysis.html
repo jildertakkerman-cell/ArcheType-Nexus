@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adventure Token Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a0d; /* Dark Olive Green */
+            color: #f0f0e6; /* Off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b2b18; /* Darker Khaki */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d4d2b; /* Olive Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3b3b24;
+            border: 1px solid #5a5a3a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3b3b24;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b3b24;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #d4af37; } /* Gold/Amber */
+        .arrow-color { color: #b8860b; }
+        .heading-underline {
+            border-bottom: 2px solid #b8860b;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #d4af37;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #d4af37;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #d4af37;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 180px;
+            background-color: #1a1a0d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4d4d2b;
+        }
+
+        #forest-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 26, 13, 0.4) 0%, rgba(26, 26, 13, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'MedievalSharp', cursive;
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 14, 26, 0.95);
+            border: 1px solid #d4af37;
+            border-radius: 0.75rem;
+            color: #d1d5db;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'MedievalSharp', cursive;
+            color: #d4af37;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'MedievalSharp', cursive;
+            color: #d4af37;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="forest-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Adventure Token Engine</h1>
+            <p class="text-lg md:text-xl text-amber-200">A Strategic Deep Dive into the Adventurer's Path</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-yellow-100">
+                    The <strong class="text-accent font-bold">Adventure Token engine</strong> is a compact and powerful package of cards that provides a formidable board presence without using a Normal Summon. Its core function is to establish an omni-negate and a versatile removal option, insulating a player's primary strategy from disruption. This engine became a meta-defining force for its efficiency and splashability, offering a massive return on a minimal deck-building investment and fundamentally altering what makes a deck competitive.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Adventuring Party Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Your Adventuring Party</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Rite of Aramesir -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Rite of Aramesir</h3>
+                    <p class="text-sm text-yellow-100">The primary starter. This Spell summons your "Adventurer Token" and places "Fateful Adventure" from your Deck, initiating the entire sequence.</p>
+                </div>
+                <!-- Water Enchantress of the Temple -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Water Enchantress of the Temple</h3>
+                    <p class="text-sm text-yellow-100">The secondary starter. She can be banished from hand or GY to search for "Rite of Aramesir," drastically increasing consistency.</p>
+                </div>
+                <!-- Fateful Adventure -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Fateful Adventure</h3>
+                    <p class="text-sm text-yellow-100">The engine's nexus. This Continuous Spell searches for your key monsters and Equip Spells, connecting all the pieces of your combo.</p>
+                </div>
+                 <!-- Wandering Gryphon Rider -->
+                 <div class="card p-6 lg:col-span-2">
+                    <h3 class="text-lg font-bold text-accent mb-2">Wandering Gryphon Rider</h3>
+                    <p class="text-sm text-yellow-100">The primary payoff. This powerful monster provides a Quick Effect omni-negate, protecting your plays or disrupting your opponent's.</p>
+                </div>
+                <!-- Dracoback -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Dracoback, the Rideable Dragon</h3>
+                    <p class="text-sm text-yellow-100">A versatile Equip Spell that provides non-destruction removal by bouncing an opponent's card to the hand.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Standard Quest</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                With a single starter card, you can begin your journey. Follow these steps to assemble a formidable board before you even commit your Normal Summon, ready to face any peril that comes your way. This is the path all <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=adventurer%20token&stype=1" target="_blank" class="lore-link">brave adventurers</a> must walk.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="rite-img-container" class="card-image-container flex-shrink-0 card-placeholder">Rite of Aramesir</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Heed the Call</h3>
+                            </div>
+                            <p class="text-yellow-100">Activate <strong class="text-accent">Rite of Aramesir</strong> (or search it with <strong class="text-accent">Water Enchantress</strong>). This summons an "Adventurer Token" and places <strong class="text-accent">Fateful Adventure</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="fateful-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fateful Adventure</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Consult the Map</h3>
+                            </div>
+                            <p class="text-yellow-100">Activate the effect of <strong class="text-accent">Fateful Adventure</strong> to add <strong class="text-accent">Wandering Gryphon Rider</strong> from your Deck to your hand, then discard a card.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="gryphon-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Wandering Gryphon Rider</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon Your Guardian</h3>
+                            </div>
+                            <p class="text-yellow-100">Special Summon <strong class="text-accent">Wandering Gryphon Rider</strong>. On its summon, <strong class="text-accent">Fateful Adventure</strong> triggers, allowing you to search for <strong class="text-accent">Dracoback, the Rideable Dragon</strong> and equip it to your Token.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Spoils of Victory: The End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mx-auto max-w-4xl">
+                <!-- Gryphon Rider -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Wandering Gryphon Rider</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="gryphon-img-container" class="card-image-container card-placeholder">Wandering Gryphon Rider</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent">Omni-Negate:</strong> A powerful, non-targeting negation that can stop any card or effect by shuffling itself back into the deck.</li>
+                        <li><strong class="text-accent">Body for Extra Deck:</strong> A Level 7 body that can be used for Synchro or Link plays.</li>
+                    </ul>
+                </div>
+                <!-- Token + Dracoback -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Token & Dracoback</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dracoback-img-container" class="card-image-container card-placeholder">Dracoback, the Rideable Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent">Non-Destruction Removal:</strong> Dracoback can return one of your opponent's cards to the hand, bypassing destruction protection.</li>
+                         <li><strong class="text-accent">Resource Loop:</strong> If sent to the GY, Dracoback can re-equip itself to the Token, providing recurring value.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Consistency:</strong> Six one-card starters make the engine incredibly reliable.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Pre-emptive Protection:</strong> Establishes a negate before the Normal Summon, protecting main combos.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sitemap"></i></span> <strong class="text-green-300">Broad Splashability:</strong> Fits into any deck that doesn't rely on the on-field effects of its Normal Summon.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Defining Restriction:</strong> Incompatible with archetypes that need their Normal Summon's on-field effect.</li>
+                        <li><span class="con-icon"><i class="fas fa-box-open"></i></span> <strong class="text-red-300">Deck Space:</strong> The 9-card package is significant, reducing room for other staples.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Specific Hand Traps:</strong> Vulnerable to cards like "Droll & Lock Bird" and "Token Collector".</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Best Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                         <li><span class="neutral-icon"><i class="fas fa-skull"></i></span> <strong class="text-accent">Graveyard Decks:</strong> (e.g., Phantom Knights) can use the discard cost for advantage.</li>
+                         <li><span class="neutral-icon"><i class="fas fa-star"></i></span> <strong class="text-accent">Special Summon Decks:</strong> (e.g., Virtual World, Tenyi) are not hindered by the Normal Summon restriction.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 per Deck)</h4>
+                        <ul id="limited-cards-list" class="list-disc list-inside space-y-1 text-sm text-yellow-100">
+                            <!-- JS will populate this -->
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards (3 per Deck)</h4>
+                        <ul id="unlimited-cards-list" class="list-disc list-inside space-y-1 text-sm text-yellow-100">
+                           <!-- JS will populate this -->
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p id="banlist-implications" class="text-sm text-yellow-200">
+                        <!-- JS will populate this -->
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ENCHANTED FOREST BANNER ANIMATION ---
+            const canvas = document.getElementById('forest-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedY = Math.random() * 0.5 + 0.1;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-yellow-300">${cardType}</p>
+                        <div class="w-full h-px bg-yellow-600 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+            
+            async function checkBanlistStatus() {
+                const coreCards = [
+                    'Rite of Aramesir',
+                    'Water Enchantress of the Temple',
+                    'Fateful Adventure',
+                    'Wandering Gryphon Rider',
+                    'Dracoback, the Rideable Dragon'
+                ];
+                const limitedList = document.getElementById('limited-cards-list');
+                const unlimitedList = document.getElementById('unlimited-cards-list');
+                const implicationsText = document.getElementById('banlist-implications');
+
+                const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
+                const banlistData = await response.json();
+                
+                let limitedCount = 0;
+
+                for (const cardName of coreCards) {
+                    const cardInfo = banlistData.data.find(c => c.name === cardName);
+                    const status = cardInfo?.banlist_info?.ban_tcg || 'Unlimited';
+                    const li = document.createElement('li');
+                    li.textContent = cardName;
+
+                    if (status === 'Limited') {
+                        li.innerHTML += ' <strong class="text-yellow-300">(Limited)</strong>';
+                        limitedList.appendChild(li);
+                        limitedCount++;
+                    } else {
+                        unlimitedList.appendChild(li);
+                    }
+                }
+                
+                if(limitedCount > 0){
+                    implicationsText.textContent = 'With key starters limited, the engine has lost some of its consistency. Players must now build their decks more carefully, as seeing the one-card starter is no longer as guaranteed. However, the core power of the engine remains intact once the combo begins.';
+                } else {
+                     implicationsText.textContent = 'With no cards on the banlist, the Adventure Token engine can be run at maximum consistency and power. All starters and payoffs are available at three copies, making it a highly reliable and potent addition to any compatible strategy.';
+                     limitedList.innerHTML = '<li>None</li>';
+                }
+            }
+
+
+            const cardsToLoad = {
+                'rite-img-container': 'Rite of Aramesir',
+                'fateful-img-container': 'Fateful Adventure',
+                'gryphon-img-container-combo': 'Wandering Gryphon Rider',
+                'gryphon-img-container': 'Wandering Gryphon Rider',
+                'dracoback-img-container': 'Dracoback, the Rideable Dragon',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+            
+            checkBanlistStatus();
+        });
+    </script>
+</body>
+</html>
+

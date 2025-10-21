@@ -1,0 +1,545 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fortune Lady Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a122a; /* Deep Purple/Indigo */
+            color: #e0e7ff; /* Lavender White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c1f4a; /* Darker Purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a3a7a; /* Muted Purple Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3a2a6a;
+            border: 1px solid #5a4a9a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3a2a6a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3a2a6a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Gold/Yellow */
+        .arrow-color { color: #eab308; }
+        .heading-underline {
+            border-bottom: 2px solid #eab308;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fde047; /* Bright Yellow */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a122a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a3a7a;
+        }
+
+        #magic-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(26, 18, 42, 0.5) 0%, rgba(26, 18, 42, 0.8) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
+        }
+        
+        .banner-title {
+            font-family: 'Cinzel', serif;
+        }
+
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="magic-banner"></canvas>
+            <h1 class="banner-title text-3xl md:text-5xl font-extrabold text-white mb-2">Fortune Lady</h1>
+            <p class="text-lg md:text-xl text-yellow-200">An Analysis of a Fated Destiny</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6 animate-fadeIn">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Fortune Lady</strong> archetype is a Synchro-focused strategy composed of Spellcaster monsters with varying Levels and Attributes. Their core mechanics revolve around level manipulation, banishing cards as cost or as a trigger, and generating significant card advantage to summon their powerful boss monster, <strong class="text-accent font-bold">Fortune Lady Every</strong>. Their entire strategy is woven from the very threads of <a href="https://yugipedia.com/wiki/Fortune_Lady" target="_blank" class="lore-link">a fated destiny</a>, requiring precise sequencing to unlock their full potential.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Coven and The Grimoire Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Coven and The Grimoire</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The archetype is split between the "Fortune Lady" monsters who form the coven, and their powerful support Spells that act as their grimoire.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Coven: Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fortune Lady Light</h4>
+                            <p class="text-sm text-indigo-200">The single most critical monster. When she leaves the field by a card effect, she Special Summons another Fortune Lady from the deck, starting the main combo.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fortune Lady Past</h4>
+                            <p class="text-sm text-indigo-200">The primary Tuner and combo enabler. She banishes Spellcasters to change a Fortune Lady's level, which is the most common way to trigger Light's effect.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fortune Lady Water</h4>
+                            <p class="text-sm text-indigo-200">The main payoff for the core combo. When Special Summoned while you control another Fortune Lady, she lets you draw 2 cards.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells -->
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book-open text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Grimoire: Essential Spells</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fortune Lady Calling</h4>
+                            <p class="text-sm text-indigo-200">The deck's primary extender. If you control a Fortune Lady, this card Special Summons another one from the deck, but locks you into Synchro Summons for the turn.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fortune Vision</h4>
+                            <p class="text-sm text-indigo-200">The main consistency tool. On activation, it searches any "Fortune Lady" card from your deck to your hand and provides situational protection effects.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fortune's Future</h4>
+                            <p class="text-sm text-indigo-200">A powerful draw spell that synergizes with the deck's banishing mechanic. It returns a banished Fortune Lady to the GY to let you draw 2 cards.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Path to Advantage</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough shows the foundational combo using <strong class="text-accent font-bold">Past</strong> and <strong class="text-accent font-bold">Calling</strong> to generate massive advantage.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg animate-fadeIn">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="past-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fortune Lady Past</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2c1f4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon The Enabler</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent font-bold">Fortune Lady Past</strong>. Activate <strong class="text-accent font-bold">Fortune Lady Calling</strong> to Special Summon <strong class="text-accent font-bold">Fortune Lady Light</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4 animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg animate-fadeIn">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="light-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fortune Lady Light</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2c1f4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Trigger the Catalyst</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate Past's effect, targeting herself. Banish the on-field <strong class="text-accent font-bold">Fortune Lady Light</strong> as the cost. This triggers Light's effect to summon from deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4 animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg animate-fadeIn">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="water-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fortune Lady Water</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2c1f4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Reap the Rewards</h3>
+                            </div>
+                            <p class="text-indigo-200">Light's effect resolves, summoning <strong class="text-accent font-bold">Fortune Lady Water</strong> from the deck. Water's effect then triggers, allowing you to draw 2 cards. You are left with a Level 2 Tuner (Past) and a Level 4 non-Tuner (Water) with 2 new cards in hand.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Fated End Board</h2>
+            <div class="card p-6 max-w-4xl mx-auto animate-fadeIn">
+                <p class="text-indigo-200 mb-4">
+                    The primary archetypal goal is to summon <strong class="text-accent font-bold">Fortune Lady Every</strong>. However, because her most powerful effects are delayed (triggering on your Standby Phase or the opponent's End Phase), she is not an ideal turn-one interactive piece. The true strength of the deck's end board lies in its flexibility.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <h3 class="text-xl font-bold text-white mb-2 text-center">Archetypal Goal</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="every-img-container" class="card-image-container card-placeholder">Fortune Lady Every</div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                            <li><strong class="text-accent font-bold">Recurring Threat:</strong> Revives herself from the GY every turn by banishing another Spellcaster.</li>
+                            <li><strong class="text-accent font-bold">Scaling Power:</strong> Gains a Level (and 400 ATK/DEF) each Standby Phase.</li>
+                            <li><strong class="text-accent font-bold">Delayed Removal:</strong> Banishes an opponent's monster during your Standby Phase.</li>
+                        </ul>
+                    </div>
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <h3 class="text-xl font-bold text-white mb-2 text-center">Practical Turn 1 Board</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="crystal-wing-img-container" class="card-image-container card-placeholder">Crystal Wing Synchro Dragon</div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                           <li><strong class="text-accent font-bold">Immediate Interaction:</strong> The card advantage gained from the main combo is used to summon powerful, generic Synchro monsters.</li>
+                           <li><strong class="text-accent font-bold">Monster Negation:</strong> Cards like <strong class="text-accent font-bold">Crystal Wing Synchro Dragon</strong> provide a much-needed monster negate.</li>
+                           <li><strong class="text-accent font-bold">Omni-Negation:</strong> With further extension, the deck can summon monsters like <strong class="text-accent font-bold">Baronne de Fleur</strong> for a versatile negate.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card animate-fadeIn" style="animation-delay: 0.1s;">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Explosive Draw Power:</strong> Can generate immense card advantage from a minimal investment.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">Resilient Boss Monster:</strong> Fortune Lady Every is exceptionally difficult to permanently remove in a long game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">High Ceiling:</strong> The deck has a very high power ceiling and can easily OTK or break boards going second.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card animate-fadeIn" style="animation-delay: 0.2s;">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400 font-bold">Extreme Fragility:</strong> The entire strategy hinges on resolving Fortune Lady Light's effect. A single hand trap can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Normal Summon Reliant:</strong> Very vulnerable to effects that negate the Normal Summon or its effect.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Lacks Interaction:</strong> Has no in-archetype negates or quick-effect disruptions, forcing reliance on generic boss monsters.</li>
+                    </ul>
+                </div>
+                <!-- Engines & Hybrids -->
+                <div class="card p-6 pro-con-card animate-fadeIn" style="animation-delay: 0.3s;">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-book"></i></span> <strong class="text-accent font-bold">Spellbook Engine:</strong> A classic pairing. Spellbook of Knowledge provides an alternative way to send Light to the GY and draw 2 cards.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent font-bold">Bystial Engine:</strong> Provides disruption and free extenders by banishing the deck's own LIGHT and DARK monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-magic"></i></span> <strong class="text-accent font-bold">Generic Spellcaster Support:</strong> Benefits greatly from cards like <strong class="text-accent font-bold">Selene, Queen of the Master Magicians</strong> for extension.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- MAGICAL PARTICLE ANIMATION ---
+            const canvas = document.getElementById('magic-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speedY = Math.random() * 2 + 1;
+                        this.speedX = (Math.random() - 0.5) * 2;
+                        this.size = Math.random() * 2.5 + 1;
+                        this.opacity = Math.random() * 0.5 + 0.5;
+                        this.color = `rgba(250, 204, 21, ${this.opacity})`; // Gold/Yellow
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+                        if (this.y < 0) {
+                           this.y = canvas.height + 10;
+                           this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(particle => {
+                        particle.update();
+                        particle.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'past-img-container': 'Fortune Lady Past',
+                'light-img-container': 'Fortune Lady Light',
+                'water-img-container': 'Fortune Lady Water',
+                'every-img-container': 'Fortune Lady Every',
+                'crystal-wing-img-container': 'Crystal Wing Synchro Dragon'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crashbug Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A1F; /* Very dark blue */
+            color: #E0E7FF; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(15, 15, 40, 0.7); /* Translucent dark blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3A3A7A; /* Purple-blue border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(20, 20, 50, 0.7);
+            border: 1px solid #4C4C99;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #141432;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #141432;
+            border: 1px dashed #4C4C99;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #FF47A6; } /* Glitch Pink */
+        .arrow-color { color: #FF47A6; }
+        .heading-underline {
+            border-bottom: 2px solid #FF47A6;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #FF47A6;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #FF47A6;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #FF47A6;
+        }
+        .glitch-text {
+            font-family: 'Roboto Mono', monospace;
+            text-shadow: 
+                -1px -1px 0 #00FFFF, 
+                 1px  1px 0 #FF00FF;
+            animation: glitch 1.5s infinite linear;
+        }
+
+        /* --- GLITCH BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0A0A1F;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3A3A7A;
+        }
+        #glitch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 10, 31, 0.4) 0%, rgba(10, 10, 31, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+        }
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        @keyframes glitch {
+            0%, 100% {
+                text-shadow: -1.5px -1.5px 0 #0ff, 1.5px 1.5px 0 #f0f;
+            }
+            25% {
+                text-shadow: 1.5px 1.5px 0 #0ff, -1.5px -1.5px 0 #f0f;
+            }
+            50% {
+                text-shadow: 1.5px -1.5px 0 #0ff, -1.5px 1.5px 0 #f0f;
+            }
+            75% {
+                text-shadow: -1.5px 1.5px 0 #0ff, 1.5px -1.5px 0 #f0f;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button bg-gray-800 text-white p-3 rounded-full shadow-lg" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="glitch-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-bold text-white mb-2 glitch-text">CRASHBUG</h1>
+            <p class="text-lg md:text-xl text-indigo-200" style="font-family: 'Roboto Mono', monospace;">Decompiling a Flawed System</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Crashbug</strong> archetype is a fascinating relic of early Xyz-era design. Comprised of three interconnected Level 3 DARK Fiends, a unique boss monster, and one support spell, the strategy is a puzzle built on a critical design flaw. The main deck monsters depend on each other to activate their effects, creating an engine that cannot start on its own. The deck's entire identity revolves around using generic support cards to break this loop, either to swarm for Rank 3 Xyz Summons or to set up its more powerful, alternate win condition involving the boss monster, <strong class="text-accent">Super Crashbug</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Components & The Flaw -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Anatomy of the Archetype</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Core Components</h3>
+                    <div class="space-y-3">
+                        <p><strong class="text-accent">Crashbug X, Y, & Z:</strong> A trio of Level 3 DARK Fiends. Each can summon another from the deck, but only if a different specific Crashbug is already on the field.</p>
+                        <p><strong class="text-accent">Super Crashbug:</strong> The boss monster, summoned by banishing X, Y, and Z from the GY. It has a powerful continuous effect that swaps the ATK/DEF of all Attack Position monsters.</p>
+                        <p><strong class="text-accent">Crashbug Road:</strong> A Quick-Play Spell that allows both players to Special Summon a monster, making it a risky but potential combo extender.</p>
+                    </div>
+                </div>
+                <div class="card p-6 border-red-500/50 bg-red-900/20">
+                    <h3 class="text-xl font-bold text-red-300 mb-4">The Interdependency Flaw</h3>
+                    <p class="text-indigo-200">The archetype's central challenge. X needs Y on field, Y needs Z, and Z needs X. This unbreakable loop means no single <a href="https://yugipedia.com/wiki/Crashbug" target="_blank" class="lore-link">Crashbug card</a> can start the engine. The deck is entirely reliant on external, non-archetypal cards to put the first two pieces on the board.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Primary Protocol: The Rank 3 Swarm</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">The main strategy involves using generic extenders to bypass the summoning lock and create a board of Level 3 monsters for Rank 3 Xyz plays.</p>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="tour-guide-img-container" class="card-image-container flex-shrink-0 card-placeholder">Tour Guide From the Underworld</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#141432] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Break the Lock</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Tour Guide From the Underworld</strong>. Use her effect to Special Summon a <strong class="text-accent">Crashbug</strong> (e.g., Crashbug Z) from the deck. You now have two Level 3 monsters.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="crashbug-y-img-container" class="card-image-container flex-shrink-0 card-placeholder">Crashbug Y</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#141432] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Initiate the Chain</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon a second Crashbug (e.g., <strong class="text-accent">Crashbug Y</strong>). Since Crashbug Z is on the field, its effect activates, summoning <strong class="text-accent">Crashbug X</strong> from the deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="terror-byte-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Number 34: Terror-Byte</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#141432] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Assemble the Toolbox</h3>
+                            </div>
+                            <p class="text-indigo-200">With at least three Level 3 monsters on field, Xyz Summon into a powerful Rank 3 monster like <strong class="text-accent">Number 34: Terror-Byte</strong> or <strong class="text-accent">The Phantom Knights of Break Sword</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alternate Protocol: The Super Crashbug Gambit -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Alternate Protocol: The Super Crashbug Gambit</h2>
+            <div class="card p-8">
+                <p class="text-indigo-200 mb-6 text-center">This is the deck's true win condition. The goal is to fill the Graveyard with Crashbug X, Y, and Z (often by using them as Xyz Material), then summon <strong class="text-accent">Super Crashbug</strong>.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="flex justify-center">
+                         <div id="super-crashbug-img-container" class="card-image-container card-placeholder">Super Crashbug</div>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <h3 class="text-2xl font-bold text-accent mb-4">The ATK/DEF Swap</h3>
+                        <p class="text-indigo-200">Super Crashbug's effect continuously swaps the ATK and DEF of all Attack Position monsters. This cripples high-ATK boss monsters and turns your high-DEF walls into powerful beaters.</p>
+                    </div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-gray-700 text-center">
+                    <h3 class="text-2xl font-bold text-white mb-4">The End Board Synergy</h3>
+                    <p class="text-indigo-200 mb-4">The ultimate goal is to have both <strong class="text-accent">Super Crashbug</strong> and <strong class="text-accent">Number 34: Terror-Byte</strong> on the field.</p>
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
+                        <div class="text-center">
+                            <div id="terror-byte-img-container-synergy" class="w-40 h-auto mx-auto mb-2 card-placeholder">Number 34: Terror-Byte</div>
+                            <p class="font-mono text-lg">0 ATK / 2900 DEF</p>
+                        </div>
+                        <i class="fas fa-exchange-alt text-4xl arrow-color my-4 md:my-0"></i>
+                         <div class="text-center">
+                            <p class="font-mono text-lg text-accent">2900 ATK / 0 DEF</p>
+                            <p class="text-indigo-100 mt-2">(with Super Crashbug)</p>
+                        </div>
+                    </div>
+                    <p class="text-indigo-200 mt-4">This interaction turns your defensive Xyz monster into a 2900 ATK powerhouse, creating a formidable and often unexpected win condition.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">FULLY UNRESTRICTED:</strong> Unlike many powerful archetypes, Crashbug and its key generic support have no cards on the TCG Forbidden & Limited list.
+                </p>
+                <div class="p-4 bg-green-900/30 rounded-lg border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Strategic Advantage:</strong> This unrestricted status means the deck can be built with maximum consistency. Key starters like <strong class="text-accent">Tour Guide From the Underworld</strong> and powerful generic Rank 3 Xyz monsters are all available at three copies, giving the deck full access to its (admittedly flawed) toolbox.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('glitch-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let w, h;
+                const setSize = () => {
+                    w = canvas.width = canvas.offsetWidth;
+                    h = canvas.height = canvas.offsetHeight;
+                    ctx.fillStyle = '#0A0A1F';
+                    ctx.fillRect(0, 0, w, h);
+                };
+                setSize();
+                window.addEventListener('resize', setSize);
+
+                function glitch() {
+                    const randomHeight = Math.random() * h;
+                    const randomWidth = Math.random() * 20 + 5;
+                    const imgData = ctx.getImageData(0, randomHeight, w, randomHeight + randomWidth);
+                    ctx.clearRect(0, randomHeight, w, randomWidth);
+                    const shift = Math.random() * 20 - 10;
+                    ctx.putImageData(imgData, shift, randomHeight);
+                }
+
+                function animate() {
+                    if (Math.random() < 0.3) {
+                       glitch();
+                    }
+                     if (Math.random() < 0.1) {
+                       ctx.fillStyle = 'rgba(10, 10, 31, 0.1)';
+                       ctx.fillRect(0, 0, w, h);
+                    }
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image not found.");
+                    }
+                } catch (error) {
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'tour-guide-img-container': 'Tour Guide From the Underworld',
+                'crashbug-y-img-container': 'Crashbug Y',
+                'terror-byte-img-container-combo': 'Number 34: Terror-Byte',
+                'super-crashbug-img-container': 'Super Crashbug',
+                'terror-byte-img-container-synergy': 'Number 34: Terror-Byte',
+            };
+
+            for (const [id, name] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(name, id);
+            }
+        });
+    </script>
+</body>
+</html>

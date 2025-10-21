@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoodiac Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep cosmic purple */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1633; /* Darker purple/blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4c3d8e; /* Lighter purple border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(26, 22, 51, 0.8);
+            border: 1px solid #6a5acd;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2457;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2457;
+            border: 1px dashed #6a5acd;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a78bfa; } /* Bright Violet */
+        .arrow-color { color: #a78bfa; }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #a78bfa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a78bfa;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #a78bfa;
+        }
+
+        /* --- Zoodiac Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c0a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c3d8e;
+        }
+
+        #star-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 10, 26, 0.4) 0%, rgba(12, 10, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(167, 139, 250, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Banner -->
+        <header class="banner-header text-center">
+            <canvas id="star-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">ZOODIAC</h1>
+            <p class="text-lg md:text-xl text-violet-200">Masters of the One-Card Xyz</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Zoodiac</strong> archetype is a series of EARTH Beast-Warrior monsters that revolutionized Xyz Summoning. Centered around Level 4 monsters, their signature mechanic allows any of their Xyz monsters to be summoned using a single "Zoodiac" monster as the entire material. This "stacking" ability creates unparalleled efficiency, enabling rapid board presence and access to powerful generic boss monsters. Though heavily impacted by the banlist, the Zoodiac engine remains a testament to compact, powerful, and splashable design in Yu-Gi-Oh!.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Zoodiac Arsenal -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Zoodiac Arsenal</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-paw text-4xl text-violet-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Main Deck Constellation</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Zoodiac Ratpier</h4>
+                            <p class="text-sm text-indigo-200">The historical one-card starter. Its effect when attached as material allowed the deck to swarm the field with copies of itself from the deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Zoodiac Thoroughblade</h4>
+                            <p class="text-sm text-indigo-200">Provides draw power by discarding another Zoodiac card, helping to cycle through the deck and set up the graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star-of-david text-4xl text-violet-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Extra Deck Overlords</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Zoodiac Broadbull <span class="text-red-500 font-bold">(FORBIDDEN)</span></h4>
+                            <p class="text-sm text-indigo-200">The former heart of the engine. A generic Beast-Warrior searcher that provided immense consistency.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Zoodiac Drident <span class="text-yellow-500 font-bold">(LIMITED)</span></h4>
+                            <p class="text-sm text-indigo-200">The primary disruption tool. A quick-effect pop that can be accessed with just one monster.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Divine Arsenal AA-ZEUS - Sky Thunder</h4>
+                            <p class="text-sm text-indigo-200">The ultimate payoff. Zoodiac Xyz monsters can easily attack directly and then summon Zeus on top, threatening a full board wipe.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Blueprint for Ascendance</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The core philosophy of Zoodiac is to leverage a single monster into a multi-material Xyz monster. This efficiency is what made the deck so powerful and allows it to seamlessly integrate into other strategies. It's a deck that truly understands how to <a href="https://www.rockpapershotgun.com/yu-gi-oh-master-duel-xyz-summons" target="_blank" class="lore-link">align the stars of Xyz summoning</a> to its advantage.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ratpier-img-container" class="card-image-container flex-shrink-0 card-placeholder">Zoodiac Ratpier</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Lone Operator</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon any Zoodiac monster, for example, <strong class="text-accent">Zoodiac Ratpier</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-chevron-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="broadbull-img-container" class="card-image-container flex-shrink-0 card-placeholder">Zoodiac Broadbull</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Stack & Search</h3>
+                            </div>
+                            <p class="text-indigo-200">Xyz Summon <strong class="text-accent">Zoodiac Broadbull</strong> using the single monster as material. Activate Broadbull's effect to search for another Beast-Warrior.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-chevron-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="drident-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Zoodiac Drident</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Stack for Disruption</h3>
+                            </div>
+                            <p class="text-indigo-200">Xyz Summon <strong class="text-accent">Zoodiac Drident</strong> on top of Broadbull. You now have a live disruption with 2 materials under it.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Typical End Board</h2>
+            <div class="card p-6 max-w-2xl mx-auto">
+                 <h3 class="text-xl font-bold text-white mb-4 text-center">Zeus & Drident: The Classic Payoff</h3>
+                 <div class="flex flex-col md:flex-row justify-center items-center gap-6">
+                     <div class="text-center">
+                         <div id="drident-img-container" class="card-image-container mx-auto card-placeholder">Zoodiac Drident</div>
+                         <p class="mt-2 text-indigo-200">Quick-Effect Pop</p>
+                     </div>
+                     <div class="text-4xl text-accent font-bold">+</div>
+                     <div class="text-center">
+                         <div id="zeus-img-container" class="card-image-container mx-auto card-placeholder">Divine Arsenal AA-ZEUS - Sky Thunder</div>
+                         <p class="mt-2 text-indigo-200">Board Wipe Threat</p>
+                     </div>
+                 </div>
+                 <p class="text-indigo-200 mt-6 text-center">
+                    The modern goal is to end on <strong class="text-accent">Zoodiac Drident</strong> for disruption. After attacking (even directly), any Zoodiac Xyz can be used to summon <strong class="text-accent">Divine Arsenal AA-ZEUS - Sky Thunder</strong>, which can then wipe the entire board by detaching two materials. This combination of targeted destruction and mass removal makes for a potent and flexible end board.
+                 </p>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Unmatched Efficiency:</strong> One-card starters are the pinnacle of consistency.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Splashable Engine:</strong> The core is small and can be easily integrated into other Beast-Warrior strategies like Tri-Brigade.</li>
+                        <li><span class="pro-icon"><i class="fas fa-meteor"></i></span> <strong class="text-green-300">Easy Zeus Access:</strong> The best deck for consistently summoning a multi-material Zeus.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Choke Points:</strong> The Normal Summon is a critical choke point vulnerable to hand traps.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Banlist Dependency:</strong> The deck's power level is directly tied to the status of its key Xyz monsters.</li>
+                         <li><span class="con-icon"><i class="fas fa-low-vision"></i></span> <strong class="text-red-300">Low Individual Power:</strong> The main deck monsters have very low stats and rely entirely on the Extra Deck.</li>
+                    </ul>
+                </div>
+                <!-- Tech Choices -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent">Tri-Brigade Engine:</strong> The premier hybrid, using Zoodiacs to send Beast-Warriors to the GY to fuel Tri-Brigade Link Summons.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent">Fire Formation - Tenki:</strong> A continuous spell that searches any Level 4 Beast-Warrior, adding more consistency.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Banlist Status -->
+        <section class="my-10 md:my-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">HEAVILY IMPACTED:</strong> The Zoodiac archetype has been significantly curtailed by the TCG banlist to manage its overwhelming power.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden</h4>
+                        <ul class="list-none space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Zoodiac Broadbull (0)</strong></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited</h4>
+                        <ul class="list-none space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Zoodiac Drident (1)</strong></li>
+                             <li><strong class="text-yellow-400">Zoodiac Ratpier (1)</strong></li>
+                        </ul>
+                    </div>
+                     <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted</h4>
+                        <ul class="list-none space-y-1 text-sm text-gray-300">
+                            <li>All other Zoodiac cards (3)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The loss of Broadbull removes the deck's primary searcher, and the limitation of Drident and Ratpier severely curtails its combo and disruption potential. While still functional as a compact engine, its days as a dominant standalone strategy are over in the TCG.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('star-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let stars = [];
+                const numStars = 200;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Star {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.speedY = (Math.random() - 0.5) * 0.5;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(224, 231, 255, ${Math.random()})`;
+                        ctx.fill();
+                    }
+                }
+
+                function initStars() {
+                    stars = [];
+                    for (let i = 0; i < numStars; i++) {
+                        stars.push(new Star());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    stars.forEach(s => {
+                        s.update();
+                        s.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initStars();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initStars();
+                });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'ratpier-img-container': 'Zoodiac Ratpier',
+                'broadbull-img-container': 'Zoodiac Broadbull',
+                'drident-img-container-combo': 'Zoodiac Drident',
+                'drident-img-container': 'Zoodiac Drident',
+                'zeus-img-container': 'Divine Arsenal AA-ZEUS - Sky Thunder',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

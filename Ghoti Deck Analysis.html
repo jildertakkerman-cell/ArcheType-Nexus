@@ -1,0 +1,468 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghoti Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020a1a; /* Very dark navy blue, almost black */
+            color: #e0f2f1; /* Light cyan/off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(10, 25, 47, 0.8); /* Dark blue with transparency */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.1);
+            border: 1px solid #00bfff; /* Deep sky blue border */
+            backdrop-filter: blur(5px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(15, 35, 60, 0.8);
+            border: 1px solid #00bfff;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 15px #00bfff;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.7s ease-out forwards;
+        }
+        .card-placeholder {
+            background: linear-gradient(45deg, #020a1a, #0a192f);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #00bfff;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #00ffff; } /* Cyan accent */
+        .arrow-color { color: #00bfff; }
+        .heading-underline {
+            border-bottom: 2px solid #00ffff;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+            text-shadow: 0 0 8px #00ffff;
+        }
+        .lore-link {
+            color: #00ffff;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #00ffff;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        /* --- ANIMATED BANNER & BACKGROUND STYLES --- */
+        #page-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: #020a1a;
+            overflow: hidden;
+        }
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #00bfff;
+            background: rgba(10, 25, 47, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        .banner-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00bfff;
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div id="page-background"></div>
+
+    <div class="container mx-auto relative z-10">
+        <!-- Title Section -->
+        <header class="banner-header text-center animate-fadeIn">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Ghoti</h1>
+            <p class="text-lg md:text-xl text-cyan-200">An Analysis of the Cosmic Fish Synchro Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-cyan-100">
+                    The <strong class="text-accent font-bold">Ghoti</strong> archetype is a WATER Fish Synchro strategy that operates on a unique "your turn is our turn" philosophy. The deck focuses on setting up its banished zone and graveyard on its own turn, only to unleash a torrent of Synchro Summons during the opponent's Main Phase for powerful disruption. Its core identity is a recursive loop of banishment and return, allowing it to maintain resources and outlast opponents in a prolonged duel.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Ghoti Doctrine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ghoti Doctrine</h2>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-2">A Symphony of Banishment and Return</h3>
+                <p class="text-cyan-100 mb-4">
+                    At the heart of the Ghoti strategy lies the banishment loop. The archetype's Tuner monsters can banish themselves, then return to the field during the Standby Phase of the next turn. This cycle fuels their primary mechanic: the ability to Synchro Summon as a Quick Effect during the opponent's turn. The aesthetic combines deep-sea bioluminescence with cosmic imagery, a theme reflected in its naming convention. "Ghoti" itself is a famous linguistic joke, representing a <a href="https://en.wiktionary.org/wiki/ghoti" target="_blank" class="lore-link">creative respelling of the word "fish"</a> using English phonetic irregularities.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The One-Card Lifeless Leaffish</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-2xl mx-auto">The most consistent starter for the archetype, this single card sets up the entire engine for disruption on the opponent's turn.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="leaffish-img-container" class="card-image-container flex-shrink-0 card-placeholder">Lifeless Leaffish</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#020a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Setup</h3>
+                            </div>
+                            <p class="text-cyan-100">Normal Summon <strong class="text-accent font-bold">Lifeless Leaffish</strong>. Use its effect to send <strong class="text-accent font-bold">Shif, Fairy of the Ghoti</strong> from your Deck to the Graveyard. Then, activate Shif's effect in the Graveyard to banish it.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="arionpos-img-container" class="card-image-container flex-shrink-0 card-placeholder">Arionpos, Serpent of the Ghoti</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#020a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Opponent's Turn</h3>
+                            </div>
+                            <p class="text-cyan-100">During the opponent's Standby Phase, Shif returns. During their Main Phase, use Shif's Quick Effect to Synchro Summon <strong class="text-accent font-bold">Arionpos, Serpent of the Ghoti</strong> using Shif and Leaffish.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="askaan-img-container" class="card-image-container flex-shrink-0 card-placeholder">Askaan, the Bicorned Ghoti</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#020a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Disrupt and Recur</h3>
+                            </div>
+                            <p class="text-cyan-100">Arionpos's effect banishes <strong class="text-accent font-bold">Zep, Ruby of the Ghoti</strong>, which summons itself. Zep then triggers, allowing you to Synchro Summon <strong class="text-accent font-bold">Askaan, the Bicorned Ghoti</strong>, banishing an opponent's card and searching for follow-up.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Target End Board: A Dynamic State</h2>
+            <div class="card p-6">
+                <p class="text-cyan-100 text-center max-w-3xl mx-auto">
+                    Unlike decks that build a static wall of negates, the Ghoti "end board" is a state of potential energy. The ideal Turn 1 setup involves having a non-Tuner on the field, a Tuner in the banished zone ready to return, and follow-up cards in hand. This loaded spring is then converted into kinetic, disruptive energy on the opponent's turn, culminating in a powerful board wipe from the archetype's boss monster.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl mt-6">
+                    <!-- Askaan -->
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <h3 class="text-lg font-bold text-white mb-2 text-center">Initial Disruption</h3>
+                        <div class="flex justify-center mb-2">
+                            <div id="askaan-endboard-img" class="card-image-container w-40 h-auto card-placeholder">Askaan, the Bicorned Ghoti</div>
+                        </div>
+                        <p class="text-sm text-cyan-100 text-center">Provides targeted banishing removal and begins the resource loop.</p>
+                    </div>
+                    <!-- Ghoti of the Deep Beyond -->
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <h3 class="text-lg font-bold text-white mb-2 text-center">The Final Act</h3>
+                        <div class="flex justify-center mb-2">
+                            <div id="deep-beyond-img" class="card-image-container w-40 h-auto card-placeholder">Ghoti of the Deep Beyond</div>
+                        </div>
+                        <p class="text-sm text-cyan-100 text-center">The ultimate boss monster that can banish every card on the field.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Powerful Grind Game:</strong> The resource loop makes it difficult to exhaust.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">Unique Disruption:</strong> Banishing removal is effective against many modern strategies.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Evasive Plays:</strong> Can chain Synchro Summons to dodge targeting effects.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Normal Summon Reliant:</strong> A single negation on the initial starter can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Vulnerable to Floodgates:</strong> Cards like <strong class="text-accent font-bold">Artifact Lancea</strong> or <strong class="text-accent font-bold">Dimension Shifter</strong> can be crippling.</li>
+                        <li><span class="con-icon"><i class="fas fa-arrow-down"></i></span> <strong class="text-red-400 font-bold">Weak Going Second:</strong> Lacks inherent tools to break established boards.</li>
+                    </ul>
+                </div>
+                <!-- External Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Support & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="neutral-icon"><i class="fas fa-fish"></i></span> <strong class="text-accent font-bold">Fish Extenders:</strong> Cards like <strong class="text-accent font-bold">Abyss Shark</strong> and <strong class="text-accent font-bold">Silent Angler</strong> are essential for consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Spright Engine:</strong> The Level 2 focus synergizes perfectly with the Ghoti tuners.</li>
+                         <li><span class="neutral-icon"><i class="fas fa-magic"></i></span> <strong class="text-accent font-bold">Runick Engine:</strong> Provides draw power and disruption, fueling the Ghoti engine.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- BACKGROUND ANIMATION ---
+            const background = document.getElementById('page-background');
+            if (background) {
+                const particleCount = 100;
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.style.position = 'absolute';
+                    particle.style.width = `${Math.random() * 2 + 1}px`;
+                    particle.style.height = particle.style.width;
+                    particle.style.borderRadius = '50%';
+                    particle.style.backgroundColor = `rgba(0, 255, 255, ${Math.random() * 0.5 + 0.2})`;
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    
+                    const duration = Math.random() * 20 + 15; // 15-35 seconds
+                    const delay = Math.random() * 10; // 0-10 seconds
+                    
+                    particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite alternate`;
+                    background.appendChild(particle);
+                }
+
+                const keyframes = `
+                @keyframes float {
+                    0% { transform: translate(0, 0) scale(1); }
+                    100% { transform: translate(${Math.random() * 40 - 20}px, ${Math.random() * 40 - 20}px) scale(${Math.random() * 0.5 + 0.8}); }
+                }`;
+                const styleSheet = document.createElement("style");
+                styleSheet.type = "text/css";
+                styleSheet.innerText = keyframes;
+                document.head.appendChild(styleSheet);
+            }
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn card-image';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'leaffish-img-container': 'Lifeless Leaffish',
+                'arionpos-img-container': 'Arionpos, Serpent of the Ghoti',
+                'askaan-img-container': 'Askaan, the Bicorned Ghoti',
+                'askaan-endboard-img': 'Askaan, the Bicorned Ghoti',
+                'deep-beyond-img': 'Ghoti of the Deep Beyond'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

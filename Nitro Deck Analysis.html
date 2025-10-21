@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nitro Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Dark gray */
+            color: #f0f0e6; /* Off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2c2c; /* Slightly lighter dark gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(255, 100, 0, 0.1);
+            border: 1px solid #ff6a00; /* Nitro Orange Border */
+        }
+        .combo-step-card {
+            background-color: #383838;
+            border: 1px solid #ff8533;
+        }
+        .pro-con-card {
+            background-color: #383838;
+            border: 1px solid #ff8533;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2c2c2c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            min-height: 220px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #ff6a00;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ff6a00; } /* Nitro Orange */
+        .arrow-color { color: #ff8533; }
+        .heading-underline {
+            border-bottom: 3px solid #ff6a00;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ff8533;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff8533;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NITRO-THEMED ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: #111;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 2px solid #ff6a00;
+        }
+
+        #nitro-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            filter: blur(1px);
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            font-family: 'Roboto Mono', monospace;
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px #ff6a00, 0 0 20px #ff4500;
+        }
+
+        /* --- HOME BUTTON --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+            color: white;
+            border: 2px solid #ff6a00;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(255, 106, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 106, 0, 0.5);
+            border-color: #ff8533;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(255, 106, 0, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="nitro-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Nitro Archetype</h1>
+            <p class="text-lg md:text-xl text-orange-300">An Engine of Explosive Offense</p>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The "Nitro" designation represents a highly specialized, two-card engine featuring <strong class="text-accent font-bold">Nitro Synchron</strong> and its powerful Synchro counterpart, <strong class="text-accent font-bold">Nitro Warrior</strong>. Rather than a standalone archetype, this engine is a tactical package integrated into the broader "Synchron" strategy. Its purpose is singular: to facilitate aggressive, often game-ending offensive pushes (OTKs). The entire strategy relies on a sequence of high-speed summons, with each component of this <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=7700" target="_blank" class="lore-link">well-oiled machine working in perfect, explosive concert</a> to execute blistering Synchro combos that can overwhelm an unprepared opponent.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Engine's Components</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="nitro-synchron-img" class="card-image-container mb-4 card-placeholder">Nitro Synchron</div>
+                    <h3 class="text-xl font-bold text-accent mb-2">The Catalyst: Nitro Synchron</h3>
+                    <p class="text-gray-300">A Level 2 FIRE Machine Tuner. Its critical effect allows you to draw 1 card when it's used for the Synchro Summon of a "Nitro" monster. This resource rebate makes the summon of Nitro Warrior card-neutral, a vital consistency boost in a combo-heavy deck.</p>
+                </div>
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="nitro-warrior-img" class="card-image-container mb-4 card-placeholder">Nitro Warrior</div>
+                    <h3 class="text-xl font-bold text-accent mb-2">The Payoff: Nitro Warrior</h3>
+                    <p class="text-gray-300">A Level 7 FIRE Warrior Synchro. It gains 1000 ATK (to 3800) for one attack after you activate a Spell Card. If it destroys a monster, it can force a defense position monster into attack and make a second attack, making it a premier OTK tool.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo Enablers</h2>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="junk-speeder-img" class="card-image-container mb-4 card-placeholder">Junk Speeder</div>
+                    <h3 class="text-xl font-bold text-accent mb-2">Primary Enabler: Junk Speeder</h3>
+                    <p class="text-gray-300">The heart of modern Synchron decks. On Synchro Summon, it floods the field with "Synchron" Tuners of different levels from the deck, including Nitro Synchron, providing all the materials needed for a series of powerful Synchro Summons.</p>
+                </div>
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="quickdraw-synchron-img" class="card-image-container mb-4 card-placeholder">Quickdraw Synchron</div>
+                    <h3 class="text-xl font-bold text-accent mb-2">Versatile Substitute: Quickdraw Synchron</h3>
+                    <p class="text-gray-300">This Level 5 Tuner can substitute for any "Synchron" Tuner for a Synchro Summon. This allows for the summon of Nitro Warrior without needing Nitro Synchron specifically, opening up more direct and aggressive OTK lines.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The End Board Objective</h2>
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-white mb-4 text-center">A Fortress of Negation</h3>
+                <p class="text-gray-300 mb-6 text-center">While Nitro Warrior is a game-finisher, the primary goal of a Synchron deck going first is to build a board of multiple interruptions. The <strong class="text-accent font-bold">Junk Speeder</strong> combo is the engine used to construct this defensive wall, which typically includes:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                    <div class="flex flex-col items-center">
+                        <div id="baronne-img" class="w-24 h-36 mb-2 card-placeholder">Baronne de Fleur</div>
+                        <p class="font-semibold text-accent">Baronne de Fleur</p>
+                        <p class="text-sm text-gray-400">Omni-negate</p>
+                    </div>
+                     <div class="flex flex-col items-center">
+                        <div id="crystal-wing-img" class="w-24 h-36 mb-2 card-placeholder">Crystal Wing Synchro Dragon</div>
+                        <p class="font-semibold text-accent">Crystal Wing Synchro Dragon</p>
+                        <p class="text-sm text-gray-400">Monster negate</p>
+                    </div>
+                     <div class="flex flex-col items-center">
+                        <div id="omega-img" class="w-24 h-36 mb-2 card-placeholder">PSY-Framelord Omega</div>
+                        <p class="font-semibold text-accent">PSY-Framelord Omega</p>
+                        <p class="text-sm text-gray-400">Hand disruption</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="dis-pater-img" class="w-24 h-36 mb-2 card-placeholder">Bystial Dis Pater</div>
+                        <p class="font-semibold text-accent">Bystial Dis Pater</p>
+                        <p class="text-sm text-gray-400">Removal/Negation</p>
+                    </div>
+                </div>
+                 <p class="text-gray-300 mt-6 text-center"><strong class="text-accent font-bold">Nitro Warrior</strong> is reserved for the second turn or later, where its immense offensive power can break the opponent's board and secure victory.</p>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div id="banlist-section" class="card p-6">
+                <p class="text-gray-300 text-center">Loading banlist information...</p>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- NITRO SPARK ANIMATION ---
+            const canvas = document.getElementById('nitro-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = Math.random() * 3 - 1.5;
+                        this.speedY = Math.random() * 3 - 1.5;
+                        this.color = `rgba(255, ${Math.floor(Math.random() * 100 + 100)}, 0, ${Math.random()})`;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.size > 0.1) this.size -= 0.05;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function handleParticles() {
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+                        if (particles[i].size <= 0.1) {
+                            particles.splice(i, 1);
+                            i--;
+                        }
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    if (particles.length < 100) {
+                         for(let i = 0; i < 5; i++) {
+                            particles.push(new Particle());
+                         }
+                    }
+                    handleParticles();
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                animate();
+                window.addEventListener('resize', setCanvasSize);
+            }
+
+            // --- IMAGE FETCHING SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                         container.textContent = cardName;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                     container.textContent = cardName;
+                }
+            }
+
+            const cardsToLoad = {
+                'nitro-synchron-img': 'Nitro Synchron',
+                'nitro-warrior-img': 'Nitro Warrior',
+                'junk-speeder-img': 'Junk Speeder',
+                'quickdraw-synchron-img': 'Quickdraw Synchron',
+                'baronne-img': 'Baronne de Fleur',
+                'crystal-wing-img': 'Crystal Wing Synchro Dragon',
+                'omega-img': 'PSY-Framelord Omega',
+                'dis-pater-img': 'Bystial Dis Pater',
+            };
+
+            for (const [id, name] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(name, id);
+            }
+
+            // --- BANLIST SCRIPT (NEW APPROACH) ---
+            function checkBanlist() {
+                const banlistContainer = document.getElementById('banlist-section');
+                const allCardsToCheck = [
+                    "Nitro Synchron", 
+                    "Nitro Warrior", 
+                    "Junk Speeder", 
+                    "Quickdraw Synchron",
+                    "Baronne de Fleur",
+                    "Crystal Wing Synchro Dragon",
+                    "PSY-Framelord Omega",
+                    "Bystial Dis Pater"
+                ];
+
+                // Using the provided JSON data locally instead of an API call
+                const localBanlistData = {"data":[{"id":84815190,"name":"Baronne de Fleur","banlist_info":{"ban_tcg":"Forbidden"}},{"id":74586817,"name":"PSY-Framelord Omega","banlist_info":{"ban_tcg":"Limited"}}]};
+
+                try {
+                    const forbidden = [];
+                    const limited = [];
+                    const semiLimited = [];
+                    const unlimited = [];
+
+                    const cardStatus = {};
+                    if (localBanlistData && localBanlistData.data && Array.isArray(localBanlistData.data)) {
+                        allCardsToCheck.forEach(cardName => {
+                            const cardInfo = localBanlistData.data.find(c => c.name === cardName);
+                            if (cardInfo && cardInfo.banlist_info && cardInfo.banlist_info.ban_tcg) {
+                                cardStatus[cardName] = cardInfo.banlist_info.ban_tcg;
+                            } else {
+                                cardStatus[cardName] = "Unlimited";
+                            }
+                        });
+                    }
+
+
+                    allCardsToCheck.forEach(name => {
+                        const status = cardStatus[name] || "Unlimited";
+                        switch (status) {
+                            case "Forbidden":
+                                forbidden.push(name);
+                                break;
+                            case "Limited":
+                                limited.push(name);
+                                break;
+                            case "Semi-Limited":
+                                semiLimited.push(name);
+                                break;
+                            default:
+                                unlimited.push(name);
+                                break;
+                        }
+                    });
+
+                    const createListHTML = (arr, copies) => {
+                        if (arr.length === 0) return '<li>None</li>';
+                        return arr.map(name => `<li>${name} ${copies}</li>`).join('');
+                    };
+                    
+                    const forbiddenHTML = createListHTML(forbidden, '(0 copies)');
+                    const limitedHTML = createListHTML(limited.concat(semiLimited), '(1-2 copies)');
+                    const unlimitedHTML = createListHTML(unlimited, '(3 copies)');
+
+                    const banlistHTML = `
+                        <p class="text-gray-300 mb-6 text-center">
+                           The core "Nitro" and "Synchron" engine remains at full power, but key generic boss monsters used in the optimal end board have been impacted by the TCG banlist.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- FORBIDDEN -->
+                            <div class="card combo-step-card p-4 border-red-500/50">
+                                <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden</h4>
+                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                                    ${forbiddenHTML}
+                                </ul>
+                            </div>
+                            <!-- LIMITED -->
+                            <div class="card combo-step-card p-4 border-yellow-400/50">
+                                <h4 class="text-lg font-bold text-yellow-300 mb-2">Limited & Semi-Limited</h4>
+                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                                    ${limitedHTML}
+                                </ul>
+                            </div>
+                            <!-- UNLIMITED -->
+                            <div class="card combo-step-card p-4 border-green-500/50">
+                                <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited</h4>
+                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                                    ${unlimitedHTML}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-gray-900 bg-opacity-40 rounded border-l-4 border-orange-500">
+                            <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core engine remains intact, the regulation of key generic boss monsters impacts the deck's overall ceiling for its Turn 1 end board, placing more emphasis on its OTK potential with Nitro Warrior.</p>
+                        </div>
+                    `;
+                    banlistContainer.innerHTML = banlistHTML;
+
+                } catch (error) {
+                    console.error('Error processing banlist:', error);
+                    banlistContainer.innerHTML = '<p class="text-red-400 text-center">Could not load banlist information.</p>';
+                }
+            }
+
+            checkBanlist();
+        });
+    </script>
+</body>
+</html>

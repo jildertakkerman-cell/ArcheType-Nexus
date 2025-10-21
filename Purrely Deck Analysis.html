@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purrely Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #FDF6F6; /* Very light pink */
+            color: #5C5470; /* Muted purple */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #FAF3F3; /* Slightly darker pink */
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #EAE0E0;
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .combo-step-card {
+            background-color: #FFFFFF;
+            border: 1px solid #F0E8E8;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0px); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #FAF3F3;
+            color: #A999B3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 1rem;
+            padding: 0.5rem;
+            border: 2px dashed #EAE0E0;
+        }
+        .pro-icon { color: #34D399; }
+        .con-icon { color: #F87171; }
+        .neutral-icon { color: #60A5FA; }
+        .text-accent { color: #A855F7; } /* Playful purple */
+        .lore-link {
+            color: #A855F7;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 2px dotted #C084FC;
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #7E22CE;
+            border-bottom-color: #7E22CE;
+        }
+
+        /* --- NEW PURRELY ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #FAF3F3;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #EAE0E0;
+        }
+
+        #purrely-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(250, 243, 243, 0.8), rgba(250, 243, 243, 0.3));
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.5);
+        }
+        
+        .heading-underline {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+        }
+        .heading-underline::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(90deg, #FBCFE8, #C084FC);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+<div class="container mx-auto">
+    <!-- Purrely Themed Banner -->
+    <header class="banner-header text-center">
+        <canvas id="purrely-banner"></canvas>
+        <h1 class="text-4xl md:text-5xl font-bold text-purple-600 mb-2 heading-underline">Purrely</h1>
+        <p class="text-lg md:text-xl text-purple-400">An Analysis of the Fluffy Xyz Archetype</p>
+    </header>
+
+    <!-- Executive Summary -->
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+        <div class="card p-6">
+            <h2 class="text-2xl font-bold text-purple-500 mb-4">Executive Summary</h2>
+            <p class="text-gray-600 leading-relaxed">
+                The <strong class="text-accent">Purrely</strong> archetype is a complex and powerful Xyz-based engine centered on nurturing a single Level 1 monster. By feeding it "Memory" Quick-Play Spells, this small creature rapidly accumulates materials and evolves into a formidable boss monster. The strategy is a unique blend of combo, resource management, and control, capable of creating nearly unbreakable boards. Success with this deck requires a deep understanding of its intricate play lines and resource loops, which transform a collection of 
+                <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Purrely&stype=_&ctype=&star=&link_m=2&link=&sort=1&rp=20&page=1" target="_blank" class="lore-link">adorable memory-based cards</a>
+                 into a decisive victory condition.
+            </p>
+        </div>
+    </section>
+
+    <!-- Core Cards Section -->
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+        <h2 class="text-3xl font-bold text-purple-500 mb-8 text-center heading-underline">The Building Blocks</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Main Deck Monsters -->
+            <div class="card p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-heart text-3xl text-pink-400 mr-4"></i>
+                    <h3 class="text-xl font-bold text-purple-500">The Heart of the Deck</h3>
+                </div>
+                <div class="space-y-4">
+                    <div class="combo-step-card p-4 rounded-xl">
+                        <h4 class="font-bold text-accent">Purrely</h4>
+                        <p class="text-sm text-gray-500">The high-risk, high-reward starter. Its excavation effect can jump-start your combos instantly.</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-xl">
+                        <h4 class="font-bold text-accent">Purrelyly</h4>
+                        <p class="text-sm text-gray-500">The consistent setup monster. It searches for key support cards like "My Friend Purrely," ensuring your engine runs smoothly.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Memory Spells -->
+            <div class="card p-6">
+                 <div class="flex items-center mb-4">
+                    <i class="fas fa-book-open text-3xl text-blue-400 mr-4"></i>
+                    <h3 class="text-xl font-bold text-purple-500">The Fuel: "Memory" Spells</h3>
+                </div>
+                <div class="space-y-4">
+                    <div class="combo-step-card p-4 rounded-xl">
+                        <h4 class="font-bold text-accent">Happy / Pretty / Delicious / Sleepy Memory</h4>
+                        <p class="text-sm text-gray-500">These Quick-Play Spells are the lifeblood of the engine. They not only provide unique effects but also act as starters by summoning a Level 1 Purrely from the deck.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Combo Walkthrough -->
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+        <h2 class="text-3xl font-bold text-purple-500 mb-8 text-center heading-underline">Core Combo: From Memory to Masterpiece</h2>
+        <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">The fundamental goal is to summon a Level 1 Purrely, evolve it into a Rank 2, and "feed" it "Memory" spells to prepare for its final evolution.</p>
+        <div class="flex flex-col items-center gap-4">
+            <!-- Step 1 -->
+            <div class="card p-4 combo-step-card w-full max-w-lg">
+                <div class="flex items-center gap-4">
+                    <div id="memory-img-container" class="w-32 h-48 flex-shrink-0 card-placeholder">Memory Spell</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-pink-100 text-pink-500 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Initiation</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">Activate a "Memory" spell, discard a card, and Special Summon <strong class="text-accent">Purrely</strong> from your Deck.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Arrow -->
+            <i class="fas fa-arrow-down text-pink-300 text-2xl my-2"></i>
+            <!-- Step 2 -->
+            <div class="card p-4 combo-step-card w-full max-w-lg">
+                 <div class="flex items-center gap-4">
+                    <div id="epurrely-img-container" class="w-32 h-48 flex-shrink-0 card-placeholder">Epurrely Plump</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-blue-100 text-blue-500 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Evolution & Accumulation</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">Use the on-field Purrely to Xyz Summon a Rank 2 "Epurrely" monster. Activate more "Memory" spells from your hand to attach them as materials.</p>
+                    </div>
+                </div>
+            </div>
+             <!-- Arrow -->
+            <i class="fas fa-arrow-down text-blue-300 text-2xl my-2"></i>
+            <!-- Step 3 -->
+            <div class="card p-4 combo-step-card w-full max-w-lg">
+                 <div class="flex items-center gap-4">
+                    <div id="expurrely-img-container" class="w-32 h-48 flex-shrink-0 card-placeholder">Expurrely Noir</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-purple-100 text-purple-500 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Maturation</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">Once the Rank 2 has 5+ materials, use it to Xyz Summon the Rank 7 boss monster, <strong class="text-accent">Expurrely Noir</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Endboard Section -->
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+        <h2 class="text-3xl font-bold text-purple-500 mb-8 text-center heading-underline">The Ultimate End Board</h2>
+        <div class="card p-8 max-w-3xl mx-auto">
+            <h3 class="text-2xl font-bold text-center text-accent mb-4">Expurrely Noir: The Untouchable Fortress</h3>
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <div id="noir-main-img-container" class="w-48 flex-shrink-0 card-placeholder">Expurrely Noir</div>
+                <div class="text-gray-600">
+                    <p class="mb-4">The primary goal when going first is to summon <strong class="text-purple-600">Expurrely Noir</strong> with at least five materials. This creates a formidable boss monster that is <strong class="text-purple-600">unaffected by your opponent's activated effects</strong>.</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><strong class="text-purple-500">Immunity:</strong> A "Towers"-like monster that is incredibly difficult for most decks to remove.</li>
+                        <li><strong class="text-purple-500">Disruption:</strong> A Quick Effect to place any card an opponent controls or has in their Graveyard on the bottom of their Deck.</li>
+                        <li><strong class="text-purple-500">Advantage:</strong> When combined with multiple copies of "Purrely Sleepy Memory", it can draw you up to 6 cards during your opponent's turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Competitive Analysis -->
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+        <h2 class="text-3xl font-bold text-purple-500 mb-8 text-center heading-underline">Competitive Analysis</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Strengths -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-green-500 mb-4 flex items-center"><i class="fas fa-check-circle mr-2"></i>Strengths</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-600">
+                    <li><strong class="text-green-600">Resilient Engine:</strong> Excellent recovery options through "My Friend Purrely" and "Stray Purrely Street".</li>
+                    <li><strong class="text-green-600">Powerful Boss:</strong> Expurrely Noir is one of the strongest turn-one monsters in the game.</li>
+                    <li><strong class="text-green-600">High Card Advantage:</strong> The "Sleepy Memory" combo generates an overwhelming number of cards.</li>
+                     <li><strong class="text-green-600">Flexible Deckbuilding:</strong> The small engine size allows for a large number of hand traps and tech cards.</li>
+                </ul>
+            </div>
+            <!-- Weaknesses -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-red-500 mb-4 flex items-center"><i class="fas fa-times-circle mr-2"></i>Weaknesses</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-600">
+                    <li><strong class="text-red-600">Choke Points:</strong> Highly vulnerable to hand traps on the summon of "Purrelyly" or the activation of "My Friend Purrely".</li>
+                    <li><strong class="text-red-600">Specific Counters:</strong> Decks that can easily summon "Kaiju" monsters or use non-targeting removal can out Noir.</li>
+                    <li><strong class="text-red-600">Graveyard Hate:</strong> Cards that banish from the Graveyard can disrupt the recursion of "Memory" spells.</li>
+                </ul>
+            </div>
+            <!-- Tech Choices -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-blue-500 mb-4 flex items-center"><i class="fas fa-cogs mr-2"></i>Tech Choices</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-600">
+                    <li><strong class="text-blue-600">Hand Traps:</strong> A large suite of cards like Ash Blossom, Effect Veiler, and Infinite Impermanence is standard.</li>
+                    <li><strong class="text-blue-600">Zeus Package:</strong> Any Purrely Xyz can easily go into Divine Arsenal AA-ZEUS for a powerful board wipe.</li>
+                    <li><strong class="text-blue-600">Discard Synergy:</strong> Engines like Dark World or Shaddoll can turn the discard costs into advantages.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- TCG Banlist Impact -->
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+        <h2 class="text-3xl font-bold text-purple-500 mb-8 text-center heading-underline">TCG Banlist Impact</h2>
+        <div id="banlist-section" class="card p-6">
+            <!-- Content will be generated by JavaScript -->
+        </div>
+    </section>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- PURRELY FLUFFY BANNER ANIMATION ---
+        const canvas = document.getElementById('purrely-banner');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            
+            const setCanvasSize = () => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            };
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + Math.random() * 50;
+                    this.speedY = Math.random() * 1 + 0.5;
+                    this.size = Math.random() * 15 + 10;
+                    this.opacity = Math.random() * 0.3 + 0.1;
+                    const colors = ['#FBCFE8', '#C084FC', '#A78BFA', '#FBBF24']; // Pinks, Purples, Yellow
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+                update() {
+                    this.y -= this.speedY;
+                    if (this.y < -this.size) {
+                        this.y = canvas.height + this.size;
+                        this.x = Math.random() * canvas.width;
+                    }
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 20;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            function init() {
+                particles = [];
+                let particleCount = Math.floor((canvas.width * canvas.height) / 8000);
+                for(let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            setCanvasSize();
+            init();
+            animate();
+            window.addEventListener('resize', () => {
+                setCanvasSize();
+                init();
+            });
+        }
+        
+        // --- CARD IMAGE FETCHER ---
+        async function fetchAndDisplayCardImage(cardName, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardName;
+                    img.className = 'w-full h-auto rounded-lg shadow-md';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            } catch (error) {
+                console.error(`Failed to fetch image for "${cardName}":`, error);
+                container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+            }
+        }
+        
+        const cardsToLoad = {
+            'memory-img-container': 'Purrely Happy Memory',
+            'epurrely-img-container': 'Epurrely Plump',
+            'expurrely-img-container': 'Expurrely Noir',
+            'noir-main-img-container': 'Expurrely Noir',
+        };
+
+        for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+            fetchAndDisplayCardImage(cardName, containerId);
+        }
+        
+        // --- BANLIST CHECKER ---
+        const banlistSection = document.getElementById('banlist-section');
+        const purrelyCardNames = [
+            "Purrely",
+            "My Friend Purrely",
+            "Purrely Sleepy Memory",
+            "Purrely Delicious Memory"
+        ];
+        
+        async function checkBanlist() {
+            try {
+                const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?archetype=Purrely');
+                const data = await response.json();
+                
+                const banlistStatus = {};
+                purrelyCardNames.forEach(name => banlistStatus[name] = 'Unlimited');
+
+                if (data && data.data) {
+                    data.data.forEach(card => {
+                        if (purrelyCardNames.includes(card.name) && card.banlist_info && card.banlist_info.ban_tcg) {
+                            banlistStatus[card.name] = card.banlist_info.ban_tcg;
+                        }
+                    });
+                }
+                
+                renderBanlist(banlistStatus);
+
+            } catch (error) {
+                console.error("Failed to fetch TCG banlist:", error);
+                banlistSection.innerHTML = '<p class="text-red-500">Could not load banlist information at this time.</p>';
+            }
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'Semi-Limited': return 'text-yellow-500';
+                case 'Limited': return 'text-orange-500';
+                case 'Forbidden': return 'text-red-500';
+                default: return 'text-green-500';
+            }
+        }
+
+        function renderBanlist(status) {
+            let hasRestrictions = Object.values(status).some(s => s !== 'Unlimited');
+            
+            let html = `
+                <p class="text-gray-600 mb-4 text-center">
+                    The Purrely archetype has seen competitive success, leading to some of its key cards being placed on the Forbidden & Limited list to balance its power.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            `;
+            
+            for (const [card, banStatus] of Object.entries(status)) {
+                html += `
+                    <div class="combo-step-card p-4 rounded-xl">
+                        <h4 class="font-bold ${getStatusColor(banStatus)}">${card}</h4>
+                        <p class="text-sm text-gray-500">Status: <strong class="${getStatusColor(banStatus)}">${banStatus}</strong></p>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            
+            let summaryColor = hasRestrictions ? 'border-yellow-500 bg-yellow-50' : 'border-green-500 bg-green-50';
+            let summaryTextColor = hasRestrictions ? 'text-yellow-800' : 'text-green-800';
+            let summaryText = hasRestrictions 
+                ? '<strong>Meta Implications:</strong> With some of its core consistency and extension tools now limited, Purrely players must be more strategic in resource management. The deck remains powerful but is less able to recover from early disruption.'
+                : '<strong>Meta Implications:</strong> With no restrictions, the Purrely archetype can operate at its full, formidable power level, making it a major contender in the meta.';
+
+            html += `
+                <div class="mt-6 p-4 rounded-lg border-l-4 ${summaryColor}">
+                    <p class="text-sm ${summaryTextColor}">${summaryText}</p>
+                </div>
+            `;
+            
+            banlistSection.innerHTML = html;
+        }
+
+        checkBanlist();
+    });
+</script>
+</body>
+</html>
+

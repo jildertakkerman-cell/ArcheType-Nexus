@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tearlaments Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f22; /* Deep abyssal blue */
+            color: #e0e7ff; /* Soft lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(20, 25, 50, 0.7); /* Semi-transparent dark blue */
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3b82f6; /* Luminous blue border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(26, 32, 64, 0.8);
+            border: 1px solid #60a5fa;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1e293b;
+            color: #93c5fd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 15px rgba(60, 130, 246, 0.4);
+            border: 1px dashed #3b82f6;
+        }
+        .pro-icon { color: #4ade80; }
+        .con-icon { color: #f87171; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #4cf1d9; } /* Vibrant turquoise/seafoam green */
+        .arrow-color { color: #4cf1d9; }
+        .heading-underline {
+            border-bottom: 2px solid #4cf1d9;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #4cf1d9;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #4cf1d9;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #4cf1d9;
+        }
+
+        /* --- NEW TEARLAMENTS ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0b0f22;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3b82f6;
+        }
+
+        #abyss-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(11, 15, 34, 0.4) 0%, rgba(11, 15, 34, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(76, 241, 217, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Banner Section -->
+        <header class="banner-header text-center">
+            <canvas id="abyss-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">TEARLAMENTS</h1>
+            <p class="text-lg md:text-xl text-cyan-200">The Sorrowful Sirens of the Abyss</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Tearlaments</strong> archetype fundamentally revolutionizes Yu-Gi-Oh! strategy by transforming the Graveyard into the primary axis of gameplay. Its core "Mill & Fuse" engine operates on a self-sustaining loop where sending cards from the Deck to the GY is not a cost, but the direct catalyst for powerful Fusion Summons. This creates a "cost-positive" system, allowing the deck to generate formidable board presence from minimal investment and maintain relentless pressure, making every move a potential step towards victory.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Tearlaments Core Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Heart of the Abyss</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-water text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Main Deck Sirens</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tearlaments Merrli</h4>
+                            <p class="text-sm text-indigo-200">A key starter that mills 3 on summon. An ideal target to be sent from the Deck by cards like Spright Sprind.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tearlaments Havnis</h4>
+                            <p class="text-sm text-indigo-200">The archetype's hand trap, enabling "Turn 0" plays by summoning itself and milling 3 in response to an opponent's monster effect.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tearlaments Scheiren</h4>
+                            <p class="text-sm text-indigo-200">A powerful extender that Special Summons itself from hand, initiating mills and triggering other Tearlaments' effects.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tearlaments Reinoheart</h4>
+                            <p class="text-sm text-indigo-200">The premier Normal Summon. Sends any Tearlaments monster from Deck to GY to kickstart a Fusion Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll-old text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Abyssal Arsenal</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Primeval Planet Perlereino</h4>
+                            <p class="text-sm text-indigo-200">The Field Spell searcher that also provides an ATK boost and targeted destruction whenever you fuse.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tearlaments Scream</h4>
+                            <p class="text-sm text-indigo-200">A Continuous Spell that mills on summon and searches a Trap card when sent to the GY.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tearlaments Sulliek & Cryme</h4>
+                            <p class="text-sm text-indigo-200">The core disruption Traps, providing monster negation and omni-negation while fueling your own engine.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Reinoheart Line</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The most direct one-card starter involves Normal Summoning Reinoheart. This single action begins a chain reaction that establishes your board by leveraging the GY. The watery grave becomes a stage where these <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=tearlaments&stype=1" target="_blank" class="lore-link">sorrowful sirens</a> weave the threads of fate.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="reinoheart-img-container" class="card-image-container flex-shrink-0 card-placeholder">Tearlaments Reinoheart</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The First Tear</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Reinoheart</strong>. Activate his on-summon effect to send <strong class="text-accent">Tearlaments Merrli</strong> from your Deck to the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="merrli-img-container" class="card-image-container flex-shrink-0 card-placeholder">Tearlaments Merrli</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">GY Trigger</h3>
+                            </div>
+                            <p class="text-indigo-200">Merrli's effect triggers in the GY as Chain Link 1. Her effect allows you to Fusion Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="rulkallos-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Tearlaments Rulkallos</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Abyssal Fusion</h3>
+                            </div>
+                            <p class="text-indigo-200">Resolve Merrli's effect, using herself from the GY and the on-field Reinoheart as materials to summon <strong class="text-accent">Tearlaments Rulkallos</strong>, shuffling the materials back into the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Abyssal Fortress</h2>
+             <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                While the path is variable, a common and effective end board aims to establish multiple layers of disruption. This setup provides a Special Summon negate and other forms of interaction.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Rulkallos -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Tearlaments Rulkallos</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="rulkallos-img-container" class="card-image-container card-placeholder">Tearlaments Rulkallos</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Summon Negation:</strong> A Quick Effect to negate any effect that includes Special Summoning a monster.</li>
+                        <li><strong class="text-accent">Resilience:</strong> If sent to the GY by a card effect, she Special Summons herself back.</li>
+                    </ul>
+                </div>
+                <!-- Abyss Dweller (Forbidden) -->
+                <div class="card p-6 pro-con-card border-red-500 bg-red-900/20">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 text-center">Abyss Dweller (Forbidden)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dweller-img-container" class="card-image-container card-placeholder">Abyss Dweller</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Graveyard Lock:</strong> Was the premier counter in mirror matches and against other GY-reliant decks.</li>
+                        <li><strong class="text-accent">Quick Effect:</strong> Its ability to prevent the opponent from activating any card effects in their GY for a turn was often a game-winning move.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Unmatched Resilience:</strong> Can play through most board-wipes as the Graveyard, not the field, is its primary resource pool.</li>
+                        <li><span class="pro-icon"><i class="fas fa-fast-forward"></i></span> <strong class="text-green-300">"Turn 0" Capability:</strong> Able to establish a board and disrupt during the opponent's first turn with hand traps like Tearlaments Havnis.</li>
+                        <li><span class="pro-icon"><i class="fas fa-brain"></i></span> <strong class="text-green-300">High Skill Ceiling:</strong> The non-linear, probabilistic nature of milling rewards skilled pilots who can adapt to any given Graveyard setup.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Graveyard Hate:</strong> Extremely vulnerable to cards that banish or prevent GY effects. Historically, <strong class="text-accent">Abyss Dweller</strong> was a primary counter, though it is now forbidden. <strong class="text-accent">Dimension Shifter</strong> remains the most potent threat.</li>
+                        <li><span class="con-icon"><i class="fas fa-random"></i></span> <strong class="text-red-300">Targeted Disruption:</strong> Key GY effects can be neutralized by cards that shuffle resources back into the deck, like the Ishizu monsters.</li>
+                        <li><span class="con-icon"><i class="fas fa-dice"></i></span> <strong class="text-red-300">Inherent Variance:</strong> The strategy relies on the randomness of mills, which can sometimes fail to provide playable resources.</li>
+                    </ul>
+                </div>
+                <!-- Synergies Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent">Ishizu Engine:</strong> Historically created a Tier 0 format by providing massive mills and unparalleled Graveyard disruption.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent">Kashtira & Branded:</strong> Offer powerful extenders, aggression, and alternative paths to strong Fusion boss monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent">Other Alliances:</strong> Synergizes well with Shaddoll monsters (to summon Winda) and Danger! monsters (for discards and field presence).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">SIGNIFICANT IMPACT:</strong> The Tearlaments archetype has been heavily adjusted by the TCG banlist to reduce its overwhelming consistency and power.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden (0 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Tearlaments Kitkallos</li>
+                            <li>Abyss Dweller</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Tearlaments Merrli</li>
+                            <li>Tearlaments Havnis</li>
+                            <li>Tearlaments Scheiren</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The banning of Kitkallos and key generic tools like Abyss Dweller removed the deck's most explosive combo enablers and lockdown pieces. With the main deck names limited, the strategy has shifted from a hyper-consistent "Tier 0" behemoth to a high-skill midrange/control deck that relies more on careful resource management and out-grinding the opponent over multiple turns. The core engine remains one of the most powerful in the game, but its success now rests even more heavily on pilot skill.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DEEP SEA PARTICLE ANIMATION ---
+            const canvas = document.getElementById('abyss-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 0.5 + 0.1;
+                        this.radius = Math.random() * 2 + 0.5;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(76, 241, 217, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-lg';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'reinoheart-img-container': 'Tearlaments Reinoheart',
+                'merrli-img-container': 'Tearlaments Merrli',
+                'rulkallos-img-container-combo': 'Tearlaments Rulkallos',
+                'rulkallos-img-container': 'Tearlaments Rulkallos',
+                'dweller-img-container': 'Abyss Dweller',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

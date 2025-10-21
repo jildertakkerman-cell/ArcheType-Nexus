@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ogdoadic Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep purple-black */
+            color: #e0e7ff; /* Lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a162f; /* Darker purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+            border: 1px solid #3a325a; /* Muted purple border */
+        }
+        .combo-step-card {
+            background-color: #24203d;
+            border: 1px solid #4a416a;
+        }
+        .pro-con-card {
+            background-color: #24203d;
+            border: 1px solid #4a416a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.7s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #24203d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #24203d inset;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Gold */
+        .text-secondary-accent { color: #5eead4; } /* Teal */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #5eead4;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #5eead4;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #5eead4;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c0a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3a325a;
+        }
+
+        #abyss-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(12, 10, 26, 0.5) 0%, rgba(12, 10, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+        
+        .banner-header h1 {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 2.8rem;
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="abyss-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Ogdoadic</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Deep Dive into the Abyssal Cycle</p>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6 animate-fadeIn">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-200">
+                    The <strong class="text-accent font-bold">Ogdoadic</strong> archetype is a sophisticated LIGHT and DARK Reptile strategy centered on Graveyard manipulation. The core gameplay involves a perpetual cycle of sending high-level monsters to the GY, then reviving them by tributing monsters on the field. This creates a dynamic where the GY acts as a second hand, enabling powerful, non-linear combos. A key feature is the symmetrical exchange, where effects grant resources to the opponent, a "cost" that skilled duelists weaponize to trigger their own powerful interruptions, turning the <a href="https://yugipedia.com/wiki/Ogdoadic" target="_blank" class="lore-link">abyssal pact</a> into a one-sided advantage.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ogdoadic Pantheon</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-arrow-down text-4xl text-secondary-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Remnants: Graveyard Enablers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Nunu, the Ogdoadic Remnant</h4>
+                            <p class="text-sm text-purple-200">The premier one-card starter. Sends itself from hand to GY to mill a DARK Reptile. Can revive itself from the GY for a free body on board.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Nauya, the Ogdoadic Remnant</h4>
+                            <p class="text-sm text-purple-200">Nunu's counterpart. Upon summon, searches any "Ogdoadic" Spell/Trap, making it the primary way to access key combo pieces.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.4s;">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-sync-alt text-4xl text-secondary-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Heralds: Revival Engine</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Keurse, the Ogdoadic Light</h4>
+                            <p class="text-sm text-purple-200">The heart of the recursive engine. Tributes one monster to revive itself, then revives a Level 4 or lower Ogdoadic, enabling the "Keurse-Nauya loop".</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Aleirtt, the Ogdoadic Dark</h4>
+                            <p class="text-sm text-purple-200">Serves a vital recovery role by returning banished monsters to the GY, refueling the engine for a longer grind game.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: Impact of the King's Banning</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">
+                Historically, the deck's most consistent combo line began with a single "Nunu, the Ogdoadic Remnant". This was made possible by the powerful Reptile searcher, "King of the Feral Imps", which is now forbidden in the TCG.
+            </p>
+
+            <div class="bg-red-900 bg-opacity-40 border border-red-500 rounded-lg p-4 mb-6 max-w-lg mx-auto animate-fadeIn">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-exclamation-triangle text-red-400 mr-3 text-2xl"></i>
+                    <h3 class="text-red-300 font-bold text-lg">Banned in TCG</h3>
+                </div>
+                <p class="text-red-200 mb-2"><strong>King of the Feral Imps</strong> is forbidden in the TCG format. Its ability to search any Reptile monster made the Ogdoadic one-card combo exceptionally consistent.</p>
+            </div>
+
+            <div class="card p-6 combo-step-card w-full max-w-lg animate-fadeIn mx-auto">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="king-feral-img-container" class="card-image-container flex-shrink-0 card-placeholder">King of the Feral Imps</div>
+                    <div>
+                        <h3 class="text-lg font-bold text-accent mb-2">The Old Combo Path</h3>
+                        <p class="text-purple-200 mb-4">The previous one-card combo involved using <strong class="text-accent">Nunu</strong> to get two Level 4 monsters on the field, Xyz Summoning <strong class="text-red-400">King of the Feral Imps</strong>, and using its effect to search for <strong class="text-secondary-accent">Nauya</strong> to continue the combo.</p>
+                        <h3 class="text-lg font-bold text-accent mb-2">Modern Implications</h3>
+                        <p class="text-purple-200">Without this searcher, the deck's consistency is significantly reduced. While the powerful <strong class="text-accent">Snake Rain</strong> line is still fully available, Ogdoadic now relies more heavily on drawing two-card combinations to start its engine, rather than relying on a single copy of Nunu.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Two-Card Power Play: Snake Rain</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">
+                While less consistent than the old one-card starter, resolving <strong class="text-accent">Snake Rain</strong> is the deck's most explosive opening. With just one additional card to discard, it sets up the entire Graveyard for a devastating series of plays.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg animate-fadeIn">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="snake-rain-img-container" class="card-image-container flex-shrink-0 card-placeholder">Snake Rain</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a162f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate Snake Rain</h3>
+                            </div>
+                            <p class="text-purple-200">Activate <strong class="text-accent font-bold">Snake Rain</strong> by discarding one card. Send four Reptile monsters from your Deck to the GY. Optimal targets are <strong class="text-secondary-accent">Nunu</strong>, <strong class="text-secondary-accent">Nauya</strong>, <strong class="text-secondary-accent">Keurse</strong>, and <strong class="text-secondary-accent">Zohah</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2 animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg animate-fadeIn" style="animation-delay: 0.2s;">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="nunu-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Nunu, the Ogdoadic Remnant</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a162f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Start the Revival Chain</h3>
+                            </div>
+                            <p class="text-purple-200">With an empty board, activate <strong class="text-accent font-bold">Nunu's</strong> effect in the GY to Special Summon itself. This provides the necessary tribute fodder to begin the main loop.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2 animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg animate-fadeIn" style="animation-delay: 0.4s;">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="keurse-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Keurse, the Ogdoadic Light</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a162f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Execute the Loop</h3>
+                            </div>
+                            <p class="text-purple-200">Tribute <strong class="text-accent font-bold">Nunu</strong> to revive <strong class="text-accent font-bold">Keurse</strong>, whose effect then summons <strong class="text-secondary-accent">Nauya</strong> from the GY. <strong class="text-secondary-accent">Nauya</strong> searches for a key Spell, establishing board presence and significant card advantage.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Typical End Boards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.6s;">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">The Pure Ogdoadic Fortress</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="aron-img-container" class="w-24 flex-shrink-0 card-placeholder">Aron, the Ogdoadic King</div>
+                            <div>
+                                <h4 class="font-bold text-white">Aron, the Ogdoadic King</h4>
+                                <p class="text-sm text-purple-200">Provides a hand-rip when the opponent adds a card to hand.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="amunessia-img-container" class="w-24 flex-shrink-0 card-placeholder">Amunessia, the Ogdoadic Queen</div>
+                            <div>
+                                <h4 class="font-bold text-white">Amunessia, the Ogdoadic Queen</h4>
+                                <p class="text-sm text-purple-200">Offers spot removal when the opponent revives from GY.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="ogdoabyss-img-container" class="w-24 flex-shrink-0 card-placeholder">Ogdoabyss, the Ogdoadic Overlord</div>
+                            <div>
+                                <h4 class="font-bold text-white">Ogdoabyss (in GY)</h4>
+                                <p class="text-sm text-purple-200">A lingering threat that can wipe the opponent's entire board.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.8s;">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">The Alien Lockdown</h3>
+                     <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="zeroll-img-container" class="w-24 flex-shrink-0 card-placeholder">Cosmic Slicer Zer'oll</div>
+                            <div>
+                                <h4 class="font-bold text-white">Cosmic Slicer Zer'oll</h4>
+                                <p class="text-sm text-purple-200">A Link-3 Reptile that prevents monsters with A-Counters from activating effects.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="virus-img-container" class="w-24 flex-shrink-0 card-placeholder">Planet Pollutant Virus</div>
+                            <div>
+                                <h4 class="font-bold text-white">Planet Pollutant Virus</h4>
+                                <p class="text-sm text-purple-200">A Continuous Trap that places A-Counters on all opponent's monsters, creating a one-sided Skill Drain.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>        
+        
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Typical End Boards</h2>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn" style="animation-delay: 0.9s;">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 flex items-center"><i class="fas fa-thumbs-up mr-3"></i>Strengths</h3>
+                    <ul class="list-disc list-inside space-y-3 text-purple-200">
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Recursion & Grind Game:</strong> Unparalleled ability to recover resources from the GY, making it incredibly resilient in long duels.</li>
+                        <li><span class="pro-icon"><i class="fas fa-star"></i></span> <strong class="text-green-300">High Ceiling & Flexibility:</strong> Non-linear combos allow for explosive, adaptive plays that can create oppressive and varied end boards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Engine Versatility:</strong> The core cards form a compact and powerful engine that enhances other Reptile-based strategies like Reptilianne and Mitsurugi.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center"><i class="fas fa-thumbs-down mr-3"></i>Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-3 text-purple-200">
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-300">Graveyard Dependency:</strong> Extremely vulnerable to anti-GY cards like <strong class="text-secondary-accent">Abyss Dweller</strong>, <strong class="text-secondary-accent">Dimensional Shifter</strong>, and <strong class="text-secondary-accent">Bystial</strong> monsters.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Key Choke Points:</strong> Key starter cards like <strong class="text-accent">Snake Rain</strong> and <strong class="text-accent">Nunu</strong> are highly susceptible to hand traps like <strong class="text-secondary-accent">Ash Blossom</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-brain"></i></span> <strong class="text-red-300">High Complexity:</strong> The deck has a very high skill ceiling, with complex decision trees that can be punishing for inexperienced pilots.</li>
+                    </ul>
+                </div>
+                <!-- Outlook & Hybrids -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4 flex items-center"><i class="fas fa-balance-scale mr-3"></i>Competitive Outlook</h3>
+                    <ul class="list-disc list-inside space-y-3 text-purple-200">
+                         <li><span class="neutral-icon"><i class="fas fa-chess-knight"></i></span> <strong class="text-blue-300">Potent Rogue Strategy:</strong> While not consistently top-tier, its high power level allows it to compete with and defeat meta decks in the hands of a skilled player.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-project-diagram"></i></span> <strong class="text-blue-300">Hybrid Potential:</strong> Its true strength shines in hybrid builds, serving as a powerful engine for archetypes like <strong class="text-accent">Reptilianne</strong>, <strong class="text-accent">Mitsurugi</strong>, and in strategies utilizing <strong class="text-accent">Lair of Darkness</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6 animate-fadeIn" style="animation-delay: 1s;">
+                <p class="text-gray-300 mb-4 text-center">
+                    The Ogdoadic archetype and its key support cards have remained largely untouched by the TCG Forbidden & Limited List, allowing it to operate at full power.
+                </p>
+                <div id="banlist-status" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-center">
+                    <!-- Statuses will be injected here by script -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('abyss-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const particleCount = 70;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.vx = Math.random() * 0.4 - 0.2;
+                        this.vy = Math.random() * 0.4 - 0.2;
+                        this.size = Math.random() * 2 + 1;
+                        this.color = `rgba(250, 204, 21, ${Math.random() * 0.5 + 0.2})`; // Gold
+                    }
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+
+                    for (let i = 0; i < particles.length; i++) {
+                        for (let j = i + 1; j < particles.length; j++) {
+                            const dx = particles[i].x - particles[j].x;
+                            const dy = particles[i].y - particles[j].y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+
+                            if (dist < 100) {
+                                ctx.beginPath();
+                                ctx.strokeStyle = `rgba(94, 234, 212, ${1 - dist / 100})`; // Teal lines
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-lg';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to load image for ${cardName}:`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'king-feral-img-container': 'King of the Feral Imps',
+                'aron-img-container': 'Aron, the Ogdoadic King',
+                'amunessia-img-container': 'Amunessia, the Ogdoadic Queen',
+                'ogdoabyss-img-container': 'Ogdoabyss, the Ogdoadic Overlord',
+                'zeroll-img-container': "Cosmic Slicer Zer'oll",
+                'virus-img-container': 'Planet Pollutant Virus',
+                'snake-rain-img-container': 'Snake Rain',
+                'nunu-combo-img-container': 'Nunu, the Ogdoadic Remnant',
+                'keurse-combo-img-container': 'Keurse, the Ogdoadic Light'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+
+            // --- TCG BANLIST CHECK ---
+            const banlistContainer = document.getElementById('banlist-status');
+            const relevantCards = [
+                "Nunu, the Ogdoadic Remnant", "Nauya, the Ogdoadic Remnant", 
+                "Keurse, the Ogdoadic Light", "Aleirtt, the Ogdoadic Dark",
+                "Aron, the Ogdoadic King", "Amunessia, the Ogdoadic Queen", 
+                "Ogdoabyss, the Ogdoadic Overlord", "Snake Rain", "Ogdoadic Water Lily",
+                "King of the Feral Imps", "Cosmic Slicer Zer'oll", "Planet Pollutant Virus"
+            ];
+            
+            async function checkBanlist() {
+                try {
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
+                    const result = await response.json();
+                    const banlistData = result.data;
+
+
+                    relevantCards.forEach(cardName => {
+                        const cardData = banlistData.find(card => card.name === cardName);
+                        let status = "Unlimited";
+                        let colorClass = "text-green-400";
+
+                        if (cardData && cardData.banlist_info && cardData.banlist_info.ban_tcg) {
+                            switch (cardData.banlist_info.ban_tcg) {
+                                case "Forbidden":
+                                    status = "Forbidden";
+                                    colorClass = "text-red-400";
+                                    break;
+                                case "Limited":
+                                    status = "Limited";
+                                    colorClass = "text-yellow-400";
+                                    break;
+                                case "Semi-Limited":
+                                    status = "Semi-Limited";
+                                    colorClass = "text-yellow-400";
+                                    break;
+                            }
+                        }
+                        
+                        const statusDiv = document.createElement('div');
+                        statusDiv.className = `p-2 rounded-lg ${colorClass} bg-black bg-opacity-20`;
+                        statusDiv.innerHTML = `<p class="font-bold text-sm">${cardName}</p><p class="text-xs">${status}</p>`;
+                        banlistContainer.appendChild(statusDiv);
+                    });
+
+                } catch (error) {
+                    console.error("Error loading or parsing banlist:", error);
+                    banlistContainer.innerHTML = `<p class="text-red-400 col-span-full">Could not load banlist data.</p>`;
+                }
+            }
+
+            checkBanlist();
+        });
+    </script>
+</body>
+</html>
+

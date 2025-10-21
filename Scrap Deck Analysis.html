@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrap Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Dark charcoal */
+            color: #e5e5e5; /* Light gray */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23333333' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #262626; /* Darker gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #444; /* Medium gray border */
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+        }
+        .combo-step-card {
+            background-color: #333; /* Even darker gray */
+            border-left: 4px solid #d97706; /* Amber */
+        }
+        .pro-con-card {
+            background-color: #333;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 2px solid #555;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #333;
+            color: #aaa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 2px dashed #555;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fb923c; } /* Orange */
+        .lore-link {
+            color: #fb923c;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fb923c;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fdba74;
+        }
+
+        /* --- Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            height: 160px;
+            background: linear-gradient(45deg, #1c1c1c, #3a3a3a);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 2px solid #555;
+        }
+        #gear-banner {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            opacity: 0.2;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, transparent 50%, rgba(26, 26, 26, 1) 90%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.9);
+            font-family: 'Roboto Mono', monospace;
+        }
+        .banner-header h1 {
+            color: #f59e0b; /* Amber */
+        }
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            color: white; border: 2px solid #888; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0, 0.4);
+            transition: all 0.3s ease; text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0, 0.6);
+            border-color: #aaa;
+        }
+        .ygo-home-button i { font-size: 22px; text-shadow: 0 0 10px rgba(255, 165, 0, 0.5); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="gear-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-bold mb-2">SCRAP</h1>
+            <p class="text-lg md:text-xl text-gray-300">Deconstruction for Reconstruction</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">The Scrap Philosophy</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">Scrap</strong> archetype operates on a unique principle: controlled self-destruction as a means to generate overwhelming advantage. The game plan treats its own monsters as renewable resources, intentionally destroying them with "Scrap" card effects to trigger a cascade of combos. This core mechanic of "<span class="italic">deconstruction for reconstruction</span>" defines the archetype's entire strategy, turning apparent self-sabotage into a powerful engine for building formidable boards. It's a deck where every piece is both a tool and fuel, a true testament to finding value in the junkyard.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">Key Personnel: The Junkyard Crew</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+                    <div id="raptor-img-container" class="card-image-container mx-auto mb-4 card-placeholder">Scrap Raptor</div>
+                    <h3 class="text-xl font-bold text-accent mb-2">Scrap Raptor</h3>
+                    <p class="text-sm text-gray-300">The most important one-card starter. Destroys itself to search any "Scrap" monster and grants an additional Normal Summon, single-handedly starting the entire Wyvern Loop.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <div id="recycler-img-container" class="card-image-container mx-auto mb-4 card-placeholder">Scrap Recycler</div>
+                    <h3 class="text-xl font-bold text-accent mb-2">Scrap Recycler</h3>
+                    <p class="text-sm text-gray-300">A powerful starter for hybrid builds. Though a Machine-type, it shares the "Scrap" name, allowing it to be integrated into the archetype's loops while sending key Machine monsters (like Orcusts) to the GY.</p>
+                </div>
+                 <div class="card p-6 animate-fadeIn" style="animation-delay: 0.3s;">
+                    <div id="chimera-img-container" class="card-image-container mx-auto mb-4 card-placeholder">Scrap Chimera</div>
+                    <h3 class="text-xl font-bold text-accent mb-2">Scrap Chimera</h3>
+                    <p class="text-sm text-gray-300">A crucial extender. On Normal Summon, it revives a "Scrap" Tuner from the GY, providing immediate access to a Synchro Summon for one of the archetype's powerful boss monsters.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">The Blueprint: The Scrap Wyvern Loop</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+                The introduction of <strong class="text-accent font-bold">Scrap Wyvern</strong> revolutionized the archetype. This Link-2 monster provides a consistent, repeatable combo loop that serves as the engine for all modern Scrap variants, turning a single starter into a dominant board presence.
+            </p>
+            <div class="card p-6">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="wyvern-img-container" class="card-image-container card-placeholder">Scrap Wyvern</div>
+                    <div class="flex-1 space-y-4">
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <p><strong class="text-accent">1. Ignition:</strong> Use Wyvern's first effect to Special Summon a "Scrap" monster from your GY, then destroy that same monster.</p>
+                        </div>
+                         <div class="combo-step-card p-4 rounded-lg">
+                            <p><strong class="text-accent">2. Escalation:</strong> Since a "Scrap" was destroyed by effect, Wyvern's second effect triggers. Special Summon <strong class="text-white">Scrap Golem</strong> from your Deck and destroy one card on the field (ideally your opponent's).</p>
+                        </div>
+                         <div class="combo-step-card p-4 rounded-lg">
+                            <p><strong class="text-accent">3. Recursion:</strong> Activate the now on-field Scrap Golem's effect to revive another "Scrap" monster, extending your plays into powerful Synchro or Link monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">The Final Assembly: End Boards</h2>
+            <div class="card p-6">
+                 <p class="text-gray-300 mb-4">
+                    A typical "pure" Scrap end board focuses on establishing multiple interruptions through powerful Synchro monsters. Thanks to the versatility of the Scrap Tuners and extenders, the deck can easily summon a variety of powerful boss monsters.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div class="flex items-center gap-4 combo-step-card p-4 rounded-lg">
+                        <div id="baronne-img-container" class="w-24 flex-shrink-0 card-placeholder">Baronne de Fleur</div>
+                        <div>
+                            <h4 class="font-bold text-white">Baronne de Fleur</h4>
+                            <p class="text-sm text-gray-300">A Level 10 Synchro that provides a powerful once-per-turn omni-negate, offering crucial protection.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 combo-step-card p-4 rounded-lg">
+                        <div id="twin-dragon-img-container" class="w-24 flex-shrink-0 card-placeholder">Scrap Twin Dragon</div>
+                        <div>
+                            <h4 class="font-bold text-white">Scrap Twin Dragon</h4>
+                            <p class="text-sm text-gray-300">The archetype's own boss, offering non-destruction removal by returning two cards the opponent controls to the hand.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center animate-fadeIn" style="animation-delay: 0.6s;">Hybrid Engineering & Strategic Alliances</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.7s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">Scrap-Dinosaur</h3>
+                    <p class="text-gray-300">The Scrap engine's ability to reliably destroy cards makes it a perfect partner for Dinosaur monsters like <strong class="text-white">Babycerasaurus</strong>, which summon from the deck upon destruction. This hybrid creates some of the most explosive boards in the game's history.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.8s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">Scrap-Orcust</h3>
+                    <p class="text-gray-300">Leveraging <strong class="text-white">Scrap Recycler's</strong> ability to send any Machine to the GY, this variant uses the Scrap engine to kickstart the entire Orcust combo line, leading to powerful end boards that control the GY and the field. The deck's ability to summon EARTH Warriors also opened up historical synergies with archetypes that could wield a sharp edge, though key cards like <a href="#" class="lore-link">M-X-Saber Invoker</a> are now forbidden.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.9s;">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">TCG Banlist Status & Competitive Analysis</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-green-400">Explosive One-Card Combos:</strong> Starters like Scrap Raptor can generate immense advantage.</li>
+                        <li><strong class="text-green-400">Resilient & Recursive:</strong> The deck excels in a grind game, able to rebuild its board turn after turn.</li>
+                        <li><strong class="text-green-400">Versatile Engine:</strong> The core combo is compact enough to be a powerful engine in various hybrid strategies.</li>
+                    </ul>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-red-400">Choke Points:</strong> Highly reliant on the Normal Summon, making it vulnerable to hand traps like Ash Blossom or Impermanence.</li>
+                        <li><strong class="text-red-400">Graveyard Hate:</strong> Cards like Abyss Dweller or D.D. Crow can shut down the entire engine.</li>
+                        <li><strong class="text-red-400">"Garnets":</strong> Drawing key combo pieces like Scrap Golem that are meant to be summoned from the deck can lead to inconsistent hands.</li>
+                    </ul>
+                </div>
+            </div>
+             <div class="card p-6 mt-6 bg-gray-800 border-yellow-500">
+                <h3 class="text-xl font-bold text-yellow-400 mb-4">Banlist Impact</h3>
+                <p class="text-gray-300">The Scrap archetype itself remains largely untouched by the TCG Forbidden & Limited List. Key cards like <strong class="text-white">Scrap Raptor</strong> and <strong class="text-white">Scrap Recycler</strong> are unlimited. However, the archetype's power in hybrid builds has been indirectly hit by the banning of historical extenders like <strong class="text-red-400">Block Dragon</strong> and <strong class="text-red-400">M-X-Saber Invoker</strong>. Despite this, the core engine remains fully intact and powerful, ready to be re-tooled for the modern era.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Animated Banner Script ---
+            const canvas = document.getElementById('gear-banner');
+            if(canvas) {
+                const ctx = canvas.getContext('2d');
+                let gears = [];
+                let lastTime = 0;
+                const gearCooldown = 1000; // ms
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Gear {
+                    constructor(x, y) {
+                        this.x = x || Math.random() * canvas.width;
+                        this.y = y || Math.random() * canvas.height;
+                        this.radius = Math.random() * 30 + 15;
+                        this.speed = (Math.random() - 0.5) * 0.02;
+                        this.angle = 0;
+                        this.life = 1;
+                        this.teeth = Math.floor(Math.random() * 8) + 5;
+                        this.color = `rgba(217, 119, 6, ${Math.random() * 0.3 + 0.2})`;
+                    }
+
+                    update(deltaTime) {
+                        this.angle += this.speed * deltaTime;
+                        this.life -= 0.0005 * deltaTime;
+                    }
+
+                    draw() {
+                        if (this.life <= 0) return;
+                        ctx.save();
+                        ctx.globalAlpha = this.life;
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 2;
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.angle);
+                        
+                        ctx.beginPath();
+                        for (let i = 0; i < this.teeth * 2; i++) {
+                            const r = i % 2 === 0 ? this.radius : this.radius * 0.8;
+                            const a = (Math.PI / this.teeth) * i;
+                            ctx.lineTo(r * Math.cos(a), r * Math.sin(a));
+                        }
+                        ctx.closePath();
+                        ctx.stroke();
+                        
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.radius * 0.3, 0, Math.PI * 2);
+                        ctx.stroke();
+
+                        ctx.restore();
+                    }
+                }
+
+                function animate(timestamp) {
+                    if(!lastTime) lastTime = timestamp;
+                    const deltaTime = timestamp - lastTime;
+                    
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    if (timestamp - lastTime > gearCooldown && gears.length < 30) {
+                         //gears.push(new Gear());
+                         lastTime = timestamp;
+                    }
+
+                    gears = gears.filter(gear => gear.life > 0);
+                    gears.forEach(gear => {
+                        gear.update(deltaTime/16); // normalize speed
+                        gear.draw();
+                    });
+
+                    requestAnimationFrame(animate);
+                }
+                
+                function initGears() {
+                    gears = [];
+                     for(let i=0; i < 20; i++){
+                        gears.push(new Gear());
+                    }
+                }
+
+                setCanvasSize();
+                initGears();
+                animate(0);
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initGears();
+                });
+            }
+
+            // --- Card Image Fetching Script ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                        container.classList.remove('card-placeholder');
+                    } else {
+                        throw new Error("Image not found");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.textContent = cardName;
+                    container.classList.add('card-placeholder');
+                }
+            }
+
+            const cardsToLoad = {
+                'raptor-img-container': 'Scrap Raptor',
+                'recycler-img-container': 'Scrap Recycler',
+                'chimera-img-container': 'Scrap Chimera',
+                'wyvern-img-container': 'Scrap Wyvern',
+                'baronne-img-container': 'Baronne de Fleur',
+                'twin-dragon-img-container': 'Scrap Twin Dragon',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

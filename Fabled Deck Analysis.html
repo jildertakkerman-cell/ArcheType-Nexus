@@ -1,0 +1,553 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fabled Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #100c08; /* Dark, warm black */
+            color: #f3e9d2; /* Parchment white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #281c10; /* Dark brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a3c2a; /* Lighter brown border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #382c1c;
+            border: 1px solid #5a4c3a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #382c1c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #382c1c;
+        }
+        .pro-icon { color: #86efac; } /* Light green */
+        .con-icon { color: #fca5a5; } /* Light red */
+        .neutral-icon { color: #93c5fd; } /* Light blue */
+        .text-accent { color: #f5d88b; } /* Radiant Gold */
+        .arrow-color { color: #f5d88b; }
+        .heading-underline {
+            border-bottom: 2px solid #f5d88b;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f5d88b;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f5d88b;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- Fabled Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #100c08;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a3c2a;
+        }
+
+        #ethereal-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(16, 12, 8, 0.6) 0%, rgba(16, 12, 8, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            font-family: 'Lora', serif;
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="ethereal-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">The Fabled</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Compendium on Discard-Driven Synchro Dominance</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-yellow-100">
+                    The <strong class="text-accent font-bold">Fabled</strong> archetype is an intricate Synchro-based strategy composed of LIGHT Fiend and Beast monsters. Its entire philosophy revolves around a powerful mechanic: turning the act of discarding cards from the hand into a catalyst for explosive advantage. Each card discarded becomes a stepping stone, allowing the deck to swarm the field and execute complex combos. This strategy is not a tragedy of lost resources, but a 
+                    <a href="https://yugipedia.com/wiki/Fabled" target="_blank" class="lore-link">divine comedy of discards</a>
+                    that builds a dominating board from an empty hand.
+                </p>
+            </div>
+        </section>
+
+        <!-- Key Personnel Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Main Deck Ensemble</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Enablers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-hand-sparkles text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Enablers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fabled Raven</h4>
+                            <p class="text-sm text-yellow-100">The classic enabler. A Level 2 Tuner that can discard any number of cards to boost its Level, triggering multiple Fabled effects at once.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fabled Marchosia</h4>
+                            <p class="text-sm text-yellow-100">A modern cornerstone. Summons itself by discarding Fabled monsters, acting as both an enabler and an extender.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Payoffs -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-magic text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Payoffs</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Fabled Cerburrel</h4>
+                            <p class="text-sm text-yellow-100">A Level 2 Beast Tuner that Special Summons itself when discarded, providing an instant body and Tuner for Synchro plays.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fabled Krus</h4>
+                            <p class="text-sm text-yellow-100">A powerful, non-once-per-turn extender that revives another Fabled monster from the GY when discarded.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Utility -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Utility & Spells</h3>
+                    </div>
+                    <div class="space-y-4">
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fabled Kushano</h4>
+                            <p class="text-sm text-yellow-100">The heart of the resource loop. Can be retrieved from the GY by discarding another Fabled, enabling infinite combos.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fabled Realm Resurrection</h4>
+                            <p class="text-sm text-yellow-100">A powerhouse Continuous Spell that provides a repeatable discard outlet to either draw a card or revive a monster.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Kushano Loop</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">The modern Fabled strategy centers on the non-linear recursion of <strong class="text-accent font-bold">Fabled Kushano</strong>. This loop converts any Fabled monster in hand into a resource for extension.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="gamygyn-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fabled Gamygyn</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#281c10] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon Gamygyn</h3>
+                            </div>
+                            <p class="text-yellow-100">Start your combo by Synchro Summoning <strong class="text-accent font-bold">Fabled Gamygyn</strong>. Its on-summon effect lets you Special Summon <strong class="text-accent font-bold">Fabled Kushano</strong> directly from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="kushano-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fabled Kushano</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#281c10] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Enable the Loop</h3>
+                            </div>
+                            <p class="text-yellow-100">Use <strong class="text-accent font-bold">Kushano</strong> as Synchro Material, sending it to the Graveyard. Now its powerful recursive effect is online.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="krus-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fabled Krus</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#281c10] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Extend Infinitely</h3>
+                            </div>
+                            <p class="text-yellow-100">With Kushano in the GY, discard another Fabled monster like <strong class="text-accent font-bold">Fabled Krus</strong> to add Kushano back to your hand. Krus's effect will trigger, reviving a monster from the GY. Repeat this loop to build your board.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final Chapter: Optimal Endboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Fabledswarm Leverzebul -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Fabledswarm Leverzebul</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="leverzebul-img-container" class="card-image-container card-placeholder">Fabledswarm Leverzebul</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent font-bold">Monster Steal:</strong> A devastating Quick Effect to Tribute Fabled monsters and take control of that many of your opponent's monsters.</li>
+                        <li><strong class="text-accent font-bold">Recursion:</strong> Can return itself to the Extra Deck from the GY to add any Fabled card back to your hand.</li>
+                    </ul>
+                </div>
+                <!-- Other Key Pieces -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Key Supporting Cast</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="unicore-img-container" class="card-image-container card-placeholder">The Fabled Unicore</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent font-bold">The Fabled Unicore:</strong> A classic floodgate that negates all of your opponent's effects while you both have the same number of cards in hand.</li>
+                        <li><strong class="text-accent font-bold">Fabled Treason (Set):</strong> A searchable Trap that revives Leverzebul on the opponent's turn for a second monster steal and also destroys a card.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">Explosive Potential:</strong> Capable of building massive, multi-interaction boards from one or two cards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">High Skill Ceiling:</strong> Non-linear combos allow skilled pilots to play through single points of disruption.</li>
+                        <li><span class="pro-icon"><i class="fas fa-chess-king"></i></span> <strong class="text-green-400 font-bold">Adaptable Endboard:</strong> Focuses on non-negate interaction like monster stealing, making it resilient to board breakers like Droplet.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-400 font-bold">Graveyard Dependency:</strong> Systemic GY hate like <strong class="text-accent font-bold">Dimension Shifter</strong> can be game-ending.</li>
+                        <li><span class="con-icon"><i class="fas fa-meteor"></i></span> <strong class="text-red-400 font-bold">Nibiru Vulnerability:</strong> The high number of summons makes the deck very susceptible to <strong class="text-accent font-bold">Nibiru, the Primal Being</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Droll & Lock Bird:</strong> As a combo deck with many searches, Droll is arguably the most effective hand trap against the strategy.</li>
+                    </ul>
+                </div>
+                <!-- Hybrids -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Unholy Alliances</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Fiendsmith Engine:</strong> The premier competitive variant. The shared LIGHT Fiend typing provides perfect synergy and one-card starters.</li>
+                         <li><span class="neutral-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-accent font-bold">Danger! Engine:</strong> A high-risk, high-reward pairing that uses the Danger! monsters as additional discard outlets and free bodies on board.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Fabled Ethereal Banner Animation ---
+            const canvas = document.getElementById('ethereal-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                let particles = [];
+                
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.speedY = (Math.random() - 0.5) * 0.5;
+                        this.size = Math.random() * 2 + 1;
+                        this.color = `rgba(245, 216, 139, ${Math.random() * 0.5 + 0.2})`;
+                    }
+
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.size > 0.1) this.size -= 0.01;
+                        if (this.size <= 0.1) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.size = Math.random() * 2 + 1;
+                        }
+                    }
+
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(particle => {
+                        particle.update();
+                        particle.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- Card Image Fetching Script ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'gamygyn-img-container': 'Fabled Gamygyn',
+                'kushano-img-container': 'Fabled Kushano',
+                'krus-img-container': 'Fabled Krus',
+                'leverzebul-img-container': 'Fabledswarm Leverzebul',
+                'unicore-img-container': 'The Fabled Unicore'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synchron Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background-color: #010409;
+            color: #e6edf3;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(13, 17, 23, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            border: 1px solid #30363d;
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(1, 4, 9, 0.7);
+            border: 1px solid #21262d;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #30363d;
+        }
+        .pro-icon { color: #238636; }
+        .con-icon { color: #da3633; }
+        .neutral-icon { color: #58a6ff; }
+        .text-accent { color: #58a6ff; } /* Electric Blue */
+        .link-accent {
+            color: #58a6ff;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #58a6ff;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .link-accent:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #58a6ff;
+        }
+        .arrow-color { color: #58a6ff; }
+        .heading-underline {
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        .heading-underline::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #58a6ff, transparent);
+            border-radius: 2px;
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 5px #58a6ff; }
+            to { box-shadow: 0 0 15px #58a6ff, 0 0 25px #58a6ff; }
+        }
+        
+        /* SYNCHRO-THEMED ANIMATED BANNER */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #010409;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #30363d;
+        }
+
+        #circuit-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(1, 4, 9, 0.4) 0%, rgba(1, 4, 9, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(88, 166, 255, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', monospace;
+             font-weight: 700;
+             letter-spacing: 0.1em;
+        }
+
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #0d1117, #161b22); color: white;
+            border: 2px solid #30363d; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 20px rgba(88, 166, 255, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.4), 0 0 30px rgba(88, 166, 255, 0.3);
+            border-color: #58a6ff;
+        }
+        .ygo-home-button i {
+            font-size: 22px; text-shadow: 0 0 10px rgba(88, 166, 255, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="circuit-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">SYNCHRON</h1>
+            <p class="text-lg md:text-xl text-blue-200">Mastering the Accelerator Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">Synchron</strong> archetype is a high-performance engine composed of specialized parts, each with a precise function. It thrives on explosive, sequential Synchro Summoning to build formidable end boards. The deck's modern strategy revolves around the successful resolution of a single, overwhelmingly powerful monster: <strong class="text-accent font-bold">Junk Speeder</strong>. The entire early game is a calculated effort to summon and resolve this one card, transitioning from methodical setup to an overwhelming combo execution that defines the deck's competitive potential.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Core Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Igniters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-rocket text-3xl text-accent mr-3"></i>
+                        <h3 class="text-xl font-bold text-white">The Igniters</h3>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">Starters and consistency tools that initiate the combo chain.</p>
+                    <div class="space-y-3">
+                        <p class="text-gray-300"><strong class="text-accent">Junk Synchron:</strong> The quintessential starter. Its Normal Summon revives a Level 2 or lower monster, instantly setting up a Level 5 Synchro.</p>
+                        <p class="text-gray-300"><strong class="text-accent">Junk Converter:</strong> A pivotal consistency tool. Discard itself and a Tuner to search for any "Synchron" monster.</p>
+                        <p class="text-gray-300"><strong class="text-accent">Tuning:</strong> The dedicated searcher spell, adding any "Synchron" monster and milling one card.</p>
+                    </div>
+                </div>
+                <!-- Fuel -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-gas-pump text-3xl text-accent mr-3"></i>
+                        <h3 class="text-xl font-bold text-white">The Fuel</h3>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">Combo extenders that provide additional materials for climbing into higher-Level Synchros.</p>
+                    <div class="space-y-3">
+                        <p class="text-gray-300"><strong class="text-accent">Jet Synchron:</strong> A premier extender that can Special Summon itself from the Graveyard. <span class="text-yellow-400 font-bold">(Currently Limited)</span></p>
+                        <p class="text-gray-300"><strong class="text-accent">Assault Synchron:</strong> Special Summons itself from hand at the cost of 700 LP, providing a free body but locking you into Synchro Summons.</p>
+                        <p class="text-gray-300"><strong class="text-accent">Doppelwarrior:</strong> Summons itself from hand when a monster is revived, and generates tokens when used as Synchro material.</p>
+                    </div>
+                </div>
+                <!-- Graveyard Resources -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-recycle text-3xl text-accent mr-3"></i>
+                        <h3 class="text-xl font-bold text-white">The Second Hand</h3>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">The Graveyard is a secondary resource pool, turning costs into strategic setup plays.</p>
+                     <div class="space-y-3">
+                        <p class="text-gray-300">Cards like <strong class="text-accent">Jet Synchron</strong> and <strong class="text-accent">Plaguespreader Zombie</strong> can revive themselves, extending combos. The secondary effect of <strong class="text-accent">Junk Converter</strong> revives a Tuner used for a Synchro Summon, directly continuing the chain.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Junk Speeder Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Heart of the Engine: Junk Speeder</h2>
+            <div class="card p-6 flex flex-col md:flex-row items-center gap-6">
+                <div id="junk-speeder-img-container" class="card-image-container flex-shrink-0 card-placeholder">Junk Speeder</div>
+                <div>
+                    <p class="text-gray-300 mb-4">
+                        The entire Synchron strategy is built to summon and resolve <strong class="text-accent font-bold">Junk Speeder</strong>. On Synchro Summon, it Special Summons a swarm of "Synchron" Tuners with different Levels from the Deck. This single resolution provides an explosive generation of card advantage and board presence, converting an investment of two monsters into a field of up to five additional monsters, ready for the <a href="https://yugipedia.com/wiki/Synchro_Summon" target="_blank" class="link-accent">Synchro Climb</a>.
+                    </p>
+                    <div class="bg-gray-800 border border-gray-700 p-3 rounded-lg">
+                        <h4 class="font-bold text-accent">The Synchro Lock</h4>
+                        <p class="text-sm text-gray-400">To balance its immense power, Junk Speeder imposes a crucial restriction: you cannot Special Summon from the Extra Deck, except for Synchro Monsters, for the rest of the turn. This forces a commitment to the Synchro mechanic.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">One-Card Speeder Combo</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates one of the deck's most powerful and consistent openings, starting with just Junk Converter and any Tuner in hand.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="junk-converter-img-container" class="card-image-container flex-shrink-0 card-placeholder">Junk Converter</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-gray-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Search and Setup</h3>
+                            </div>
+                            <p class="text-gray-300">Activate <strong class="text-accent">Junk Converter's</strong> effect in hand. Discard it and another Tuner to add <strong class="text-accent">Junk Synchron</strong> from your Deck to your hand. The Graveyard is now loaded.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="junk-synchron-img-container" class="card-image-container flex-shrink-0 card-placeholder">Junk Synchron</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-gray-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Key Summon</h3>
+                            </div>
+                            <p class="text-gray-300">Normal Summon <strong class="text-accent">Junk Synchron</strong>. Activate its effect, targeting <strong class="text-accent">Junk Converter</strong> in your GY to Special Summon it. Immediately Synchro Summon <strong class="text-accent">Junk Speeder</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="speeder-resolution-img-container" class="card-image-container flex-shrink-0 card-placeholder">Board Explosion</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-gray-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Chain Block & Resolution</h3>
+                            </div>
+                            <p class="text-gray-300">Upon summon, two effects trigger. Chain Link 1 is <strong class="text-accent">Junk Speeder</strong>, Chain Link 2 is <strong class="text-accent">Junk Converter</strong>. This "chain blocking" protects Speeder's effect from negation. The chain resolves, reviving a Tuner and then swarming the field with more Tuners from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Board: Fortress of Disruption</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+                The culmination of a successful Synchron combo is an oppressive endboard, a carefully constructed fortress of synergistic boss monsters designed to dismantle the opponent's turn. The strength of this board lies not merely in the number of interruptions but in their variety.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-4 combo-step-card text-center">
+                    <div id="baronne-img-container" class="w-24 h-36 mx-auto mb-2 card-placeholder">Baronne de Fleur</div>
+                    <h4 class="font-bold text-accent">Baronne de Fleur <span class="text-red-400 font-bold">(Currently Forbidden)</span></h4>
+                    <p class="text-sm text-gray-400">A versatile omni-negate and destruction.</p>
+                </div>
+                <div class="card p-4 combo-step-card text-center">
+                    <div id="savage-img-container" class="w-24 h-36 mx-auto mb-2 card-placeholder">Borreload Savage Dragon</div>
+                    <h4 class="font-bold text-accent">Borreload Savage Dragon</h4>
+                    <p class="text-sm text-gray-400">A dedicated omni-negate machine fueled by a Link monster in the GY. <span class="text-red-400 font-bold">(Currently Forbidden)</span></p>
+                </div>
+                <div class="card p-4 combo-step-card text-center">
+                    <div id="crystal-wing-img-container" class="w-24 h-36 mx-auto mb-2 card-placeholder">Crystal Wing Synchro Dragon</div>
+                    <h4 class="font-bold text-accent">Crystal Wing Synchro Dragon</h4>
+                    <p class="text-sm text-gray-400">A powerhouse focused on monster effect negation.</p>
+                </div>
+                <div class="card p-4 combo-step-card text-center">
+                    <div id="omega-img-container" class="w-24 h-36 mx-auto mb-2 card-placeholder">PSY-Framelord Omega</div>
+                    <h4 class="font-bold text-accent">PSY-Framelord Omega</h4>
+                    <p class="text-sm text-gray-400">Provides hand disruption by temporarily banishing a card from the opponent's hand.</p>
+                </div>
+                 <div class="card p-4 combo-step-card text-center">
+                    <div id="dis-pater-img-container" class="w-24 h-36 mx-auto mb-2 card-placeholder">Bystial Dis Pater</div>
+                    <h4 class="font-bold text-accent">Bystial Dis Pater</h4>
+                    <p class="text-sm text-gray-400">A modern boss that provides negation or destruction by recycling banished cards.</p>
+                </div>
+                 <div class="card p-4 combo-step-card text-center">
+                    <div id="accel-stardust-img-container" class="w-24 h-36 mx-auto mb-2 card-placeholder">Accel Synchro Stardust Dragon</div>
+                    <h4 class="font-bold text-accent">Accel Synchro Stardust Dragon</h4>
+                    <p class="text-sm text-gray-400">Extends combos by reviving a Level 2 or lower Tuner, and can Synchro Summon on the opponent's turn.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The Synchron archetype has been impacted by the TCG banlist, primarily through hits to its most powerful generic tools and extenders.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Jet Synchron:</strong> A key self-reviving extender.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4 bg-red-900/30 border-red-500">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden Cards (0 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                           <li><strong class="text-red-300">Borreload Savage Dragon:</strong> A major loss for the deck's end board negation capabilities.</li>
+                           <li><strong class="text-red-300">Baronne de Fleur:</strong> Removes one of the game's most versatile omni-negates and board presence tools.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core Synchron engine remains largely intact, the limitation of key extenders like Jet Synchron and the bans on staples like Borreload Savage Dragon and Baronne de Fleur requires players to adapt their end boards and combo routes, relying more on other powerful Synchros like Bystial Dis Pater and Crystal Wing Synchro Dragon.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CIRCUIT BOARD ANIMATION ---
+            const canvas = document.getElementById('circuit-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x || Math.random() * canvas.width;
+                        this.y = y || Math.random() * canvas.height;
+                        this.vx = 0;
+                        this.vy = 0;
+                        this.speed = 0.1;
+                        this.angle = 0;
+                    }
+
+                    update() {
+                        const randomAngle = Math.random() * Math.PI * 2;
+                        this.angle += (randomAngle - this.angle) * 0.1;
+                        this.vx = Math.cos(this.angle) * this.speed;
+                        this.vy = Math.sin(this.angle) * this.speed;
+                        this.x += this.vx;
+                        this.y += this.vy;
+
+                        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#58a6ff';
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function connectParticles() {
+                    ctx.strokeStyle = 'rgba(88, 166, 255, 0.1)';
+                    for (let i = 0; i < numParticles; i++) {
+                        for (let j = i + 1; j < numParticles; j++) {
+                            const dx = particles[i].x - particles[j].x;
+                            const dy = particles[i].y - particles[j].y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+
+                            if (dist < 100) {
+                                ctx.beginPath();
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    connectParticles();
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url_small;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-full object-cover rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                        container.classList.remove('card-placeholder');
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="w-full h-full flex items-center justify-center text-xs">${cardName}</div>`;
+                    container.classList.add('card-placeholder');
+                }
+            }
+
+            const cardsToLoad = {
+                'junk-speeder-img-container': 'Junk Speeder',
+                'junk-converter-img-container': 'Junk Converter',
+                'junk-synchron-img-container': 'Junk Synchron',
+                'baronne-img-container': 'Baronne de Fleur',
+                'savage-img-container': 'Borreload Savage Dragon',
+                'crystal-wing-img-container': 'Crystal Wing Synchro Dragon',
+                'omega-img-container': 'PSY-Framelord Omega',
+                'dis-pater-img-container': 'Bystial Dis Pater',
+                'accel-stardust-img-container': 'Accel Synchro Stardust Dragon'
+            };
+
+             // Placeholder for the "Board Explosion" step
+            const speederResolutionContainer = document.getElementById('speeder-resolution-img-container');
+            if (speederResolutionContainer) {
+                speederResolutionContainer.innerHTML = `<div class="w-full h-full flex items-center justify-center text-xs">Board Explosion</div>`;
+            }
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

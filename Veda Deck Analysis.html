@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veda Archetype Deep Dive Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a;
+            color: #e0e7ff;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(10, 5, 25, 0.6);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+            backdrop-filter: blur( 4px );
+            -webkit-backdrop-filter: blur( 4px );
+            border: 1px solid rgba( 255, 255, 255, 0.18 );
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(20, 15, 45, 0.6);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1e1b4b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2457;
+            border: 1px dashed #8b5cf6;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a78bfa; }
+        .arrow-color { color: #a78bfa; }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #a78bfa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a78bfa;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #a78bfa;
+        }
+        .banner-header {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(45deg, #000000, #1e1b4b, #4c1d95);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c3d8e;
+        }
+
+        #starfield-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 10, 26, 0.1) 0%, rgba(12, 10, 26, 0.8) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(167, 139, 250, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+             font-size: 3.5rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="starfield-canvas"></canvas>
+            <h1 class="text-white mb-2">VEDA</h1>
+            <p class="text-lg md:text-xl text-purple-200">The Final Antagonist's Gambit</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Veda</strong> archetype represents a unique design philosophy within the Yu-Gi-Oh! TCG. It operates not as a standalone deck, but as a specialized, high-impact "win-condition engine." Thematically rooted in the Visas Starfrost lore as the final antagonist, its mechanics mirror this climactic role. The strategy is built around a single, formidable boss monster, <strong class="text-accent font-bold">Veda Kalarcanum</strong>, designed to be integrated into a host deck. Its primary function is to provide an ultimate, game-ending flourish, elevating an already powerful board into <a href="https://www.google.com/search?q=Valkyrie+Yu-Gi-Oh!+cards" target="_blank" class="lore-link">a nearly insurmountable one, reminiscent of a divine judgment from the sky</a>.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Core Philosophy: The "Turn Skip" Lock</h2>
+            <div class="card p-6">
+                 <p class="text-indigo-200">
+                    The singular objective of the Veda engine is to resolve the monster effect of <strong class="text-accent font-bold">Veda Kalarcanum</strong>. This potent effect, triggered when an opponent Special Summons from the Extra Deck, allows the player to banish 12 cards to immediately force the turn to its End Phase. This "turn skip" is one of the most powerful control effects in the game, effectively denying the opponent their Main Phase 1 and Battle Phase. While some see it as a "win-more" mechanic, it provides crucial insulation against powerful board-breaking cards like Super Polymerization or Dark Ruler No More, transforming a strong board into an almost unbreakable one.
+                </p>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Veda Arsenal</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Veda Kalarcanum</h3>
+                    <p class="text-sm text-indigo-200">The centerpiece. Accumulates counters from monster destructions to Special Summon itself, then skips the opponent's turn upon their Extra Deck summon.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Veda Kalanta</h3>
+                    <p class="text-sm text-indigo-200">A reactive extender that summons itself when a card is destroyed while "Visas Starfrost" is on the field, providing an extra body and searching "Clear New World".</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Realm Elegy</h3>
+                    <p class="text-sm text-indigo-200">The primary searcher for a "Veda" monster. Its GY effect recovers a destroyed Tuner, making it perfect for the Mannadium engine.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Realm Eulogy</h3>
+                    <p class="text-sm text-indigo-200">A Quick-Play Spell that provides interaction by destroying one of your monsters to negate an opponent's monster effect, generating destruction triggers.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Sharv Sarga</h3>
+                    <p class="text-sm text-indigo-200">A Normal Trap providing non-destruction removal. It returns to the hand from the GY when a "Veda" monster is summoned, creating a resource loop.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW Core Gameplay Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Gameplay: Path to the Turn Skip</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">The Veda strategy is executed through the Mannadium engine, which naturally provides the four distinct monster destructions needed to summon Veda Kalarcanum. The following is a foundational combo path assuming Kalarcanum is in the Pendulum Zone.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="riumheart-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mannadium Riumheart</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Combo</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Mannadium Riumheart</strong>. Its effect searches for <strong class="text-accent">Mannadium Abscission</strong>, setting up the first destruction.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="visas-img-container" class="card-image-container flex-shrink-0 card-placeholder">Visas Starfrost</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Chain of Destruction</h3>
+                            </div>
+                            <p class="text-indigo-200">Use <strong class="text-accent">Abscission</strong> to destroy Riumheart (1st destruction), which searches <strong class="text-accent">Peaceful Planet Calarium</strong>. Calarium searches <strong class="text-accent">Visas Starfrost</strong>. Use Visas's effect, destroying another monster to summon itself (2nd destruction).</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="kalarcanum-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Veda Kalarcanum</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon The Antagonist</h3>
+                            </div>
+                            <p class="text-indigo-200">Continue the Synchro climb with the Mannadium engine, destroying cards like <strong class="text-accent">Mannadium Meek</strong> to generate two more destructions on separate chains. Once 12 counters are placed, Special Summon <strong class="text-accent">Veda Kalarcanum</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Optimal End Board: The Unbreakable Lock</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto max-w-5xl">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">Veda Kalarcanum</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="kalarcanum-img-container" class="card-image-container card-placeholder">Veda Kalarcanum</div>
+                    </div>
+                    <p class="text-sm text-indigo-200 text-center">The final lock, ready to skip the opponent's turn.</p>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">Baronne de Fleur</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="baronne-img-container" class="card-image-container card-placeholder">Baronne de Fleur</div>
+                    </div>
+                    <p class="text-sm text-indigo-200 text-center">Provides a powerful once-per-turn omni-negate.</p>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">Chaos Angel</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="chaos-angel-img-container" class="card-image-container card-placeholder">Chaos Angel</div>
+                    </div>
+                    <p class="text-sm text-indigo-200 text-center">Offers both protection and targeted removal, insulating the board.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-crown"></i></span> <strong class="text-green-300">Unmatched Power Ceiling:</strong> Creates boards that are functionally impossible for most decks to overcome.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Board-Breaker Immunity:</strong> The turn-skip lock circumvents common answers like Super Polymerization and Dark Ruler No More.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-300">High Synergy:</strong> The Mannadium engine provides the perfect fuel source for summoning Kalarcanum consistently.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Chokepoint Vulnerability:</strong> Highly dependent on resolving Visas Starfrost. Negating it can stop the entire engine.</li>
+                        <li><span class="con-icon"><i class="fas fa-random"></i></span> <strong class="text-red-300">Drawing Kalarcanum:</strong> Drawing the boss monster without a way to place it in the Pendulum Zone can be a dead card.</li>
+                         <li><span class="con-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-red-300">Graveyard Disruption:</strong> Relies on the GY to pay the cost for the turn-skip; cards like D.D. Crow can be impactful.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">LARGELY UNRESTRICTED:</strong> The Veda archetype itself is at full power, though its most common engine partners have some considerations.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Veda Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Veda Kalarcanum (3 copies)</li>
+                            <li>Veda Kalanta (3 copies)</li>
+                            <li>All "Realm" Spells & "Sharv Sarga" Trap (3 copies each)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Engine Considerations</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                           <li><strong class="text-yellow-300">Baronne de Fleur (Limited to 1 copy in some regions)</strong> - A key part of the end board, its limitation requires careful resource management.</li>
+                            <li>Core Mannadium and Visas Starfrost cards are currently unrestricted.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The core Veda strategy remains fully intact. Pilots must be mindful of the status of generic Extra Deck staples that are often used to build its formidable end boards. The deck's power is not directly hit, but the tools it uses can be.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('starfield-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let stars = [];
+                const numStars = 200;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Star {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.z = Math.random() * canvas.width;
+                        this.p_z = this.z;
+                    }
+                    update() {
+                        this.z -= 2;
+                        if (this.z < 1) {
+                            this.z = canvas.width;
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.p_z = this.z;
+                        }
+                    }
+                    draw() {
+                        const k = 128 / this.z;
+                        const p_x = this.x * k + canvas.width / 2;
+                        const p_y = this.y * k + canvas.height / 2;
+                        const size = (1 - this.z / canvas.width) * 2.5;
+
+                        ctx.beginPath();
+                        ctx.fillStyle = `rgba(167, 139, 250, ${1 - this.p_z / canvas.width})`;
+                        ctx.arc(p_x, p_y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function initStars() {
+                    stars = [];
+                    for (let i = 0; i < numStars; i++) {
+                        stars.push(new Star());
+                    }
+                }
+
+                function animate() {
+                    ctx.fillStyle = '#0c0a1a';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    stars.forEach(s => {
+                        s.update();
+                        s.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initStars();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initStars();
+                });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'riumheart-img-container': 'Mannadium Riumheart',
+                'visas-img-container': 'Visas Starfrost',
+                'kalarcanum-combo-img-container': 'Veda Kalarcanum',
+                'kalarcanum-img-container': 'Veda Kalarcanum',
+                'baronne-img-container': 'Baronne de Fleur',
+                'chaos-angel-img-container': 'Chaos Angel'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

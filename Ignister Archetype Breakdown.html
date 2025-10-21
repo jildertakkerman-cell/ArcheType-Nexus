@@ -1,0 +1,746 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Ignister Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d121c;
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #172a4d;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2b4984;
+        }
+        .combo-step-card {
+            background-color: #213c6b;
+            border: 1px solid #335ca3;
+        }
+        .pro-con-card {
+            background-color: #213c6b;
+            border: 1px solid #335ca3;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1a305f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a305f;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #1a305f);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+
+        .card-image-container img {
+            height: auto;
+            max-width: 100%;
+        }
+
+        .combo-step-card .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .combo-step-card .content-wrapper {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+
+        /* --- NEW DYNAMIC BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            height: 120px; /* Reduced height */
+            background-color: #0d121c; /* Fallback background */
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #matrix-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Sits behind the overlay and text */
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(13, 18, 28, 0.65);
+            z-index: 2; /* Overlay is on top of the canvas */
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3; /* Text is on top of the overlay */
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .banner-header h1 {
+            font-size: 2.5rem; /* Adjusted font size */
+        }
+        .banner-header p {
+            font-size: 1rem; /* Adjusted font size */
+        }
+
+        @media (max-width: 768px) {
+            .banner-header {
+                height: 100px;
+            }
+            .banner-header h1 {
+                font-size: 2rem;
+            }
+            .banner-header p {
+                font-size: 0.875rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="matrix-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">@Ignister</h1>
+            <p class="text-lg md:text-xl text-blue-300">A Strategic Analysis of the Cyberse Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-[#fca5a5] font-bold">@Ignister</strong> archetype is a Cyberse-Type strategy from the <strong class="text-[#fca5a5] font-bold">Yu-Gi-Oh! VRAINS</strong> era. It's a highly linear, combo-centric system that leverages its in-archetype searchers and extenders to build formidable and multifaceted end boards. The deck's core is the Field Spell card, <strong class="text-[#fca5a5] font-bold">Ignister A.I. Land</strong>, which acts as a central resource hub, enabling multiple Special Summons per turn and leading to its signature boss monster, the Link-6 <strong class="text-[#fca5a5] font-bold">The Arrival Cyberse @Ignister</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The A.I. Workforce & Operating System Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The A.I. Workforce and the Operating System</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The <strong class="text-[#fca5a5] font-bold">@Ignister</strong> archetype is built on a foundation of interconnected cards, where each monster and Spell/Trap serves a specific, vital function within the overall strategy. The synergy among these cards allows for the construction of complex and resilient boards from minimal starting resources.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-robot text-4xl text-blue-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Monsters: The A.I. Workforce</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-[#fca5a5] mb-1">Achichi @Ignister (FIRE)</h4>
+                            <p class="text-sm text-blue-200">A premier starter. When Normal or Special Summoned, it can search for a Level 4 or lower <strong class="text-[#fca5a5] font-bold">@Ignister</strong> monster.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-[#fca5a5] mb-1">Pikari @Ignister (LIGHT)</h4>
+                            <p class="text-sm text-blue-200">A cornerstone starter and extender. Its summon effect searches for any "A.I." Spell/Trap, providing access to the crucial <strong class="text-[#fca5a5] font-bold">Ignister A.I. Land</strong>.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-[#fca5a5] mb-1">Doyon @Ignister (DARK)</h4>
+                            <p class="text-sm text-blue-200">The deck's primary resource recovery tool. When summoned, it can add an <strong class="text-[#fca5a5] font-bold">@Ignister</strong> monster from the GY back to the hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-[#fca5a5] mb-1">Bururu @Ignister (WIND)</h4>
+                            <p class="text-sm text-blue-200">Enables the deck's Synchro engine. When used as Synchro Material, it can Special Summon one of the other materials from the GY.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-[#fca5a5] mb-1">Danmari @Ignister (DARK)</h4>
+                            <p class="text-sm text-blue-200">A crucial defensive piece, providing an on-demand omni-negate from the hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-microchip text-4xl text-blue-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">A.I. Spells & Traps: The Operating System</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-[#fca5a5] mb-1">Ignister A.I. Land (Field Spell)</h4>
+                            <p class="text-sm text-blue-200">The non-once-per-turn engine that defines the deck's speed. It Special Summons a Level 4 or lower <strong class="text-[#fca5a5] font-bold">@Ignister</strong> monster from the hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-[#fca5a5] mb-1">A.I. Meet You (Spell)</h4>
+                            <p class="text-sm text-blue-200">A powerful search card that provides consistent access to starters like <strong class="text-[#fca5a5] font-bold">Achichi</strong> or <strong class="text-[#fca5a5] font-bold">Pikari</strong>.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-[#fca5a5] mb-1">A.I. dle Reborn (Quick-Play Spell)</h4>
+                            <p class="text-sm text-blue-200">The archetype's primary revival tool, Special Summoning a Cyberse monster from the GY.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-[#fca5a5] mb-1">A.I. Love Fusion (Spell)</h4>
+                            <p class="text-sm text-blue-200">Facilitates Fusion Summons and can use an opponent's Link Monster as material for a powerful board-breaking effect.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Achichi / Pikari Starter Loop</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how a single starter monster can initiate the deck's main combo line.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md">
+                    <div class="content-wrapper">
+                        <div id="achichi-img-container" class="card-image-container flex-shrink-0 card-placeholder">Achichi @Ignister</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a305f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Normal Summon a Starter</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon <strong class="text-[#fca5a5] font-bold">Achichi @Ignister</strong> to search for <strong class="text-[#fca5a5] font-bold">Pikari @Ignister</strong> from the Deck, gaining immediate access to the core engine.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 text-[#1a305f] animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md">
+                    <div class="content-wrapper">
+                        <div id="dark-infant-img-container" class="card-image-container flex-shrink-0 card-placeholder">Dark Infant @Ignister</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a305f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Search for A.I. Land</h3>
+                            </div>
+                            <p class="text-blue-200">Use <strong class="text-[#fca5a5] font-bold">Achichi</strong> to Link Summon <strong class="text-[#fca5a5] font-bold">Dark Infant @Ignister</strong> and use its effect to search for the Field Spell, <strong class="text-[#fca5a5] font-bold">Ignister A.I. Land</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 text-[#1a305f] animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md">
+                    <div class="content-wrapper">
+                        <div id="pikari-img-container" class="card-image-container flex-shrink-0 card-placeholder">Pikari @Ignister</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a305f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Special Summon & Search</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-[#fca5a5] font-bold">Ignister A.I. Land</strong> to Special Summon <strong class="text-[#fca5a5] font-bold">Pikari</strong> from your hand, which then searches for another crucial "A.I." Spell/Trap.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dark Templar Swarm Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Dark Templar Swarm</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                A pivotal mid-combo step involves the Link-3 monster <strong class="text-[#fca5a5] font-bold">Dark Templar @Ignister</strong>. Its effect is key to flooding the field with monsters for the final Link Summons. The sequence is as follows:
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md">
+                    <div class="content-wrapper">
+                        <div id="dark-templar-img-container" class="card-image-container flex-shrink-0 card-placeholder">Dark Templar @Ignister</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a305f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon to Extra Zone</h3>
+                            </div>
+                            <p class="text-blue-200">Link Summon <strong class="text-[#fca5a5] font-bold">Dark Templar @Ignister</strong> to an Extra Monster Zone.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 text-[#1a305f] animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md">
+                    <div class="content-wrapper">
+                        <div id="a-i-land-img-container" class="card-image-container flex-shrink-0 card-placeholder">Ignister A.I. Land</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a305f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Trigger Special Summon</h3>
+                            </div>
+                            <p class="text-blue-200">Use <strong class="text-[#fca5a5] font-bold">Ignister A.I. Land</strong> to Special Summon an <strong class="text-[#fca5a5] font-bold">@Ignister</strong> monster to a zone <strong class="text-[#fca5a5] font-bold">Dark Templar</strong> points to. This triggers its effect.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 text-[#1a305f] animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md">
+                    <div class="content-wrapper">
+                        <div id="graveyard-img-container" class="card-image-container flex-shrink-0 card-placeholder">Graveyard</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a305f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Swarm the Field</h3>
+                            </div>
+                            <p class="text-blue-200">Upon resolution, <strong class="text-[#fca5a5] font-bold">Dark Templar</strong> Special Summons as many Level 4 or lower <strong class="text-[#fca5a5] font-bold">@Ignister</strong> monsters as possible from the GY, swarming the field for your final boss monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-blue-200 mt-8 text-center max-w-2xl mx-auto">
+                The deck's swarming capability also makes it highly susceptible to <strong class="text-[#fca5a5] font-bold">Nibiru, the Primal Being</strong>. A skilled player can adapt by either playing around this hand trap or by using the <strong class="text-[#fca5a5] font-bold">Nibiru</strong> token itself as material to continue their combo.
+            </p>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Final Endboards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- "Tower" Build -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The "Tower" Build</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="arrival-img-container" class="card-image-container card-placeholder">The Arrival Cyberse @Ignister</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-blue-400 font-bold">The Arrival Cyberse @Ignister:</strong> A boss monster unaffected by other card effects, with ATK up to 6000.</li>
+                        <li><strong class="text-blue-400 font-bold">Danmari @Ignister:</strong> An omni-negate from the hand, protecting your board.</li>
+                    </ul>
+                </div>
+                <!-- "Firewall" Build -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The "Firewall" Build</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="darkfluid-img-container" class="card-image-container card-placeholder">Firewall Dragon Darkfluid</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-blue-400 font-bold">Firewall Dragon Darkfluid:</strong> A Link 5 monster with multiple monster negates.</li>
+                        <li><strong class="text-blue-400 font-bold">Firewall Dragon Singularity:</strong> A Link 5 that provides versatile, non-targeting bounces.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Consistency:</strong> The deck's numerous one-card starters and non-once-per-turn engine make it very resilient.</li>
+                        <li><span class="pro-icon"><i class="fas fa-rocket"></i></span> <strong class="text-green-400 font-bold">Explosive Power:</strong> It can rapidly flood the board to summon high-impact boss monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400 font-bold">Adaptability:</strong> Can seamlessly integrate with external engines like Mathmech and generic Cyberse support.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-red-400 font-bold">Linearity:</strong> The combo is predictable, making its choke points well-known to opponents.</li>
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-400 font-bold">Hand Trap Vulnerability:</strong> Highly susceptible to cards like <strong class="text-[#fca5a5] font-bold">Nibiru, the Primal Being</strong> and <strong class="text-[#fca5a5] font-bold">Ash Blossom & Joyous Spring</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-chain-broken"></i></span> <strong class="text-red-400 font-bold">Board Breakers:</strong> End boards can be dismantled by specific, non-targeting removal.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Tech Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-[#fca5a5] font-bold">Mathmech Engine:</strong> Provides additional one-card starters and consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-network-wired"></i></span> <strong class="text-[#fca5a5] font-bold">Generic Cyberse:</strong> Seamlessly integrates with cards like <strong class="text-[#fca5a5] font-bold">Firewall Dragon Darkfluid</strong> and <strong class="text-[#fca5a5] font-bold">Accesscode Talker</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Archetype Components: The Arsenal of @Ignister</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This section provides a detailed overview of each card's individual role and effects.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-[#fca5a5] mb-2">Achichi @Ignister</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 4 FIRE Cyberse</strong></p>
+                    <p class="text-blue-200">A primary starter. Its Normal or Special Summon effect can search for a Level 4 or lower @Ignister monster from the Deck.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-[#fca5a5] mb-2">Pikari @Ignister</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 4 LIGHT Cyberse</strong></p>
+                    <p class="text-blue-200">Another core starter. Its summon effect searches for any "A.I." Spell/Trap, providing access to the crucial <strong class="text-[#fca5a5] font-bold">Ignister A.I. Land</strong>.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-[#fca5a5] mb-2">Ignister A.I. Land</h3>
+                    <p class="text-blue-200 mb-2"><strong>Field Spell</strong></p>
+                    <p class="text-blue-200">The deck's central engine. It allows you to Special Summon a Level 4 or lower @Ignister monster from your hand, with no once-per-turn restriction.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-[#fca5a5] mb-2">The Arrival Cyberse @Ignister</h3>
+                    <p class="text-blue-200 mb-2"><strong>Link 6 Cyberse</strong></p>
+                    <p class="text-blue-200">A formidable boss monster. It is "unaffected by other cards' effects" and gains ATK based on its Link Rating, making it a powerful, difficult-to-remove threat.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The @Ignister archetype operates at full power in the current TCG format:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Core Archetype</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All @Ignister main deck monsters (3 copies each)</li>
+                            <li>All @Ignister Extra Deck monsters (3 copies each)</li>
+                            <li>Ignister A.I. Land and A.I. spell support</li>
+                            <li>The Arrival Cyberse @Ignister</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">External Support</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Firewall Dragon Darkfluid & Singularity</li>
+                            <li>Accesscode Talker and generic Cyberse Links</li>
+                            <li>Mathmech engine compatibility</li>
+                            <li>Full access to generic support cards</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With complete access to all archetype components, @Ignister can operate at its intended power level. The deck maintains its explosive combo potential and multiple endboard configurations, making it a viable competitive choice.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- NEW SCRIPT FOR DYNAMIC BANNER ---
+            const canvas = document.getElementById('matrix-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particlesArray;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y, directionX, directionY, size, color) {
+                        this.x = x;
+                        this.y = y;
+                        this.directionX = directionX;
+                        this.directionY = directionY;
+                        this.size = size;
+                        this.color = color;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                    update() {
+                        if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+                        if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+                        this.x += this.directionX;
+                        this.y += this.directionY;
+                        this.draw();
+                    }
+                }
+
+                function init() {
+                    particlesArray = [];
+                    const colors = ['#00ffff', '#ff00ff', '#7f00ff', '#007fff'];
+                    let numberOfParticles = (canvas.height * canvas.width) / 10000;
+                    for (let i = 0; i < numberOfParticles; i++) {
+                        let size = (Math.random() * 2) + 1;
+                        let x = (Math.random() * (canvas.width - size * 2) + size);
+                        let y = (Math.random() * (canvas.height - size * 2) + size);
+                        let directionX = (Math.random() * 0.4) - 0.2;
+                        let directionY = (Math.random() * 0.4) - 0.2;
+                        let color = colors[Math.floor(Math.random() * colors.length)];
+                        particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+                    }
+                }
+
+                function connect() {
+                    let opacityValue = 1;
+                    for (let a = 0; a < particlesArray.length; a++) {
+                        for (let b = a + 1; b < particlesArray.length; b++) {
+                            let distance = Math.sqrt(Math.pow(particlesArray[a].x - particlesArray[b].x, 2) + Math.pow(particlesArray[a].y - particlesArray[b].y, 2));
+                            if (distance < 120) {
+                                opacityValue = 1 - (distance / 120);
+                                ctx.strokeStyle = `rgba(0, 255, 255, ${opacityValue})`;
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                                ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particlesArray.forEach(particle => particle.update());
+                    connect();
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+
+            // --- EXISTING SCRIPT FOR CARD IMAGES ---
+            function createAndAppendPlaceholder(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder animate-fadeIn';
+                placeholder.textContent = cardName;
+                container.appendChild(placeholder);
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        throw new Error(`API returned status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        console.warn(`Image not found for "${cardName}". Using placeholder.`);
+                        createAndAppendPlaceholder(cardName, containerId);
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    createAndAppendPlaceholder(cardName, containerId);
+                }
+            }
+            
+            fetchAndDisplayCardImage('Achichi @Ignister', 'achichi-img-container');
+            fetchAndDisplayCardImage('Dark Infant @Ignister', 'dark-infant-img-container');
+            fetchAndDisplayCardImage('Pikari @Ignister', 'pikari-img-container');
+            fetchAndDisplayCardImage('The Arrival Cyberse @Ignister', 'arrival-img-container');
+            fetchAndDisplayCardImage('Firewall Dragon Darkfluid', 'darkfluid-img-container');
+            fetchAndDisplayCardImage('Firewall Dragon Singularity', 'singularity-img-container'); 
+            fetchAndDisplayCardImage('Dark Templar @Ignister', 'dark-templar-img-container');
+            fetchAndDisplayCardImage('Ignister A.I.Land', 'a-i-land-img-container');
+            
+            createAndAppendPlaceholder('Graveyard', 'graveyard-img-container');
+        });
+    </script>
+</body>
+</html>
+

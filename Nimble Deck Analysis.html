@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nimble Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Baloo+2:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e0f7fa; /* Light cyan background */
+            color: #004d40; /* Dark teal text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 77, 64, 0.1);
+            border: 1px solid #b2dfdb; /* Light teal border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #f0fdfa; /* Very light cyan */
+            border: 1px solid #80cbc4; /* Medium teal border */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 110px; /* Made smaller */
+            flex-shrink: 0;
+        }
+        .card-placeholder {
+            background-color: #e0f2f1;
+            color: #00796b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 160px;  /* Made smaller */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .pro-icon { color: #2e7d32; }
+        .con-icon { color: #c62828; }
+        .neutral-icon { color: #0277bd; }
+        .text-accent { color: #00796b; } /* Teal for accents */
+        .arrow-color { color: #009688; }
+        .heading-underline {
+            border-bottom: 3px solid #009688;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #00796b;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 2px dotted #009688;
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #004d40;
+            border-color: #004d40;
+        }
+
+        /* --- Animated Banner Styles --- */
+        .banner {
+            position: relative;
+            height: 140px;
+            background: linear-gradient(45deg, #4db6ac, #80cbc4);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #26a69a;
+            box-shadow: 0 8px 20px rgba(0, 105, 92, 0.3);
+        }
+        .banner-title {
+            font-family: 'Baloo 2', cursive;
+            font-size: 3rem;
+            color: #ffffff;
+            text-shadow: 0 2px 5px rgba(0, 77, 64, 0.5);
+            letter-spacing: 0.05em;
+        }
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            opacity: 0;
+            animation: rise 10s infinite linear;
+        }
+        .bubble:nth-child(1) { width: 20px; height: 20px; left: 10%; animation-duration: 8s; animation-delay: 0s; }
+        .bubble:nth-child(2) { width: 15px; height: 15px; left: 20%; animation-duration: 5s; animation-delay: 1s; }
+        .bubble:nth-child(3) { width: 30px; height: 30px; left: 35%; animation-duration: 12s; animation-delay: 2s; }
+        .bubble:nth-child(4) { width: 10px; height: 10px; left: 50%; animation-duration: 6s; animation-delay: 0s; }
+        .bubble:nth-child(5) { width: 25px; height: 25px; left: 65%; animation-duration: 9s; animation-delay: 1s; }
+        .bubble:nth-child(6) { width: 18px; height: 18px; left: 80%; animation-duration: 7s; animation-delay: 3s; }
+
+        @keyframes rise {
+            0% { transform: translateY(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-200px); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 120px; }
+            .banner-title { font-size: 2.5rem; }
+            .combo-step-card {
+                flex-direction: column;
+                align-items: center;
+            }
+            .card-image-container {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #00796b, #004d40);
+            color: white; border: 2px solid #4db6ac;
+            border-radius: 12px; width: 60px; height: 60px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 105, 92, 0.4);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 105, 92, 0.6);
+            border-color: #80cbc4;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+                <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+                <div class="z-10">
+                    <h1 class="banner-title">Nimble</h1>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">Executive Summary</h2>
+                <p class="text-teal-800">
+                    The <strong class="text-accent font-bold">"Nimble"</strong> series is not a self-contained archetype but a highly efficient, emergent engine built around a small collection of Level 2 WATER monsters. Its modern competitive identity is born from the potent synergy between its core members—<strong class="text-accent font-bold">Nimble Beaver</strong> and <strong class="text-accent font-bold">Nimble Angler</strong>—and their seamless integration with generic Level 2 support, most notably the <strong class="text-accent font-bold">Spright</strong> archetype. The engine excels at converting a single Normal Summon into overwhelming board presence, making it a premier choice for strategies focused on swarming the field with Level 2 monsters for Extra Deck plays.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Cast Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center heading-underline">The Nimble Roster</h2>
+            <p class="text-teal-800 mb-8 text-center max-w-2xl mx-auto">
+                The effectiveness of the Nimble engine hinges on a generational divide between its members. Only the modern, proactive combo pieces see competitive play, while the legacy cards are too slow for the current game state.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Modern Combo Pieces</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-star text-teal-500 mt-1"></i>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Nimble Beaver</h4>
+                                <p class="text-sm text-teal-700">The primary one-card starter. When Normal Summoned, it Special Summons a Level 3 or lower "Nimble" monster from the Deck or GY, immediately establishing two Level 2 bodies on the field.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-star text-teal-500 mt-1"></i>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Nimble Angler</h4>
+                                <p class="text-sm text-teal-700">The engine's explosive payoff. When sent from the hand or Deck to the GY, it Special Summons up to two Level 3 or lower "Nimble" monsters from the Deck, generating immense card advantage.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-gray-600 mb-4 text-center">Legacy Cards</h3>
+                     <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-history text-gray-400 mt-1"></i>
+                            <div>
+                                <h4 class="font-bold text-gray-600">Nimble Momonga & Nimble Musasabi</h4>
+                                <p class="text-sm text-gray-500">These older monsters rely on being destroyed by battle to trigger their effects, making them too reactive and slow for combo-oriented strategies.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                           <i class="fas fa-history text-gray-400 mt-1"></i>
+                            <div>
+                                <h4 class="font-bold text-gray-600">Super-Nimble Mega Hamster</h4>
+                                <p class="text-sm text-gray-500">As a FLIP monster, it is fundamentally too slow and vulnerable to be a reliable combo starter in the modern game.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center heading-underline">Core Combo: The 1-Card Beaver Starter</h2>
+            <p class="text-teal-800 mb-8 text-center max-w-2xl mx-auto">The deck's most powerful opening converts a single <strong class="text-accent font-bold">Nimble Beaver</strong> into a formidable board. This simple, yet <a href="https://yugipedia.com/wiki/Nimble" target="_blank" class="lore-link">nimble combo</a> is the foundation of the engine's strength.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex items-center gap-4">
+                    <div id="beaver-img" class="card-image-container card-placeholder" style="max-width:150px; min-height: 220px;">Nimble Beaver</div>
+                    <div>
+                        <span class="bg-teal-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mb-2">1</span>
+                        <h3 class="text-lg font-bold text-accent">Summon & Search</h3>
+                        <p class="text-teal-800">Normal Summon <strong class="text-accent">Nimble Beaver</strong>. Activate its effect to Special Summon <strong class="text-accent">Nimble Angler</strong> from the Deck.</p>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex items-center gap-4">
+                    <div id="sprind-img" class="card-image-container card-placeholder" style="max-width:150px; min-height: 220px;">Spright Sprind</div>
+                    <div>
+                        <span class="bg-teal-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mb-2">2</span>
+                        <h3 class="text-lg font-bold text-accent">Link & Trigger</h3>
+                        <p class="text-teal-800">Use Beaver and Angler to Link Summon <strong class="text-accent">Spright Sprind</strong>. Sprind's effect sends another <strong class="text-accent">Nimble Angler</strong> from Deck to GY.</p>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex items-center gap-4">
+                    <div id="angler-img" class="card-image-container card-placeholder" style="max-width:150px; min-height: 220px;">Nimble Angler</div>
+                    <div>
+                         <span class="bg-teal-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mb-2">3</span>
+                        <h3 class="text-lg font-bold text-accent">Swarm the Field</h3>
+                        <p class="text-teal-800">The Angler sent to the GY triggers, Special Summoning two more "Nimble" monsters (e.g., two <strong class="text-accent">Nimble Beaver</strong>) from the Deck.</p>
+                    </div>
+                </div>
+                 <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2"></i></div>
+                <!-- Step 4 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex items-center gap-4">
+                    <div id="gigantic-img" class="card-image-container card-placeholder" style="max-width:150px; min-height: 220px;">Gigantic Spright</div>
+                    <div>
+                         <span class="bg-teal-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mb-2">4</span>
+                        <h3 class="text-lg font-bold text-accent">Extend & Protect</h3>
+                        <p class="text-teal-800">Use Sprind and a Beaver to Xyz Summon <strong class="text-accent">Gigantic Spright</strong>, which summons a Level 2 from Deck (like <strong class="text-accent">Spright Blue</strong>) and locks both players into Level/Rank/Link 2 monsters, protecting you from <strong class="text-accent">Nibiru</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center heading-underline">Optimal End Board (TCG)</h2>
+            <p class="text-teal-800 mb-8 text-center max-w-3xl mx-auto">Following the ban of <strong class="text-accent">Spright Elf</strong>, the Nimble-Spright end board has adapted. Instead of relying on one omni-negate, it now establishes multiple, diverse points of interaction to control the opponent's turn.</p>
+            <div class="card p-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">Typical Board State:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <div id="gigantic-board-img" class="card-image-container mx-auto card-placeholder">Gigantic Spright</div>
+                    <div id="beaver-board-img" class="card-image-container mx-auto card-placeholder">Nimble Beaver</div>
+                    <div id="ip-masquerena-img" class="card-image-container mx-auto card-placeholder">I:P Masquerena</div>
+                </div>
+                 <p class="text-center font-bold text-2xl my-2 text-teal-600">+</p>
+                 <div class="text-center combo-step-card p-4 rounded-lg">
+                    <p class="font-bold text-accent">Set <strong class="text-accent">Spright Starter</strong> or <strong class="text-accent">Spright Double Cross</strong></p>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mt-6 mb-4">Layers of Interruption:</h3>
+                 <ul class="space-y-3 text-teal-800">
+                    <li class="flex items-start"><i class="fas fa-shield-alt text-teal-500 w-5 mt-1 mr-2"></i><span><strong class="text-accent">I:P Masquerena:</strong> Provides a Quick Link Summon on the opponent's turn into a powerful disruption like <strong class="text-accent">S:P Little Knight</strong> (non-targeting banish) or <strong class="text-accent">Knightmare Unicorn</strong> (non-targeting shuffle).</span></li>
+                    <li class="flex items-start"><i class="fas fa-bolt text-teal-500 w-5 mt-1 mr-2"></i><span><strong class="text-accent">Spright Starter:</strong> Summons <strong class="text-accent">Spright Red</strong> for a monster negate or <strong class="text-accent">Spright Carrot</strong> for a Spell/Trap negate.</span></li>
+                    <li class="flex items-start"><i class="fas fa-random text-teal-500 w-5 mt-1 mr-2"></i><span><strong class="text-accent">Spright Double Cross:</strong> A highly versatile Trap that can steal an opponent's monster, attach it as Xyz Material, or revive it to your field.</span></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-700 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-teal-800">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-600">High Ceiling:</strong> Can convert one card into a multi-interruption board.</li>
+                        <li><span class="pro-icon"><i class="fas fa-rocket"></i></span> <strong class="text-green-600">Explosive Swarm:</strong> Unmatched efficiency in generating Level 2 monsters.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-700 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-teal-800">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-600">Linear Chokepoints:</strong> Highly vulnerable to hand traps on key starters.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-600">Graveyard Hate:</strong> Relies on the GY for <strong class="text-accent">Nimble Angler</strong>, making it weak to <strong class="text-accent">Dimension Shifter</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Tertiary Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-700 mb-4">Tertiary Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-teal-800">
+                        <li><span class="neutral-icon"><i class="fas fa-frog"></i></span> <strong class="text-accent">Frog Engine:</strong> Utilizes <strong class="text-accent">Swap Frog</strong> to summon <strong class="text-accent">Toadally Awesome</strong> for an omni-negate. Severely weakened by <strong class="text-red-600">Ronintoadin's</strong> forbidden status.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-cat"></i></span> <strong class="text-accent">Melffy Package:</strong> A small engine (<strong class="text-accent">Melffy Catty</strong>, <strong class="text-accent">Pinny</strong>) that enables a Synchro Summon into <strong class="text-accent">Herald of the Arc Light</strong> for another negate and a GY-hate floodgate.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-center text-teal-800 mb-4">
+                    The Nimble-Spright engine has been directly impacted by the TCG banlist, primarily through hits to its key extenders and boss monsters.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-green-600 mb-2">Unrestricted</h4>
+                        <ul class="list-disc list-inside text-sm text-teal-800">
+                           <li>All "Nimble" monsters (3 copies each)</li>
+                           <li>All "Spright" Main Deck monsters & Spells/Traps</li>
+                           <li>Gigantic Spright & Spright Sprind</li>
+                        </ul>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                       <h4 class="text-lg font-bold text-red-600 mb-2">Forbidden / Limited</h4>
+                       <ul class="list-disc list-inside text-sm text-teal-800">
+                           <li><strong class="text-red-600">Spright Elf (Forbidden):</strong> Loss of a key extender and disruption piece.</li>
+                           <li><strong class="text-red-600">Ronintoadin (Forbidden):</strong> Severely weakens the "Frog" engine variant.</li>
+                           <li><strong class="text-accent">Toadally Awesome (Limited):</strong> Still accessible, but less consistent without Ronintoadin.</li>
+                           <li><strong class="text-accent">Herald of the Arc Light (Limited):</strong> Restricts the ceiling of the Melffy engine variant.</li>
+                       </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-500 rounded">
+                   <p class="text-sm text-blue-800"><strong>Meta Implications:</strong> The banning of key extenders forces the deck into a more linear, but still potent, strategy focused on interruptions from I:P Masquerena and in-archetype Spright cards.
+                   </p>
+               </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.textContent = cardName; // Fallback to text
+                }
+            }
+
+            const cardsToLoad = {
+                'beaver-img': 'Nimble Beaver',
+                'sprind-img': 'Spright Sprind',
+                'angler-img': 'Nimble Angler',
+                'gigantic-img': 'Gigantic Spright',
+                'gigantic-board-img': 'Gigantic Spright',
+                'beaver-board-img': 'Nimble Beaver',
+                'ip-masquerena-img': 'I:P Masquerena'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

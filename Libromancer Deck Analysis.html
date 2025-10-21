@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libromancer Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a3d; /* Deep Midnight Blue */
+            color: #e0e7ff; /* Lavender White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2c54; /* Dark Slate Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a4e69; /* Muted Indigo */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3b3b6d; /* Lighter Slate Blue */
+            border: 1px solid #5a5f8a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2c2c54;
+            color: #e0e7ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.8rem;
+            line-height: 1.1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+        .pro-icon { color: #4ade80; } /* Bright Green */
+        .con-icon { color: #f87171; } /* Bright Red */
+        .neutral-icon { color: #60a5fa; } /* Bright Blue */
+        .text-accent { color: #fcd34d; } /* Golden Yellow */
+        .arrow-color { color: #a78bfa; } /* Light Violet */
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fcd34d;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fcd34d;
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        /* --- Libromancer Themed Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a3d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a4e69;
+        }
+        #rune-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(26, 26, 61, 0.4) 0%, rgba(26, 26, 61, 0.9) 80%);
+            z-index: 2;
+        }
+        .banner-content {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .banner-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 2.8rem;
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #2c2c54 0%, #4a4e69 100%);
+            color: white; border: 2px solid #a78bfa; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+            transition: all 0.3s ease; text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(167, 139, 250, 0.5);
+            border-color: #fcd34d;
+        }
+        .ygo-home-button i {
+            font-size: 22px; text-shadow: 0 0 10px rgba(167, 139, 250, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Libromancer Themed Banner -->
+        <header class="banner-header text-center">
+            <canvas id="rune-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="banner-title text-white mb-2">Libromancer</h1>
+                <p class="text-lg md:text-xl text-indigo-200">An In-Depth Analysis of the Ritual Storytellers</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Libromancer</strong> archetype is a unique Ritual-based strategy that debuted in <strong class="text-accent">Battle of Chaos</strong>. Thematically, it revolves around 
+                    <a href="https://yugipedia.com/wiki/Libromancer" target="_blank" class="lore-link">a group of characters who manifest the power of their favorite literary genres</a>
+                    —superheroes, fairy tales, and mysteries—to become powerful Ritual Monsters. This narrative is reflected in gameplay that can pivot between methodical, control-oriented resource loops and explosive, One-Turn Kill (OTK) offenses. Its central mechanic allows Main Deck monsters to be Special Summoned from the hand by revealing a Ritual Monster, creating a unique deck-building challenge centered on balancing starters and Ritual targets.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Cast and The Scripts Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Cast and The Scripts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-users text-4xl text-violet-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Agents & Heroes</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Libromancer Geek Boy & Fire</h4>
+                            <p class="text-sm text-indigo-200">The primary starters. <strong class="text-white">Geek Boy</strong> searches for Spells (like the crucial Field Spell), while <strong class="text-white">Fire</strong> searches for any Libromancer monster, forming a powerful search-and-summon chain.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Libromancer Doombroker</h4>
+                            <p class="text-sm text-indigo-200">The heart of the control strategy. On summon, he Sets a "Libromancer" Trap directly from the Deck, usually the omni-negate <strong class="text-white">Intervention</strong>.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Libromancer Fireburst</h4>
+                            <p class="text-sm text-indigo-200">The dedicated OTK tool. He can attack monsters twice and inflicts double battle damage, capable of ending games in a single turn.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book-open text-4xl text-violet-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Grimoires & Plot Twists</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Libromancer First Appearance</h4>
+                            <p class="text-sm text-indigo-200">The most important card. This Field Spell searches a monster on activation and provides the main engine for Ritual Summoning once per turn.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Libromancer Intervention</h4>
+                            <p class="text-sm text-indigo-200">A powerful omni-negate Trap. It returns a Libromancer Ritual to hand to negate an opponent's effect, then Special Summons a Libromancer to generate follow-up plays.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Libromancer Displaced</h4>
+                            <p class="text-sm text-indigo-200">A unique removal tool that returns one of your monsters to hand to permanently take control of an opponent's monster.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Combo: One-Card Starter</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">This sequence demonstrates how a single <strong class="text-accent">Emergency Teleport</strong> can establish the deck's primary control setup.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="teleport-img-container" class="card-image-container flex-shrink-0 card-placeholder">Emergency Teleport</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1a3d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Teleport</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent">Emergency Teleport</strong> to Special Summon <strong class="text-white">Libromancer Geek Boy</strong> from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-chevron-down text-4xl arrow-color my-2"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="geek-boy-img-container" class="card-image-container flex-shrink-0 card-placeholder">Libromancer Geek Boy</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1a3d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The First Search</h3>
+                            </div>
+                            <p class="text-indigo-200">Geek Boy's effect triggers, adding <strong class="text-white">Libromancer First Appearance</strong> from your Deck to hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-chevron-down text-4xl arrow-color my-2"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="first-appearance-img-container" class="card-image-container flex-shrink-0 card-placeholder">Libromancer First Appearance</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1a3d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Ritual Engine</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate First Appearance. Its effect adds <strong class="text-white">Libromancer Doombroker</strong> to hand. Then, use its second effect to Ritual Summon Doombroker, tributing Geek Boy.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Control Endboard</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">The primary goal when going first is to establish a sustainable loop of interruption. This board establishes a powerful, renewable omni-negate that generates resources each turn.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start max-w-4xl mx-auto">
+                <!-- Doombroker -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="doombroker-img-container" class="w-40 mb-3 card-placeholder">Libromancer Doombroker</div>
+                    <h4 class="font-bold text-white">Libromancer Doombroker</h4>
+                    <p class="text-sm text-indigo-200">On field, ready to be bounced for a negate.</p>
+                </div>
+                <!-- First Appearance -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="first-appearance-endboard-img" class="w-40 mb-3 card-placeholder">Libromancer First Appearance</div>
+                    <h4 class="font-bold text-white">Libromancer First Appearance</h4>
+                    <p class="text-sm text-indigo-200">Ready to re-summon Doombroker next turn.</p>
+                </div>
+                <!-- Intervention -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="intervention-img-container" class="w-40 mb-3 card-placeholder">Libromancer Intervention</div>
+                    <h4 class="font-bold text-white">Libromancer Intervention</h4>
+                    <p class="text-sm text-indigo-200">Set and ready to negate a key opponent's card.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">High Power Ceiling:</strong> Capable of OTKs with Fireburst or establishing a sustainable control loop.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Resource Loop:</strong> The Doombroker + Intervention combo creates a renewable negate each turn.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Synergistic:</strong> Integrates seamlessly with powerful engines like Dogmatika and Mikanko.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Fragile Choke Points:</strong> Highly vulnerable to hand traps on the initial searchers (Geek Boy/Fire).</li>
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">"Ritual in Hand" Paradox:</strong> Can open unplayable hands without the right combination of monsters and Rituals.</li>
+                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-300">Field Spell Reliant:</strong> Removal of <strong class="text-white">First Appearance</strong> can stop the combo entirely.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">Key Support Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-star"></i></span> <strong class="text-blue-300">Diviner of the Herald:</strong> A powerful starter that searches any Ritual monster or spell.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-book"></i></span> <strong class="text-blue-300">Preparation of Rites:</strong> Provides unparalleled search power for the Ritual engine.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-plus-circle"></i></span> <strong class="text-blue-300">Dogmatika/Mikanko Engines:</strong> Elevate the deck's power ceiling and cover its weaknesses.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">CORE ARCHETYPE INTACT:</strong> The Libromancer archetype enjoys complete freedom on the current TCG banlist:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Libromancer Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-400">Libromancer Geek Boy (3 copies)</strong> - Primary starter</li>
+                            <li><strong class="text-green-400">Libromancer Fire (3 copies)</strong> - Monster searcher</li>
+                            <li><strong class="text-green-400">Libromancer Doombroker (3 copies)</strong> - Control engine</li>
+                            <li><strong class="text-green-400">Libromancer Fireburst (3 copies)</strong> - OTK potential</li>
+                            <li><strong class="text-green-400">Libromancer First Appearance (3 copies)</strong> - Field Spell engine</li>
+                            <li><strong class="text-green-400">Libromancer Intervention (3 copies)</strong> - Omni-negate trap</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Generic Support</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Emergency Teleport (1 copy)</strong> - Key starter</li>
+                            <li><strong class="text-yellow-400">Preparation of Rites (2 copies)</strong> - Ritual search</li>
+                            <li><strong class="text-yellow-400">Nadir Servant (1 copy)</strong> - Dogmatika engine</li>
+                            <li><strong class="text-yellow-400">Herald of the Arc Light (1 copy)</strong> - Ritual toolbox</li>
+                            <li><strong class="text-yellow-400">Diviner of the Herald (1 copy)</strong> - Ritual starter</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-violet-900 bg-opacity-30 rounded border-l-4 border-violet-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With the entire archetype unrestricted, Libromancer maintains its full combo potential and resource loops. However, limitations on powerful generic support cards like Emergency Teleport and Preparation of Rites require careful deck construction to maintain consistency while exploring hybrid builds with Dogmatika, Mikanko, or other ritual support engines.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Libromancer Themed Canvas Animation
+            const canvas = document.getElementById('rune-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let runes = [];
+                const runeChars = ['✧', '✦', '✩', '❂', '✶', '✧', '✷', '✳', '✴', '✺', '✢'];
+                const colors = ['#fcd34d', '#a78bfa', '#f87171', '#60a5fa', '#4ade80'];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Rune {
+                    constructor() {
+                        this.reset();
+                    }
+
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.char = runeChars[Math.floor(Math.random() * runeChars.length)];
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                        this.size = Math.random() * 20 + 10;
+                        this.opacity = 0;
+                        this.fadeSpeed = Math.random() * 0.02 + 0.01;
+                        this.fadingIn = true;
+                    }
+
+                    draw() {
+                        ctx.globalAlpha = this.opacity;
+                        ctx.font = `${this.size}px "Cinzel Decorative", serif`;
+                        ctx.fillStyle = this.color;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = this.color;
+                        ctx.fillText(this.char, this.x, this.y);
+                    }
+
+                    update() {
+                        if (this.fadingIn) {
+                            this.opacity += this.fadeSpeed;
+                            if (this.opacity >= 1) {
+                                this.opacity = 1;
+                                this.fadingIn = false;
+                            }
+                        } else {
+                            this.opacity -= this.fadeSpeed;
+                            if (this.opacity <= 0) {
+                                this.reset();
+                            }
+                        }
+                    }
+                }
+
+                function init() {
+                    runes = [];
+                    const runeCount = (canvas.width * canvas.height) / 15000;
+                    for (let i = 0; i < runeCount; i++) {
+                        runes.push(new Rune());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    runes.forEach(rune => {
+                        rune.update();
+                        rune.draw();
+                    });
+                    ctx.globalAlpha = 1; // Reset global alpha
+                    ctx.shadowBlur = 0; // Reset shadow
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => { setCanvasSize(); init(); });
+            }
+
+            // Card Image Fetching
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'teleport-img-container': 'Emergency Teleport',
+                'geek-boy-img-container': 'Libromancer Geek Boy',
+                'first-appearance-img-container': 'Libromancer First Appearance',
+                'doombroker-img-container': 'Libromancer Doombroker',
+                'first-appearance-endboard-img': 'Libromancer First Appearance',
+                'intervention-img-container': 'Libromancer Intervention'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

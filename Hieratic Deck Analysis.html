@@ -1,0 +1,540 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hieratic Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c1424; /* Deep celestial blue */
+            color: #f0e6d2; /* Sandy off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a2a4a; /* Darker blue-gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #c8a45c; /* Gold border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #243b6b; /* Richer blue */
+            border: 1px solid #c8a45c;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1a2a4a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a2a4a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ffd700; } /* Gold */
+        .arrow-color { color: #ffd700; }
+        .heading-underline {
+            border-bottom: 2px solid #ffd700;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ffd700;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffd700;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- HIERATIC ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: linear-gradient(45deg, #0c1424, #1a2a4a);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #c8a45c;
+        }
+        #star-banner {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(12, 20, 36, 0.4) 0%, rgba(12, 20, 36, 0.8) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            font-family: 'Cinzel', serif;
+        }
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="star-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Hieratic</h1>
+            <p class="text-lg md:text-xl text-yellow-200">Deconstructing the Sun Dragon Overlords</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-yellow-100">
+                    The <strong class="text-accent font-bold">Hieratic</strong> archetype is a LIGHT Dragon strategy renowned for its explosive, tribute-focused gameplay. The core mechanic transforms the cost of tributing into a powerful engine for swarming the field with monsters, enabling rapid Xyz, Synchro, and Link Summons. Based on the ancient Egyptian Ennead, the deck's power comes from a series of chain reactions, where each tribute summons another piece from the deck, turning a simple two-card hand into a formidable board capable of a One-Turn Kill (OTK). Its entire philosophy is built upon these 
+                    <a href="https://yugipedia.com/wiki/Hieratic" target="_blank" class="lore-link">divine edicts</a>,
+                     which dictate that every sacrifice must yield greater power.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Pantheon and The Scrolls Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Pantheon and The Scrolls</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                The Hieratic strategy is built upon a focused roster of monsters that initiate combos and the powerful Extra Deck monsters they summon.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dragon text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Pantheon: Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hieratic Dragon of Tefnuit</h4>
+                            <p class="text-sm text-yellow-100">The premier going-second starter. Special Summons itself from the hand, providing an instant tribute without using a Normal Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hieratic Dragon of Eset</h4>
+                            <p class="text-sm text-yellow-100">The primary going-first starter. Can be Normal Summoned without tribute and modulates levels for flexible Xyz plays.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hieratic Dragon of Su</h4>
+                            <p class="text-sm text-yellow-100">A key extender summoned by tributing another Hieratic. Can tribute another Hieratic to destroy a Spell/Trap, extending combos while clearing backrow.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Scrolls: Essential Spells</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hieratic Seal of Convocation</h4>
+                            <p class="text-sm text-yellow-100">The archetype's essential searcher. Adds any "Hieratic" monster from your Deck to your hand, ensuring you can access your combo starters.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hieratic Seal of Creation</h4>
+                             <p class="text-sm text-yellow-100">A modern support card providing extension and recovery. It allows for "ranking up" into different Xyz monsters and can revive Hieratics from the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Foundational Atum OTK</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough shows the classic two-card combo that established Hieratic as a dominant OTK strategy.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="tefnuit-img-container" class="card-image-container flex-shrink-0 card-placeholder">Hieratic Dragon of Tefnuit</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2a4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Tribute</h3>
+                            </div>
+                            <p class="text-yellow-100">Special Summon <strong class="text-accent font-bold">Hieratic Dragon of Tefnuit</strong>. Then, Tribute it to Special Summon <strong class="text-accent font-bold">Hieratic Dragon of Su</strong> from your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="wattail-img-container" class="card-image-container flex-shrink-0 card-placeholder">Wattaildragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2a4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Chain Reaction</h3>
+                            </div>
+                            <p class="text-yellow-100">When Tefnuit is tributed, its effect triggers, Special Summoning a Level 6 Normal Dragon like <strong class="text-accent font-bold">Wattaildragon</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="atum-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Hieratic Dragon King of Atum</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2a4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon the King</h3>
+                            </div>
+                            <p class="text-yellow-100">Overlay your two Level 6 Dragons (Su and Wattaildragon) to Xyz Summon <strong class="text-accent font-bold">Hieratic Dragon King of Atum</strong>. Its effect can then summon any Dragon from your deck, extending the combo into a guaranteed OTK.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Typical Endboard: The Heavenly Disruption</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Heavenly Spheres -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Hieratic Seal of the Heavenly Spheres</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="spheres-img-container" class="card-image-container card-placeholder">Hieratic Seal of the Heavenly Spheres</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent font-bold">Non-Targeting Bounce:</strong> As a Quick Effect, it can tribute a monster to return a face-up card on the field to the hand.</li>
+                        <li><strong class="text-accent font-bold">Deck Summon:</strong> If tributed, it Special Summons any Dragon from your hand or Deck, providing both disruption and setup for your next turn.</li>
+                    </ul>
+                </div>
+                <!-- Heliopolis -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Hieratic Sun Dragon Overlord of Heliopolis</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="heliopolis-img-container" class="card-image-container card-placeholder">Hieratic Sun Dragon Overlord of Heliopolis</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent font-bold">Mass Removal:</strong> Can tribute monsters from your hand/field to destroy an equal number of cards on the field without targeting.</li>
+                        <li><strong class="text-accent font-bold">Combo Enabler:</strong> Triggers the effects of any Hieratics tributed for its effect, clearing the board and building your own simultaneously.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">Explosive OTK Potential:</strong> Can consistently generate enough damage to win in a single Battle Phase.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400 font-bold">High Ceiling:</strong> The combo lines can create incredibly powerful and complex boards from just two cards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400 font-bold">Resource Loop:</strong> The tribute mechanic thins the deck while maintaining board presence, creating efficient resource conversion.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">"Glass Cannon":</strong> A single well-timed hand trap (e.g., Effect Veiler on Atum) can end the entire combo.</li>
+                        <li><span class="con-icon"><i class="fas fa-pastafarianism"></i></span> <strong class="text-red-400 font-bold">Brick Prone:</strong> Relies on running Normal Monsters, which are unplayable if drawn in the opening hand.</li>
+                        <li><span class="con-icon"><i class="fas fa-meteor"></i></span> <strong class="text-red-400 font-bold">Nibiru Vulnerability:</strong> The high number of summons makes the deck extremely susceptible to Nibiru, the Primal Being.</li>
+                    </ul>
+                </div>
+                <!-- External Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergies & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Bystial Engine:</strong> The LIGHT attribute of Hieratics makes them perfect fodder for Bystial summons, providing disruption and extension.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dna"></i></span> <strong class="text-accent font-bold">Dragon Link:</strong> Heavenly Spheres has become a staple in Dragon Link strategies, showcasing its generic power outside the main archetype.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- HIERATIC STAR BANNER ANIMATION ---
+            const canvas = document.getElementById('star-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let stars = [];
+                let animationFrameId;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Star {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.alpha = Math.random();
+                        this.alphaChange = Math.random() * 0.02 - 0.01;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 215, 0, ${this.alpha})`;
+                        ctx.fill();
+                    }
+                    update() {
+                        this.alpha += this.alphaChange;
+                        if (this.alpha <= 0 || this.alpha >= 1) {
+                            this.alphaChange = -this.alphaChange;
+                        }
+                    }
+                }
+
+                function init() {
+                    stars = [];
+                    const starCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < starCount; i++) {
+                        stars.push(new Star());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    stars.forEach(star => {
+                        star.update();
+                        star.draw();
+                    });
+                    animationFrameId = requestAnimationFrame(animate);
+                }
+                
+                function startAnimation() {
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                    }
+                    setCanvasSize();
+                    init();
+                    animate();
+                }
+
+                startAnimation();
+                window.addEventListener('resize', startAnimation);
+            }
+
+            // --- CARD IMAGE FETCHING SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'tefnuit-img-container': 'Hieratic Dragon of Tefnuit',
+                'wattail-img-container': 'Wattaildragon',
+                'atum-img-container-combo': 'Hieratic Dragon King of Atum',
+                'spheres-img-container': 'Hieratic Seal of the Heavenly Spheres',
+                'heliopolis-img-container': 'Hieratic Sun Dragon Overlord of Heliopolis'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

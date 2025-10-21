@@ -1,0 +1,673 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artifact Deck Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc; /* Light Gray */
+            color: #2d3748; /* Dark Gray-Blue */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .combo-step-card {
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+        }
+        .pro-con-card {
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #e2e8f0;
+            color: #4a5568;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #e2e8f0;
+        }
+        .pro-icon { color: #38a169; }
+        .con-icon { color: #e53e3e; }
+        .neutral-icon { color: #4299e1; }
+        .text-accent { color: #dd6b20; } /* Orange accent */
+        .arrow-color { color: #dd6b20; }
+        .heading-underline {
+            border-bottom: 3px solid #dd6b20;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px; /* Matching Battlewasp size */
+            background: linear-gradient(to bottom, #edf2f7, #e2e8f0);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #cbd5e0;
+        }
+
+        #artifact-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 1px 1px 4px rgba(45, 55, 72, 0.1);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #dd6b20;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif;
+            color: #dd6b20;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #dd6b20;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="artifact-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-gray-800 mb-2 heading-underline">Artifact</h1>
+            <p class="text-lg md:text-xl text-gray-600">A Technical Analysis of a Control and Utility Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-orange-600 mb-4">Executive Summary</h2>
+                <p class="text-gray-700">
+                    The "Artifact" archetype is a specialized control engine that disrupts opponents by Special Summoning its monsters from the Spell & Trap Zone during the opponent's turn. Historically centered on the now-Forbidden <strong class="text-red-400">Artifact Scythe</strong> <span class="text-red-400">(currently banned)</span>, the modern engine has pivoted to a flexible, reactive toolbox. It now focuses on providing adaptable disruption with cards like <strong class="text-accent font-bold">Artifact Lancea</strong> and facilitating powerful Rank 5 Xyz plays, making it a potent supplementary engine in various hybrid strategies.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-orange-600 mb-6 text-center">Foundational Mechanics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">The "Set and Destroy" Paradigm</h3>
+                    <p class="text-gray-700">Artifact monsters can be Set in the Spell & Trap Zone. When they are destroyed there during the opponent's turn, they Special Summon themselves from the Graveyard. This unique mechanic turns potential backrow removal from your opponent into a way to build your own board presence.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Rank 5 Xyz Toolbox</h3>
+                    <p class="text-gray-700">All main deck Artifact monsters are Level 5, giving the deck consistent and easy access to a powerful toolbox of generic Rank 5 Xyz monsters, such as the disruptive <strong class="text-accent font-bold">Artifact Durendal</strong> and <strong class="text-accent font-bold">Constellar Pleiades</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-orange-600 mb-6 text-center">Core Disruption: The Ignition Setup</h2>
+            <p class="text-gray-700 mb-8 text-center max-w-2xl mx-auto">This sequence demonstrates how to use <strong class="text-accent font-bold">Artifact Ignition</strong> to guarantee a disruptive Special Summon on the opponent's turn.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="ignition-img-container" class="card-image-container card-placeholder">Artifact Ignition</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-orange-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Set and Target</h3>
+                        </div>
+                        <p class="text-gray-700">Set <strong class="text-accent font-bold">Artifact Ignition</strong>. During your opponent's turn, activate it to destroy a Spell/Trap they control. Its effect then allows you to Set an "Artifact" monster like <strong class="text-accent font-bold">Artifact Moralltach</strong> from your deck.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="moralltach-img-container" class="card-image-container card-placeholder">Artifact Moralltach</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-orange-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Self-Destruction</h3>
+                        </div>
+                        <p class="text-gray-700">Activate a second Spell/Trap destruction effect (like another <strong class="text-accent font-bold">Ignition</strong> or <strong class="text-accent font-bold">Twin Twisters</strong>) to destroy your newly Set <strong class="text-accent font-bold">Moralltach</strong>.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="disruption-img-container" class="card-image-container card-placeholder">Disruption</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-orange-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Summon and Destroy</h3>
+                        </div>
+                        <p class="text-gray-700"><strong class="text-accent font-bold">Moralltach</strong> is Special Summoned from the Graveyard, and its effect triggers, allowing you to destroy one face-up card your opponent controls.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-orange-600 mb-6 text-center">Optimal Endboard</h2>
+            <div class="card p-6 flex flex-col md:flex-row items-center md:items-start gap-4 mx-auto max-w-2xl">
+                <div class="flex flex-col items-center gap-4">
+                    <div id="durendal-img-container" class="card-image-container card-placeholder">Artifact Durendal</div>
+                </div>
+                <div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong class="text-accent font-bold">Rank 5 Xyz Monster:</strong> <strong class="text-accent font-bold">Artifact Durendal</strong> to redirect opponent's effects or <strong class="text-accent font-bold">Constellar Pleiades</strong> for non-destruction removal.</li>
+                        <li><strong class="text-accent font-bold">Set Artifact Sanctum:</strong> A Trap ready to summon a key Artifact like <strong class="text-accent font-bold">Lancea</strong> from the deck for targeted disruption.</li>
+                        <li><strong class="text-accent font-bold">Set Artifact Ignition:</strong> A Quick-Play Spell to destroy an opponent's backrow while setting up your own Artifact plays.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-orange-600 mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-600 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-600 font-bold">Powerful Disruption:</strong> Offers versatile interruption during the opponent's turn.</li>
+                        <li><span class="pro-icon"><i class="fas fa-star"></i></span> <strong class="text-green-600 font-bold">Rank 5 Access:</strong> Consistent access to a strong toolbox of Rank 5 Xyz monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-green-600 font-bold">Hybrid Potential:</strong> Excellent as a small, splashable engine in many different decks.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-600 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-600 font-bold">Loss of Scythe:</strong> The archetype lost its most powerful win condition with the banning of <strong class="text-red-400">Artifact Scythe</strong> <span class="text-red-400">(currently banned)</span>.</li>
+                        <li><span class="con-icon"><i class="fas fa-cogs"></i></span> <strong class="text-red-600 font-bold">Reliant on Enablers:</strong> Requires Spell/Trap destruction to function, making it reactive.</li>
+                         <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-600 font-bold">Vulnerable to GY Hate:</strong> Can be shut down by cards that prevent Special Summoning from the Graveyard.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Key Synergies & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><span class="neutral-icon"><i class="fas fa-dungeon"></i></span> <strong class="text-accent font-bold">Labrynth:</strong> Synergizes well with Trap-focused strategies that can search <strong class="text-accent font-bold">Artifact Sanctum</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-robot"></i></span> <strong class="text-accent font-bold">Cyber Dragon:</strong> Provides an easy source of Level 5 monsters to complement the Artifact engine for Rank 5 plays.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-wind"></i></span> <strong class="text-accent font-bold">Generic Destruction:</strong> Cards like <strong class="text-accent font-bold">Twin Twisters</strong> and <strong class="text-accent font-bold">MST</strong> act as enablers for your own Artifacts.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section>
+            <h2 class="text-xl md:text-3xl font-bold text-orange-600 mb-6 text-center">Artifact Arsenal</h2>
+            <p class="text-gray-700 mb-8 text-center max-w-2xl mx-auto">A detailed overview of the key cards in this ancient armory.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Artifact Lancea</h3>
+                    <p class="text-gray-800">The most relevant Artifact in the modern meta. When Special Summoned on the opponent's turn, it prevents both players from banishing cards for the rest of the turn, a powerful floodgate effect.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Artifact Moralltach</h3>
+                    <p class="text-gray-800">Provides reliable spot removal, destroying one face-up card the opponent controls when it's Special Summoned during their turn.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Artifact Sanctum</h3>
+                    <p class="text-gray-800">A powerful Normal Trap that Special Summons any "Artifact" monster from the deck, providing instant access to the right disruption for the situation.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Artifact Dagda</h3>
+                    <p class="text-gray-800">A Link-2 monster that can Set an "Artifact" monster directly from the deck as a Quick Effect, setting up your plays and thinning your deck.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ARTIFACT "CELESTIAL ARMORY" ANIMATION ---
+            const canvas = document.getElementById('artifact-banner');
+            if(canvas) {
+                const ctx = canvas.getContext('2d');
+                let runes = [];
+                let lightShafts = [];
+                let animationFrameId;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Rune {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 20 + 10;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = (Math.random() - 0.5) * 0.005;
+                        this.opacity = 0;
+                        this.maxOpacity = Math.random() * 0.2 + 0.1;
+                        this.life = 0;
+                        this.maxLife = Math.random() * 200 + 150;
+                    }
+                    update() {
+                        this.angle += this.speed;
+                        this.life++;
+                        this.opacity = this.maxOpacity * Math.sin(this.life / this.maxLife * Math.PI);
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.angle);
+                        ctx.strokeStyle = `rgba(221, 107, 32, ${this.opacity})`;
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.size * 0.3, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+
+                class LightShaft {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.width = Math.random() * 3 + 1;
+                        this.life = 0;
+                        this.maxLife = 60;
+                    }
+                    update() {
+                        this.life++;
+                    }
+                    draw() {
+                        const opacity = Math.sin(this.life / this.maxLife * Math.PI) * 0.15;
+                        const gradient = ctx.createLinearGradient(this.x, 0, this.x, canvas.height);
+                        gradient.addColorStop(0, `rgba(255, 255, 255, 0)`);
+                        gradient.addColorStop(0.5, `rgba(255, 255, 255, ${opacity})`);
+                        gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
+
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(this.x - this.width / 2, 0, this.width, canvas.height);
+                    }
+                }
+
+                function init() {
+                    runes = [];
+                    lightShafts = [];
+                    for (let i = 0; i < 8; i++) {
+                        runes.push(new Rune());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    if (Math.random() < 0.02 && lightShafts.length < 3) {
+                        lightShafts.push(new LightShaft());
+                    }
+                    
+                    runes.forEach(r => { r.update(); r.draw(); });
+                    lightShafts.forEach(ls => { ls.update(); ls.draw(); });
+                    
+                    runes = runes.filter(r => r.life < r.maxLife);
+                    if (runes.length < 8) runes.push(new Rune());
+                    lightShafts = lightShafts.filter(ls => ls.life < ls.maxLife);
+
+                    animationFrameId = requestAnimationFrame(animate);
+                }
+                
+                function startAnimation(){
+                    if(animationFrameId) cancelAnimationFrame(animationFrameId);
+                    setCanvasSize();
+                    init();
+                    animate();
+                }
+                
+                startAnimation();
+                window.addEventListener('resize', startAnimation);
+            }
+            
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-blue-300">${cardType}</p>
+                        <div class="w-full h-px bg-blue-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            function createAndAppendPlaceholder(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder animate-fadeIn';
+                placeholder.textContent = cardName;
+                container.appendChild(placeholder);
+            }
+
+            const cardsToLoad = {
+                'ignition-img-container': 'Artifact Ignition',
+                'moralltach-img-container': 'Artifact Moralltach',
+                'durendal-img-container': 'Artifact Durendal'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+            
+            createAndAppendPlaceholder('Disruption', 'disruption-img-container');
+        });
+    </script>
+</body>
+</html>
+
+

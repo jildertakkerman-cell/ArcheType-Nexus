@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mikanko Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #0c1421;
+            color: #e0e7ff;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(18, 28, 48, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a506b;
+            backdrop-filter: blur(5px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(25, 39, 66, 0.8);
+            border: 1px solid #4b6a9c;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1c2b4a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px #121c30;
+        }
+        .text-accent-gold { color: #ffd700; }
+        .text-accent-teal { color: #00f2ea; }
+        .text-accent-crimson { color: #dc143c; }
+        .arrow-color { color: #ffd700; }
+        .heading-underline {
+            display: inline-block;
+            padding-bottom: 0.5rem;
+            position: relative;
+        }
+        .heading-underline::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, #ffd700, #00f2ea, #dc143c);
+            border-radius: 1px;
+        }
+        .lore-link {
+            color: #00f2ea;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #00f2ea;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #00f2ea;
+        }
+        .banner-header {
+            position: relative;
+            height: 150px;
+            background: radial-gradient(circle, #1a2942 0%, #0c1421 70%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3a506b;
+        }
+        #banner-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.7;
+        }
+        .banner-header h1, .banner-header p {
+            font-family: 'Playfair Display', serif;
+            position: relative;
+            z-index: 2;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.9);
+        }
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="banner-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-bold text-white mb-2">Mikanko</h1>
+            <p class="text-lg md:text-xl text-blue-200">The Dance of Mirrored Blades</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent-gold font-bold">Mikanko</strong> archetype is a unique Ritual-based strategy centered on Equip Spells and a reactive, "go-second" playstyle. Rather than using high ATK values, the deck wins by reflecting battle damage back at the opponent, turning their own powerful monsters against them. Its core philosophy involves manipulating battle to solve the opponent's board like a puzzle and achieve a swift One-Turn Kill (OTK). Every monster is a potential liability for the opponent when confronted by the 
+                    <a href="https://yugipedia.com/wiki/Mikanko" target="_blank" class="lore-link">sacred dancers and their regalia</a>.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Cast of Dancers: Core Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-theater-masks text-4xl text-accent-teal mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Main Performers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-gold mb-1">Ohime the Manifested Mikanko</h4>
+                            <p class="text-sm text-blue-200">The heart of the deck. Searches any "Mikanko" card from the deck and can equip spells from the GY as a Quick Effect for disruption.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-crimson mb-1">Ha-Re the Sword Mikanko</h4>
+                            <p class="text-sm text-blue-200">The primary searcher for "Mikanko" Equip Spells, essential for starting combos and finding OTK pieces.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-teal mb-1">Hu-Li the Jewel Mikanko</h4>
+                            <p class="text-sm text-blue-200">Provides crucial targeting protection for all your "Mikanko" cards and searches for "Mikanko" Traps.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-accent-gold mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Sacred Regalia</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-teal mb-1">Mikanko Water Arabesque</h4>
+                            <p class="text-sm text-blue-200">The best one-card starter. It bounces an opponent's monster and summons a Mikanko from the deck, triggering its effect.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-gold mb-1">The Great Mikanko Ceremony</h4>
+                            <p class="text-sm text-blue-200">A Quick-Play Spell to summon Ohime and also acts as a "Foolish Burial" from the GY to set up plays.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-crimson mb-1">Double-Edged Sword</h4>
+                            <p class="text-sm text-blue-200">A generic Equip Spell that becomes the deck's ultimate finisher, enabling massive reflected damage for an easy OTK.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core OTK Combo: The "Arabesque" Line</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This sequence demonstrates how a single <strong class="text-accent-teal">Mikanko Water Arabesque</strong> can lead to a game-winning OTK.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="arabesque-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mikanko Water Arabesque</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#192742] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Dance</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent-teal">Mikanko Water Arabesque</strong>, targeting an opponent's monster. This removes it from the field and summons <strong class="text-accent-crimson">Ha-Re the Sword Mikanko</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center my-2"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="hare-img-container" class="card-image-container flex-shrink-0 card-placeholder">Ha-Re the Sword Mikanko</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#192742] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Search the Finisher</h3>
+                            </div>
+                            <p class="text-blue-200">Ha-Re's effect triggers. Add <strong class="text-accent-gold">Double-Edged Sword</strong> from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="w-full flex justify-center my-2"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="kaiju-img-container" class="card-image-container flex-shrink-0 card-placeholder">Gameciel, the Sea Turtle Kaiju</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#192742] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Prepare the Target</h3>
+                            </div>
+                            <p class="text-blue-200">Tribute an opponent's monster to summon a <strong class="text-accent-teal">Kaiju</strong> to their field. Equip it with <strong class="text-accent-gold">Double-Edged Sword</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Typical Endboard</h2>
+             <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">When forced to go first, Mikanko aims to establish a disruptive board that can survive and set up an OTK on the following turn.</p>
+            <div class="card p-8 max-w-2xl mx-auto">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="ohime-img-container" class="card-image-container flex-shrink-0 card-placeholder">Ohime the Manifested Mikanko</div>
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-accent-gold mb-3">Ohime with Protection & Disruption</h3>
+                        <ul class="list-disc list-inside space-y-2 text-blue-200">
+                            <li><strong class="text-accent-teal">Hu-Li the Jewel Mikanko</strong> on field, equipped, to provide targeting protection for all "Mikanko" cards.</li>
+                            <li><strong class="text-accent-gold">Ohime the Manifested Mikanko</strong> ready to use her Quick Effect.</li>
+                            <li><strong class="text-accent-crimson">Mikanko Reflection Rondo</strong> in the GY to be equipped to an opponent's monster, stealing it as an interruption.</li>
+                             <li>A set <strong class="text-accent-teal">Mikanko Rivalry</strong> to equip another spell from the Deck during the opponent's turn.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 flex items-center"><i class="fas fa-check-circle mr-2"></i>Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li>Excellent at going second and breaking established boards.</li>
+                        <li>Non-destructive removal (bouncing, stealing) evades many protection effects.</li>
+                        <li>High consistency due to multiple searchers, especially Ohime.</li>
+                        <li>Doesn't rely heavily on the Extra Deck, allowing for flexible tech choices.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center"><i class="fas fa-times-circle mr-2"></i>Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li>Vulnerable to Spell/Trap removal like <strong class="text-accent-crimson">Harpie's Feather Duster</strong>.</li>
+                        <li>Struggles against opponents who end on an empty board.</li>
+                        <li>Blanket negation (<strong class="text-accent-crimson">Skill Drain</strong>, <strong class="text-accent-crimson">Dark Ruler No More</strong>) is devastating.</li>
+                        <li>Key starters like Arabesque are major choke points for hand traps.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4 flex items-center"><i class="fas fa-cogs mr-2"></i>Key Tech Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent-teal">Kaiju Monsters:</strong> Essential for removing problematic monsters and providing an OTK target.</li>
+                        <li><strong class="text-accent-gold">Diviner of the Herald:</strong> A one-card starter that searches Ohime via Herald of the Arc Light.</li>
+                        <li><strong class="text-accent-crimson">Lava Golem:</strong> Removes two monsters and provides a high-ATK body to attack.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <p class="text-center text-lg text-yellow-100">Loading banlist status...</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- BANNER ANIMATION ---
+            const canvas = document.getElementById('banner-canvas');
+            if(canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = Math.random() * 2 - 1;
+                        this.speedY = Math.random() * 2 - 1;
+                        this.color = `hsla(${Math.random() * 60 + 190}, 100%, 70%, ${Math.random() * 0.5 + 0.2})`; // Teals and light blues
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.size > 0.1) this.size -= 0.02;
+
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    const numberOfParticles = (canvas.width * canvas.height) / 9000;
+                    for (let i = 0; i < numberOfParticles; i++) {
+                        particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+                    }
+                }
+
+                function animateParticles() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+                        if (particles[i].size <= 0.1) {
+                            particles.splice(i, 1);
+                            i--;
+                            particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+                        }
+                    }
+                    requestAnimationFrame(animateParticles);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animateParticles();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                         throw new Error(`Image not found`);
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'arabesque-img-container': 'Mikanko Water Arabesque',
+                'hare-img-container': 'Ha-Re the Sword Mikanko',
+                'kaiju-img-container': 'Gameciel, the Sea Turtle Kaiju',
+                'ohime-img-container': 'Ohime the Manifested Mikanko',
+            };
+            for (const [id, name] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(name, id);
+            }
+
+            // --- BANLIST CHECKER ---
+            const mikankoCards = [
+                "Ohime the Manifested Mikanko", "Ha-Re the Sword Mikanko", "Hu-Li the Jewel Mikanko",
+                "Ni-Ni the Mirror Mikanko", "Mikanko Water Arabesque", "The Great Mikanko Ceremony",
+                "Mikanko Rivalry", "Mikanko Reflection Rondo"
+            ];
+
+            const banlistAPI = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg';
+            const banlistContainer = document.getElementById('banlist-status');
+
+            async function checkBanlist() {
+                try {
+                    const response = await fetch(banlistAPI);
+                    const data = await response.json();
+                    const bannedCards = data.data;
+
+                    let limitedCards = [];
+                    let semiLimitedCards = [];
+                    let forbiddenCards = [];
+
+                    bannedCards.forEach(card => {
+                        if (mikankoCards.includes(card.name)) {
+                            if (card.banlist_info.ban_tcg === 'Limited') {
+                                limitedCards.push(card.name);
+                            } else if (card.banlist_info.ban_tcg === 'Semi-Limited') {
+                                semiLimitedCards.push(card.name);
+                            } else if (card.banlist_info.ban_tcg === 'Forbidden') {
+                                forbiddenCards.push(card.name);
+                            }
+                        }
+                    });
+
+                    let statusHTML = `
+                        <p class="text-center text-lg mb-4">
+                            As of the current TCG format, the Mikanko archetype is almost entirely unrestricted, allowing it to operate at full capacity.
+                        </p>
+                    `;
+                    
+                    if (limitedCards.length > 0 || semiLimitedCards.length > 0 || forbiddenCards.length > 0) {
+                         statusHTML += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">`;
+                        if(forbiddenCards.length > 0) statusHTML += `<div><h4 class="text-lg font-bold text-red-400 mb-2">Forbidden (0 copies)</h4><ul class="list-disc list-inside text-sm text-blue-200">${forbiddenCards.map(c => `<li>${c}</li>`).join('')}</ul></div>`;
+                        if(limitedCards.length > 0) statusHTML += `<div><h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 copy)</h4><ul class="list-disc list-inside text-sm text-blue-200">${limitedCards.map(c => `<li>${c}</li>`).join('')}</ul></div>`;
+                        if(semiLimitedCards.length > 0) statusHTML += `<div><h4 class="text-lg font-bold text-blue-400 mb-2">Semi-Limited (2 copies)</h4><ul class="list-disc list-inside text-sm text-blue-200">${semiLimitedCards.map(c => `<li>${c}</li>`).join('')}</ul></div>`;
+                        statusHTML += `</div>`;
+                    } else {
+                         statusHTML += `
+                            <div class="mt-4 p-3 bg-green-900 bg-opacity-50 rounded border-l-4 border-green-500">
+                                <p class="text-sm text-green-200"><strong class="font-bold">Fully Unrestricted:</strong> All core "Mikanko" cards are currently at 3 copies per deck, allowing for maximum consistency and power.</p>
+                            </div>
+                         `;
+                    }
+                    banlistContainer.innerHTML = statusHTML;
+
+                } catch (error) {
+                    console.error("Failed to fetch banlist data:", error);
+                    banlistContainer.innerHTML = '<p class="text-center text-red-400">Could not load banlist status. Please check your connection.</p>';
+                }
+            }
+
+            checkBanlist();
+        });
+    </script>
+</body>
+</html>

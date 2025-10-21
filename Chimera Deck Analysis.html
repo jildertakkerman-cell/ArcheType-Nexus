@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chimera Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a102c; /* Deep purple background */
+            color: #e9d5ff; /* Light lavender text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(30, 20, 50, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4c1d95; /* Indigo border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(40, 25, 70, 0.8);
+            border: 1px solid #6d28d9;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #311b4f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #311b4f;
+            border: 1px dashed #6d28d9;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fde047; } /* Gold/Yellow accent */
+        .arrow-color { color: #fde047; }
+        .heading-underline {
+            border-bottom: 2px solid #fde047;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fde047;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #fde047;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a102c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c1d95;
+        }
+
+        #illusion-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 16, 44, 0.4) 0%, rgba(26, 16, 44, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(253, 224, 71, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="illusion-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">CHIMERA</h1>
+            <p class="text-lg md:text-xl text-yellow-200">Deconstructing the Mythical Beast</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-200">
+                    The Chimera archetype is a Fusion-based, mid-range strategy that masterfully blends resource generation with multi-layered disruption. A modern reimagining of <a href="https://yugipedia.com/wiki/Chimera_the_Flying_Mythical_Beast" target="_blank" class="lore-link">classic monsters</a>, the deck introduces the resilient "Illusion" monster type and centers its entire game plan around a powerful recursive loop involving its key spell, <strong class="text-accent">Chimera Fusion</strong>. Rather than building an unbreakable board of negations, Chimera excels at out-valuing the opponent over several turns, using a compact engine to maintain card advantage and present threats from the field, hand, and Graveyard.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Components Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Anatomy of the Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-paw text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Mythical Beasts & Illusions</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Mirror Swordknight</h4>
+                            <p class="text-sm text-purple-200">The premier one-card starter. Tributes itself to summon a core combo piece from the deck and provides a monster negate from the Graveyard.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Cornfield Coatl</h4>
+                            <p class="text-sm text-purple-200">A vital consistency tool. Discards to search a starter and offers targeting protection from the Graveyard.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Big-Winged Berfomet</h4>
+                            <p class="text-sm text-purple-200">The central combo extender. Searches both a Beast monster and "Chimera Fusion," setting up the entire Fusion play.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Extra Deck -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-magic-wand-sparkles text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Fusions of Legend</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Chimera Fusion</h4>
+                            <p class="text-sm text-purple-200">The heart of the deck. A Quick-Play Spell that recurs itself from the Graveyard every turn, ensuring constant access to Fusion Summons.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Chimera the King of Phantom Beasts</h4>
+                            <p class="text-sm text-purple-200">The main Turn 1 playmaker. Rips a card from the opponent's hand and enables all the archetype's Graveyard effects.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Guardian Chimera</h4>
+                            <p class="text-sm text-purple-200">The primary disruption tool. Summoned on the opponent's turn to destroy their cards and draw new resources, generating a massive swing in advantage.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The One-Card Combo Blueprint</h2>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="swordknight-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mirror Swordknight</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a102c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Play</h3>
+                            </div>
+                            <p class="text-purple-200">Normal Summon <strong class="text-accent">Mirror Swordknight</strong>. Tribute it to activate its effect, Special Summoning <strong class="text-accent">Big-Winged Berfomet</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="berfomet-img-container" class="card-image-container flex-shrink-0 card-placeholder">Big-Winged Berfomet</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a102c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Assemble Materials</h3>
+                            </div>
+                            <p class="text-purple-200">Berfomet's effect activates, adding <strong class="text-accent">Gazelle the King of Mythical Claws</strong> and <strong class="text-accent">Chimera Fusion</strong> from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="king-phantom-beasts-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Chimera the King of Phantom Beasts</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a102c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Fusion Summon & Recur</h3>
+                            </div>
+                            <p class="text-purple-200">Activate <strong class="text-accent">Chimera Fusion</strong>, using Gazelle and Berfomet as material to summon <strong class="text-accent">Chimera the King of Phantom Beasts</strong>. Their GY effects trigger, reviving Swordknight and searching <strong class="text-accent">Cornfield Coatl</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Distributed Threat End Board</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-3xl mx-auto">The standard combo creates a seemingly simple board that holds multiple layers of powerful interaction for the opponent's turn. This setup is also resilient to <strong class="text-accent">Nibiru, the Primal Being</strong> as it requires only four summons.</p>
+            <div class="card p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="flex flex-col items-center">
+                        <div id="king-phantom-beasts-img-container-end" class="card-image-container card-placeholder mb-4">Chimera the King of Phantom Beasts</div>
+                        <h4 class="font-bold text-center text-lg text-white">On-Field Presence</h4>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-accent mb-4">Layers of Interaction:</h3>
+                        <ul class="list-disc list-inside space-y-3 text-purple-200">
+                            <li><strong class="text-white">Hand Rip:</strong> <span class="text-accent">King of Phantom Beasts</span> forces the opponent to discard a random card during the End Phase.</li>
+                            <li><strong class="text-white">Monster Negate:</strong> <span class="text-accent">Mirror Swordknight</span> can be banished from the GY to negate a monster effect on the field.</li>
+                            <li><strong class="text-white">Targeting Negate:</strong> <span class="text-accent">Cornfield Coatl</span> can be banished from the GY to negate and destroy a card that targets yours.</li>
+                            <li><strong class="text-white">Board Wipe & Draw:</strong> A set <span class="text-accent">Chimera Fusion</span> can summon <strong class="text-accent">Guardian Chimera</strong> on the opponent's turn, destroying their cards and drawing you more.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Incredible Consistency:</strong> Numerous one-card starters make the core combo highly reliable.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Resource Loop:</strong> The ability to recur <strong class="text-accent">Chimera Fusion</strong> every turn allows the deck to out-grind many opponents.</li>
+                        <li><span class="pro-icon"><i class="fas fa-meteor"></i></span> <strong class="text-green-300">Resilience:</strong> The main combo line stays under five summons, making it naturally resistant to <strong class="text-accent">Nibiru</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Key Choke Points:</strong> A well-timed hand trap on the Normal Summon of <strong class="text-accent">Mirror Swordknight</strong> can be crippling without an extender.</li>
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-300">Graveyard Hate:</strong> Cards like <strong class="text-accent">Dimension Shifter</strong> or <strong class="text-accent">Macro Cosmos</strong> completely shut down the deck's recursive engine.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Anti-Fusion:</strong> Floodgates like <strong class="text-accent">Dimensional Barrier</strong> calling "Fusion" are often game-ending.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergistic Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Branded Engine:</strong> A single <strong class="text-accent">Branded Fusion</strong> can start both the Branded and Chimera combos simultaneously, leading to incredibly powerful boards.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-tools"></i></span> <strong class="text-accent">Fiendsmith Engine:</strong> Provides additional Fiend and Illusion monsters that synergize perfectly with the deck's Fusion requirements and strategy.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 mt-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">FULL POWER:</strong> The Chimera archetype and its core support are completely unrestricted on the current TCG banlist.
+                </p>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With no hits to its engine, Chimera can operate at maximum consistency and power. Its ability to run a high number of non-engine "hand traps" alongside its compact, one-card starter engine makes it a formidable and adaptable contender in the current metagame.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Illusion Particle Animation ---
+            const canvas = document.getElementById('illusion-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 80;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.speedY = (Math.random() - 0.5) * 0.5;
+                        this.radius = Math.random() * 2 + 1;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                        this.color = Math.random() > 0.5 ? 'rgba(253, 224, 71,' : 'rgba(196, 181, 253,'; // Gold or Lavender
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+                        if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color + this.opacity + ')';
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- Card Image Fetcher Script ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'swordknight-img-container': 'Mirror Swordknight',
+                'berfomet-img-container': 'Big-Winged Berfomet',
+                'king-phantom-beasts-img-container-combo': 'Chimera the King of Phantom Beasts',
+                'king-phantom-beasts-img-container-end': 'Chimera the King of Phantom Beasts',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

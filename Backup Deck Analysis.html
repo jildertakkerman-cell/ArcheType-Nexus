@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0f2d; /* Deep Space Blue */
+            color: #e0e7ff; 
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(30, 41, 59, 0.5); /* Semi-transparent Slate Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4338ca; /* Indigo Border */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(51, 65, 85, 0.6);
+            border: 1px solid #6366f1;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1e293b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1e293b;
+            border: 1px dashed #4f46e5;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #60a5fa; } /* Bright Blue Accent */
+        .arrow-color { color: #60a5fa; }
+        .heading-underline {
+            border-bottom: 2px solid #60a5fa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #60a5fa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #60a5fa;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #60a5fa;
+        }
+
+        /* --- NEW BACKUP ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a0f2d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4338ca;
+        }
+
+        #data-stream-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 15, 45, 0.4) 0%, rgba(10, 15, 45, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(96, 165, 250, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+        
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="data-stream-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">BACKUP</h1>
+            <p class="text-lg md:text-xl text-blue-200">Cyberse Link Support & Network Extenders</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">"Backup"</strong> series is a small, synergistic cadre of Cyberse monsters designed to facilitate and extend Link Summoning plays. Rather than being a self-contained archetype with a dedicated boss monster, these cards function as highly efficient support tools within broader Cyberse strategies. Their core mechanic involves easy Special Summons to zones pointed to by Link Monsters, allowing players to quickly generate the materials needed for powerful, high-Link boss monsters. The strategic value of the <a href="https://yugipedia.com/wiki/Backup" target="_blank" class="lore-link">Backup cards</a> lies in their ability to provide crucial "backup" for your main plays, ensuring combos can continue and stronger boards can be built.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Backup Arsenal Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Backup Personnel</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-satellite-dish text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Core Extenders</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Backup Secretary</h4>
+                            <p class="text-sm text-indigo-200">The most straightforward extender. If you control a Cyberse monster, you can Special Summon her from your hand, providing an instant extra body for a Link Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Backup Operator</h4>
+                            <p class="text-sm text-indigo-200">A searcher and extender. If a Cyberse monster is Special Summoned from the Extra Deck to your field, you can add this card from your GY to hand. It can also tribute itself to revive two "Backup" monsters.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Backup Supervisor</h4>
+                            <p class="text-sm text-indigo-200">Acts as a powerful revival tool, Special Summoning a Level 4 or lower Cyberse monster from your GY with its effects negated when it's Normal Summoned.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-halved text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Support Protocol</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Backup Squad</h4>
+                            <p class="text-sm text-indigo-200">A Continuous Trap that provides draw power. Once per turn, you can draw cards equal to the number of Link Monsters you control with the same name.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Cynet Mining</h4>
+                            <p class="text-sm text-indigo-200">While not a "Backup" card, this is the essential search Spell for any Cyberse strategy, allowing you to discard a card to add any Level 4 or lower Cyberse monster from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Standard Operating Procedure</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                This simple sequence demonstrates the fundamental role of "Backup" cards in extending plays and climbing into more powerful Link Monsters.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cyberse-gadget-img" class="card-image-container flex-shrink-0 card-placeholder">Cyberse Gadget</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Establish a Link</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon any Cyberse monster (e.g., <strong class="text-accent">Cyberse Gadget</strong>). Use it to Link Summon a Link-1 monster like <strong class="text-accent">Linkuriboh</strong> (currently Limited).</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="backup-secretary-img" class="card-image-container flex-shrink-0 card-placeholder">Backup Secretary</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Call for Backup</h3>
+                            </div>
+                            <p class="text-indigo-200">Now that you control a Cyberse monster, Special Summon <strong class="text-accent">Backup Secretary</strong> from your hand for free.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="transcode-talker-img" class="card-image-container flex-shrink-0 card-placeholder">Transcode Talker</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Link Climb</h3>
+                            </div>
+                            <p class="text-indigo-200">Use your two monsters (<strong class="text-accent">Linkuriboh</strong> + <strong class="text-accent">Backup Secretary</strong>) to Link Summon a powerful Link-2 or Link-3 monster like <strong class="text-accent">Transcode Talker</strong>, which can then revive another Cyberse to continue your plays.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Typical End Board Targets</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">"Backup" monsters don't have their own boss, but they are instrumental in summoning the game's most powerful generic Cyberse monsters.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Accesscode Talker</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="accesscode-img" class="card-image-container card-placeholder">Accesscode Talker</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">OTK Potential:</strong> Gains massive ATK and can pop multiple cards on the field to clear the way for a game-ending attack.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Firewall Dragon Darkfluid</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="darkfluid-img" class="card-image-container card-placeholder">Firewall Dragon Darkfluid</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Multiple Negates:</strong> A towering Link-5 that can accumulate counters to negate monster effects multiple times per turn, creating a lockdown.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn mb-10 md:mb-16" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">System Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Efficient Extenders:</strong> Provide free bodies on board to easily facilitate Link climbing.</li>
+                        <li><span class="pro-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-green-300">Splashable:</strong> Easily integrated into any deck that uses Cyberse monsters and Link Summoning.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Resource Recursion:</strong> Cards like Backup Operator allow for grinding and recovery in longer games.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-link"></i></span> <strong class="text-red-300">Link-Reliant:</strong> Most of their effects require a Link Monster on the field to function.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Low Individual Impact:</strong> They are combo pieces, not standalone threats. They do very little on their own.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Vulnerable:</strong> Susceptible to common hand traps that stop Special Summons or negate monster effects.</li>
+                    </ul>
+                </div>
+                <!-- Banlist Impact -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Banlist Impact</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                         <li><span class="neutral-icon"><i class="fas fa-check"></i></span> <strong class="text-accent">Core Unhit:</strong> All "Backup" monsters and "Backup Squad" are Unlimited.</li>
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Key Extenders Banned:</strong> The loss of generic extenders like <strong class="text-accent">Splash Mage</strong> has lowered the ceiling of all Cyberse decks.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-accent">Linkuriboh Limited:</strong> Limits the deck's ability to easily put a Cyberse on field to start its plays.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">MODERATE IMPACT:</strong> While the "Backup" cards themselves are untouched, the archetype's viability is tied to generic Cyberse support, which has been impacted.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">External Restrictions</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Splash Mage (Forbidden)</strong> - A critical extender for reviving Cyberse monsters from the GY is banned.</li>
+                            <li><strong class="text-yellow-400">Linkuriboh (Limited)</strong> - A key Link-1 starter for many Cyberse combos is now at one copy per deck.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All Main Deck "Backup" monsters (3 copies each)</li>
+                            <li>Backup Squad</li>
+                            <li>Key searchers like Cynet Mining</li>
+                            <li>Most Code Talker & Firewall bosses</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The "Backup" engine remains fully intact and functional. However, the strategies it supports are less explosive due to the banning of key generic extenders like Splash Mage. Decks utilizing these cards must now find alternative, often less efficient, ways to swarm the field for high-Link plays. </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATA STREAM ANIMATION ---
+            const canvas = document.getElementById('data-stream-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 200;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 1 + 0.5;
+                        this.size = Math.random() * 1.5 + 0.5;
+                        this.color = `rgba(96, 165, 250, ${Math.random() * 0.5 + 0.2})`;
+                    }
+                    update() {
+                        this.y += this.speed;
+                        if (this.y > canvas.height) {
+                            this.y = 0;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'cyberse-gadget-img': 'Cyberse Gadget',
+                'backup-secretary-img': 'Backup Secretary',
+                'transcode-talker-img': 'Transcode Talker',
+                'accesscode-img': 'Accesscode Talker',
+                'darkfluid-img': 'Firewall Dragon Darkfluid',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

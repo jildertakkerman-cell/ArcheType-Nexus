@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yosenju Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Serif+JP:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Dark Slate Gray */
+            color: #e2e8f0; /* Light Slate Gray */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2d3748; /* Darker Gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a5568; /* Gray Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(45, 55, 72, 0.8);
+            border: 1px solid #718096;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #4a5568;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2d3748;
+            border: 1px dashed #a0aec0;
+        }
+        .pro-icon { color: #48bb78; } /* Green */
+        .con-icon { color: #f56565; } /* Red */
+        .neutral-icon { color: #63b3ed; } /* Blue */
+        .text-accent { color: #f6e05e; } /* Bright Yellow/Gold */
+        .arrow-color { color: #f6e05e; }
+        .heading-underline {
+            border-bottom: 2px solid #f6e05e;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f6e05e;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f6e05e;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f6e05e;
+        }
+
+        /* --- NEW YOSENJU ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a202c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a5568;
+        }
+
+        #ink-wash-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 32, 44, 0.4) 0%, rgba(26, 32, 44, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(246, 224, 94, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Noto Serif JP', serif;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+
+        .ygo-home-button i {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="ink-wash-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Yosenju</h1>
+            <p class="text-lg md:text-xl text-yellow-100">The Way of the Weasel: Hit-and-Run Tactics</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-slate-300">
+                    The <strong class="text-accent font-bold">Yosenju</strong> archetype is a unique collection of WIND monsters that operate on a principle of swift, overwhelming assaults followed by a tactical retreat. Their core identity is built around generating multiple Normal Summons in a single turn, allowing them to function effectively even under floodgates that restrict Special Summoning. This "hit-and-run" strategy allows the player to commit heavily to breaking an opponent's board, only to return their monsters safely to the hand, leaving the opponent to face a wall of powerful trap cards.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Core Mechanics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The Kama Chain</h3>
+                    <p class="text-slate-300">The heart of the deck. Each of the three "Kama" monsters, upon being Normal Summoned, grants an additional Normal Summon for another "Yosenju" monster. This creates a chain reaction, allowing a player to summon all three from the hand in one turn without a single Special Summon.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">End Phase Retreat</h3>
+                    <p class="text-slate-300">Nearly all Yosenju monsters share a mandatory effect: if they were Normal or Special Summoned, they return to the hand during the End Phase. This mechanic is the archetype's greatest strength and weakness, enabling a powerful, evasive playstyle but leaving the field empty and vulnerable.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Yosenju Pantheon Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Yosenju Pantheon</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Kama 1 -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Yosenju Kama 1</h3>
+                    <p class="text-slate-300">The primary removal tool. If another "Yosenju" monster is on the field, it can target and return one face-up card the opponent controls to the hand—a powerful form of non-destruction removal.</p>
+                </div>
+                <!-- Kama 2 -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Yosenju Kama 2</h3>
+                    <p class="text-slate-300">The enabler. This monster can attack directly, albeit for halved damage. This is crucial for guaranteeing that battle damage is inflicted, which triggers the effect of Kama 3.</p>
+                </div>
+                <!-- Kama 3 -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Yosenju Kama 3</h3>
+                    <p class="text-slate-300">The searcher and engine. When another Yosenju inflicts battle damage, it allows you to search for any "Yosenju" card from your deck, ensuring you have plays for the next turn.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Foundational Combo: The Kama Chain</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">
+                The entire non-pendulum strategy revolves around assembling the three Kama brothers. This sequence allows you to break boards, gain advantage, and set up your Extra Deck plays. The best part is you can find the <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=yosenju&stype=1" target="_blank" class="lore-link">Yosenju cards</a> you need from your deck when you complete your combos.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="kama3-img-container" class="card-image-container flex-shrink-0 card-placeholder">Yosenju Kama 3</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2d3748] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Chain</h3>
+                            </div>
+                            <p class="text-slate-300">Normal Summon <strong class="text-accent">Yosenju Kama 3</strong>. Activate its effect to gain an additional Normal Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="kama1-img-container" class="card-image-container flex-shrink-0 card-placeholder">Yosenju Kama 1</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2d3748] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon and Remove</h3>
+                            </div>
+                            <p class="text-slate-300">Use the extra summon to Normal Summon <strong class="text-accent">Yosenju Kama 1</strong>. Use its effect to summon <strong class="text-accent">Yosenju Kama 2</strong>. With three Yosenjus on board, use Kama 1's other effect to bounce a problematic card your opponent controls.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="kama2-img-container" class="card-image-container flex-shrink-0 card-placeholder">Yosenju Kama 2</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2d3748] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Attack and Search</h3>
+                            </div>
+                            <p class="text-slate-300">Attack directly with <strong class="text-accent">Yosenju Kama 2</strong>. When it deals damage, trigger <strong class="text-accent">Yosenju Kama 3's</strong> effect to search any "Yosenju" card from your deck, setting you up for your next turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The End Board: A Field of Traps</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">Unlike combo decks that build a board of negates, a Yosenju player's ideal end board is often an empty monster field. After the Kama trio returns to the hand, the player is left with a full hand for next turn and a backrow of powerful floodgates and traps to survive the opponent's turn.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Stun End Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Typical "Stun" End Board</h3>
+                    <ul class="list-disc list-inside space-y-3 text-slate-300">
+                        <li><strong class="text-accent">Empty Monster Zones:</strong> All Yosenju monsters have returned to the hand.</li>
+                        <li><strong class="text-accent">Active Floodgates:</strong> Cards like <span class="font-mono">Rivalry of Warlords</span> or <span class="font-mono">Lose 1 Turn</span> are face-up, crippling the opponent's strategy.</li>
+                        <li><strong class="text-accent">Set Disruption:</strong> Multiple set cards like <span class="font-mono">Yosenjus' Secret Move</span>, <span class="font-mono">Solemn Strike</span>, or <span class="font-mono">Infinite Impermanence</span> are ready to interrupt plays.</li>
+                    </ul>
+                </div>
+                <!-- OTK Pivot -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The "Go-Second" Pivot</h3>
+                    <p class="text-slate-300 mb-4">If the OTK fails, Main Phase 2 is used to create a disruptive Xyz monster before the Kamas return to hand.</p>
+                    <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                        <div id="bagooska-img-container" class="w-24 flex-shrink-0 card-placeholder">Number 41: Bagooska the Terribly Tired Tapir</div>
+                        <div>
+                            <h4 class="font-bold text-white">Number 41: Bagooska</h4>
+                            <p class="text-sm text-slate-300">Summoned in defense, it forces all monsters into defense and negates their activated effects, stalling the game for a turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Floodgate Resilient:</strong> Functions incredibly well under cards that stop Special Summoning.</li>
+                        <li><span class="pro-icon"><i class="fas fa-hand-sparkles"></i></span> <strong class="text-green-300">Evasive Power:</strong> Returning to the hand makes the deck naturally resilient to board wipes like Raigeki and Dark Hole.</li>
+                        <li><span class="pro-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-green-300">Potent "Go-Second" Strategy:</strong> Excellent at breaking established boards through a combination of bouncing effects and Kaijus.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">Fragile Choke Point:</strong> The entire Kama chain relies on the first Normal Summon resolving. A single negate can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-user-shield"></i></span> <strong class="text-red-300">Empty Board Vulnerability:</strong> If the backrow is insufficient, the empty field is completely open to direct attacks.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Anti-Search Effects:</strong> Cards like Ash Blossom & Joyous Spring can stop the crucial search from Kama 3.</li>
+                    </ul>
+                </div>
+                <!-- Key Tech Choices -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech Choices</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent">Fire Formation - Tenki:</strong> Essentially provides 3 extra copies of any Kama monster, drastically boosting consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-pastafarianism"></i></span> <strong class="text-accent">Kaiju Engine:</strong> Provides unparalleled monster removal and has a unique recycling synergy with Kama 1.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-accent">Stun Traps:</strong> Cards like <span class="font-mono">Rivalry of Warlords</span> and <span class="font-mono">Gozen Match</span> cripple many meta decks while leaving Yosenju unaffected.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mt-10 md:mt-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-slate-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The Yosenju archetype itself has no cards on the Forbidden & Limited list. However, its effectiveness is tied to generic support cards.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-slate-300">
+                            <li>All "Yosenju" monsters and spells/traps.</li>
+                             <li><strong class="text-accent">Pot of Duality:</strong> Key draw power for the Stun variant.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited & Semi-Limited Support</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-slate-300">
+                            <li><strong class="text-accent">Fire Formation - Tenki (Limited to 1):</strong> A significant consistency hit to the deck.</li>
+                            <li><strong class="text-accent">Card of Demise (Limited to 1):</strong> A major blow to the Stun variant's ability to maintain card advantage.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-400">
+                    <p class="text-sm text-slate-300"><strong>Meta Implications:</strong> While the core engine is intact, hits to generic consistency cards like Tenki and draw power like Card of Demise have weakened the Stun variant's ability to reliably set up its ideal board. The deck remains a potent rogue strategy but is less consistent than in its prime.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- YOSENJU INK WASH BANNER ANIMATION ---
+            const canvas = document.getElementById('ink-wash-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = Math.random() * 2 - 1;
+                        this.speedY = Math.random() * 2 - 1;
+                        this.color = `rgba(246, 224, 94, ${Math.random() * 0.2})`; // Faint gold
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.size > 0.2) this.size -= 0.03;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                
+                function handleParticles() {
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+                        if (particles[i].size <= 0.3) {
+                            particles.splice(i, 1);
+                            i--;
+                        }
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    handleParticles();
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                animate();
+
+                canvas.addEventListener('mousemove', (event) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const y = event.clientY - rect.top;
+                    for (let i = 0; i < 3; i++) {
+                        particles.push(new Particle(x, y));
+                    }
+                });
+
+                 window.addEventListener('resize', setCanvasSize);
+            }
+
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'kama1-img-container': 'Yosenju Kama 1',
+                'kama2-img-container': 'Yosenju Kama 2',
+                'kama3-img-container': 'Yosenju Kama 3',
+                'bagooska-img-container': 'Number 41: Bagooska the Terribly Tired Tapir'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,593 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artmage Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e; /* Deep Indigo */
+            color: #e0e0e0; /* Light Gray */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a2a3e; /* Dark Slate Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #7f5af0; /* Bright Purple Border */
+        }
+        .combo-step-card {
+            background-color: #3b3b5c; /* Lighter Slate Blue */
+            border: 1px solid #9d7fe2; /* Lighter Purple Accent */
+        }
+        .pro-con-card {
+            background-color: #3b3b5c;
+            border: 1px solid #9d7fe2;
+        }
+        .card-placeholder {
+            background-color: #2a2a3e;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2a3e;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a78bfa; } /* Light Violet */
+        .arrow-color { color: #9d7fe2; }
+        .heading-underline {
+            border-bottom: 2px solid #9d7fe2;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        a.lore-link {
+            color: #e0e0e0;
+            text-decoration: underline;
+            transition: color 0.3s;
+        }
+        a.lore-link:hover {
+            color: #a78bfa;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px; /* Matching Battlewasp size */
+            background-color: #1a1a2e;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #7f5af0;
+        }
+
+        #artmage-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(26, 26, 46, 0.5) 0%, rgba(26, 26, 46, 0.9) 80%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        #card-popup {
+            background: rgba(167, 139, 250, 0.95);
+            border: 2px solid #a78bfa;
+            border-radius: 8px;
+            padding: 12px;
+            max-width: 300px;
+            font-size: 14px;
+            color: #a78bfa;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        #card-popup h3 {
+            margin: 0 0 8px 0;
+            font-weight: bold;
+            color: #a78bfa;
+        }
+        #card-popup .card-type {
+            font-style: italic;
+            margin-bottom: 8px;
+            color: #a78bfa;
+        }
+        #card-popup .card-description {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        #card-popup .card-stats {
+            font-size: 12px;
+            color: #a78bfa;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup" class="fixed z-50 opacity-0 pointer-events-none transition-opacity duration-200"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="artmage-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Artmage</h1>
+            <p class="text-lg md:text-xl text-purple-300">An Analysis of the Fusion-Based Control Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-200">
+                    The <strong class="text-accent font-bold">Artmage</strong> archetype is a Fusion-based strategy focused on resource recursion and controlling the field through powerful, conditional effects. The deck's primary goal is to assemble a board of at least three different monster types to unlock the full potential of its boss monsters. By using their Field Spell, <strong class="text-accent font-bold">Artmage Academic Arcane Arts Acropolis</strong>, to cycle through their spells and traps, Artmages can maintain a steady stream of resources while disrupting the opponent's plays. The <a href="https://yugipedia.com/wiki/Artmage" target="_blank" rel="noopener noreferrer" class="lore-link">lore</a> of this magical academy and its students is woven into their very mechanics.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Foundational Mechanics: The Arcane Arts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-sitemap text-accent mr-2"></i>Type Diversity</h3>
+                    <p class="text-gray-200">The deck's most powerful effects require you to control three or more different monster types (e.g., Spellcaster, Dragon, Warrior). This encourages creative deck building and strategic summoning.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-book-open text-accent mr-2"></i>Spell & Trap Recursion</h3>
+                    <p class="text-gray-200">The Field Spell, <strong class="text-accent font-bold">Acropolis</strong>, allows you to discard a spell or trap to change a monster's name, and your Artmage spells/traps have effects that activate when discarded for this cost, creating a powerful resource loop.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Path to Enlightenment</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">A single <strong class="text-accent font-bold">Medius the Pure</strong> can initiate a combo that establishes your key boss monster and sets up your resource engine.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="medius-img-container" class="card-image-container card-placeholder">Medius the Pure</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">The Student's Journey</h3>
+                        </div>
+                        <p class="text-gray-200">Normal Summon <strong class="text-accent font-bold">Medius the Pure</strong>. Its effect allows you to search for <strong class="text-accent font-bold">Artmage Power Patron</strong>, your key to quick-effect Fusion Summons.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="diactorus-img-container" class="card-image-container card-placeholder">Artmage Diactorus</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">The Transformation</h3>
+                        </div>
+                        <p class="text-gray-200">Use <strong class="text-accent font-bold">Power Patron</strong> to fuse Medius with another Artmage monster (like <strong class="text-accent font-bold">Graflare</strong>) to summon your boss monster, <strong class="text-accent font-bold">Artmage Diactorus</strong>.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="finmel-img-container" class="card-image-container card-placeholder">Artmage Finmel</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Assembling the Council</h3>
+                        </div>
+                        <p class="text-gray-200">Use your remaining resources to summon other Artmage monsters like <strong class="text-accent font-bold">Finmel</strong> and revive Medius to meet the 3-type requirement and activate your boss monster's powerful negation effects.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- End Board Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final End Board</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">A successful Artmage end board features multiple layers of disruption, all contingent on maintaining a diverse field of monster types.</p>
+            <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                 <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
+                    <div id="diactorus-endboard-img-container" class="card-image-container card-placeholder">Artmage Diactorus</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Omni-Negate</h3>
+                        <p class="text-gray-200"><strong class="text-accent font-bold">Artmage Diactorus</strong> provides a powerful on-field omni-negate for any card or effect activated on the field, protecting your board from key threats.</p>
+                    </div>
+                </div>
+                <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
+                    <div id="finmel-endboard-img-container" class="card-image-container card-placeholder">Artmage Finmel</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Mass Monster Negation</h3>
+                        <p class="text-gray-200">With 3+ monster types, <strong class="text-accent font-bold">Artmage Finmel</strong> can negate the effects of all face-up monsters your opponent controls for a turn, shutting down their entire strategy.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Strong Grind Game:</strong> Excellent at recycling resources for long duels.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Resilient Board:</strong> The floating effect of Diactorus ensures you always have a follow-up.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">High Skill Ceiling:</strong> Rewards complex decision-making and strategic resource management.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Conditional Negates:</strong> Relies on maintaining 3+ monster types, which can be difficult.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Vulnerable Starter:</strong> Negating your initial Normal Summon can stop your combo.</li>
+                         <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400 font-bold">Field-Only Negation:</strong> Diactorus cannot negate effects from the hand or Graveyard.</li>
+                    </ul>
+                </div>
+                <!-- Tech & Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech & Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent font-bold">Branded Engine:</strong> Provides powerful Fusion summons and adds the Fiend type to your board.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-hat-wizard"></i></span> <strong class="text-accent font-bold">Invoked Engine:</strong> Offers access to <strong class="text-accent font-bold">Invoked Mechaba</strong> for another layer of negation and the Machine type.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent font-bold">Generic Fusion/Link Support:</strong> Cards like <strong class="text-accent font-bold">Super Polymerization</strong> and <strong class="text-accent font-bold">Cross-Sheep</strong> are excellent additions.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Artmage's Spellbook</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">An overview of the essential cards that make up this artistic and powerful strategy.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Medius the Pure</h3>
+                    <p class="text-gray-200 mb-2"><strong>Spellcaster/Effect</strong></p>
+                    <p class="text-gray-200">The heart of the deck. He searches your key Fusion enabler and can revive himself from the Graveyard.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Artmage Diactorus</h3>
+                    <p class="text-gray-200 mb-2"><strong>Fairy/Fusion/Effect</strong></p>
+                    <p class="text-gray-200">The deck's boss monster. Provides a powerful on-field omni-negate and replaces itself with Medius when destroyed.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Artmage Power Patron</h3>
+                    <p class="text-gray-200 mb-2"><strong>Spellcaster/Effect</strong></p>
+                    <p class="text-gray-200">Enables Quick-Effect Fusion Summons and searches for a spell/trap when used as Fusion Material.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Artmage Academic Arcane Arts Acropolis</h3>
+                    <p class="text-gray-200 mb-2"><strong>Field Spell</strong></p>
+                    <p class="text-gray-200">The engine's core, providing an extra Normal Summon and a powerful resource loop for your spells and traps.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ARTMAGE "ARCANE CONVERGENCE" ANIMATION ---
+            const canvas = document.getElementById('artmage-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                let sigils = [];
+                let animationFrameId;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 0.5 + 0.1;
+                        this.angle = Math.atan2(canvas.height / 2 - this.y, canvas.width / 2 - this.x);
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.opacity = Math.random() * 0.4 + 0.1;
+                    }
+                    update() {
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed;
+                        const dist = Math.hypot(this.x - canvas.width / 2, this.y - canvas.height / 2);
+                        if (dist < 5) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.angle = Math.atan2(canvas.height / 2 - this.y, canvas.width / 2 - this.x);
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(167, 139, 250, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                class Sigil {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 25 + 15;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = (Math.random() - 0.5) * 0.005;
+                        this.opacity = 0;
+                        this.maxOpacity = Math.random() * 0.15 + 0.05;
+                        this.life = 0;
+                        this.maxLife = Math.random() * 200 + 150;
+                    }
+                    update() {
+                        this.angle += this.speed;
+                        this.life++;
+                        this.opacity = this.maxOpacity * Math.sin(this.life / this.maxLife * Math.PI);
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.angle);
+                        ctx.strokeStyle = `rgba(167, 139, 250, ${this.opacity})`;
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                        ctx.beginPath();
+                        ctx.moveTo(0, -this.size/2);
+                        ctx.lineTo(0, this.size/2);
+                        ctx.moveTo(-this.size/2, 0);
+                        ctx.lineTo(this.size/2, 0);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    sigils = [];
+                    const particleCount = (canvas.width * canvas.height) / 10000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                    for (let i = 0; i < 7; i++) {
+                        sigils.push(new Sigil());
+                    }
+                }
+                
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    particles.forEach(p => { p.update(); p.draw(); });
+                    sigils.forEach(s => { s.update(); s.draw(); });
+                    
+                    sigils = sigils.filter(s => s.life < s.maxLife);
+                    if (sigils.length < 7) sigils.push(new Sigil());
+                    
+                    animationFrameId = requestAnimationFrame(animate);
+                }
+
+                function startAnimation() {
+                    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                    setCanvasSize();
+                    init();
+                    animate();
+                }
+
+                startAnimation();
+                window.addEventListener('resize', startAnimation);
+            }
+            
+            // --- EXISTING SCRIPT FOR CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        throw new Error(`API returned status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        console.warn(`Image not found for "${cardName}". Using placeholder.`);
+                        createAndAppendPlaceholder(cardName, containerId);
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    createAndAppendPlaceholder(cardName, containerId);
+                }
+            }
+            
+            const imageContainers = {
+                'medius-img-container': 'Medius the Pure',
+                'diactorus-img-container': 'Artmage Diactorus',
+                'finmel-img-container': 'Artmage Finmel',
+                'diactorus-endboard-img-container': 'Artmage Diactorus',
+                'finmel-endboard-img-container': 'Artmage Finmel'
+            };
+
+            for (const [containerId, cardName] of Object.entries(imageContainers)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

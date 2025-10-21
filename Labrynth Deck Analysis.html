@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labrynth Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a14;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1625;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a3f6d;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #241f36;
+            border: 1px solid #5a5084;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 200px;
+            flex-shrink: 0;
+        }
+        .card-placeholder {
+            background-color: #241f36;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 290px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #241f36;
+        }
+        .text-accent { color: #d1c4e9; } /* Light purple */
+        .text-silver { color: #e0e0e0; }
+        .arrow-color { color: #9575cd; }
+        .heading-font { font-family: 'Cinzel', serif; }
+        .heading-underline {
+            border-bottom: 2px solid #9575cd;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #d1c4e9;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #d1c4e9;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- ANIMATED BANNER --- */
+        .banner {
+            position: relative;
+            height: 140px;
+            background: linear-gradient(45deg, #1a1625, #0c0a14);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #4a3f6d;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: content-appear 1s ease-out 0.5s forwards;
+        }
+        .banner-title {
+            font-size: 2.5rem;
+            color: #e0e0e0;
+            text-shadow: 0 0 8px rgba(209, 196, 233, 0.5), 0 0 15px rgba(149, 117, 205, 0.3);
+            letter-spacing: 0.1em;
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #c5cae9;
+        }
+        .chain {
+            position: absolute;
+            height: 150%;
+            opacity: 0.1;
+            filter: grayscale(80%) brightness(1.5);
+            animation: drift 60s linear infinite;
+            z-index: 1;
+        }
+        .chain1 { top: -25%; left: 5%; width: 150px; animation-duration: 50s; }
+        .chain2 { top: -25%; right: 5%; width: 150px; animation-duration: 70s; animation-direction: reverse; }
+        
+        @keyframes content-appear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes drift {
+            from { transform: translateY(0); }
+            to { transform: translateY(-200px); }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: #1a1625;
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid #4a3f6d;
+            max-width: 500px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <svg class="chain chain1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#e0e0e0"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M14 11.5C14 10.1193 15.1193 9 16.5 9C17.8807 9 19 10.1193 19 11.5C19 12.8807 17.8807 14 16.5 14C15.1193 14 14 12.8807 14 11.5Z" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M10 11.5C10 10.1193 8.88071 9 7.5 9C6.11929 9 5 10.1193 5 11.5C5 12.8807 6.11929 14 7.5 14C8.88071 14 10 12.8807 10 11.5Z" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M10 11.5H14" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M18 17L19.2929 18.2929C19.6834 18.6834 19.6834 19.3166 19.2929 19.7071L19.7071 19.2929C20.0976 18.9024 20.0976 18.2692 19.7071 17.8787L18.8787 17.0503C18.4882 16.6597 17.855 16.6597 17.4645 17.0503L17.0503 17.4645C16.6597 17.855 16.6597 18.4882 17.0503 18.8787L18 17Z" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6 17L4.70711 18.2929C4.31658 18.6834 4.31658 19.3166 4.70711 19.7071L5.12132 19.2929C4.7308 18.9024 4.7308 18.2692 5.12132 17.8787L5.94975 17.0503C6.34027 16.6597 6.97344 16.6597 7.36396 17.0503L7.77817 17.4645C8.1687 17.855 8.1687 18.4882 7.77817 18.8787L6 17Z" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                <svg class="chain chain2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#e0e0e0"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M14 11.5C14 10.1193 15.1193 9 16.5 9C17.8807 9 19 10.1193 19 11.5C19 12.8807 17.8807 14 16.5 14C15.1193 14 14 12.8807 14 11.5Z" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M10 11.5C10 10.1193 8.88071 9 7.5 9C6.11929 9 5 10.1193 5 11.5C5 12.8807 6.11929 14 7.5 14C8.88071 14 10 12.8807 10 11.5Z" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M10 11.5H14" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M18 17L19.2929 18.2929C19.6834 18.6834 19.6834 19.3166 19.2929 19.7071L19.7071 19.2929C20.0976 18.9024 20.0976 18.2692 19.7071 17.8787L18.8787 17.0503C18.4882 16.6597 17.855 16.6597 17.4645 17.0503L17.0503 17.4645C16.6597 17.855 16.6597 18.4882 17.0503 18.8787L18 17Z" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6 17L4.70711 18.2929C4.31658 18.6834 4.31658 19.3166 4.70711 19.7071L5.12132 19.2929C4.7308 18.9024 4.7308 18.2692 5.12132 17.8787L5.94975 17.0503C6.34027 16.6597 6.97344 16.6597 7.36396 17.0503L7.77817 17.4645C8.1687 17.855 8.1687 18.4882 7.77817 18.8787L6 17Z" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                <div class="banner-content">
+                    <h1 class="banner-title heading-font">Labrynth</h1>
+                    <p class="banner-subtitle">Mastering the Castle of Controlled Chaos</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-font">Executive Summary</h2>
+                <p class="text-silver">
+                    The <strong class="text-accent font-bold">Labrynth</strong> archetype is a premier Trap-based control strategy in modern Yu-Gi-Oh!. It excels at slowing the game's tempo and generating overwhelming resource advantage through a recursive engine. The core mechanic revolves around activating monster effects whenever "a monster leaves the field by your Normal Trap effect." This transforms simple traps into catalysts for powerful chain reactions, creating a dynamic where the Labrynth player profits from every interaction, turning the opponent's plays into their own victory condition.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">The Inhabitants of the Labyrinth</h2>
+            <p class="text-silver mb-8 text-center max-w-2xl mx-auto">
+                The castle's power lies in the intricate synergies between its residents, from the ruling matriarchs to the diligent servants and the enchanted <span class="lore-link" id="furniture-link">furniture that enables their work</span>.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-chess-queen text-4xl text-purple-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white heading-font">The Matriarchs & Servants</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Lovely Labrynth of the Silver Castle</h4>
+                            <p class="text-sm text-silver">The primary offensive tool. Protects your traps and converts removal into devastating hand disruption.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Lady Labrynth of the Silver Castle</h4>
+                            <p class="text-sm text-silver">The defensive cornerstone. Summons herself easily and tutors any Normal Trap from the deck, making her a versatile toolbox.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Arianna the Labrynth Servant</h4>
+                            <p class="text-sm text-silver">The most crucial starter. Searches any "Labrynth" card on summon and generates card advantage from trap activations.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dungeon text-4xl text-purple-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white heading-font">The Castle's Architecture</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Welcome Labrynth</h4>
+                            <p class="text-sm text-silver">The primary engine starter. Summons a "Labrynth" from the deck and recycles itself from the Graveyard.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Big Welcome Labrynth</h4>
+                            <p class="text-sm text-silver">A flexible extender and disruption tool. Summons from hand, deck, or GY and can bounce cards on the field.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Labrynth Labyrinth</h4>
+                            <p class="text-sm text-silver">The Field Spell. Adds a destruction effect to your "Welcome" traps and revives Fiends from the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">The "Turn 0" Offensive</h2>
+            <p class="text-silver mb-8 text-center max-w-2xl mx-auto">The deck's most feared capability is its ability to build a board during the opponent's first turn using the "Furniture" monsters and Labrynth Cooclock.</p>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="stovie-torbie-img-container" class="card-image-container flex-shrink-0 card-placeholder">Labrynth Stovie Torbie</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1625] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold heading-font">Set the Trap</h3>
+                            </div>
+                            <p class="text-silver">During the opponent's turn, use a "Furniture" monster's effect (like <strong class="text-accent">Stovie Torbie</strong>) from your hand to set <strong class="text-accent">Big Welcome Labrynth</strong> from the deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cooclock-img-container" class="card-image-container flex-shrink-0 card-placeholder">Labrynth Cooclock</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1625] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold heading-font">Spring the Trap Early</h3>
+                            </div>
+                            <p class="text-silver">Discard <strong class="text-accent">Labrynth Cooclock</strong> to allow the activation of <strong class="text-accent">Big Welcome Labrynth</strong> on the same turn it was set.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="lovely-labrynth-img-container" class="card-image-container flex-shrink-0 card-placeholder">Lovely Labrynth of the Silver Castle</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1625] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold heading-font">Generate Advantage</h3>
+                            </div>
+                            <p class="text-silver">Activate <strong class="text-accent">Big Welcome Labrynth</strong> to summon a monster (e.g., <strong class="text-accent">Lovely Labrynth</strong>), triggering its effect to destroy a card in the opponent's hand and recycling your <strong class="text-accent">Stovie Torbie</strong> from the GY.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">The Labrynth End Board</h2>
+            <div class="card p-6 max-w-3xl mx-auto">
+                <p class="text-silver mb-4">Unlike combo decks that create static boards of negates, a Labrynth "end board" is a dynamic state of potential, measured in layers of interaction and guaranteed follow-up. A typical end state includes:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent mb-2 heading-font"><i class="fas fa-chess-queen mr-2"></i>On-Field Presence</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-silver">
+                            <li>A Matriarch (Lady or Lovely)</li>
+                            <li>A resource generator (Arianna)</li>
+                            <li>Furniture in GY for recursion</li>
+                        </ul>
+                    </div>
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent mb-2 heading-font"><i class="fas fa-layer-group mr-2"></i>Set Backrow</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-silver">
+                            <li>A "Welcome" trap for engine continuation</li>
+                            <li>A powerful generic trap (e.g., Karma Cannon)</li>
+                            <li>Potentially 2-3 additional traps</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="text-silver mt-4 text-center italic">This board's strength lies in its ability to adapt and respond, generating overwhelming advantage through the resource loop.</p>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 heading-font">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-silver">
+                        <li><span class="text-green-400"><i class="fas fa-check-circle"></i></span> Exceptional grind game and resource loop.</li>
+                        <li><span class="text-green-400"><i class="fas fa-check-circle"></i></span> Proactive "Turn 0" disruption capability.</li>
+                        <li><span class="text-green-400"><i class="fas fa-check-circle"></i></span> Flexible toolbox for searching specific trap answers.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 heading-font">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-silver">
+                        <li><span class="text-red-400"><i class="fas fa-times-circle"></i></span> Vulnerable choke point on "Welcome" trap resolution.</li>
+                        <li><span class="text-red-400"><i class="fas fa-times-circle"></i></span> Can struggle against decks that benefit from destruction.</li>
+                        <li><span class="text-red-400"><i class="fas fa-times-circle"></i></span> Backrow removal like Harpie's Feather Duster can be devastating.</li>
+                    </ul>
+                </div>
+                <!-- Tech Choices -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4 heading-font">Allies & Armaments</h3>
+                    <ul class="list-disc list-inside space-y-2 text-silver">
+                        <li><span class="text-blue-400"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent">Fiend Engines:</strong> Unchained and Fiendsmith synergize perfectly.</li>
+                        <li><span class="text-blue-400"><i class="fas fa-tools"></i></span> <strong class="text-accent">Generic Traps:</strong> Karma Cannon, Ice Dragon's Prison, Transaction Rollback.</li>
+                        <li><span class="text-blue-400"><i class="fas fa-ban"></i></span> <strong class="text-accent">Floodgates:</strong> Skill Drain and Rivalry of Warlords can be powerful alternatives.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-silver mb-4 text-center">
+                    <strong class="text-accent font-bold">Excellent News:</strong> All Labrynth archetype cards are currently unrestricted in the TCG format, making the deck competitively viable:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Fully Unrestricted Archetype</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-silver">
+                            <li>All Labrynth monsters (3 copies each)</li>
+                            <li>Welcome Labrynth (3 copies)</li>
+                            <li>Big Welcome Labrynth (3 copies)</li>
+                            <li>All other Labrynth Spells/Traps (3 copies each)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-blue-400 mb-2">Supporting Engine Status</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-silver">
+                            <li>Unchained engine: Mostly unrestricted</li>
+                            <li>Fiendsmith engine: Check current status</li>
+                            <li>Generic traps: Follow standard limitations</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-400">
+                    <p class="text-sm text-silver"><strong>Competitive Advantage:</strong> Labrynth's unrestricted status makes it one of the most accessible control strategies in the current meta. This allows for full consistency and optimization without worrying about key cards being limited.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Modal -->
+    <div id="lore-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-2xl heading-font text-accent mb-4">Welcome, Foolish Guest...</h2>
+            <p class="text-silver mb-6">You've stumbled upon the inner workings of the Silver Castle. The enchanted furniture serves the will of its mistresses, setting the stage for a grand, inescapable tragedy. Every piece has its part to play in the labyrinth's endless game.</p>
+            <button id="close-modal" class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-lg transition-colors">Return to the Shadows</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- MODAL LOGIC ---
+            const loreLink = document.getElementById('furniture-link');
+            const modal = document.getElementById('lore-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+
+            loreLink.addEventListener('click', () => {
+                modal.classList.add('active');
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error)
+ {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder flex items-center justify-center p-4 text-center">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'stovie-torbie-img-container': 'Labrynth Stovie Torbie',
+                'cooclock-img-container': 'Labrynth Cooclock',
+                'lovely-labrynth-img-container': 'Lovely Labrynth of the Silver Castle',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+
+</body>
+</html>
+

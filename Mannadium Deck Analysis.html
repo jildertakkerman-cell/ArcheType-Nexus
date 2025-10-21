@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mannadium Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0a0a1a;
+            color: #e0e7ff;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(19, 24, 48, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3b3b7a;
+        }
+        .combo-step-card {
+            background-color: rgba(30, 36, 68, 0.8);
+            border: 1px solid #4a4a8c;
+        }
+        .pro-con-card {
+            background-color: rgba(30, 36, 68, 0.8);
+            border: 1px solid #4a4a8c;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.3),
+                0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .card-image-container:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 
+                0 8px 20px -3px rgba(0, 0, 0, 0.4),
+                0 4px 6px -2px rgba(0, 0, 0, 0.3),
+                0 0 0 2px rgba(135, 206, 250, 0.3);
+        }
+        
+        .card-image {
+            width: 100%;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .card-image-container:hover .card-image {
+            filter: brightness(1.1) contrast(1.05);
+        }
+        
+        .endboard-image-container {
+            width: 180px;
+            max-width: 180px;
+            flex-shrink: 0;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.3),
+                0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .endboard-image-container:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 
+                0 8px 20px -3px rgba(0, 0, 0, 0.4),
+                0 4px 6px -2px rgba(0, 0, 0, 0.3),
+                0 0 0 2px rgba(135, 206, 250, 0.3);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background: linear-gradient(135deg, rgba(42, 42, 90, 0.3) 0%, rgba(59, 59, 122, 0.4) 50%, rgba(48, 48, 105, 0.3) 100%);
+            border: 2px solid rgba(135, 206, 250, 0.4);
+            color: #e0e7ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.3),
+                0 2px 4px -1px rgba(0, 0, 0, 0.2),
+                inset 0 1px 3px rgba(135, 206, 250, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-placeholder::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .card-placeholder:hover::before {
+            left: 100%;
+        }
+        
+        .card-placeholder:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 15px -3px rgba(0, 0, 0, 0.4),
+                0 4px 6px -2px rgba(0, 0, 0, 0.3),
+                inset 0 1px 3px rgba(135, 206, 250, 0.3),
+                0 0 0 1px rgba(135, 206, 250, 0.6);
+            border-color: rgba(135, 206, 250, 0.6);
+        }
+        .text-accent { color: #87cefa; } /* Light Sky Blue */
+        .lore-link {
+            color: #87cefa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #87cefa;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        .banner {
+            position: relative;
+            height: 160px;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #3b3b7a;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: #e0e7ff;
+            text-shadow: 0 0 10px rgba(135, 206, 250, 0.7), 0 0 20px rgba(135, 206, 250, 0.5);
+            letter-spacing: 0.1em;
+        }
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 5s infinite ease-in-out;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        .heading-underline {
+            border-bottom: 2px solid #87cefa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+<div class="container mx-auto">
+    <header class="mb-10 md:mb-16">
+        <div class="banner">
+            <div id="stars-container"></div>
+            <div class="z-10">
+                <h1 class="banner-title">Mannadium</h1>
+                <p class="text-lg text-blue-200">Analysis of a Synchro Powerhouse</p>
+            </div>
+        </div>
+    </header>
+
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+        <div class="card p-6">
+            <h2 class="text-2xl font-bold text-white mb-4">Executive Summary</h2>
+            <p class="text-blue-200">
+                The <strong class="text-accent font-bold">Mannadium</strong> archetype is a synergistic, self-perpetuating system centered on Synchro Summoning. Its core mechanic revolves around a strategic loop of controlled destruction and resource generation. The destruction of its own monsters is not a cost but a catalyst for advantage, leading to powerful and resilient end boards. The strategy is deeply tied to the lore protagonist, <strong class="text-accent">Visas Starfrost</strong>, and other monsters sharing his stat line, often referred to as "Heart" monsters. You can explore the full range of <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=mannadium&stype=card_name&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=" target="_blank" class="lore-link">Mannadium cards</a> to see how they connect.
+            </p>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+        <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Core Engine Components</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-atom mr-2 text-accent"></i>Key Monsters</h3>
+                <div class="space-y-4">
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent">Mannadium Riumheart</h4>
+                        <p class="text-sm text-blue-200">The premier starter. On summon, it searches any "Mannadium" card. It can also Special Summon itself by destroying another Mannadium or "Heart" monster.</p>
+                    </div>
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent">Mannadium Meek</h4>
+                        <p class="text-sm text-blue-200">A crucial Level 2 Tuner. When destroyed, it summons another from the deck, which can become Level 4, enabling Level 10 Synchro plays.</p>
+                    </div>
+                     <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent">Visas Starfrost</h4>
+                        <p class="text-sm text-blue-200">A key extender that Special Summons itself by destroying a monster you control, synergizing perfectly with the Tuners.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-book-open mr-2 text-accent"></i>Key Spells & Traps</h3>
+                <div class="space-y-4">
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent">Peaceful Planet Calarium</h4>
+                        <p class="text-sm text-blue-200">The Field Spell. Searches a Mannadium monster or Visas Starfrost on activation and revives a Tuner when it's destroyed.</p>
+                    </div>
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent">Mannadium Abscission</h4>
+                        <p class="text-sm text-blue-200">Destroys a monster to search for Calarium, triggering the Tuners' floating effects and starting combos.</p>
+                    </div>
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent">Mannadium Reframing</h4>
+                        <p class="text-sm text-blue-200">A searchable Counter Trap that provides an omni-negate while you control a Synchro monster.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+        <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">The Riumheart 1-Card Combo</h2>
+        <div class="flex flex-col items-center gap-4">
+            <div class="card p-6 combo-step-card w-full max-w-lg">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="riumheart-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mannadium Riumheart</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2a2a5a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">The Starter</h3>
+                        </div>
+                        <p class="text-blue-200">Normal Summon <strong class="text-accent">Riumheart</strong>. Use its effect to search for <strong class="text-accent">Mannadium Meek</strong>.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-accent text-2xl animate-pulse">&darr;</div>
+            <div class="card p-6 combo-step-card w-full max-w-lg">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="trisukta-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mannadium Trisukta</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2a2a5a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">First Synchro</h3>
+                        </div>
+                        <p class="text-blue-200">Special Summon <strong class="text-accent">Meek</strong>. Synchro Summon <strong class="text-accent">Mannadium Trisukta</strong>, which then revives Meek from the GY.</p>
+                    </div>
+                </div>
+            </div>
+             <div class="text-accent text-2xl animate-pulse">&darr;</div>
+            <div class="card p-6 combo-step-card w-full max-w-lg">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="amritara-img-container" class="card-image-container flex-shrink-0 card-placeholder">Visas Amritara</div>
+                     <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2a2a5a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">The Bridge</h3>
+                        </div>
+                        <p class="text-blue-200">Synchro Summon <strong class="text-accent">Visas Amritara</strong>. Its effect searches for <strong class="text-accent">Peaceful Planet Calarium</strong>, which in turn searches <strong class="text-accent">Visas Starfrost</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+        <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Typical End Board</h2>
+        <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+            A standard 1-card combo with Riumheart aims to establish multiple interruptions, creating a formidable board that is difficult for the opponent to dismantle.
+        </p>
+        <div class="card p-6">
+            <div class="space-y-6">
+                <div class="text-center">
+                    <div class="flex justify-center mb-4">
+                        <div id="baronne-img-container" class="endboard-image-container card-placeholder">Baronne de Fleur</div>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-accent mb-2">Baronne de Fleur</h4>
+                        <p class="text-sm text-blue-200"><i class="fas fa-ban mr-2 text-red-400"></i>Omni-negate that can destroy a card on the field and has destruction protection.</p>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="flex justify-center mb-4">
+                        <div id="dispater-img-container" class="endboard-image-container card-placeholder">Bystial Dis Pater</div>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-accent mb-2">Bystial Dis Pater</h4>
+                        <p class="text-sm text-blue-200"><i class="fas fa-skull mr-2 text-purple-400"></i>Monster negate that banishes from either player's GY as cost.</p>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="flex justify-center mb-4">
+                        <div id="ip-masquerena-img-container" class="endboard-image-container card-placeholder">I:P Masquerena</div>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-accent mb-2">I:P Masquerena</h4>
+                        <p class="text-sm text-blue-200"><i class="fas fa-link mr-2 text-cyan-400"></i>Quick-Effect Link Summon for additional disruption during opponent's turn.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+        <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis & TCG Status</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <!-- Strengths -->
+            <div class="card p-6 pro-con-card">
+                <h3 class="text-xl font-bold text-green-400 mb-4"><i class="fas fa-thumbs-up mr-2"></i>Strengths</h3>
+                <ul class="space-y-2 text-blue-200">
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-400 mt-1 mr-2"></i><span><strong class="font-semibold">High Power Ceiling:</strong> Capable of producing end boards with 4-5 interruptions.</span></li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-400 mt-1 mr-2"></i><span><strong class="font-semibold">Resilience:</strong> Many one-card starters and extenders allow it to play through disruption.</span></li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-400 mt-1 mr-2"></i><span><strong class="font-semibold">OTK Potential:</strong> Can easily summon high-ATK monsters to win in a single Battle Phase.</span></li>
+                </ul>
+            </div>
+            <!-- Weaknesses -->
+            <div class="card p-6 pro-con-card">
+                <h3 class="text-xl font-bold text-red-400 mb-4"><i class="fas fa-thumbs-down mr-2"></i>Weaknesses</h3>
+                <ul class="space-y-2 text-blue-200">
+                    <li class="flex items-start"><i class="fas fa-times-circle text-red-400 mt-1 mr-2"></i><span><strong class="font-semibold">Droll & Lock Bird:</strong> Can immediately end the turn due to the deck's reliance on multiple searches.</span></li>
+                    <li class="flex items-start"><i class="fas fa-times-circle text-red-400 mt-1 mr-2"></i><span><strong class="font-semibold">Nibiru, the Primal Being:</strong> The combo summons many monsters before establishing a negate, making it vulnerable.</span></li>
+                    <li class="flex items-start"><i class="fas fa-times-circle text-red-400 mt-1 mr-2"></i><span><strong class="font-semibold">Bystial Monsters:</strong> Key monsters are LIGHT/DARK, making them susceptible to banishment from the GY.</span></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The Mannadium archetype remains fully accessible in the current TCG format:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li><strong class="text-green-300">All Main Deck Mannadium monsters (3 copies each)</strong></li>
+                            <li><strong class="text-green-300">Peaceful Planet Calarium (3 copies)</strong> - Core field spell</li>
+                            <li><strong class="text-green-300">Mannadium Abscission & Reframing (3 copies each)</strong></li>
+                            <li><strong class="text-green-300">Visas Starfrost and related Heart monsters</strong></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Generic Support Impact</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li><strong class="text-red-400">Baronne de Fleur (Forbidden)</strong> - Key Synchro boss</li>
+                            <li><strong class="text-yellow-300">Limited generic Synchro support</strong></li>
+                            <li><strong class="text-green-300">I:P Masquerena and Link support</strong> - Still available</li>
+                            <li><strong class="text-green-300">Bystial engine pieces</strong> - Unrestricted</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-blue-200"><strong>Meta Implications:</strong> Mannadium retains its full combo potential as all archetype-specific cards remain at 3 copies. While some generic boss monsters like Baronne de Fleur are forbidden, the deck can adapt by utilizing alternative Synchro monsters and Link-based endboards. The archetype's power is primarily limited by the current meta environment rather than direct banlist hits.</p>
+                </div>
+            </div>
+        </section>
+    </section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Starry background effect
+        const starsContainer = document.getElementById('stars-container');
+        if (starsContainer) {
+            const starCount = 100;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = `${Math.random() * 2 + 1}px`;
+                star.style.height = star.style.width;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        async function fetchAndDisplayCardImage(cardName, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const data = await response.json();
+                const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardName;
+                    img.className = 'w-full h-full object-cover rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.classList.remove('card-placeholder');
+                    container.appendChild(img);
+                } else {
+                    throw new Error("Image URL not found.");
+                }
+            } catch (error) {
+                console.error(`Failed to fetch image for "${cardName}":`, error);
+                container.innerHTML = `<div class="w-full h-full flex items-center justify-center text-xs p-2">${cardName}</div>`;
+            }
+        }
+
+        const cardsToLoad = {
+            'riumheart-img-container': 'Mannadium Riumheart',
+            'trisukta-img-container': 'Mannadium Trisukta',
+            'amritara-img-container': 'Visas Amritara',
+            'baronne-img-container': 'Baronne de Fleur',
+            'dispater-img-container': 'Bystial Dis Pater',
+            'ip-masquerena-img-container': 'I:P Masquerena',
+        };
+
+        for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+            fetchAndDisplayCardImage(cardName, containerId);
+        }
+    });
+</script>
+
+</body>
+</html>

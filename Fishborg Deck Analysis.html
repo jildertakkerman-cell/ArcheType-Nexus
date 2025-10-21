@@ -1,0 +1,534 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fishborg Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Dark Slate Blue */
+            color: #e2e8f0; /* Light Slate Grey */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1e293b; /* Darker Slate */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155; /* Slate Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #334155;
+            border: 1px solid #475569;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1e293b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1e293b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #22d3ee; } /* Cyan */
+        .arrow-color { color: #22d3ee; }
+        .heading-underline {
+            border-bottom: 2px solid #22d3ee;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #22d3ee;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #22d3ee;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0f172a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #aquatic-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.8) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="aquatic-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Fishborg</h1>
+            <p class="text-lg md:text-xl text-cyan-200">Analysis of a Premier WATER Synchro Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-slate-300">
+                    The <strong class="text-accent font-bold">Fishborg</strong> archetype is a compact and highly efficient engine of WATER Fish monsters designed to operate primarily from the Graveyard. Its core function is to facilitate and extend Synchro Summoning plays, serving as a potent support system within broader WATER-based strategies like Ghoti. The engine has evolved from the legacy of the now-forbidden <strong class="text-red-400">Fishborg Blaster</strong> <span class="text-red-400">(currently banned)</span> into a balanced, resource-generating toolset that provides consistent, turn-over-turn setup, perfectly adapted for modern dueling.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Fishborg Roster Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Fishborg Roster</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">
+                Each Fishborg monster has a distinct role in facilitating WATER Synchro strategies. Understanding their specific functions and activation conditions is critical to maximizing the engine's potential.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Tuners -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-water text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Tuner Corps</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fishborg Harpooner</h4>
+                            <p class="text-sm text-slate-300">The modern vanguard. A Level 4 Tuner that starts plays from the hand, sets up the Graveyard, and provides negation when used for a WATER Synchro Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fishborg Launcher</h4>
+                            <p class="text-sm text-slate-300">The successor to Blaster. A recursive Level 1 Tuner that revives itself from a Graveyard containing only WATER monsters, extending combos.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fishborg Archer</h4>
+                            <p class="text-sm text-slate-300">A Level 3 Tuner designed for recovery. It revives itself from the Graveyard if you control no monsters, making it excellent for rebuilding a board.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Non-Tuners -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Support Units</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fishborg Planter</h4>
+                            <p class="text-sm text-slate-300">A recursive Level 2 non-Tuner. It can revive itself from the Graveyard by sending the top card of your Deck to the GY, provided it's a WATER monster.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fishborg Doctor</h4>
+                             <p class="text-sm text-slate-300">A highly restrictive Level 4 extender that requires all monsters you control to be "Fishborg" monsters, making it impractical for competitive use.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Harpooner Extender</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">This walkthrough shows how <strong class="text-accent font-bold">Fishborg Harpooner</strong> can build a formidable board without a Normal Summon, making it resilient to hand traps.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="harpooner-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fishborg Harpooner</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate from Hand</h3>
+                            </div>
+                            <p class="text-slate-300">Activate <strong class="text-accent font-bold">Fishborg Harpooner's</strong> effect in hand, revealing it and another WATER monster (e.g., <strong class="text-accent">Nimble Angler</strong>). Special Summon Harpooner and discard the other monster.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center">
+                    <i class="fas fa-arrow-down text-2xl arrow-color animate-fadeIn"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="angler-img-container" class="card-image-container flex-shrink-0 card-placeholder">Nimble Angler</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Trigger Graveyard Effect</h3>
+                            </div>
+                            <p class="text-slate-300">The discarded <strong class="text-accent font-bold">Nimble Angler</strong> triggers, Special Summoning two "Nimble" monsters from your Deck, flooding the field with materials.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center">
+                    <i class="fas fa-arrow-down text-2xl arrow-color animate-fadeIn"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="dragite-img-container" class="card-image-container flex-shrink-0 card-placeholder">Adamancipator Risen - Dragite</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Synchro Climb</h3>
+                            </div>
+                            <p class="text-slate-300">Use Harpooner and a "Nimble" monster to Synchro Summon a Level 6 WATER monster like <strong class="text-accent font-bold">Coral Dragon</strong>. Then, use Coral Dragon and the remaining material to summon a powerful Level 8 Synchro like <strong class="text-accent font-bold">Adamancipator Risen - Dragite</strong> for a Spell/Trap negate.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Typical End Board</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">
+                When combined with the Ghoti archetype, the Fishborg engine aims to create a board that disrupts the opponent during their own turn. This makes the strategy incredibly resilient against many board-breaking cards.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Ghoti of the Deep Beyond -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Ghoti of the Deep Beyond</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ghoti-img-container" class="card-image-container card-placeholder">Ghoti of the Deep Beyond</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><strong class="text-accent font-bold">Field Wipe:</strong> When Synchro Summoned, it can banish all cards on the field.</li>
+                        <li><strong class="text-accent font-bold">Recursive Power:</strong> Returns to the field during the next Standby Phase after being banished.</li>
+                    </ul>
+                </div>
+                <!-- Askaan, the Bicorned Ghoti -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Askaan, the Bicorned Ghoti</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="askaan-img-container" class="card-image-container card-placeholder">Askaan, the Bicorned Ghoti</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><strong class="text-accent font-bold">Targeted Removal:</strong> On summon, you can banish one of your Fish monsters and one card your opponent controls.</li>
+                        <li><strong class="text-accent font-bold">Float Effect:</strong> If destroyed by an opponent's card, it banishes itself and summons another banished Fish.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Ceiling:</strong> Coelacanth combos can create nearly unbreakable boards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Strong Recursion:</strong> The engine excels at reusing resources from the Graveyard and banished zone.</li>
+                        <li><span class="pro-icon"><i class="fas fa-users-cog"></i></span> <strong class="text-green-400">Opponent's Turn Interaction:</strong> Synergy with Ghoti allows for disruption during the opponent's turn.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Choke Points:</strong> The Normal Summon of a starter like <strong class="text-accent">Lifeless Leaffish</strong> is a key point of vulnerability.</li>
+                        <li><span class="con-icon"><i class="fas fa-trash-alt"></i></span> <strong class="text-red-400">Graveyard Hate:</strong> Highly vulnerable to cards like <strong class="text-accent">Dimension Shifter</strong> and <strong class="text-accent">D.D. Crow</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Floodgates:</strong> Can be shut down by continuous traps like <strong class="text-accent">Skill Drain</strong> or <strong class="text-accent">There Can Be Only One</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="neutral-icon"><i class="fas fa-fish"></i></span> <strong class="text-accent">Ghoti:</strong> The primary partner, enabling Synchro plays on the opponent's turn.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Coelacanth Turbo:</strong> An explosive, all-in strategy to swarm the field for a game-ending Synchro combo. Their power is enough to overcome even colossal, <a href="https://yugipedia.com/wiki/Earthbound_Immortal" target="_blank" class="lore-link">earthbound</a> threats.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-snowflake"></i></span> <strong class="text-accent">Icejade & White Aura:</strong> Provide access to additional powerful WATER Synchro monsters and support spells.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('aquatic-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let bubbles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Bubble {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.radius = Math.random() * 4 + 1;
+                        this.speedY = Math.random() * 2 + 0.5;
+                        this.speedX = (Math.random() - 0.5) * 1.5;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(34, 211, 238, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    bubbles = [];
+                    const bubbleCount = Math.floor((canvas.width * canvas.height) / 8000);
+                    for (let i = 0; i < bubbleCount; i++) {
+                        bubbles.push(new Bubble());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    bubbles.forEach(bubble => {
+                        bubble.update();
+                        bubble.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'harpooner-img-container': 'Fishborg Harpooner',
+                'angler-img-container': 'Nimble Angler',
+                'dragite-img-container': 'Adamancipator Risen - Dragite',
+                'ghoti-img-container': 'Ghoti of the Deep Beyond',
+                'askaan-img-container': 'Askaan, the Bicorned Ghoti'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

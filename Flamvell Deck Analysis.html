@@ -1,0 +1,525 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flamvell Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a0500; /* Deep, dark red-black */
+            color: #f5e5d5; /* Pale, parchment-like color */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b0f0a; /* Dark, burnt sienna */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #662c1e; /* Russet border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #401a11; /* Slightly lighter, warmer brown */
+            border: 1px solid #7a3a2a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #401a11;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #401a11;
+            aspect-ratio: 59 / 86; /* Correct aspect ratio for Yu-Gi-Oh cards */
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #ff8c00; } /* Dark Orange */
+        .text-accent { color: #ff6600; } /* Bright Orange */
+        .arrow-color { color: #ff4500; } /* OrangeRed */
+        .heading-underline {
+            border-bottom: 2px solid #ff6600;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ff6600;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff6600;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW FLAMVELL ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a0500;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #662c1e;
+        }
+
+        #ember-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(26, 5, 0, 0.4) 0%, rgba(26, 5, 0, 0.8) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        
+        .banner-header h1 {
+            font-family: 'Cinzel', serif;
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Banner Section -->
+        <header class="banner-header text-center">
+            <canvas id="ember-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Flamvell</h1>
+            <p class="text-lg md:text-xl text-orange-200">A Strategic Deep Dive: From Edison Glory to Modern Rekindling</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-orange-100">
+                    The <strong class="text-accent font-bold">Flamvell</strong> archetype is a relic of the early Synchro era, defined not by internal synergy, but by the explosive power of a single spell card: <strong class="text-accent font-bold">Rekindling</strong>. Originating from the Duel Terminal series, its monsters share a critical stat—200 DEF—making them targets for mass revival. The strategy revolves around loading the Graveyard with these monsters to unleash a game-ending swarm, a testament to a design philosophy where a collection of cards was built to serve one powerful, unifying purpose.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Core Identity Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Unifying Principle: 200 DEF & Rekindling</h2>
+            <div class="card p-6">
+                <p class="text-orange-100">
+                    The true identity of the Flamvell archetype is unlocked by the Normal Spell Card, <strong class="text-accent font-bold">Rekindling</strong>. This card allows a player to Special Summon as many FIRE monsters with 200 DEF from their Graveyard as possible. This singular interaction transforms a scattered collection of monsters into a cohesive and devastating engine. The entire game plan is geared towards filling the Graveyard with valid targets to maximize the impact of a resolved Rekindling. This act of reviving a legion from the ashes is a power surge akin to awakening an ancient <a href="https://yugipedia.com/wiki/Earthbound_Immortal" target="_blank" class="lore-link">earthbound deity</a>, capable of ending the duel in a single, fiery assault.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Engine Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Core Engine: Pillars of the Strategy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 flex flex-col">
+                    <div id="firedog-img-container" class="card-image-container mb-4 mx-auto"></div>
+                    <h3 class="text-xl font-bold text-accent mb-2 text-center">Flamvell Firedog</h3>
+                    <p class="text-orange-100">The heart of the proactive strategy. When it destroys a monster by battle, it Special Summons a FIRE monster with 200 DEF from the deck, providing immediate access to a Tuner for a Synchro play.</p>
+                </div>
+                <div class="card p-6 flex flex-col">
+                    <div id="magician-img-container" class="card-image-container mb-4 mx-auto"></div>
+                    <h3 class="text-xl font-bold text-accent mb-2 text-center">Flamvell Magician</h3>
+                    <p class="text-orange-100">The primary Tuner, almost exclusively summoned by Firedog's effect. Its purpose is to be a Level 4 FIRE Tuner with 200 DEF, enabling an immediate Level 8 Synchro Summon post-battle.</p>
+                </div>
+                <div class="card p-6 flex flex-col">
+                    <div id="rekindling-img-container" class="card-image-container mb-4 mx-auto"></div>
+                    <h3 class="text-xl font-bold text-accent mb-2 text-center">Rekindling</h3>
+                    <p class="text-orange-100">The single most powerful card for the strategy. It generates a massive board from the Graveyard, enabling explosive, game-ending combos through a flurry of Synchro, Xyz, or Link Summons.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Primary Combo: The Firedog Offensive</h2>
+            <p class="text-orange-100 mb-8 text-center max-w-2xl mx-auto">This is the fundamental combo, designed to convert a successful battle into a powerful Level 8 Synchro Monster and set up the Graveyard.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="firedog-combo-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b0f0a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Attack</h3>
+                            </div>
+                            <p class="text-orange-100">Normal Summon <strong class="text-accent font-bold">Flamvell Firedog</strong> and destroy an opponent's monster by battle.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="magician-combo-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b0f0a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Search</h3>
+                            </div>
+                            <p class="text-orange-100">Firedog's effect activates, Special Summoning <strong class="text-accent font-bold">Flamvell Magician</strong> from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="stardust-combo-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b0f0a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Synchro Summon</h3>
+                            </div>
+                            <p class="text-orange-100">In Main Phase 2, use the Level 4 Firedog and Level 4 Magician to Synchro Summon a Level 8 monster like <strong class="text-accent font-bold">Stardust Dragon</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final Endboard: A Rekindled Inferno</h2>
+            <div class="card p-6">
+                <p class="text-orange-100 mb-4 text-center">
+                    The true power of Flamvell lies in its explosive <strong class="text-accent font-bold">Rekindling</strong> turn. After setting up the Graveyard, a single spell can flood the field, leading to a board of multiple powerful Synchro monsters.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">Primary Synchro Threats</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="stardust-endboard-img-container" class="w-40"></div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-orange-100">
+                            <li><strong class="text-accent font-bold">Stardust Dragon:</strong> A classic Level 8 Synchro that provides crucial protection against destruction effects.</li>
+                            <li><strong class="text-accent font-bold">Colossal Fighter:</strong> A high-ATK powerhouse that can revive itself, ideal for battle-heavy matchups.</li>
+                        </ul>
+                    </div>
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">Archetypal Boss Monster</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="ancient-deity-img-container" class="w-40"></div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-orange-100">
+                            <li><strong class="text-accent font-bold">Ancient Flamvell Deity:</strong> A Level 7 Synchro that banishes cards from the opponent's Graveyard, acting as potent disruption against GY-reliant strategies.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><span class="pro-icon"><i class="fas fa-fire"></i></span> <strong class="text-green-400 font-bold">Explosive OTKs:</strong> A resolved Rekindling on a stocked Graveyard can end the game in a single turn.</li>
+                        <li><span class="pro-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-green-400 font-bold">Battle Dominance:</strong> Firedog pressures the opponent's board, turning their weaker monsters into liabilities.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400 font-bold">Compact Engine:</strong> The core package is small enough to be integrated into other FIRE or Synchro-focused strategies.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Battle Reliant:</strong> The main combo requires destroying a monster in battle, making it weak when going first.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Graveyard Hate:</strong> Highly vulnerable to cards like D.D. Crow or floodgates that banish cards.</li>
+                        <li><span class="con-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-red-400 font-bold">Lack of Disruption:</strong> Has almost no in-archetype way to interact with the opponent on their turn.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><span class="neutral-icon"><i class="fas fa-search"></i></span> <strong class="text-accent font-bold">Bonfire:</strong> Modern support that adds any Level 4 or lower Pyro monster, drastically improving consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Laval Archetype:</strong> Considered the spiritual successor, using dedicated in-archetype tools to fuel the Graveyard for Rekindling.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent font-bold">Generic FIRE Links:</strong> Monsters like Duelittle Chimera provide an outlet for Rekindling swarms and boost ATK.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- FLAMVELL EMBER ANIMATION ---
+            const canvas = document.getElementById('ember-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.size = Math.random() * 1.5 + 0.5;
+                        this.speedY = Math.random() * 1.5 + 0.5;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.opacity = Math.random() * 0.5 + 0.5;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+                        this.opacity -= 0.005;
+                        if (this.y < 0 || this.opacity <= 0) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                            this.opacity = Math.random() * 0.5 + 0.5;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 102, 0, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 10000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => { setCanvasSize(); init(); });
+            }
+
+            // --- SCRIPT FOR CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const createPlaceholder = () => {
+                    container.innerHTML = ''; // Clear any previous content
+                    container.classList.add('card-placeholder', 'animate-fadeIn');
+                    container.textContent = cardName;
+                };
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = ''; 
+                        container.classList.remove('card-placeholder');
+                        container.appendChild(img);
+                    } else { 
+                        console.warn(`Image URL not found for "${cardName}".`);
+                        createPlaceholder();
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    createPlaceholder();
+                }
+            }
+            
+            const cardsToLoad = {
+                'firedog-img-container': 'Flamvell Firedog',
+                'magician-img-container': 'Flamvell Magician',
+                'rekindling-img-container': 'Rekindling',
+                'firedog-combo-img-container': 'Flamvell Firedog',
+                'magician-combo-img-container': 'Flamvell Magician',
+                'stardust-combo-img-container': 'Stardust Dragon',
+                'stardust-endboard-img-container': 'Stardust Dragon',
+                'ancient-deity-img-container': 'Ancient Flamvell Deity'
+            };
+
+            for (const [id, name] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(name, id);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

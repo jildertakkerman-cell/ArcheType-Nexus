@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wind-Up Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #3d352a; /* Dark, warm wood color */
+            color: #f5f5dc; /* Beige/Parchment color */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #c7b299; /* Aged parchment */
+            color: #4a3f35; /* Dark brown text */
+            border-radius: 0.5rem;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+            border: 2px solid #8a6e4b; /* Brass border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #d1c0a8;
+            border: 1px solid #a98c6a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            border: 4px solid #8a6e4b;
+            border-radius: 0.25rem;
+            background: #ab987a;
+        }
+        .card-placeholder {
+            background-color: #ab987a;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.1rem;
+            padding: 0.5rem;
+        }
+        .text-accent {
+            color: #a97142; /* Brass/Copper color */
+        }
+        .arrow-color {
+            color: #a97142;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #a97142;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+            color: #f5f5dc;
+        }
+        .lore-link {
+            color: #c58a54;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c58a54;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #c58a54;
+        }
+
+        /* --- Wind-Up Animated Banner --- */
+        .banner-header {
+            position: relative;
+            height: 160px;
+            background: linear-gradient(45deg, #4a3f35, #6b5b4a);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 2px solid #8a6e4b;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(0,0,0,0.5);
+        }
+        .banner-content {
+            z-index: 3;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Roboto Slab', serif;
+            font-size: 3rem;
+            color: #f5f5dc;
+            text-shadow: 0 0 8px rgba(0,0,0,0.7), 2px 2px 3px rgba(0,0,0,0.5);
+        }
+        .banner-subtitle {
+            font-size: 1.1rem;
+            color: #e0d6c4;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        .gear {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-image: url('https://img.icons8.com/ios-filled/100/8a6e4b/gear.png');
+            background-size: contain;
+            opacity: 0.2;
+            z-index: 1;
+        }
+        .gear.g1 { width: 150px; height: 150px; top: -50px; left: -50px; animation: spin 20s linear infinite; }
+        .gear.g2 { width: 80px; height: 80px; top: 10px; right: 80px; animation: spin-reverse 15s linear infinite; }
+        .gear.g3 { width: 120px; height: 120px; bottom: -60px; right: -40px; animation: spin 25s linear infinite; }
+        .gear.g4 { width: 60px; height: 60px; bottom: -20px; left: 60px; animation: spin-reverse 12s linear infinite; }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes spin-reverse {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
+
+        .pro-icon { color: #22c55e; }
+        .con-icon { color: #ef4444; }
+        
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #6b5b4a 0%, #8a6e4b 50%, #6b5b4a 100%);
+            color: white;
+            border: 2px solid #c58a54;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(138, 110, 75, 0.4),
+                0 0 20px rgba(138, 110, 75, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(138, 110, 75, 0.6),
+                0 0 30px rgba(138, 110, 75, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #d1c0a8;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(245, 245, 220, 0.8);
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #e0d6c4;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    <div class="container mx-auto">
+        <!-- Banner -->
+        <header class="banner-header mb-10 md:mb-16">
+            <div class="gear g1"></div>
+            <div class="gear g2"></div>
+            <div class="gear g3"></div>
+            <div class="gear g4"></div>
+            <div class="absolute inset-0 bg-black/30 z-2"></div>
+            <div class="banner-content">
+                <h1 class="banner-title">Wind-Up</h1>
+                <p class="banner-subtitle">A Strategic Deconstruction of a Clockwork Combo Engine</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-accent mb-4" style="font-family: 'Roboto Slab', serif;">Executive Summary</h2>
+                <p class="text-base leading-relaxed">
+                    The Wind-Up archetype operates like an <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=wind-up&stype=1" target="_blank" class="lore-link">intricate clockwork mechanism</a>. Introduced in 2011, its primary strength is swarming the field by exploiting monster effects that lack a "hard once per turn" clause. This allows for explosive, chain-reaction combos that facilitate a dizzying array of Xyz and Link Summons. Historically infamous for the "Hand Loop," the deck has evolved into a versatile toolbox strategy, capable of constructing powerful and adaptable end boards tailored to any situation.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Clockwork Core -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-center heading-underline" style="font-family: 'Roboto Slab', serif;">The Clockwork Core</h2>
+            <p class="text-center max-w-3xl mx-auto mb-12 text-lg">
+                At the heart of every significant Wind-Up combo are three Main Deck monsters. Their power comes from effects that can be used multiple times per turn, creating chain reactions of summons that quickly build an overwhelming board.
+            </p>
+            <div class="space-y-12">
+                <!-- Wind-Up Magician -->
+                <div class="flex flex-col md:flex-row items-center gap-8 card p-6">
+                    <div id="magician-img-container" class="card-image-container card-placeholder">Wind-Up Magician</div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-accent mb-2 flex items-center gap-3" style="font-family: 'Roboto Slab', serif;"><i class="fas fa-bolt"></i>Wind-Up Magician</h3>
+                        <p class="font-semibold mb-3">Role: The Catalyst</p>
+                        <p>The primary catalyst for the deck's chain reactions. When another Wind-Up's effect is activated, Magician Special Summons another "Wind-Up" from the Deck. Because this isn't a hard once-per-turn, having multiple Magicians on the field creates an exponential swarming effect, pulling all the necessary gears from the deck directly onto the board.</p>
+                    </div>
+                </div>
+
+                <!-- Wind-Up Shark -->
+                <div class="flex flex-col md:flex-row-reverse items-center gap-8 card p-6">
+                    <div id="shark-img-container" class="card-image-container card-placeholder">Wind-Up Shark</div>
+                    <div class="flex-1 md:text-right">
+                        <h3 class="text-2xl font-bold text-accent mb-2 flex items-center md:justify-end gap-3" style="font-family: 'Roboto Slab', serif;">Wind-Up Shark<i class="fas fa-plus-circle"></i></h3>
+                         <p class="font-semibold mb-3">Role: The Starter & Extender</p>
+                        <p>The best starter in the archetype. It Special Summons itself from the hand when a Wind-Up is summoned, immediately triggering Magician. Crucially, it can also modulate its own Level (from 3 to 5), which not only triggers any on-field Magicians but also opens up the entire Xyz toolbox, making it the most versatile gear in the machine.</p>
+                    </div>
+                </div>
+
+                <!-- Wind-Up Rat -->
+                <div class="flex flex-col md:flex-row items-center gap-8 card p-6">
+                    <div id="rat-img-container" class="card-image-container card-placeholder">Wind-Up Rat</div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-accent mb-2 flex items-center gap-3" style="font-family: 'Roboto Slab', serif;"><i class="fas fa-sync-alt"></i>Wind-Up Rat</h3>
+                        <p class="font-semibold mb-3">Role: The Recycler</p>
+                        <p>The recursion engine. While Magician and Shark pull from the deck and hand, Rat brings back key pieces from the Graveyard. This effect is vital for extending combos, recycling used Magicians, and providing the Level 3 bodies needed to summon key Xyz Monsters.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline" style="font-family: 'Roboto Slab', serif;">The Grand Unwinding: Core Combo</h2>
+            <p class="text-center max-w-2xl mx-auto mb-8">The deck's power is best seen in action. The classic "Magician + Shark" two-card combo demonstrates how quickly the archetype can build a dominant board.</p>
+             <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                         <div class="flex-shrink-0 flex items-center justify-center bg-[#a98c6a] text-white rounded-full h-10 w-10 font-bold text-2xl">1</div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold">The Opening Act</h3>
+                            <p>Normal Summon <strong class="text-accent">Wind-Up Magician</strong>. With a Wind-Up now on the field, activate the effect of <strong class="text-accent">Wind-Up Shark</strong> in your hand to Special Summon it.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="text-4xl arrow-color my-2">↓</div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div class="flex-shrink-0 flex items-center justify-center bg-[#a98c6a] text-white rounded-full h-10 w-10 font-bold text-2xl">2</div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold">Chain Reaction</h3>
+                            <p>Shark's summon triggers Magician's effect. Magician Special Summons another <strong class="text-accent">Wind-Up Magician</strong> from the Deck. The board is now Magician, Magician #2, and Shark.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="text-4xl arrow-color my-2">↓</div>
+                <!-- Step 3 -->
+                 <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div class="flex-shrink-0 flex items-center justify-center bg-[#a98c6a] text-white rounded-full h-10 w-10 font-bold text-2xl">3</div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold">The Toolbox Opens</h3>
+                            <p>Activate Shark's effect to change its Level. This triggers the second Magician, which summons <strong class="text-accent">Wind-Up Rat</strong>. From here, you have access to Rank 3, 4, and 5 Xyz monsters and Link plays to build your end board.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board & TCG Status -->
+        <section class="mb-10 md:mb-16">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <!-- End Board -->
+                <div class="card p-6">
+                    <h3 class="text-2xl font-bold text-accent mb-4 text-center" style="font-family: 'Roboto Slab', serif;">Typical End Board</h3>
+                    <p class="mb-4">Rather than one boss monster, Wind-Up assembles a toolbox of generic power cards. A common end board aims for multiple interruptions:</p>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-3 combo-step-card rounded">
+                             <div id="utopic-future-img-container" class="w-24 flex-shrink-0 card-image-container card-placeholder">Number F0: Utopic Draco Future</div>
+                            <div>
+                                <h4 class="font-bold">Number F0: Utopic Draco Future</h4>
+                                <p class="text-sm">Provides a monster negate and cannot be destroyed by battle or card effects, making it incredibly difficult to remove.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-3 combo-step-card rounded">
+                            <div id="dweller-img-container" class="w-24 flex-shrink-0 card-image-container card-placeholder">Abyss Dweller</div>
+                            <div>
+                                <h4 class="font-bold">Abyss Dweller</h4>
+                                <p class="text-sm">A quick effect to prevent the opponent from activating any card effects in their GY for the turn.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Banlist Status -->
+                <div class="card p-6">
+                    <h3 class="text-2xl font-bold text-accent mb-4 text-center" style="font-family: 'Roboto Slab', serif;">TCG Banlist Impact</h3>
+                    <p class="mb-4">The archetype's history is defined by the banlist. The infamous "Hand Loop" led to key restrictions, but recent changes have brought some power back.</p>
+                    <div id="banlist-status" class="space-y-3">
+                        <!-- Zenmaity -->
+                        <div class="flex items-start gap-4 p-3 combo-step-card rounded">
+                            <div id="zenmaity-img-container" class="w-24 flex-shrink-0 card-image-container card-placeholder">Wind-Up Carrier Zenmaity</div>
+                            <div>
+                                <h4 class="font-bold">Wind-Up Carrier Zenmaity</h4>
+                                <p class="text-sm"><span class="font-bold text-red-700">FORBIDDEN.</span> The heart of the historical hand loop. Its ability to summon any Wind-Up from the deck without a hard once-per-turn clause was deemed too powerful.</p>
+                            </div>
+                        </div>
+                         <!-- Hunter -->
+                        <div class="flex items-start gap-4 p-3 combo-step-card rounded">
+                            <div id="hunter-img-container" class="w-24 flex-shrink-0 card-image-container card-placeholder">Wind-Up Hunter</div>
+                             <div>
+                                <h4 class="font-bold">Wind-Up Hunter</h4>
+                                <p class="text-sm"><span class="font-bold text-green-700">UNLIMITED.</span> The discard tool for the loop. While unlimited, it's unsearchable and less effective without multiple Zenmaity summons.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section>
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline" style="font-family: 'Roboto Slab', serif;">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-2"><span class="pro-icon pt-1"><i class="fas fa-check-circle"></i></span> <span><strong class="font-semibold">Explosive Swarming:</strong> Can generate a massive board from just one or two cards.</span></li>
+                        <li class="flex items-start gap-2"><span class="pro-icon pt-1"><i class="fas fa-check-circle"></i></span> <span><strong class="font-semibold">Toolbox Flexibility:</strong> Easy access to Rank 3, 4, and 5 Xyz monsters allows it to adapt to various threats.</span></li>
+                        <li class="flex items-start gap-2"><span class="pro-icon pt-1"><i class="fas fa-check-circle"></i></span> <span><strong class="font-semibold">High Ceiling:</strong> Can create oppressive end boards with multiple negates and floodgate effects.</span></li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-500 mb-4">Weaknesses</h3>
+                    <ul class="space-y-2">
+                         <li class="flex items-start gap-2"><span class="con-icon pt-1"><i class="fas fa-times-circle"></i></span> <span><strong class="font-semibold">Fragile Choke Points:</strong> Highly vulnerable to hand traps. Negating the first Xyz summon or Wind-Up Magician's effect can end the turn.</span></li>
+                         <li class="flex items-start gap-2"><span class="con-icon pt-1"><i class="fas fa-times-circle"></i></span> <span><strong class="font-semibold">Graveyard Reliant:</strong> Dependent on Wind-Up Rat for recursion, making it weak to cards like D.D. Crow or Abyss Dweller.</span></li>
+                         <li class="flex items-start gap-2"><span class="con-icon pt-1"><i class="fas fa-times-circle"></i></span> <span><strong class="font-semibold">Linear Combos:</strong> The primary combo lines are predictable, making them easy to disrupt for experienced opponents.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- General Banlist Status -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline" style="font-family: 'Roboto Slab', serif;">General Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-center mb-6">
+                    <strong class="text-accent font-bold">MIXED IMPACT:</strong> While the core Wind-Up Main Deck engine is entirely at full power, the archetype's key Extra Deck combo piece remains forbidden, limiting its most oppressive strategies.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card combo-step-card p-4 bg-rose-100 border-rose-400">
+                        <h4 class="text-lg font-bold text-rose-800 mb-2">Forbidden & Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-rose-900">
+                            <li><strong class="font-bold">Wind-Up Carrier Zenmaity (Forbidden):</strong> The archetype's most explosive Xyz monster, enabling historical loops.</li>
+                             <li><strong class="font-bold">Generic Bosses (Forbidden):</strong> Many powerful end board pieces like <span class="italic">Apollousa</span>, <span class="italic">Borreload Savage Dragon</span>, and <span class="italic">Spright Elf</span> are banned, reducing the deck's ceiling.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4 bg-emerald-100 border-emerald-500">
+                        <h4 class="text-lg font-bold text-emerald-800 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-emerald-900">
+                            <li><strong class="font-bold">Core Main Deck Engine (Unlimited):</strong> "Wind-Up Magician", "Wind-Up Shark", and "Wind-Up Rat" are all at 3 copies.</li>
+                            <li><strong class="font-bold">Wind-Up Zenmaintenance (Unlimited):</strong> The modern Link-2 searcher and extender is at full power.</li>
+                            <li><strong class="font-bold">Generic Starters (Unlimited):</strong> Key one-card starters like "Rescue Cat" and the "Speedroid Terrortop" engine remain fully available.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-[#4a3f35] rounded text-gray-200">
+                    <p class="text-sm">
+                        <strong>Meta Implications:</strong> The Wind-Up engine itself is faster and more consistent than ever. However, the prohibition of <strong class="text-accent">Zenmaity</strong> prevents the infamous hand loop. With many generic boss monsters also banned, the deck's end boards are powerful but less unbreakable than in its heyday, solidifying its status as a potent but fair "rogue" strategy.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url_small;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto object-cover';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'magician-img-container': 'Wind-Up Magician',
+                'shark-img-container': 'Wind-Up Shark',
+                'rat-img-container': 'Wind-Up Rat',
+                'utopic-future-img-container': 'Number F0: Utopic Draco Future',
+                'dweller-img-container': 'Abyss Dweller',
+                'zenmaity-img-container': 'Wind-Up Carrier Zenmaity',
+                'hunter-img-container': 'Wind-Up Hunter'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

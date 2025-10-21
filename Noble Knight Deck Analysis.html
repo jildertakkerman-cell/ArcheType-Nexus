@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noble Knight Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2d3748; /* Slate 800 */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a5568; /* Slate 600 */
+        }
+        .combo-step-card {
+            background-color: #4a5568; /* Slate 700 */
+            border: 1px solid #718096; /* Slate 500 */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 200px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2d3748;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2d3748;
+        }
+        .large-card-placeholder {
+             min-height: 264px; 
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent-gold { color: #d4af37; }
+        .text-accent-fire { color: #f87171; }
+        .border-accent-gold { border-color: #d4af37; }
+        .lore-link {
+            color: #d4af37;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #d4af37;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        .banner-header {
+            position: relative;
+            height: 160px;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #d4af37;
+        }
+
+        #banner-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(26, 32, 44, 0.6);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .banner-header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.75rem;
+            font-weight: 700;
+        }
+        
+        @media (max-width: 768px) {
+            .banner-header h1 { font-size: 2rem; }
+            .banner-header p { font-size: 0.875rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Banner Section -->
+        <header class="banner-header text-center">
+            <canvas id="banner-canvas"></canvas>
+            <h1 class="text-white mb-2">Noble Knight</h1>
+            <p class="text-lg text-slate-300">A Tale of Two Round Tables</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-slate-300">
+                    The "Noble Knight" archetype is a thematically rich saga within Yu-Gi-Oh!, split into two distinct factions. The original LIGHT Warrior "Noble Knights" are based on Arthurian legend, focusing on a resilient, control-based Xyz strategy. In contrast, the FIRE Warrior "Infernoble Knights," inspired by the Paladins of Charlemagne, employ an explosive, combo-heavy Synchro strategy. Both factions revolve around the "Noble Arms" Equip Spells, which grant powerful effects and can re-equip from the Graveyard. This page explores the strategies, key <a href="https://yugipedia.com/wiki/Noble_Knight_(archetype)" target="_blank" class="lore-link">Noble Knight cards</a>, and competitive standing of this dual-natured archetype.
+                </p>
+            </div>
+        </section>
+
+        <!-- Part I: The Court of Camelot -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center border-b-2 border-accent-gold pb-2 inline-block">Part I: The Court of Camelot</h2>
+            <p class="text-center mb-8 text-slate-400">The original Arthurian Knights, a strategy of attrition and board control.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Key Monsters -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-gold mb-4">The Knights of the Round Table</h3>
+                    <div class="space-y-4">
+                        <p><strong class="text-white">Noble Knight Medraut:</strong> The premier one-card starter, capable of summoning another Knight from the deck to initiate Xyz plays.</p>
+                        <p><strong class="text-white">Noble Knight Borz:</strong> Manages resources by sending "Noble Arms" from the Deck to the Graveyard, setting up recursion.</p>
+                        <p><strong class="text-white">Noble Knight Drystan:</strong> Provides disruption by destroying a face-up card when a "Noble Arms" is equipped to him.</p>
+                    </div>
+                </div>
+                <!-- Classic End Board -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-gold mb-4">The "Protect the King" End Board</h3>
+                     <div class="flex flex-col sm:flex-row items-center gap-4">
+                        <div id="artorigus-img-container" class="card-image-container card-placeholder large-card-placeholder">Artorigus, King of the Noble Knights</div>
+                        <p class="text-slate-300 flex-1">
+                            The classic end board establishes a resilient fortress. It centers on <strong class="text-white">Artorigus, King of the Noble Knights</strong> equipped with multiple "Noble Arms" from the Graveyard. This creates a powerful boss monster protected from targeting (<strong class="text-white">Excaliburn</strong>) and destruction (<strong class="text-white">Destiny</strong>), capable of clearing the opponent's backrow.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part II: The Paladins of Charlemagne -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center border-b-2 border-accent-fire pb-2 inline-block">Part II: The Paladins of Charlemagne</h2>
+            <p class="text-center mb-8 text-slate-400">The modern Infernoble Knights, a fast-paced Synchro combo strategy.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Key Monsters -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-fire mb-4">Charlemagne's Champions</h3>
+                    <div class="space-y-4">
+                        <p><strong class="text-white">Infernoble Knight Ogier:</strong> A starter that sends any FIRE Warrior or "Noble Arms" from the Deck to the GY.</p>
+                        <p><strong class="text-white">Infernoble Knight - Renaud:</strong> The key extender, Special Summoning itself and recurring a FIRE Warrior or Equip Spell from the GY/banished pile.</p>
+                        <p><strong class="text-white">Infernoble Knight Emperor Charles:</strong> The primary boss monster, capable of destroying cards on the field and equipping resources from the Deck during the End Phase.</p>
+                    </div>
+                </div>
+                <!-- Modern End Board -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-fire mb-4">The Modern Synchro End Board</h3>
+                    <div class="flex flex-col sm:flex-row items-center gap-4">
+                        <div id="charles-img-container" class="card-image-container card-placeholder large-card-placeholder">Infernoble Knight Emperor Charles</div>
+                        <p class="text-slate-300 flex-1">
+                            The goal is a multi-interruption board. This is anchored by <strong class="text-white">Infernoble Knight Emperor Charles</strong>, whose destruction effect can be triggered on the opponent's turn by <strong class="text-white">Infernoble Knight Captain Roland</strong> from the GY. This is often supplemented with generic powerhouses like <strong class="text-white">Baronne de Fleur</strong> for an omni-negate or <strong class="text-white">Emperor Charles the Great</strong> for a Spell/Trap negate.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo Walkthroughs</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Classic Combo -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-gold mb-4">Classic Combo: Medraut to King</h3>
+                    <div class="space-y-6">
+                        <!-- Step 1 -->
+                        <div>
+                            <p class="font-bold text-white mb-2">1. The Opening Move</p>
+                            <div class="flex items-center gap-4">
+                                <div id="medraut-img-container" class="w-32 flex-shrink-0 card-placeholder">Medraut</div>
+                                <p class="text-slate-300 text-sm flex-1">Normal Summon <strong class="text-white">Noble Knight Medraut</strong> and equip him with any "Noble Arms".</p>
+                            </div>
+                        </div>
+                        <!-- Step 2 -->
+                        <div>
+                            <p class="font-bold text-white mb-2">2. Summon from the Deck</p>
+                            <div class="flex items-center gap-4">
+                                 <div id="borz-img-container" class="w-32 flex-shrink-0 card-placeholder">Borz</div>
+                                <p class="text-slate-300 text-sm flex-1">Use Medraut's effect to Special Summon <strong class="text-white">Noble Knight Borz</strong> from the deck, destroying the equip spell which then re-equips to Borz.</p>
+                            </div>
+                        </div>
+                         <!-- Step 3 -->
+                        <div>
+                             <p class="font-bold text-white mb-2">3. Assemble the King</p>
+                             <div class="flex items-center gap-4">
+                                 <div id="artorigus-combo-img-container" class="w-32 flex-shrink-0 card-placeholder">Artorigus</div>
+                                <p class="text-slate-300 text-sm flex-1">Use Borz to fill the Graveyard with "Noble Arms", then use Medraut and Borz to Xyz Summon <strong class="text-white">Artorigus, King of the Noble Knights</strong> and equip him for protection and removal.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modern Combo -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-fire mb-4">Modern Combo: Ogier to Emperor</h3>
+                    <div class="space-y-6">
+                        <!-- Step 1 -->
+                        <div>
+                            <p class="font-bold text-white mb-2">1. Graveyard Setup</p>
+                            <div class="flex items-center gap-4">
+                                 <div id="ogier-img-container" class="w-32 flex-shrink-0 card-placeholder">Ogier</div>
+                                <p class="text-slate-300 text-sm flex-1">Normal Summon <strong class="text-white">Infernoble Knight Ogier</strong> to send an extender like <strong class="text-white">Renaud</strong> from Deck to Graveyard.</p>
+                            </div>
+                        </div>
+                        <!-- Step 2 -->
+                        <div>
+                            <p class="font-bold text-white mb-2">2. Extend and Recur</p>
+                            <div class="flex items-center gap-4">
+                                <div id="renaud-img-container" class="w-32 flex-shrink-0 card-placeholder">Renaud</div>
+                                <p class="text-slate-300 text-sm flex-1">Special Summon extenders and <strong class="text-white">Renaud</strong> to get back resources and place multiple FIRE Warriors on the field.</p>
+                            </div>
+                        </div>
+                        <!-- Step 3 -->
+                        <div>
+                            <p class="font-bold text-white mb-2">3. Synchro Climb</p>
+                            <div class="flex items-center gap-4">
+                                <div id="charles-combo-img-container" class="w-32 flex-shrink-0 card-placeholder">Charles</div>
+                                <p class="text-slate-300 text-sm flex-1">Use your monsters to Synchro climb through <strong class="text-white">Captain Roland</strong> into <strong class="text-white">Infernoble Knight Emperor Charles</strong>, setting up his disruption for the opponent's turn.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 combo-step-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">High Combo Ceiling:</strong> The Infernoble engine can produce powerful Synchro boards with multiple interruptions.</li>
+                        <li><span class="pro-icon"><i class="fas fa-chess-king"></i></span> <strong class="text-green-400">Powerful Boss Monsters:</strong> Cards like Emperor Charles the Great offer both destruction and negation, making them difficult to out.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Resource Loop:</strong> The deck has a potent resource loop that gives it staying power in longer duels.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400">Recursive Protection:</strong> The "Noble Arms" mechanic of re-equipping from the Graveyard provides resilience against removal.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 combo-step-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Vulnerable to Hand Traps:</strong> Extremely susceptible to cards like Ash Blossom & Joyous Spring on key starters like Ogier or Renaud.</li>
+                        <li><span class="con-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-red-400">Combo Reliant:</strong> The post-Isolde strategy relies on multi-card combinations, leading to inconsistency.</li>
+                        <li><span class="con-icon"><i class="fas fa-random"></i></span> <strong class="text-red-400">Inconsistent Hands:</strong> The "Equip Paradox" still exists, where drawing too many "Noble Arms" without a Knight can result in an unplayable hand.</li>
+                         <li><span class="con-icon"><i class="fas fa-shoe-prints"></i></span> <strong class="text-red-400">Known Choke Points:</strong> As a linear combo deck, its key strategic points are well-known and easy for opponents to disrupt.</li>
+                    </ul>
+                </div>
+                <!-- Synergies & Tech Card -->
+                <div class="card p-6 combo-step-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">Alliances & Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-blue-400">Fighting Flame Swordsman:</strong> This FIRE Warrior engine provides extenders and equip spells, boosting consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-blue-400">Battlin' Boxer:</strong> Can be used to quickly summon monsters and search for key spells to facilitate plays.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-book-open"></i></span> <strong class="text-blue-400">Generic Warrior Support:</strong> Cards like Reinforcement of the Army are essential for searching key combo pieces.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">TCG Banlist Impact & The Post-Isolde Era</h2>
+            <div class="card p-6">
+                <p class="text-slate-300 mb-4 text-center">
+                    The archetype's competitive history was redefined by <strong class="text-accent-gold">Isolde, Two Tales of the Noble Knights</strong>. Her ability to provide unparalleled consistency and combo extension made the "Infernoble" strategy a top-tier contender. Her banning in the TCG was a significant blow, forcing the deck to rely on less efficient, multi-card combos.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Key Restrictions</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-slate-300">
+                            <li><strong class="text-red-400">Isolde, Two Tales of the Noble Knights (Forbidden):</strong> The loss of the deck's best starter and extender fundamentally reduced its power and consistency.</li>
+                        </ul>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Support</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-slate-300">
+                            <li><strong class="text-yellow-400">Reinforcement of the Army (Limited):</strong> Limits access to one of the best generic Warrior searchers.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
+                    <p class="text-sm text-slate-300"><strong>Meta Implications:</strong> While the core "Noble Knight" and "Infernoble Knight" cards remain unlimited, the ban of Isolde forces the deck into a more focused, pure "Infernoble" build. Hybrid strategies are no longer viable, and the deck's overall power ceiling is lower, though it remains a capable rogue strategy. </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Banner Animation ---
+            const canvas = document.getElementById('banner-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const particleCount = 50;
+
+            const banner = document.querySelector('.banner-header');
+            canvas.width = banner.offsetWidth;
+            canvas.height = banner.offsetHeight;
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 1;
+                    this.speedX = Math.random() * 1 - 0.5;
+                    this.speedY = Math.random() * 1 - 0.5;
+                    this.color = `rgba(212, 175, 55, ${Math.random() * 0.5 + 0.2})`; // Gold color
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    if (this.size > 0.1) this.size -= 0.01;
+                    if (this.size <= 0.1) {
+                         this.x = Math.random() * canvas.width;
+                         this.y = Math.random() * canvas.height;
+                         this.size = Math.random() * 2 + 1;
+                         this.speedX = Math.random() * 1 - 0.5;
+                         this.speedY = Math.random() * 1 - 0.5;
+                    }
+                }
+                draw() {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function initParticles() {
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                }
+                requestAnimationFrame(animateParticles);
+            }
+
+            initParticles();
+            animateParticles();
+            
+            window.addEventListener('resize', () => {
+                 canvas.width = banner.offsetWidth;
+                 canvas.height = banner.offsetHeight;
+                 particles = [];
+                 initParticles();
+            });
+
+            // --- Card Image Fetching ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+            
+            fetchAndDisplayCardImage('Artorigus, King of the Noble Knights', 'artorigus-img-container');
+            fetchAndDisplayCardImage('Infernoble Knight Emperor Charles', 'charles-img-container');
+            fetchAndDisplayCardImage('Noble Knight Medraut', 'medraut-img-container');
+            fetchAndDisplayCardImage('Noble Knight Borz', 'borz-img-container');
+            fetchAndDisplayCardImage('Artorigus, King of the Noble Knights', 'artorigus-combo-img-container');
+            fetchAndDisplayCardImage('Infernoble Knight Ogier', 'ogier-img-container');
+            fetchAndDisplayCardImage('Infernoble Knight - Renaud', 'renaud-img-container');
+            fetchAndDisplayCardImage('Infernoble Knight Emperor Charles', 'charles-combo-img-container');
+        });
+    </script>
+</body>
+</html>
+

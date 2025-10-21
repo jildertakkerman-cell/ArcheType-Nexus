@@ -1,0 +1,730 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abyss Actor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d121c;
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a0000; /* Darker, more theatrical red-black */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d0000; /* Dark red border */
+        }
+        .combo-step-card {
+            background-color: #210000; /* Even darker red */
+            border: 1px solid #660000;
+        }
+        .pro-con-card {
+            background-color: #210000;
+            border: 1px solid #660000;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1a0000;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a0000;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #1a0000);
+        }
+        .pro-icon {
+            color: #34d399;
+        }
+        .con-icon {
+            color: #ef4444;
+        }
+        .neutral-icon {
+            color: #60a5fa;
+        }
+        .text-accent {
+            color: #b91c1c; /* Crimson Red */
+        }
+        .arrow-color {
+            color: #be185d;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #b91c1c;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        
+        .banner {
+            position: relative;
+            height: 120px; /* Reduced height */
+            background: #0a0a0a;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #4d0000;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: content-fade-in 1s ease-out 0.5s forwards; /* Reduced delay */
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem; /* Reduced font size */
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 10, 10, 0.3);
+        }
+        .banner-subtitle {
+            font-size: 1rem; /* Reduced font size */
+            color: #dbeafe;
+        }
+
+        .spotlight {
+            position: absolute;
+            top: -60px; /* Adjusted position */
+            left: 50%;
+            width: 300px; /* Adjusted size */
+            height: 300px; /* Adjusted size */
+            background: linear-gradient(to bottom, rgba(255, 255, 220, 0.4), transparent);
+            transform-origin: top center;
+            z-index: 1;
+            opacity: 0;
+            animation: spotlight-sweep 5s ease-in-out 0s infinite alternate; /* Removed delay */
+            border-radius: 50%;
+            filter: blur(20px);
+        }
+
+        @keyframes content-fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spotlight-sweep {
+            0% { transform: translateX(-50%) rotate(-30deg); opacity: 0.6; }
+            100% { transform: translateX(-50%) rotate(30deg); opacity: 0.8; }
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+            /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #b91c1c;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #b91c1c;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Playfair Display', serif;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="spotlight"></div>
+                <div class="banner-content">
+                    <h1 class="banner-title">Abyss Actor</h1>
+                    <p class="banner-subtitle">A Report on Modern Strategy and Theatrical Mechanics</p>
+                </div>
+            </div>
+        </header>
+
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Abyss Actor</strong> archetype is a collection of DARK Fiend Pendulum and Link monsters first introduced in <strong class="text-accent font-bold">Destiny Soldiers</strong>. Its design is deeply rooted in a theatrical theme, with each monster representing a distinct stage role and the <strong class="text-accent font-bold">Abyss Script</strong> Spell Cards serving as the "scripts" of the play. The deck's playstyle is built upon its ability to perform powerful Pendulum Summons and a unique mechanic where its <strong class="text-accent font-bold">Abyss Script</strong> Spells have powerful bonus effects when they are destroyed by an opponent's card effect.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Mechanics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">Pendulum Summoning</h3>
+                    <p class="text-blue-200">The deck can establish a wide range of Pendulum Scales, from a low of 2 to a high of 9, allowing for the rapid Special Summoning of multiple monsters. This ability to swarm the field is the primary engine for its offensive and combo-oriented plays.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">Abyss Script Destruction</h3>
+                    <p class="text-blue-200">The most intricate mechanic revolves around the destruction-based effects of its <strong class="text-accent font-bold">Abyss Script</strong> Spell Cards. Their most powerful functions are triggered when they are destroyed while face-up in the Spell & Trap Zone by an opponent's card effect.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Cast and Crew Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Cast and Crew: Core Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-theater-masks text-4xl text-blue-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Leading Roles: Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Abyss Actor - Extras</h4>
+                            <p class="text-sm text-blue-200">The foundational one-card combo starter. It Tributes itself to place an <strong class="text-accent font-bold">Abyss Actor</strong> Pendulum Monster from the deck into the Pendulum Zone.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Abyss Actor - Mellow Madonna</h4>
+                            <p class="text-sm text-blue-200">A primary searcher and extender. Its Pendulum Effect can add any <strong class="text-accent font-bold">Abyss Actor</strong> monster from the deck to the hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Abyss Actor - Superstar</h4>
+                            <p class="text-sm text-blue-200">Provides both offensive utility and strategic protection. It prevents the opponent from activating Spell/Trap Cards when it is summoned and can set an <strong class="text-accent font-bold">Abyss Script</strong> from the deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Abyss Actor - Super Producer</h4>
+                            <p class="text-sm text-blue-200">A Link-2 monster that is a pivotal tool for both combo extension and on-demand disruption.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-blue-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Supporting Cast: Essential Spells</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Abyss Playhouse - Fantastic Theater</h4>
+                            <p class="text-sm text-blue-200">This Field Spell is a revolutionary addition. It forces an opponent's monster effect to become "destroy 1 set Spell/Trap you control," which triggers your own bonus effects.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Abyss Script - Rise of the Abyss King</h4>
+                            <p class="text-sm text-blue-200">A cornerstone of the deck's board-breaking capability. Its primary effect is to destroy all face-up cards the opponent controls.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Abyss Script - Abysstainment</h4>
+                            <p class="text-sm text-blue-200">A Continuous Spell that is the lynchpin of the deck's OTK combos. Its bonus effect allows the player to Special Summon any number of <strong class="text-accent font-bold">Abyss Actor</strong> monsters from their deck when destroyed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The "Extras" One-Card Combo</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how a single <strong class="text-accent font-bold">Abyss Actor - Extras</strong> can initiate the deck's main combo line.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="extras-img-container" class="card-image-container card-placeholder">Abyss Actor - Extras</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a0000] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Normal Summon & Tribute</h3>
+                        </div>
+                        <p class="text-blue-200">Normal Summon or Special Summon <strong class="text-accent font-bold">Abyss Actor - Extras</strong>. Activate its effect, Tributing it to place <strong class="text-accent font-bold">Abyss Actor - Curtain Raiser</strong> directly into a Pendulum Zone.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="curtain-raiser-img-container" class="card-image-container card-placeholder">Abyss Actor - Curtain Raiser</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a0000] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Pendulum Effect & Summon</h3>
+                        </div>
+                        <p class="text-blue-200">Activate <strong class="text-accent font-bold">Curtain Raiser's</strong> Pendulum Effect to Special Summon itself, then use its monster effect to add <strong class="text-accent font-bold">Extras</strong> from the Extra Deck back to your hand.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="super-producer-img-container" class="card-image-container card-placeholder">Abyss Actor - Super Producer</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a0000] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Link Summon & Set Up</h3>
+                        </div>
+                        <p class="text-blue-200">Link Summon <strong class="text-accent font-bold">Abyss Actor - Super Producer</strong>. Use its Quick Effect to destroy a card, place <strong class="text-accent font-bold">Abyss Actor - Mellow Madonna</strong>, and then Pendulum Summon key monsters to set up disruptions like <strong class="text-accent font-bold">Abyss Script - Abysstainment</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Grand Finale: A Typical End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Grand Finale: A Typical End Board</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The modern Abyss Actor end board focuses on interactive disruption, turning the opponent's own plays into triggers for devastating counter-attacks. The goal is not just to negate, but to redirect and punish.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The Core Disruption Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Director & The Stage</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="super-producer-end-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Super Producer:</strong> The main interactive piece. Its Quick Effect can be chained to an opponent's monster effect.</li>
+                        <li><strong class="text-accent">Fantastic Theater:</strong> Placed by Super Producer, it forces the opponent's effect to become "destroy 1 set Spell/Trap you control."</li>
+                        <li><strong class="text-accent">Forced Trigger:</strong> This combo turns an opponent's monster into the trigger for your own Abyss Script's powerful bonus effect.</li>
+                    </ul>
+                </div>
+                <!-- The Payoff -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Dramatic Payoff</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="abysstainment-end-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Set Abyss Scripts:</strong> The target for destruction. <strong class="text-accent">Abysstainment</strong> is the best target, swarming the field from the deck.</li>
+                        <li><strong class="text-accent">Rise of the Abyss King:</strong> Another powerful option that can banish a card from the opponent's field.</li>
+                        <li><strong class="text-accent">Non-Xenolock Options:</strong> If the combo line allows, the board can be supplemented with generic negates like <strong class="text-accent">Odd-Eyes Vortex Dragon</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Consistency:</strong> The deck has multiple one-card starters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Resilience to Hand Traps:</strong> Can play through some common hand traps like <strong class="text-accent font-bold">Ash Blossom & Joyous Spring</strong>.</li>
+                        <li><span class="pro-icon"><i class="fas fa-hand-rock"></i></span> <strong class="text-green-400 font-bold">Board-Breaking:</strong> The deck's "go second" strategy is formidable, capable of clearing established boards with its powerful <strong class="text-accent font-bold">Abyss Script</strong> cards.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Vulnerability to Negation:</strong> Susceptible to targeted monster negates such as <strong class="text-accent font-bold">Infinite Impermanence</strong> or <strong class="text-accent font-bold">Effect Veiler</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Floodgate Vulnerability:</strong> The deck can be shut down by cards that restrict Pendulum or Special Summons.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Tech Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-mask"></i></span> <strong class="text-accent font-bold">Fiendsmith Engine:</strong> Aligns perfectly with the archetype's DARK Fiend monsters to provide an alternative win condition.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-accent font-bold">Dominus Impulse:</strong> A powerful hand trap that the deck can uniquely use without a downside due to the DARK Fiend nature of its monsters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The Abyss Actor archetype remains fully available in the current TCG format:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Core Monsters</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Abyss Actor - Extras (3 copies)</strong> - Primary starter</li>
+                            <li>Abyss Actor - Mellow Madonna (3 copies)</li>
+                            <li>Abyss Actor - Superstar (3 copies)</li>
+                            <li>Abyss Actor - Super Producer (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Support Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Abyss Playhouse - Fantastic Theater (3 copies)</li>
+                            <li>Abyss Script - Rise of the Abyss King (3 copies)</li>
+                            <li>Abyss Script - Abysstainment (3 copies)</li>
+                            <li>All other Abyss Script spells (3 copies each)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With no restrictions on the archetype, Abyss Actor retains its full combo potential and board-breaking capabilities. The deck can utilize its complete theatrical arsenal, including powerful destruction effects from Abyss Script cards and consistent one-card combo starters.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Theatrical Cast: The Arsenal of Abyss Actor</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">A detailed overview of each card's individual role and effects.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Cards -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Abyss Actor - Extras</h3>
+                    <p class="text-blue-200 mb-2"><strong>Pendulum/Monster</strong></p>
+                    <p class="text-blue-200">A combo starter that places an Abyss Actor Pendulum Monster from the Deck into the Pendulum Zone.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Abyss Actor - Mellow Madonna</h3>
+                    <p class="text-blue-200 mb-2"><strong>Pendulum/Monster</strong></p>
+                    <p class="text-blue-200">An extender and searcher that adds an Abyss Actor from the Deck to the hand.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Abyss Actor - Superstar</h3>
+                    <p class="text-blue-200 mb-2"><strong>Pendulum/Monster</strong></p>
+                    <p class="text-blue-200">Protects from Spell/Trap activation on summon and sets an Abyss Script from the Deck.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Abyss Actor - Super Producer</h3>
+                    <p class="text-blue-200 mb-2"><strong>Link Monster</strong></p>
+                    <p class="text-blue-200">A versatile Link-2 monster for both combo extension and on-demand disruption.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Abyss Playhouse - Fantastic Theater</h3>
+                    <p class="text-blue-200 mb-2"><strong>Field Spell</strong></p>
+                    <p class="text-blue-200">Forces an opponent's monster effect to destroy one of your set cards, which then triggers your bonus effects.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Abyss Script - Rise of the Abyss King</h3>
+                    <p class="text-blue-200 mb-2"><strong>Spell</strong></p>
+                    <p class="text-blue-200">Destroys all face-up cards the opponent controls and has a bonus effect that banishes a card when destroyed while set.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Abyss Script - Abysstainment</h3>
+                    <p class="text-blue-200 mb-2"><strong>Continuous Spell</strong></p>
+                    <p class="text-blue-200">A key part of the deck's OTK strategy. Its bonus effect allows you to Special Summon any number of Abyss Actor monsters from your deck when it's destroyed while set.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container, cardName);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container, cardName);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container, cardName) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-blue-300">${cardType}</p>
+                        <div class="w-full h-px bg-blue-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            const cardsToLoad = {
+                'extras-img-container': 'Abyss Actor - Extras',
+                'curtain-raiser-img-container': 'Abyss Actor - Curtain Raiser',
+                'super-producer-img-container': 'Abyss Actor - Super Producer',
+                'super-producer-end-img-container': 'Abyss Actor - Super Producer',
+                'abysstainment-end-img-container': 'Abyss Script - Abysstainment'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

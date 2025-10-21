@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Seraph Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c142c; /* Deep celestial blue */
+            color: #f0e6ff; /* Light lavender/white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(18, 28, 68, 0.8); /* Darker semi-transparent blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #c0a060; /* Gold border */
+            backdrop-filter: blur(8px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(30, 42, 90, 0.7);
+            border: 1px solid #d4af37; /* Brighter Gold */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        .card-placeholder {
+            background: linear-gradient(145deg, #1e2a5a, #10183c);
+            color: #ffeaa7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.8rem;
+            line-height: 1.1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 2px solid #c0a060;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+        .pro-icon { color: #50c878; } /* Emerald Green */
+        .con-icon { color: #ff6961; } /* Pastel Red */
+        .neutral-icon { color: #89cff0; } /* Baby Blue */
+        .text-accent { color: #ffd700; } /* Gold */
+        .arrow-color { color: #ffd700; }
+        .heading-underline {
+            border-bottom: 2px solid #ffd700;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ffd700;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffd700;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #ffd700;
+        }
+
+        /* --- Celestial Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c142c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #c0a060;
+        }
+
+        #star-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 20, 44, 0.4) 0%, rgba(12, 20, 44, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+             font-size: 2.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .banner-header h1 {
+                font-size: 2.2rem;
+            }
+        }
+        
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #10183c 0%, #1e2a5a 100%); color: #ffd700;
+            border: 2px solid #c0a060; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2), 0 0 20px rgba(255, 215, 0, 0.1);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4), 0 0 30px rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+        }
+        .ygo-home-button i {
+            font-size: 22px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="star-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Star Seraph</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Strategic Analysis of the Celestial Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Star Seraph</strong> archetype is a compact group of LIGHT Fairy monsters renowned for its hyper-efficient, two-card combo engine. Colloquially known as "Stick and Chair," this engine facilitates explosive card advantage and field presence, enabling the rapid Xyz Summon of powerful Rank 4 monsters. While there are several cards in the archetype, its competitive identity is almost entirely defined by the synergy between its core starter and extender. The strategy revolves around converting this initial advantage into a formidable end board, making the deck a potent, albeit fragile, "glass cannon" engine that has seen success in various hybrid strategies throughout the game's history. Join us as we explore the divine mechanics of the <a href="https://yugipedia.com/wiki/Star_Seraph" target="_blank" class="lore-link">Star Seraph cards</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Celestial Choir Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Celestial Choir</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- The Engine Core -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-crown text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Engine Core</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Star Seraph Scepter ("Stick")</h4>
+                            <p class="text-sm text-indigo-200">The premier starter. On summon, it searches any "Star Seraph" monster, initiating the entire combo and providing unparalleled consistency.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Star Seraph Sovereignty ("Chair")</h4>
+                            <p class="text-sm text-indigo-200">The primary extender. When another "Star Seraph" is summoned, it Special Summons itself from the hand and draws a card, generating massive advantage.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Archetypal Bosses & Support -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Archetypal Bosses & Support</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Number 102: Star Seraph Sentry</h4>
+                            <p class="text-sm text-indigo-200">The dedicated Rank 4 Xyz monster. It offers monster effect negation and ATK reduction, serving as a solid in-archetype control tool.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Legacy Monsters</h4>
+                            <p class="text-sm text-indigo-200">Cards like Star Seraph Scout and Scale offer alternative extension but are vastly outclassed by the efficiency of the "Stick and Chair" engine and see no competitive play.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Stick & Chair" Combo</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The deck's defining feature is its two-card combo, which turns a single Normal Summon into a three-monster board while generating immense card advantage.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="scepter-img-container" class="card-image-container flex-shrink-0 card-placeholder">Star Seraph Scepter</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#121c44] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Opening Act</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Star Seraph Scepter</strong>. With <strong class="text-accent">Star Seraph Sovereignty</strong> in hand, both their effects trigger. Build the chain: CL1 Scepter, CL2 Sovereignty.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sovereignty-img-container" class="card-image-container flex-shrink-0 card-placeholder">Star Seraph Sovereignty</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#121c44] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Advantage Cascade</h3>
+                            </div>
+                            <p class="text-indigo-200">The chain resolves backwards. Sovereignty is Special Summoned and you draw 1 card. Then, Scepter's effect resolves, adding a second Sovereignty from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="endboard-img-container" class="card-image-container flex-shrink-0 card-placeholder">3-Material Xyz</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#121c44] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Grand Finale</h3>
+                            </div>
+                            <p class="text-indigo-200">The second Sovereignty now triggers, Special Summoning itself and drawing another card. You end with 3 monsters on field, have drawn 2 cards, and are ready to Xyz Summon a 3-material Rank 4 monster.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Ascending to the End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Delteros -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Stellarknight Delteros</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="delteros-img-container" class="card-image-container card-placeholder">Stellarknight Delteros</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Unchainable Removal:</strong> When made with Scepter, its inherited pop-and-draw effect cannot be responded to.</li>
+                        <li><strong class="text-accent">Board Breaking:</strong> After the first pop, it can use its own effect to destroy another card, clearing two threats.</li>
+                        <li><strong class="text-accent">Premier Go-Second Choice:</strong> The ideal payoff for breaking an opponent's established board.</li>
+                    </ul>
+                </div>
+                <!-- Ouroboros -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Evilswarm Ouroboros</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ouroboros-img-container" class="card-image-container card-placeholder">Evilswarm Ouroboros</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Hand Disruption:</strong> Its primary use when going first is to discard a random card from the opponent's hand.</li>
+                        <li><strong class="text-accent">Versatile Control:</strong> Offers two other effects for graveyard banishing or bouncing cards on the field.</li>
+                         <li><strong class="text-accent">Quintessential Go-First Boss:</strong> Cripples the opponent's strategy before their turn even begins.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-rocket"></i></span> <strong class="text-green-300">Explosive Advantage:</strong> Generates a staggering +3 in card economy from only two cards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-tools"></i></span> <strong class="text-green-300">Toolbox Access:</strong> Provides easy access to the game's most powerful Rank 4 Xyz monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-green-300">Highly Splashable:</strong> The compact engine size allows it to be integrated into many other strategies (e.g., Shaddoll, Rituals).</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Extreme Fragility:</strong> The entire combo hinges on the successful Normal Summon of Scepter. A single hand trap can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Consistency Issues:</strong> Drawing multiple copies of Sovereignty without Scepter results in an unplayable "brick" hand.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Normal Summon Reliant:</strong> Consumes the turn's Normal Summon, which can conflict with other archetypes in hybrid builds.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <div class="p-4 bg-green-900 bg-opacity-40 rounded-lg border-l-4 border-green-500">
+                    <h3 class="text-lg font-bold text-green-300 mb-2">Archetype Status: Unrestricted</h3>
+                    <p class="text-indigo-200">The Star Seraph archetype currently has no cards on the Forbidden & Limited list in the TCG. Both <strong class="text-accent">Star Seraph Scepter</strong> and <strong class="text-accent">Star Seraph Sovereignty</strong> are unlimited, allowing the engine to be played at its full, explosive potential. This gives duelists complete freedom to utilize the "Stick and Chair" combo without restriction.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Celestial Animated Banner ---
+            const canvas = document.getElementById('star-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let stars = [];
+                const numStars = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Star {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.alpha = Math.random() * 0.5 + 0.5;
+                        this.speed = Math.random() * 0.1 + 0.05;
+                        this.direction = Math.random() * Math.PI * 2;
+                    }
+                    update() {
+                        this.x += Math.cos(this.direction) * this.speed;
+                        this.y += Math.sin(this.direction) * this.speed;
+
+                        if (this.x < 0) this.x = canvas.width;
+                        if (this.x > canvas.width) this.x = 0;
+                        if (this.y < 0) this.y = canvas.height;
+                        if (this.y > canvas.height) this.y = 0;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 215, 0, ${this.alpha})`;
+                        ctx.fill();
+                    }
+                }
+
+                function initStars() {
+                    stars = [];
+                    for (let i = 0; i < numStars; i++) {
+                        stars.push(new Star());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    stars.forEach(s => {
+                        s.update();
+                        s.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initStars();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initStars();
+                });
+            }
+
+            // --- Card Image Fetcher Script ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'scepter-img-container': 'Star Seraph Scepter',
+                'sovereignty-img-container': 'Star Seraph Sovereignty',
+                'delteros-img-container': 'Stellarknight Delteros',
+                'ouroboros-img-container': 'Evilswarm Ouroboros'
+            };
+
+             // A generic placeholder for the final step.
+            const endboardContainer = document.getElementById('endboard-img-container');
+            if(endboardContainer) {
+                 endboardContainer.textContent = "Powerful 3-Material Rank 4 Xyz";
+            }
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

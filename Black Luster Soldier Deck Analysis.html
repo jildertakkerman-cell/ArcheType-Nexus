@@ -1,0 +1,721 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black Luster Soldier Deck Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2a;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2c3e;
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            border: 1px solid #a88532;
+        }
+        .combo-step-card {
+            background-color: #3e3e52;
+            border: 1px solid #d4af37;
+        }
+        .pro-con-card {
+            background-color: #3e3e52;
+            border: 1px solid #d4af37;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3e3e52;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3e3e52;
+            border: 1px dashed #d4af37;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #d4af37);
+        }
+        .pro-icon { color: #4ade80; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #d4af37; }
+        .arrow-color { color: #d4af37; }
+        .heading-underline {
+            border-bottom: 2px solid #d4af37;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        .chaos-banner {
+            position: relative;
+            height: 180px;
+            background-color: #10101b;
+            border-radius: 1rem;
+            border: 2px solid #a88532;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+        #chaos-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: fadeIn 1.5s ease-out 0.5s forwards;
+        }
+        .banner-title {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.7), 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+        .banner-subtitle {
+            font-size: 1.125rem;
+            color: #e0e0e0;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .chaos-banner { height: 160px; }
+            .banner-title { font-size: 2.25rem; }
+            .banner-subtitle { font-size: 1rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 26, 42, 0.95);
+            border: 1px solid #d4af37;
+            border-radius: 0.75rem;
+            color: #e0e0e0;
+            max-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+            word-wrap: break-word;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #f4d03f;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Cinzel', serif;
+            color: #d4af37;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <header class="chaos-banner mb-10 md:mb-16">
+            <canvas id="chaos-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="banner-title">Black Luster Soldier</h1>
+                <p class="banner-subtitle">Analysis of the Chaos Ritual OTK Strategy</p>
+            </div>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">Black Luster Soldier (BLS)</strong> archetype represents a strategic evolution from a classic Ritual monster into a modern, aggressive OTK (One-Turn Kill) deck. Its contemporary identity is a hybrid, blending a consistent Ritual engine with a flexible Chaos engine. The primary objective has shifted from controlling the board with Ritual monsters to a singular, powerful goal: deploying the Link monster, <strong class="text-accent font-bold">Black Luster Soldier - Soldier of Chaos</strong>, with its maximum protection. The entire Ritual engine now serves as an elaborate and searchable pathway to summon this protected boss, transforming the archetype into a formidable "go-second" strategy designed to break an opponent's board and end the duel swiftly.
+                </p>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Synergy: The Path of the Super Soldier</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">The modern BLS strategy treats its Ritual Monsters not as the final goal, but as the perfect material to forge its true commander, the Link-3 Soldier of Chaos.</p>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="gateway-step-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2c2c3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Open the Gateway</h3>
+                        </div>
+                        <p class="text-gray-300">Activate <strong class="text-accent font-bold">Gateway to Chaos</strong> to search for a Ritual Monster, such as <strong class="text-accent font-bold">Black Luster Soldier - Legendary Swordsman</strong>.</p>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="synthesis-step-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2c2c3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Ritual Synthesis</h3>
+                        </div>
+                        <p class="text-gray-300">Use <strong class="text-accent font-bold">Super Soldier Synthesis</strong> to Ritual Summon the BLS monster. This efficiently sends <strong class="text-accent font-bold">Beginning Knight</strong> (from Deck) and <strong class="text-accent font-bold">Evening Twilight Knight</strong> (from hand) to the GY, setting up the resource loop.</p>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="soldier-of-chaos-step-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2c2c3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Forge the Commander</h3>
+                        </div>
+                        <p class="text-gray-300">Link Summon <strong class="text-accent font-bold">Black Luster Soldier - Soldier of Chaos</strong> using the Level 8 Ritual Monster as material. This grants it immunity to targeting and destruction, creating a near-invincible boss monster.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Final Endboard: The Unbreakable General</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">The ideal BLS endboard is a fortress built around a single, immensely powerful commander, supported by a supply line of resources ready for the next turn.</p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <div class="card p-6 lg:col-span-1 flex flex-col items-center">
+                    <div class="mb-4 w-full flex justify-center">
+                        <div id="soldier-of-chaos-endboard-img-container" class="w-48 md:w-56"></div>
+                    </div>
+                    <div class="text-center">
+                        <div class="flex items-center justify-center gap-2 mb-3">
+                            <i class="fas fa-crown text-accent text-xl icon-glow"></i>
+                            <h3 class="text-xl font-bold text-accent">The Commander</h3>
+                        </div>
+                        <div class="bg-[#1a1a2a] rounded-lg p-4 border border-accent/30">
+                            <p class="text-gray-300 text-sm leading-relaxed">
+                                <strong class="text-white">Soldier of Chaos</strong> stands as an impenetrable wall with 3000 ATK, immune to targeting and destruction. Opponents must navigate around this fortress or fall to its blade.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 flex flex-col gap-6">
+                    <div class="card p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0">
+                                <div class="bg-[#1a1a2a] rounded-full h-12 w-12 flex items-center justify-center border-2 border-blue-500">
+                                    <i class="fas fa-hand-paper text-blue-400 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-blue-400 mb-2">Interactive Defense</h3>
+                                <p class="text-gray-300 text-sm">
+                                    Utility Link monsters like <strong class="text-accent">I:P Masquerena</strong> provide crucial interruption during the opponent's turn, creating a multi-layered defense that forces difficult decisions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0">
+                                <div class="bg-[#1a1a2a] rounded-full h-12 w-12 flex items-center justify-center border-2 border-purple-500">
+                                    <i class="fas fa-sync-alt text-purple-400 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-purple-400 mb-3">Graveyard Arsenal</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div class="bg-[#1a1a2a] rounded p-3 border border-accent/20 flex flex-col items-center">
+                                        <div id="beginning-knight-img" class="w-20 mb-2"></div>
+                                        <p class="text-accent font-bold text-sm mb-1">Beginning Knight</p>
+                                        <p class="text-gray-400 text-xs text-center">Searches Ritual Spell when banished</p>
+                                    </div>
+                                    <div class="bg-[#1a1a2a] rounded p-3 border border-accent/20 flex flex-col items-center">
+                                        <div id="evening-twilight-knight-img" class="w-20 mb-2"></div>
+                                        <p class="text-accent font-bold text-sm mb-1">Evening Twilight Knight</p>
+                                        <p class="text-gray-400 text-xs text-center">Searches Ritual Monster when banished</p>
+                                    </div>
+                                </div>
+                                <p class="text-gray-300 text-sm mt-3">
+                                    These warriors form a self-sustaining cycle, ensuring you never run out of resources for follow-up plays.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Protected Boss:</strong> Soldier of Chaos is extremely difficult for many decks to remove.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">Resource Loop:</strong> The Knight engine provides excellent recursion and card advantage.</li>
+                        <li><span class="pro-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-green-400 font-bold">Powerful Go-Second:</strong> Excels at breaking boards with Kaijus and its own high-ATK monsters.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Linear Combo:</strong> The primary combo path is predictable and can be disrupted at key points.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Reliance on Starters:</strong> Heavily dependent on drawing its key Field Spell or searchers.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Graveyard Hate:</strong> Cards that banish from the Graveyard can shut down the Knight recursion engine.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Allies & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="neutral-icon"><i class="fas fa-circle-half-stroke"></i></span> <strong class="text-accent font-bold">Chaos Engine:</strong> Cards like <strong class="text-accent font-bold">Chaos Space</strong> and the "Chaos Dragon" duo provide consistency and banishing outlets.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent font-bold">Bystial Monsters:</strong> Offer disruption while simultaneously triggering the banish effects of your own Knights.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-meteor"></i></span> <strong class="text-accent font-bold">Board Breakers:</strong> A suite of cards like <strong class="text-accent font-bold">Kaijus</strong>, <strong class="text-accent font-bold">Lava Golem</strong>, and <strong class="text-accent font-bold">Dark Ruler No More</strong> are essential for the go-second strategy.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Black Luster Soldier Arsenal</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">An overview of the key warriors and spells in the Black Luster Soldier's army.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Black Luster Soldier - Soldier of Chaos</h3>
+                    <p class="text-gray-300">The premier Link-3 boss monster. When made with a Level 7+ monster, it's untargetable and indestructible by card effects, and provides removal after battling.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Black Luster Soldier - Super Soldier</h3>
+                    <p class="text-gray-300">The main Ritual monster. While primarily used as perfect material for Soldier of Chaos, it can inflict burn damage and floats into a "Gaia" monster.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Beginning & Evening Twilight Knight</h3>
+                    <p class="text-gray-300">The heart of the resource loop. These LIGHT and DARK warriors search a Ritual Spell and Monster, respectively, when banished from the GY.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Gateway to Chaos</h3>
+                    <p class="text-gray-300">The essential Field Spell. It searches a BLS or Gaia monster on activation and can search a Ritual Spell after building up Spell Counters.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Super Soldier Synthesis</h3>
+                    <p class="text-gray-300">The most efficient Ritual Spell. It lets you use materials from the hand and Deck, perfectly setting up the Knights in the Graveyard.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Black Luster Soldier - Envoy of the Beginning</h3>
+                    <p class="text-gray-300">The classic Chaos monster. Provides an easy-to-summon body with a powerful banishing effect, perfectly triggering the Knight engine.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('chaos-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.parentElement.offsetWidth;
+                    canvas.height = canvas.parentElement.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(color) {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = (Math.random() * 1 - 0.5) * 0.5;
+                        this.speedY = (Math.random() * 1 - 0.5) * 0.5;
+                        this.color = color;
+                    }
+
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const lightColor = 'rgba(212, 175, 55, 0.8)';
+                    const darkColor = 'rgba(106, 90, 205, 0.8)';
+                    const numberOfParticles = (canvas.width * canvas.height) / 9000;
+
+                    for (let i = 0; i < numberOfParticles / 2; i++) {
+                        particles.push(new Particle(lightColor));
+                    }
+                    for (let i = 0; i < numberOfParticles / 2; i++) {
+                        particles.push(new Particle(darkColor));
+                    }
+                }
+
+                function connectParticles() {
+                    for (let a = 0; a < particles.length; a++) {
+                        for (let b = a; b < particles.length; b++) {
+                            const distance = Math.sqrt(
+                                Math.pow(particles[a].x - particles[b].x, 2) +
+                                Math.pow(particles[a].y - particles[b].y, 2)
+                            );
+
+                            if (distance < 120) {
+                                const opacity = 1 - (distance / 120);
+                                ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.3})`;
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[a].x, particles[a].y);
+                                ctx.lineTo(particles[b].x, particles[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    connectParticles();
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+            let lastShown = 0;
+            let currentCard = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (currentCard === cardName) {
+                    hidePopup();
+                    return;
+                }
+                hidePopup(); // Ensure any existing popup is hidden first
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-yellow-300">${cardType}</p>
+                        <div class="w-full h-px bg-yellow-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+                lastShown = Date.now();
+                currentCard = cardName;
+            }
+
+            function hidePopup() {
+                if (Date.now() - lastShown < 100) return; // Ignore hide calls immediately after showing
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                    currentCard = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            const cardsToLoad = {
+                'gateway-step-img-container': 'Gateway to Chaos',
+                'synthesis-step-img-container': 'Super Soldier Synthesis',
+                'soldier-of-chaos-step-img-container': 'Black Luster Soldier - Soldier of Chaos',
+                'soldier-of-chaos-endboard-img-container': 'Black Luster Soldier - Soldier of Chaos',
+                'beginning-knight-img': 'Beginning Knight',
+                'evening-twilight-knight-img': 'Evening Twilight Knight'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

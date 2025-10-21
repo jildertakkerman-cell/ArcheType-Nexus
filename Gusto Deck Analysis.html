@@ -1,0 +1,554 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gusto Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f1a1d; /* Dark Teal/Blue */
+            color: #e0f2f1; /* Light Cyan */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1c2e33; /* Darker Cyan-Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a5f6a; /* Muted Teal Border */
+        }
+        .combo-step-card {
+            background-color: #2a464d;
+            border: 1px solid #4d8091;
+        }
+        .pro-con-card {
+            background-color: #2a464d;
+            border: 1px solid #4d8091;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #2a464d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a464d;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #80deea; } /* Light Cyan */
+        .arrow-color { color: #4dd0e1; }
+        .heading-underline {
+            border-bottom: 2px solid #4dd0e1;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #80deea;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #80deea;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW GUSTO ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0f1a1d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #wind-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(15, 26, 29, 0.6) 0%, rgba(15, 26, 29, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="wind-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Gusto</h1>
+            <p class="text-lg md:text-xl text-cyan-200">A Strategic Deep Dive into the Eye of the Storm</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-cyan-100">
+                    The <strong class="text-accent font-bold">Gusto</strong> archetype is a Synchro-focused group of WIND monsters, known for its unique blend of Psychic and Winged Beast members. Originally designed around a slow, defensive loop, the archetype has evolved to embrace a more aggressive, combo-centric playstyle. Mastery of Gusto requires understanding how to leverage its floating effects and powerful extenders to either execute a stunning OTK with its signature boss monster, <strong class="text-accent font-bold">Daigusto Sphreez</strong>, or to climb into formidable generic Synchro monsters that can control the game. It's time to feel the 
+                    <a href="https://yugipedia.com/wiki/Gusto" target="_blank" class="lore-link">changing winds of this powerful strategy</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Gusto Collective Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Gusto Collective: Core Components</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-2xl mx-auto">
+                The Gusto strategy is built on two pillars: the classic "Recruiter Loop" that fuels the graveyard, and the modern "Combo Enablers" that initiate explosive plays.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Combo Enablers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-wind text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Combo Enablers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Pilica, Descendant of Gusto</h4>
+                            <p class="text-sm text-cyan-100">The most important main deck monster. On summon, she revives a WIND Tuner from the GY, instantly enabling a Synchro Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gusto Vedir</h4>
+                            <p class="text-sm text-cyan-100">A modern powerhouse that summons itself from hand, sends a Gusto from deck to GY, and summons another from hand, providing immense consistency.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gusto Griffin</h4>
+                            <p class="text-sm text-cyan-100">The premier combo starter. When sent from the hand to the GY (often as a cost), it Special Summons any Gusto monster from the deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Recruiter Loop -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-sync-alt text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Recruiter Loop</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gusto Gulldo</h4>
+                            <p class="text-sm text-cyan-100">A Level 3 Tuner that summons a Level 2 or lower Gusto from the deck when sent from the field to the GY.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Winda, Priestess of Gusto</h4>
+                             <p class="text-sm text-cyan-100">A Level 2 non-Tuner that summons a Gusto Tuner from the deck when destroyed by an opponent's attacking monster.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gusto Egul</h4>
+                            <p class="text-sm text-cyan-100">A Level 1 Tuner that summons a Level 4 or lower non-Tuner Gusto from deck when destroyed by battle, often used to bring out Pilica.</p>
+                       </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Sphreez "Stop Hitting Yourself" OTK</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the archetype's most famous win condition, using <strong class="text-accent font-bold">Daigusto Sphreez</strong> to reflect lethal battle damage back at the opponent.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="pilica-img-container" class="card-image-container flex-shrink-0 card-placeholder">Pilica, Descendant of Gusto</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c2e33] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon and Revive</h3>
+                            </div>
+                            <p class="text-cyan-100">Normal Summon <strong class="text-accent font-bold">Pilica, Descendant of Gusto</strong>. Use her effect to revive a Level 3 Tuner like <strong class="text-accent font-bold">Gusto Gulldo</strong> from your Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sphreez-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Daigusto Sphreez</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c2e33] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Synchro Summon Sphreez</h3>
+                            </div>
+                            <p class="text-cyan-100">Synchro Summon <strong class="text-accent font-bold">Daigusto Sphreez</strong> using Pilica and Gulldo. Her effect allows her to survive any battle, and she reflects any battle damage you would take from battles involving your Gusto monsters back to the opponent.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="gulldo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Gusto Gulldo</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c2e33] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Initiate the Loop</h3>
+                            </div>
+                            <p class="text-cyan-100">Attack an opponent's high-ATK monster with a low-ATK Gusto monster. The Gusto is destroyed, the opponent takes massive reflected damage, and your Gusto's effect triggers to summon another one from the deck, repeating the process until the opponent's LP hits 0.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Potential End Boards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- OTK Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Sphreez OTK Board</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="sphreez-img-container" class="card-image-container card-placeholder">Daigusto Sphreez</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><strong class="text-accent font-bold">Daigusto Sphreez:</strong> The key piece, reflecting all battle damage and being indestructible by battle.</li>
+                        <li><strong class="text-accent font-bold">A "Recruiter" Monster:</strong> A low-ATK Gusto like Gulldo or Winda to start the attack loop.</li>
+                        <li><strong class="text-accent font-bold">Opponent's High-ATK Monster:</strong> Often provided by a Kaiju you give to your opponent.</li>
+                    </ul>
+                </div>
+                <!-- Modern Synchro Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Modern Synchro-Climb Board</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="crystal-wing-img-container" class="card-image-container card-placeholder">Crystal Wing Synchro Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><strong class="text-accent font-bold">Generic Boss Monsters:</strong> The Gusto engine is used to summon powerful Synchros with strong interruption.</li>
+                        <li><strong class="text-accent font-bold">Crystal Wing Synchro Dragon:</strong> A common goal, providing a powerful monster effect negation.</li>
+                        <li><strong class="text-accent font-bold">Baronne de Fleur:</strong> Another popular choice, offering a once-per-turn omni-negate and destruction effect.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Explosive OTK:</strong> The Sphreez OTK is a unique win condition that can win games unexpectedly.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400 font-bold">Resource Recursion:</strong> The deck is excellent at recycling resources from the Graveyard, giving it staying power.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400 font-bold">Strong Generic Synergy:</strong> Access to powerful WIND and Psychic support like Wynn and Emergency Teleport boosts consistency.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Vulnerable Choke Points:</strong> Key combo pieces like Pilica are extremely vulnerable to hand traps like Ash Blossom or Effect Veiler.</li>
+                        <li><span class="con-icon"><i class="fas fa-hourglass-half"></i></span> <strong class="text-red-400 font-bold">"Missing the Timing":</strong> Many older cards have "When... you can..." effects that can fail to activate, making combos fragile.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Graveyard Hate:</strong> Cards that banish from the GY, like Called by the Grave, can shut down the entire strategy.</li>
+                    </ul>
+                </div>
+                <!-- External Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech & External Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Windwitch Engine:</strong> A one-card engine to make Crystal Wing Synchro Dragon without using the normal summon.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-search"></i></span> <strong class="text-accent font-bold">Wynn the Wind Channeler:</strong> The best starter, searching key Gusto monsters while enabling Gusto Griffin's effect.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-meteor"></i></span> <strong class="text-accent font-bold">Kaijus:</strong> Essential for the OTK strategy to give your opponent a high-ATK monster to attack into.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GUSTO WINDY BANNER ANIMATION ---
+            const canvas = document.getElementById('wind-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 1 + 0.5;
+                        this.angle = Math.random() * 360;
+                        this.size = Math.random() * 2 + 1;
+                        this.color = `rgba(128, 222, 234, ${Math.random() * 0.5 + 0.2})`; // Light Cyan
+                    }
+                    update() {
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed * 0.5;
+                        this.angle += (Math.random() - 0.5) * 0.1;
+
+                        if (this.x < 0) this.x = canvas.width;
+                        if (this.x > canvas.width) this.x = 0;
+                        if (this.y < 0) this.y = canvas.height;
+                        if (this.y > canvas.height) this.y = 0;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- SCRIPT FOR FETCHING CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'pilica-img-container': 'Pilica, Descendant of Gusto',
+                'sphreez-img-container-combo': 'Daigusto Sphreez',
+                'gulldo-img-container': 'Gusto Gulldo',
+                'sphreez-img-container': 'Daigusto Sphreez',
+                'crystal-wing-img-container': 'Crystal Wing Synchro Dragon',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

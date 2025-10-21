@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sky Striker Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c101c; /* Deep Navy Blue */
+            color: #e0e7ff; /* Lavender White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a2035; /* Dark Slate Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a416f; /* Muted Indigo Border */
+        }
+        .combo-step-card {
+            background-color: #242c4a;
+            border: 1px solid #4a558c;
+        }
+        .pro-con-card {
+            background-color: #242c4a;
+            border: 1px solid #4a558c;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #242c4a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 144px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #242c4a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f87171; } /* Light Red/Coral */
+        .arrow-color { color: #f87171; }
+        .heading-underline {
+            border-bottom: 2px solid #f87171;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f87171;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f87171;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- Sky Striker Animated Banner Styles --- */
+        .banner {
+            position: relative;
+            height: 160px;
+            background-color: #0c101c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #sky-striker-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(12, 16, 28, 0.7);
+            z-index: 2;
+        }
+
+        .banner h1, .banner p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        @media (min-width: 768px) {
+            .banner {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- End of Banner Styles --- */
+        
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner text-center">
+            <canvas id="sky-striker-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Sky Striker</h1>
+            <p class="text-lg md:text-xl text-red-300">Analysis of a Lone Ace Doctrine</p>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Sky Striker</strong> archetype embodies the philosophy of a lone ace pilot engaging in a reactive, resource-oriented battle of attrition. Its core strategy is one of control, achieved through reactive dismantling and the gradual accumulation of card advantage. The deck willingly cedes initial board presence, confident in its extensive and searchable <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=13511" target="_blank" class="lore-link">toolbox of powerful spells</a> to break apart any established field and out-grind the adversary in the ensuing resource war.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Sky Striker Doctrine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The "Empty Main Monster Zone" Mandate</h3>
+                    <p class="text-blue-200">The majority of powerful "Sky Striker" Spell Cards can only be activated while you control no monsters in your Main Monster Zones. This forces a "less is more" approach, operating almost exclusively through a single "Sky Striker Ace" Link Monster in the Extra Monster Zone.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The "Spell Power Threshold"</h3>
+                    <p class="text-blue-200">Nearly every "Sky Striker" Spell gains a powerful secondary effect if there are three or more Spell Cards in the Graveyard. This mechanic transforms the deck's spells from merely functional to overwhelmingly powerful, making the early game a race to meet this threshold.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Arsenal: Key Personnel and Equipment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Main Deck Aces -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Aces: Main Deck Pilots</h3>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Sky Striker Ace - Raye</h4>
+                            <p class="text-sm text-blue-200">The heart and soul of the deck. Her Quick Effect allows her to Tribute herself to Special Summon any "Sky Striker Ace" from the Extra Deck. She revives herself from the GY if a Sky Striker Link monster is destroyed.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Sky Striker Ace - Roze</h4>
+                            <p class="text-sm text-blue-200">A valuable extender. She can Special Summon herself from the hand when a "Sky Striker Ace" is summoned, enabling more advanced Link plays.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Link Monster Toolbox -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Mecha: Link Monster Toolbox</h3>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hayate & Kagari</h4>
+                            <p class="text-sm text-blue-200">The core resource loop. Hayate attacks directly to send a card from Deck to GY, and Kagari retrieves a spell from the GY.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Shizuku & Kaina</h4>
+                            <p class="text-sm text-blue-200">Shizuku searches for a spell in the End Phase and debuffs the opponent, while Kaina provides defensive stalling by preventing a monster from attacking.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spell Arsenal -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Munitions: Spell Arsenal</h3>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Engage! & Widow Anchor</h4>
+                            <p class="text-sm text-blue-200">Engage! is the primary searcher, while Widow Anchor provides monster negation and theft. Both become significantly stronger with 3+ spells in the GY.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Multirole & Linkage!</h4>
+                            <p class="text-sm text-blue-200">Multirole recycles spells from the GY for a long grind game. Linkage! enables explosive, multi-attack OTK sequences.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Standard Opening Gambit (Going First)</h2>
+             <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                When going first, the goal is to establish a resilient, interactive board. This isn't about creating an unbreakable wall, but about setting up a resource loop that can outlast the opponent. The typical one-card combo flows as follows:
+            </p>
+
+            <div class="space-y-4">
+                <!-- Step 1: Summon Raye -->
+                <div class="card p-4 flex flex-col md:flex-row items-center gap-4 animate-fadeIn">
+                    <div class="flex-shrink-0 flex items-center justify-center">
+                        <span class="font-mono text-4xl text-red-400 mr-4">01</span>
+                        <div id="gambit-raye-img" class="w-24 h-36 card-placeholder" style="min-height: 144px;">Raye</div>
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-lg text-white">Summon the Ace</h4>
+                        <p class="text-sm text-blue-200">Start by Normal Summoning <strong class="text-accent">Sky Striker Ace - Raye</strong>. This single card is the key to the entire sequence.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2: Link into Shizuku -->
+                <div class="card p-4 flex flex-col md:flex-row items-center gap-4 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <div class="flex-shrink-0 flex items-center justify-center">
+                        <span class="font-mono text-4xl text-red-400 mr-4">02</span>
+                        <div id="gambit-shizuku-img" class="w-24 h-36 card-placeholder" style="min-height: 144px;">Shizuku</div>
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-lg text-white">Deploy the Mecha</h4>
+                        <p class="text-sm text-blue-200">Immediately use Raye as material to Link Summon <strong class="text-accent">Sky Striker Ace - Shizuku</strong> to the Extra Monster Zone. This places Raye into the Graveyard, enabling her recursion effect.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3: Search with Engage -->
+                <div class="card p-4 flex flex-col md:flex-row items-center gap-4 animate-fadeIn" style="animation-delay: 0.4s;">
+                    <div class="flex-shrink-0 flex items-center justify-center">
+                        <span class="font-mono text-4xl text-red-400 mr-4">03</span>
+                         <div id="gambit-engage-img" class="w-24 h-36 card-placeholder" style="min-height: 144px;">Engage!</div>
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-lg text-white">Gather Munitions</h4>
+                        <p class="text-sm text-blue-200">Activate <strong class="text-accent">Sky Striker Mobilize - Engage!</strong> (if in hand) to search for <strong class="text-accent">Sky Striker Mecha Modules - Multirole</strong>. This begins populating the GY for the 3+ spell threshold.</p>
+                    </div>
+                </div>
+                
+                <!-- Step 4: End Phase -->
+                <div class="card p-4 flex flex-col md:flex-row items-center gap-4 animate-fadeIn" style="animation-delay: 0.6s;">
+                    <div class="flex-shrink-0 flex items-center justify-center">
+                        <span class="font-mono text-4xl text-red-400 mr-4">04</span>
+                        <div id="gambit-widow-anchor-img" class="w-24 h-36 card-placeholder" style="min-height: 144px;">Widow Anchor</div>
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-lg text-white">Set Up for Interruption</h4>
+                        <p class="text-sm text-blue-200">Activate Multirole and set any other spells. In the End Phase, Shizuku's effect activates, searching for a key piece of disruption, usually <strong class="text-accent">Sky Striker Mecha - Widow Anchor</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">The Minimalist Control Board</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                A Sky Striker end board is a masterclass in efficiency. Its strength isn't in an unbreakable wall, but in a flexible, resource-generating setup that has the perfect answer for any threat. This is what a typical Turn 1 board looks like.
+            </p>
+
+            <div class="card p-6 md:p-8 relative overflow-hidden bg-gradient-to-br from-[#1a2035] to-[#0c101c]">
+                <!-- Central Focus: Shizuku in the EMZ -->
+                <div class="flex flex-col items-center">
+                    <div class="text-center mb-6">
+                        <span class="text-sm font-mono text-red-400 tracking-widest">:: EXTRA MONSTER ZONE ::</span>
+                        <div class="w-48 mx-auto mt-2 rounded-lg shadow-lg shadow-red-500/20 border-2 border-red-400 p-1">
+                             <div id="endboard-shizuku-img" class="card-placeholder" style="min-height: 210px;">Sky Striker Ace - Shizuku</div>
+                        </div>
+                        <h4 class="font-bold text-white mt-3 text-lg">Sky Striker Ace - Shizuku</h4>
+                        <p class="text-sm text-blue-200 max-w-xs mx-auto">End Phase search & board-wide ATK reduction.</p>
+                    </div>
+                </div>
+
+                <!-- Horizontal Divider -->
+                <div class="relative flex py-5 items-center">
+                    <div class="flex-grow border-t border-dashed border-sky-700/50"></div>
+                    <span class="flex-shrink mx-4 text-sky-400 font-mono text-xs">SUPPORTING ZONES</span>
+                    <div class="flex-grow border-t border-dashed border-sky-700/50"></div>
+                </div>
+
+                <!-- Supporting Elements: GY, S/T Zone -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <!-- Graveyard -->
+                    <div>
+                        <span class="text-sm font-mono text-red-400 tracking-widest">:: GRAVEYARD ::</span>
+                         <div class="w-32 mx-auto mt-2 rounded-lg shadow-md shadow-red-500/10 border border-red-400/50 p-1">
+                             <div id="endboard-raye-img" class="card-placeholder" style="min-height: 150px;">Sky Striker Ace - Raye</div>
+                        </div>
+                        <h4 class="font-bold text-white mt-2">Raye in GY</h4>
+                        <p class="text-xs text-blue-200">The insurance policy. Revives herself if Shizuku is removed by the opponent.</p>
+                    </div>
+
+                    <!-- Spell/Trap Zone 1 -->
+                     <div>
+                        <span class="text-sm font-mono text-red-400 tracking-widest">:: S/T ZONE (FACE-UP) ::</span>
+                         <div class="w-32 mx-auto mt-2 rounded-lg shadow-md shadow-red-500/10 border border-red-400/50 p-1">
+                             <div id="endboard-multirole-img" class="card-placeholder" style="min-height: 150px;">Sky Striker Mecha Modules - Multirole</div>
+                        </div>
+                        <h4 class="font-bold text-white mt-2">Multirole</h4>
+                        <p class="text-xs text-blue-200">The resource engine. Resets used "Sky Striker" spells from the GY each End Phase.</p>
+                    </div>
+
+                    <!-- Spell/Trap Zone 2 -->
+                    <div>
+                        <span class="text-sm font-mono text-red-400 tracking-widest">:: S/T ZONE (SET) ::</span>
+                         <div class="w-32 mx-auto mt-2 rounded-lg shadow-md shadow-red-500/10 border border-red-400/50 p-1">
+                             <div id="endboard-widow-anchor-img" class="card-placeholder" style="min-height: 150px;">Sky Striker Mecha - Widow Anchor</div>
+                        </div>
+                        <h4 class="font-bold text-white mt-2">Set Disruption</h4>
+                        <p class="text-xs text-blue-200">The primary interaction. Usually a <strong class="text-accent">Widow Anchor</strong> for a monster negate and potential theft.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">Adaptability:</strong> A compact engine allows for a large, customizable non-engine suite to counter any meta.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Resource Loop:</strong> The Hayate-Kagari cycle and Multirole create a powerful, long-term resource advantage.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">OTK Potential:</strong> Linkage enables explosive, game-ending battle phases.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Graveyard Hate:</strong> Banishing Raye with cards like D.D. Crow or Bystials is devastating.</li>
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400">Anti-Spell Effects:</strong> Cards like Anti-Spell Fragrance can completely shut down the deck's strategy.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Choke Points:</strong> Negating Engage! or Kagari can often end the turn.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-meteor"></i></span> <strong class="text-accent">Board Breakers:</strong> Lightning Storm, Raigeki, and Harpie's Feather Duster are essential for the go-second strategy.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-search-plus"></i></span> <strong class="text-accent">Triple Tactics Thrust:</strong> A versatile searcher for either board breakers or engine starters.</li>
+                         <li><span class="neutral-icon"><i class="fas fa-tools"></i></span> <strong class="text-accent">Surgical Striker - H.A.M.P.:</strong> A searchable, in-archetype Kaiju for removing problematic monsters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The Sky Striker archetype has seen several changes on the banlist over the years. Its current status reflects a balance between its core power and meta-defining potential.
+                </p>
+                <div id="banlist-status" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <!-- Banlist data will be injected here by JavaScript -->
+                </div>
+                 <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
+                    <p class="text-sm text-blue-200"><strong>Meta Implications:</strong> With key cards like <strong class="text-accent">Engage!</strong> and <strong class="text-accent">Widow Anchor</strong> limited, the deck has less access to its most powerful tools. The loss of <strong class="text-accent">Hornet Drones</strong> as a one-card starter also reduces its consistency. However, the core engine remains potent and highly capable in the hands of a skilled pilot.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Sky Striker Banner Animation ---
+            const canvas = document.getElementById('sky-striker-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 1 + 0.5;
+                        this.angle = Math.random() * 360;
+                        this.size = Math.random() * 2 + 1;
+                        this.color = `rgba(248, 113, 113, ${Math.random() * 0.5 + 0.2})`;
+                    }
+                    update() {
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed;
+                        if (this.x < 0) this.x = canvas.width;
+                        if (this.x > canvas.width) this.x = 0;
+                        if (this.y < 0) this.y = canvas.height;
+                        if (this.y > canvas.height) this.y = 0;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- Card Image Fetching ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error('API error');
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error('Image not found');
+                    }
+                } catch (error) {
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn" style="min-height: inherit;">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'endboard-shizuku-img': 'Sky Striker Ace - Shizuku',
+                'endboard-multirole-img': 'Sky Striker Mecha Modules - Multirole',
+                'endboard-raye-img': 'Sky Striker Ace - Raye',
+                'endboard-widow-anchor-img': 'Sky Striker Mecha - Widow Anchor',
+                'gambit-raye-img': 'Sky Striker Ace - Raye',
+                'gambit-shizuku-img': 'Sky Striker Ace - Shizuku',
+                'gambit-engage-img': 'Sky Striker Mobilize - Engage!',
+                'gambit-widow-anchor-img': 'Sky Striker Mecha - Widow Anchor'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+
+
+            // --- Banlist Processing ---
+            const banlistContainer = document.getElementById('banlist-status');
+            const cardsToCheck = [
+                'Sky Striker Mobilize - Engage!',
+                'Sky Striker Mecha - Widow Anchor',
+                'Sky Striker Mecha - Hornet Drones'
+            ];
+
+            const banlistData = {
+                "data": [
+                    { "name": "Sky Striker Mobilize - Engage!", "banlist_info": { "ban_tcg": "Limited" } },
+                    { "name": "Sky Striker Mecha - Widow Anchor", "banlist_info": { "ban_tcg": "Limited" } },
+                    { "name": "Sky Striker Mecha - Hornet Drones", "banlist_info": { "ban_tcg": "Limited" } }
+                ]
+            };
+            
+            function createBanlistCard(name, status) {
+                let colorClass = 'text-green-400';
+                let statusText = 'Unlimited (3)';
+                if (status === 'Limited') {
+                    colorClass = 'text-yellow-400';
+                    statusText = 'Limited (1)';
+                } else if (status === 'Semi-Limited') {
+                    colorClass = 'text-orange-400';
+                    statusText = 'Semi-Limited (2)';
+                } else if (status === 'Forbidden') {
+                    colorClass = 'text-red-500';
+                    statusText = 'Forbidden (0)';
+                }
+                
+                return `
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-white mb-1">${name}</h4>
+                        <p class="font-bold ${colorClass}">${statusText}</p>
+                    </div>
+                `;
+            }
+
+            cardsToCheck.forEach(cardName => {
+                const cardInfo = banlistData.data.find(c => c.name === cardName);
+                const status = cardInfo?.banlist_info?.ban_tcg || 'Unlimited';
+                banlistContainer.innerHTML += createBanlistCard(cardName, status);
+            });
+
+
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mayakashi Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Noto Serif JP', serif;
+            background-color: #0c0a1a;
+            color: #e0e7ff;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(13, 10, 34, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px 0 rgba(125, 60, 255, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(23, 19, 48, 0.8);
+             border: 1px solid rgba(125, 60, 255, 0.25);
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 15px rgba(125, 60, 255, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #171330;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 200px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 15px rgba(125, 60, 255, 0.3);
+        }
+        .pro-icon { color: #86efac; }
+        .con-icon { color: #fca5a5; }
+        .neutral-icon { color: #93c5fd; }
+        .text-accent { color: #a78bfa; } /* Spectral Lavender */
+        .arrow-color { color: #a78bfa; }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #c4b5fd;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c4b5fd;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #c4b5fd;
+        }
+        .banner {
+            position: relative;
+            height: 160px;
+            background: linear-gradient(45deg, #1e1b4b, #4c1d95);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #6d28d9;
+            box-shadow: 0 8px 30px rgba(109, 40, 217, 0.5);
+        }
+        .banner-title {
+            font-family: 'Creepster', cursive;
+            font-size: 3.5rem;
+            color: #e0e7ff;
+            text-shadow: 0 0 10px rgba(224, 231, 255, 0.5), 0 0 20px rgba(167, 139, 250, 0.4);
+            letter-spacing: 0.1em;
+            animation: flicker 3s infinite alternate;
+        }
+        .banner-subtitle {
+            font-size: 1.125rem;
+            color: #c7d2fe;
+        }
+        .ghostly-figure {
+            position: absolute;
+            background: radial-gradient(circle, rgba(200, 200, 255, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0;
+            animation: drift 15s infinite ease-in-out;
+        }
+        .g1 { width: 80px; height: 120px; left: 10%; animation-duration: 20s; animation-delay: 0s; }
+        .g2 { width: 60px; height: 90px; left: 80%; animation-duration: 18s; animation-delay: 5s; }
+        .g3 { width: 100px; height: 150px; left: 40%; animation-duration: 25s; animation-delay: 10s; }
+
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow:
+                0 0 4px #fff,
+                0 0 11px #a78bfa,
+                0 0 19px #a78bfa,
+                0 0 40px #6d28d9,
+                0 0 80px #6d28d9,
+                0 0 90px #6d28d9,
+                0 0 100px #6d28d9,
+                0 0 150px #6d28d9;
+            }
+            20%, 24%, 55% {        
+                text-shadow: none;
+            }
+        }
+
+        @keyframes drift {
+            0% { transform: translateY(160px) translateX(0) scale(1); opacity: 0; }
+            20% { opacity: 0.4; }
+            80% { opacity: 0.2; }
+            100% { transform: translateY(-160px) translateX(calc(100px * (0.5 - var(--rand)))) scale(1.5); opacity: 0; }
+        }
+        
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="ghostly-figure g1" style="--rand: 0.2;"></div>
+                <div class="ghostly-figure g2" style="--rand: 0.8;"></div>
+                <div class="ghostly-figure g3" style="--rand: 0.5;"></div>
+                <div class="z-10">
+                    <h1 class="banner-title">Mayakashi</h1>
+                    <p class="banner-subtitle">The Spectral Ascent: A Strategic Analysis</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6 animate-fadeIn">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Mayakashi</strong> archetype is a multi-attribute collection of Zombie monsters centered around a unique, recursive Synchro and Link Summoning strategy. Its core gameplay revolves around rapidly filling the Graveyard (GY) with Extra Deck monsters to enable a resilient, long-term grind game. Understanding the specific role of each of these <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Mayakashi&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=" target="_blank" class="lore-link">spectral entities</a> is paramount to unlocking the archetype's intricate combo potential.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Mayakashi Engine</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+                    <h3 class="text-lg font-bold text-accent mb-2">Starters: Initiating the Climb</h3>
+                    <p class="text-sm text-indigo-200"><strong class="font-semibold text-white">Hajun, the Winged Mayakashi:</strong> The premier one-card starter, Special Summoning any Mayakashi from the Deck.</p>
+                    <p class="text-sm text-indigo-200 mt-2"><strong class="font-semibold text-white">Mayakashi Return:</strong> A versatile searcher that can add any Mayakashi card to hand or send it to the GY.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <h3 class="text-lg font-bold text-accent mb-2">Engine Core: Heart of the Combo</h3>
+                    <p class="text-sm text-indigo-200"><strong class="font-semibold text-white">Dakki, the Graceful Mayakashi:</strong> The pivotal Tuner that revives itself from the GY whenever a Mayakashi is summoned from the Extra Deck. This is not a once-per-turn effect.</p>
+                    <p class="text-sm text-indigo-200 mt-2"><strong class="font-semibold text-white">Yuki-Musume, the Ice Mayakashi:</strong> A powerful extender that can summon itself from the hand or GY, sending a Zombie from Deck to GY as cost.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.3s;">
+                    <h3 class="text-lg font-bold text-accent mb-2">Extenders & Support</h3>
+                     <p class="text-sm text-indigo-200"><strong class="font-semibold text-white">Ghost Meets Girl:</strong> A devastating floodgate trap that stops all Special Summons for a turn.</p>
+                     <p class="text-sm text-indigo-200 mt-2"><strong class="font-semibold text-white">Mayakashi Winter:</strong> Provides recursion by banishing itself from the GY to revive a Mayakashi.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Mastering the Mayakashi Ladder</h2>
+            <div class="card p-6">
+                <p class="text-indigo-200 mb-8 text-center">The Mayakashi strategy is a two-part process. On your turn, you perform the "Ascent" to climb into powerful monsters and fill your Graveyard. On your opponent's turn, you unleash the "Descent," a chain reaction of revivals that disrupts their plays.</p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Step 1: Synchro Ascent -->
+                    <div class="flex flex-col items-center text-center p-4 combo-step-card rounded-lg">
+                        <div class="w-16 h-16 bg-indigo-900 rounded-full flex items-center justify-center mb-4 border-2 border-accent">
+                            <span class="text-2xl font-bold">1</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-accent mb-2">The Synchro Ascent</h3>
+                        <p class="text-sm text-indigo-200 mb-4">Start with your Level 1/3 monster and the Level 2 Tuner <strong class="text-white">Dakki</strong>. Each time you Synchro Summon, Dakki revives from the GY, allowing you to immediately climb to the next level.</p>
+                        <div class="space-y-2 text-left w-full p-4 rounded-lg bg-black/20">
+                            <p class="text-sm flex items-center"><i class="fas fa-arrow-right text-accent mr-2"></i> Synchro into LV3 <strong class="text-white ml-1">Oboro-Guruma</strong></p>
+                            <p class="text-sm flex items-center"><i class="fas fa-arrow-right text-accent mr-2"></i> Dakki revives. Synchro into LV5 <strong class="text-white ml-1">Tsuchigumo</strong></p>
+                            <p class="text-sm flex items-center"><i class="fas fa-arrow-right text-accent mr-2"></i> Dakki revives. Synchro into LV7 <strong class="text-white ml-1">Tengu</strong></p>
+                            <p class="text-sm flex items-center"><i class="fas fa-arrow-right text-accent mr-2"></i> Dakki revives. Synchro into LV9 <strong class="text-white ml-1">Yoko</strong></p>
+                            <p class="text-sm flex items-center"><i class="fas fa-arrow-right text-accent mr-2"></i> Dakki revives. Synchro into LV11 <strong class="text-white ml-1">Gashadokuro</strong></p>
+                        </div>
+                        <p class="text-sm text-indigo-300 mt-4"><strong>Goal:</strong> Fill your GY with all five Synchro monsters.</p>
+                    </div>
+                    
+                    <!-- Step 2: Link Culmination -->
+                    <div class="flex flex-col items-center text-center p-4 combo-step-card rounded-lg">
+                         <div class="w-16 h-16 bg-indigo-900 rounded-full flex items-center justify-center mb-4 border-2 border-accent">
+                            <span class="text-2xl font-bold">2</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-accent mb-2">The Link Culmination</h3>
+                        <p class="text-sm text-indigo-200 mb-4">After reaching your final Synchro, use it and the revived Dakki to Link Summon into the powerful Mayakashi Link monsters.</p>
+                         <div class="space-y-2 text-left w-full p-4 rounded-lg bg-black/20">
+                            <p class="text-sm flex items-center"><i class="fas fa-link text-accent mr-2"></i> LV11 + Dakki → Link-2 <strong class="text-white ml-1">Yuki-Onna</strong></p>
+                            <p class="text-sm flex items-center"><i class="fas fa-link text-accent mr-2"></i> Dakki revives. Link-2 + Dakki → Link-3 <strong class="text-white ml-1">Icicle Yuki-Onna</strong></p>
+                            <p class="text-sm flex items-center"><i class="fas fa-link text-accent mr-2"></i> Dakki revives. Link-3 + Dakki → Link-4 <strong class="text-white ml-1">Absolute Zero</strong></p>
+                        </div>
+                        <p class="text-sm text-indigo-300 mt-4"><strong>Goal:</strong> End your turn with a powerful Link monster on the field.</p>
+                    </div>
+                    
+                    <!-- Step 3: Revival Descent -->
+                    <div class="flex flex-col items-center text-center p-4 combo-step-card rounded-lg">
+                         <div class="w-16 h-16 bg-indigo-900 rounded-full flex items-center justify-center mb-4 border-2 border-accent">
+                            <span class="text-2xl font-bold">3</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-accent mb-2">The Revival Descent</h3>
+                        <p class="text-sm text-indigo-200 mb-4">On your opponent's turn, when your high-level Synchro is destroyed, you revive the next one down from your GY, triggering a powerful disruptive effect.</p>
+                         <div class="space-y-2 text-left w-full p-4 rounded-lg bg-black/20">
+                            <p class="text-sm flex items-center"><strong class="text-white mr-1">LV11 Gashadokuro:</strong> Becomes unaffected by card effects.</p>
+                            <p class="text-sm flex items-center"><strong class="text-white mr-1">LV9 Yoko:</strong> Destroys 1 monster.</p>
+                            <p class="text-sm flex items-center"><strong class="text-white mr-1">LV7 Tengu:</strong> Destroys 1 Spell/Trap.</p>
+                            <p class="text-sm flex items-center"><strong class="text-white mr-1">LV5 Tsuchigumo:</strong> Mills 3 cards from each Deck.</p>
+                            <p class="text-sm flex items-center"><strong class="text-white mr-1">LV3 Oboro-Guruma:</strong> Grants battle protection for the turn.</p>
+                        </div>
+                         <p class="text-sm text-indigo-300 mt-4"><strong>Goal:</strong> Punish your opponent's actions with a chain of effects.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Ideal End Board & Strategy</h2>
+             <div class="card p-6">
+                <p class="text-indigo-200 mb-6 text-center">A strong Mayakashi end board isn't about multiple omni-negates, but about creating layered, recursive threats that disrupt the opponent. The ideal setup combines on-field presence with a fully stocked Graveyard.</p>
+                <div class="space-y-6">
+                    <!-- Component 1: Link Monster -->
+                    <div class="combo-step-card rounded-lg p-4 flex flex-col md:flex-row items-center gap-4 animate-fadeIn" style="animation-delay: 0.1s;">
+                        <div id="link3-img-container" class="card-image-container w-32 flex-shrink-0 card-placeholder">Yuki-Onna, the Icicle Mayakashi</div>
+                        <div class="text-center md:text-left">
+                            <h4 class="font-bold text-lg text-white">1. High-Value Link Monster</h4>
+                            <p class="text-sm text-indigo-200 mt-1">End on a Link-3 or Link-4 like <strong class="text-accent">Yuki-Onna, the Icicle Mayakashi</strong>. This provides crucial monster negation and a GY effect to revive a Zombie Synchro on the opponent's turn, restarting your chain of disruption.</p>
+                        </div>
+                    </div>
+                    <!-- Component 2: Revived Synchro -->
+                    <div class="combo-step-card rounded-lg p-4 flex flex-col md:flex-row items-center gap-4 animate-fadeIn" style="animation-delay: 0.2s;">
+                        <div id="yoko-img-container" class="card-image-container w-32 flex-shrink-0 card-placeholder">Yoko, the Graceful Mayakashi</div>
+                         <div class="text-center md:text-left">
+                            <h4 class="font-bold text-lg text-white">2. Revived Synchro Monster</h4>
+                            <p class="text-sm text-indigo-200 mt-1">Use an extender like <strong class="text-accent">Mezuki</strong> to bring back a high-impact Synchro like <strong class="text-accent">Yoko, the Graceful Mayakashi</strong>. This applies immediate pressure with its non-targeting monster destruction effect.</p>
+                        </div>
+                    </div>
+                    <!-- Component 3: Set Spell/Trap -->
+                     <div class="combo-step-card rounded-lg p-4 flex flex-col md:flex-row items-center gap-4 animate-fadeIn" style="animation-delay: 0.3s;">
+                        <div id="trap-img-container" class="card-image-container w-32 flex-shrink-0 card-placeholder">Ghost Meets Girl</div>
+                         <div class="text-center md:text-left">
+                            <h4 class="font-bold text-lg text-white">3. Set Spell/Trap Support</h4>
+                            <p class="text-sm text-indigo-200 mt-1">Search and Set a powerful trap. <strong class="text-accent">Ghost Meets Girl - A Masterful Mayakashi Shiranui Saga</strong> is the prime choice, acting as a searchable floodgate that can end the opponent's turn on its own.</p>
+                        </div>
+                    </div>
+                    <!-- Component 4: Loaded GY -->
+                     <div class="combo-step-card rounded-lg p-4 flex flex-col md:flex-row items-center gap-4 animate-fadeIn" style="animation-delay: 0.4s;">
+                        <div class="card-image-container w-32 flex-shrink-0 card-placeholder flex justify-center items-center">
+                            <i class="fas fa-skull-crossbones text-6xl text-indigo-400"></i>
+                        </div>
+                        <div class="text-center md:text-left">
+                            <h4 class="font-bold text-lg text-white">4. Fully Loaded Graveyard</h4>
+                            <p class="text-sm text-indigo-200 mt-1">This is the most crucial component. Having the entire Synchro ladder (Levels 3, 5, 7, 9, 11) in the GY is non-negotiable, as it is the foundation of your entire grind game and turn-two disruption.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis & Banlist Status</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Resilience:</strong> The deck thrives on destruction, turning your opponent's removal into your advantage.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Zombie Synergy:</strong> Excellent synergy with generic Zombie support like Zombie World and Doomking Balerdroch.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Grind Game:</strong> Unmatched in a long game due to its constant recursion from the Graveyard.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Graveyard Hate:</strong> Highly vulnerable to cards like D.D. Crow or Called by the Grave on Dakki.</li>
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Non-Destruction Removal:</strong> Banish or bounce effects bypass the "Revival Descent" mechanic entirely.</li>
+                         <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Linear Combo:</strong> The core combo is predictable and has clear choke points.</li>
+                    </ul>
+                </div>
+            </div>
+             <div class="card p-6 mt-6">
+                <h3 class="text-xl font-bold text-white mb-4">TCG Banlist Impact</h3>
+                 <div class="p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong class="font-bold text-green-400">UNRESTRICTED:</strong> The entire Mayakashi archetype is currently at full power in the TCG. All core Main Deck and Extra Deck monsters are available at 3 copies each, allowing the deck to operate with maximum consistency and power.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url_small;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                }
+            }
+
+            const cardsToLoad = {
+                'link3-img-container': 'Yuki-Onna, the Icicle Mayakashi',
+                'yoko-img-container': 'Yoko, the Graceful Mayakashi',
+                'trap-img-container': 'Ghost Meets Girl - A Masterful Mayakashi Shiranui Saga'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,696 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>/Assault Mode Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1010; /* Dark Red-Black */
+            color: #f3f4f6; /* Light Gray */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b1d1d; /* Darker Brown-Red */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #7f1d1d; /* Dark Red */
+        }
+        .combo-step-card {
+            background-color: #402a2a; /* Lighter Brown-Red */
+            border: 1px solid #991b1b;
+        }
+        .pro-con-card {
+            background-color: #402a2a;
+            border: 1px solid #991b1b;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #2b1d1d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2b1d1d;
+        }
+        .pro-icon { color: #22c55e; }
+        .con-icon { color: #f87171; } /* Light Red */
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fca5a5; } /* Lighter Red */
+        .arrow-color { color: #ef4444; } /* Red */
+        .heading-underline {
+            border-bottom: 2px solid #fca5a5;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        /* --- NEW ASSAULT MODE BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1010;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            border: 1px solid #7f1d1d;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
+            margin-bottom: 2.5rem;
+        }
+
+        #activation-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(127, 29, 29, 0.3) 0%, rgba(26, 16, 16, 0.8) 70%);
+            animation: pulse 5s infinite ease-in-out;
+            z-index: 2;
+        }
+
+        .banner-header::after {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ef4444, transparent);
+            box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+            animation: scan 5s linear infinite;
+            animation-delay: 1.5s;
+            z-index: 3;
+        }
+        
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 4;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 1);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+
+        @keyframes scan {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #fca5a5;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif;
+            color: #fca5a5;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #fca5a5;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="activation-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">/Assault Mode</h1>
+            <p class="text-lg md:text-xl text-gray-300">A Study in Power and Fragility</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">/Assault Mode</strong> archetype is a high-risk, high-reward strategy built around the trap card <strong class="text-accent font-bold">Assault Mode Activate</strong>. By tributing a Synchro Monster, it summons a more powerful "/Assault Mode" version from the Deck. The deck's modern viability hinges on the support engine released in 2019, which transformed a once-inconsistent strategy into a cohesive, one-card combo deck. The archetype's history is a testament to its explosive potential and <a href="#" class="text-accent underline hover:text-red-300">the delicate balance that defines its character</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Components Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Components: The Assault Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-astronaut text-4xl text-red-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Engine</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Psi-Reflector</h4>
+                            <p class="text-sm text-gray-300">The definitive one-card starter. It searches for <strong class="text-accent font-bold">Assault Mode Activate</strong> and enables the entire Synchro Summoning sequence.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Assault Beast</h4>
+                            <p class="text-sm text-gray-300">A consistency tool that can be discarded to search for <strong class="text-accent font-bold">Assault Mode Activate</strong>, providing a path to the combo without a Normal Summon.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Assault Sentinel</h4>
+                            <p class="text-sm text-gray-300">An extender that can Tribute itself to Special Summon a key monster like <strong class="text-accent font-bold">Psi-Reflector</strong> from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Boss Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-meteor text-4xl text-red-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Vanguard</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Stardust Dragon /Assault Mode</h4>
+                            <p class="text-sm text-gray-300">The premier boss monster. Its omni-negate and self-revival make it a persistent and powerful threat.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Red Dragon Archfiend /Assault Mode</h4>
+                            <p class="text-sm text-gray-300">A high-ATK monster that can wipe the entire field of monsters after it attacks, though this affects your own monsters as well.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Assault Mode Activate</h4>
+                            <p class="text-sm text-gray-300">The key Trap card that Tributes a Synchro Monster to summon its "/Assault Mode" counterpart from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Psi-Reflector Loop</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the primary one-card combo that summons the deck's main boss monster.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="content-wrapper flex flex-col md:flex-row gap-4 items-center">
+                        <div id="psi-reflector-img-container" class="card-image-container flex-shrink-0 card-placeholder">Psi-Reflector</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b1d1d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon Psi-Reflector & Search</h3>
+                            </div>
+                            <p class="text-gray-300">Normal Summon <strong class="text-accent font-bold">Psi-Reflector</strong> and use its effect to search for <strong class="text-accent font-bold">Assault Beast</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="content-wrapper flex flex-col md:flex-row gap-4 items-center">
+                        <div id="assault-beast-img-container" class="card-image-container flex-shrink-0 card-placeholder">Assault Beast</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b1d1d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Discard Beast & Revive</h3>
+                            </div>
+                            <p class="text-gray-300">Discard <strong class="text-accent font-bold">Assault Beast</strong> to search <strong class="text-accent font-bold">Assault Mode Activate</strong>. Then, use <strong class="text-accent font-bold">Psi-Reflector</strong>'s second effect to revive Assault Beast.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="content-wrapper flex flex-col md:flex-row gap-4 items-center">
+                        <div id="stardust-dragon-img-container" class="card-image-container flex-shrink-0 card-placeholder">Stardust Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b1d1d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Synchro & Activate</h3>
+                            </div>
+                            <p class="text-gray-300">Increase <strong class="text-accent font-bold">Assault Beast</strong>'s level, then Synchro Summon <strong class="text-accent font-bold">Stardust Dragon</strong>. Finally, use <strong class="text-accent font-bold">Assault Mode Activate</strong> to bring out the boss monster.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Endboard Analysis: The Final Assault</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Pure Build Endboard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Core Endboard: Stardust's Reign</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="stardust-assault-img-container" class="card-image-container card-placeholder">Stardust Dragon/Assault Mode</div>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-4">The primary goal of a pure build is to consistently summon the archetype's definitive boss monster.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent font-bold">Omni-Negate:</strong> <strong class="text-accent font-bold">Stardust Dragon/Assault Mode</strong> provides a powerful omni-negate that can disrupt any card or effect.</li>
+                        <li><strong class="text-accent font-bold">Self-Revival:</strong> It can revive itself from the Graveyard during the End Phase, creating a persistent and difficult-to-remove threat.</li>
+                    </ul>
+                </div>
+                <!-- Hybrid Build Endboard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Hybrid Endboard: Layered Threats</h3>
+                     <div class="flex justify-center mb-4">
+                        <div id="punisher-img-container" class="card-image-container card-placeholder">Psychic End Punisher</div>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-4">By incorporating external engines like P.U.N.K., the deck can build a more complex and resilient board.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent font-bold">Multiple Bosses:</strong> The board can feature <strong class="text-accent font-bold">Stardust Dragon/Assault Mode</strong> alongside another powerful Synchro monster like <strong class="text-accent font-bold">Psychic End Punisher</strong>.</li>
+                        <li><strong class="text-accent font-bold">Increased Durability:</strong> Having multiple high-impact monsters makes the endboard less fragile and harder for the opponent to dismantle with a single card.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Consistent Combo:</strong> The <strong class="text-accent font-bold">Psi-Reflector</strong> engine provides a reliable one-card path to the main boss monster.</li>
+                        <li><span class="pro-icon"><i class="fas fa-star"></i></span> <strong class="text-green-400 font-bold">High Power Ceiling:</strong> <strong class="text-accent font-bold">Stardust Dragon/Assault Mode</strong> is a formidable threat that can single-handedly control a duel.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400 font-bold">Fragile & Linear:</strong> The combo is very susceptible to hand traps like <strong class="text-accent font-bold">Ash Blossom</strong>, which can end the turn immediately.</li>
+                         <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">"Bricky" Hands:</strong> Can be prone to drawing the un-summonable "/Assault Mode" monsters or too many combo protection cards.</li>
+                    </ul>
+                </div>
+                <!-- Hybrid Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Hybrid Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="neutral-icon"><i class="fas fa-music"></i></span> <strong class="text-accent font-bold">P.U.N.K. Engine:</strong> Provides an alternative Synchro-summoning path and access to other powerful boss monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent font-bold">Resonator Engine:</strong> A classic engine that enables spamming multiple Synchro monsters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             // --- NEW CANVAS ANIMATION SCRIPT ---
+            const canvas = document.getElementById('activation-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.speedX = (Math.random() * 0.6) - 0.3;
+                        this.speedY = (Math.random() * 0.6) - 0.3;
+                        this.color = `rgba(252, 165, 165, ${Math.random() * 0.7 + 0.2})`; // Light Red
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        // Reset particle if it goes off screen
+                        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                           this.x = Math.random() * canvas.width;
+                           this.y = Math.random() * canvas.height;
+                        }
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(particle => {
+                        particle.update();
+                        particle.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+            
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-blue-300">${cardType}</p>
+                        <div class="w-full h-px bg-blue-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            function createAndAppendPlaceholder(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder animate-fadeIn';
+                placeholder.textContent = cardName;
+                container.appendChild(placeholder);
+            }
+
+            const cardsToLoad = {
+                'psi-reflector-img-container': 'Psi-Reflector',
+                'assault-beast-img-container': 'Assault Beast',
+                'stardust-dragon-img-container': 'Stardust Dragon',
+                'stardust-assault-img-container': 'Stardust Dragon/Assault Mode',
+                'punisher-img-container': 'Psychic End Punisher'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

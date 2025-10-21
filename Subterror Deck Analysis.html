@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subterror Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0f18; /* Deep Midnight Blue */
+            color: #e0e7ff; /* Light Lavender White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(22, 31, 58, 0.7); /* Translucent Dark Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2a3a6b;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(22, 31, 58, 0.9);
+            border: 1px solid #4a5a9b;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1c284f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 200px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1c284f;
+            border: 1px dashed #4a5a9b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #00f5d4; } /* Glowing Teal/Cyan */
+        .text-secondary-accent { color: #9d4edd; } /* Amethyst Purple */
+        .arrow-color { color: #00f5d4; }
+        .heading-underline {
+            border-bottom: 2px solid #00f5d4;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #00f5d4;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #00f5d4;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #00f5d4;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a0f18;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #2a3a6b;
+        }
+
+        #crystal-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 15, 24, 0.4) 0%, rgba(10, 15, 24, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(0, 245, 212, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Exo 2', sans-serif;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="crystal-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">SUBTERROR</h1>
+            <p class="text-lg md:text-xl text-indigo-200">Masters of the Flip Effect</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Subterror</strong> archetype is a masterclass in control and resource management, defined by its dual nature of colossal "Behemoth" monsters and the cunning "Guru" control engine. Originally a complex deck focused on summoning its titans, the strategy evolved with the release of <strong class="text-accent font-bold">Subterror Guru</strong>. The modern Subterror deck is a methodical, attrition-based strategy built on a hyper-consistent core that systematically dismantles an opponent's game plan through a recursive loop of searching, disruption, and negation.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Control Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Control Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Guru -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex flex-col md:flex-row items-center gap-4 flex-grow">
+                        <div id="guru-img-container" class="card-image-container card-placeholder">Subterror Guru</div>
+                        <div class="flex-grow">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-chess-king text-3xl text-accent mr-3"></i>
+                                <h3 class="text-xl font-bold text-white">Subterror Guru</h3>
+                            </div>
+                            <p class="text-sm text-indigo-200">The heart of the deck. Its FLIP effect searches any Subterror card, and its Quick Effect (while you control another Subterror card) flips itself and another monster face-down, providing repeatable disruption.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Fiendess -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex flex-col md:flex-row items-center gap-4 flex-grow">
+                        <div id="fiendess-img-container" class="card-image-container card-placeholder">Subterror Fiendess</div>
+                        <div class="flex-grow">
+                             <div class="flex items-center mb-2">
+                                <i class="fas fa-shield-alt text-3xl text-secondary-accent mr-3"></i>
+                                <h3 class="text-xl font-bold text-white">Subterror Fiendess</h3>
+                            </div>
+                            <p class="text-sm text-indigo-200">The deck's primary shield. This hand trap negates any opponent's card or effect by sending itself to the GY and flipping a Subterror monster face-down, perfectly reloading Guru's FLIP effect.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Blueprint for Control: The Guru Loop</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The deck's terrifying efficiency is demonstrated in its one-card setup. A single Field Spell initiates a devastatingly consistent control loop, assembling all the necessary <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&cl_name_scl=Subterror&sort=_card_name_sort" target="_blank" class="lore-link">Subterror cards</a> to construct a resilient board.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="hidden-city-img-container" class="card-image-container flex-shrink-0 card-placeholder">The Hidden City</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#161f3a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate The Hidden City</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate the Field Spell <strong class="text-accent">The Hidden City</strong>. Its effect triggers, searching <strong class="text-accent">Subterror Guru</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="guru-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Subterror Guru</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#161f3a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Set and Flip</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Set <strong class="text-accent">Guru</strong>. Use The Hidden City's second effect to flip Guru face-up. Guru's FLIP effect now activates.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="final-battle-img-container" class="card-image-container flex-shrink-0 card-placeholder">Subterror Final Battle</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#161f3a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Search and Set</h3>
+                            </div>
+                            <p class="text-indigo-200">Use Guru's effect to search for <strong class="text-accent">Subterror Final Battle</strong> or <strong class="text-secondary-accent">Subterror Fiendess</strong> depending on your hand. Set your Trap and end the turn with multiple interruptions ready.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Fortress End Board</h2>
+             <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                Unlike combo decks that build a finite board of negates, the Subterror end board is a renewable fortress. Its strength lies in its ability to recycle threats and adapt to the opponent's plays, creating a state of inevitability through superior resource generation.
+            </p>
+            <div class="flex flex-col lg:flex-row items-stretch justify-center gap-6">
+                <!-- In the Hand -->
+                <div class="card p-6 pro-con-card lg:w-1/3 text-center flex flex-col">
+                    <div class="flex-grow flex flex-col justify-center">
+                        <div class="flex items-center justify-center mb-4">
+                            <i class="fas fa-hand-paper text-3xl text-secondary-accent mr-3"></i>
+                            <h3 class="text-xl font-bold text-white">In the Hand</h3>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-center gap-4">
+                             <div id="endboard-fiendess-img-container" class="card-image-container mx-auto card-placeholder" style="min-height: 150px; max-width: 120px;">Subterror Fiendess</div>
+                            <p class="text-sm text-indigo-200 sm:text-left">A searchable, recyclable omni-negate ready to disrupt the opponent's key play.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- On the Field -->
+                <div class="card p-6 pro-con-card lg:w-2/3 order-first lg:order-none border-2 border-accent shadow-lg shadow-accent/20">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-map-marked-alt text-4xl text-accent mx-auto mb-2"></i>
+                        <h3 class="text-2xl font-bold text-white">On the Field</h3>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-6 items-start">
+                        <div class="flex-1 flex flex-col items-center text-center">
+                             <div id="endboard-guru-img-container" class="card-image-container mx-auto card-placeholder mb-2">Subterror Guru</div>
+                            <p class="text-sm text-indigo-200 font-semibold">Guru: Repeatable searcher & disruption.</p>
+                        </div>
+                        <div class="flex-1 flex flex-col items-center text-center">
+                            <div id="endboard-city-img-container" class="card-image-container mx-auto card-placeholder mb-2">The Hidden City</div>
+                            <p class="text-sm text-indigo-200 font-semibold">Hidden City: Engine starter & protection.</p>
+                        </div>
+                         <div class="flex-1 flex flex-col items-center text-center">
+                            <div id="endboard-battle-img-container" class="card-image-container mx-auto card-placeholder mb-2">Subterror Final Battle</div>
+                            <p class="text-sm text-indigo-200 font-semibold">Final Battle: Versatile disruption & protection.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Hyper Consistent:</strong> Multiple one-card starters lead to the same optimal setup.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Grind Game:</strong> Unmatched in a long game due to its recursive resource loop.</li>
+                        <li><span class="pro-icon"><i class="fas fa-ban"></i></span> <strong class="text-green-300">Anti-Meta:</strong> Excellently positioned to abuse powerful floodgates like "There Can Be Only One".</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-bolt"></i></span> <strong class="text-red-300">Choke Points:</strong> Highly vulnerable to "Ash Blossom" on The Hidden City's search effect.</li>
+                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-300">Backrow Removal:</strong> Mass removal like "Harpie's Feather Duster" can dismantle the entire setup.</li>
+                        <li><span class="con-icon"><i class="fas fa-tachometer-alt"></i></span> <strong class="text-red-300">Slow Tempo:</strong> Can struggle going second against established, multi-negate boards.</li>
+                    </ul>
+                </div>
+                <!-- Behemoth Toolbox -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">The Behemoth Toolbox</h3>
+                     <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-gavel"></i></span> <strong class="text-accent">Umastryx:</strong> Searchable non-destruction removal to banish problem monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-book-open"></i></span> <strong class="text-accent">Ultramafus:</strong> A powerful board-flip to disrupt an opponent's entire field.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-search-plus"></i></span> <strong class="text-accent">Stalagmo:</strong> Provides card draw to dig for non-engine power cards.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="my-10 md:my-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">FAVORABLE POSITION:</strong> The Subterror archetype has remained largely untouched by the TCG banlist, allowing it to operate at full power.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Subterror Guru (3 copies)</li>
+                            <li>Subterror Fiendess (3 copies)</li>
+                            <li>The Hidden City (3 copies)</li>
+                            <li>Subterror Final Battle (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Relevant Generic Limits</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Terraforming (1 copy)</li>
+                            <li>Pot of Prosperity (1 copy)</li>
+                             <li>There Can Be Only One (1 copy)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its core engine completely unrestricted, Subterror maintains maximum consistency. While hits to generic searchers and floodgates slightly reduce its ceiling, the deck remains a powerful and complete control strategy capable of competing in the meta.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('crystal-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + 10;
+                        this.speed = Math.random() * 0.5 + 0.1;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.color = `rgba(0, 245, 212, ${Math.random() * 0.5 + 0.2})`;
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'guru-img-container': 'Subterror Guru',
+                'fiendess-img-container': 'Subterror Fiendess',
+                'hidden-city-img-container': 'The Hidden City',
+                'guru-combo-img-container': 'Subterror Guru',
+                'final-battle-img-container': 'Subterror Final Battle',
+                'endboard-guru-img-container': 'Subterror Guru',
+                'endboard-city-img-container': 'The Hidden City',
+                'endboard-battle-img-container': 'Subterror Final Battle',
+                'endboard-fiendess-img-container': 'Subterror Fiendess',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

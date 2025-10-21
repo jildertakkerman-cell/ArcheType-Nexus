@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>White Forest Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1a1c; /* Deep, dark teal */
+            color: #e0f2f1; /* Very light cyan */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(13, 26, 28, 0.6); /* Semi-transparent dark teal */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #26a69a; /* Muted teal border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(13, 26, 28, 0.8);
+            border: 1px solid #4db6ac;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #004d40;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #004d40;
+            border: 1px dashed #4db6ac;
+        }
+        .pro-icon { color: #4ade80; }
+        .con-icon { color: #f87171; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #80cbc4; } /* Light teal for accents */
+        .arrow-color { color: #80cbc4; }
+        .heading-underline {
+            border-bottom: 2px solid #80cbc4;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #a7ffeb;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a7ffeb;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #a7ffeb;
+        }
+
+        /* --- NEW WHITE FOREST ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d1a1c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #26a69a;
+        }
+
+        #forest-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 26, 28, 0.4) 0%, rgba(13, 26, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(128, 203, 196, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="forest-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">WHITE FOREST</h1>
+            <p class="text-lg md:text-xl text-cyan-200">The Perpetual Motion Synchro Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-cyan-100">
+                    The <strong class="text-accent font-bold">White Forest</strong> archetype is a LIGHT Spellcaster and Illusion-Type Synchro strategy defined by its recursive resource system. Main Deck monsters activate their effects by sending a Spell/Trap to the Graveyard, and in-archetype Spells/Traps reset themselves from the Graveyard when used this way. This creates a "perpetual motion engine" that fuels Synchro Summons for powerful, disruptive boss monsters without losing card advantage, allowing for both grind-game resilience and explosive combo turns.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Coven and Its Grimoire Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Coven and Its Grimoire</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-hat-wizard text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Initiators: Main Deck Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Elzette of the White Forest</h4>
+                            <p class="text-sm text-cyan-100">Premier starter. Summons itself from hand by sending a Spell/Trap to GY, then searches any "White Forest" monster.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Astellar of the White Forest</h4>
+                            <p class="text-sm text-cyan-100">Key starter. Summons a LIGHT Spellcaster Tuner directly from the Deck, providing immediate Synchro materials.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Silvy of the White Forest</h4>
+                            <p class="text-sm text-cyan-100">A Level 4 Tuner. On summon, it searches a "White Forest" Spell/Trap. Can revive itself from the GY for plays on the opponent's turn.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Rucia of the White Forest</h4>
+                            <p class="text-sm text-cyan-100">Another Level 4 Tuner that extends plays, provides card draw, and revives from the GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Incantations: Spells & Traps</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tales of the White Forest</h4>
+                            <p class="text-sm text-cyan-100">The primary monster searcher of the archetype. If you control a Spellcaster or Illusion, it adds any "White Forest" monster to hand and resets from the GY.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Woes of the White Forest</h4>
+                            <p class="text-sm text-cyan-100">A powerful Normal Trap that Special Summons a "White Forest" from deck and immediately Synchro Summons, enabling turn-disrupting plays.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Flow of Magic</h2>
+             <p class="text-cyan-100 mb-8 text-center max-w-2xl mx-auto">
+                A single starter like Astellar can quickly generate a powerful board. By leveraging the perpetual motion engine, the deck efficiently climbs into its Extra Deck monsters. Explore the <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=White+Forest&stype=1" target="_blank" class="lore-link">full roster of enchanting cards</a> that make these combos possible.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="astellar-img-container" class="card-image-container flex-shrink-0 card-placeholder">Astellar of the White Forest</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#004d40] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Ritual</h3>
+                            </div>
+                            <p class="text-cyan-100">Normal Summon <strong class="text-accent">Astellar of the White Forest</strong>. Activate its effect, sending a Spell/Trap (like "Tales of the White Forest") to the GY to Special Summon <strong class="text-accent">Silvy of the White Forest</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="rciela-img-container" class="card-image-container flex-shrink-0 card-placeholder">Rciela, Sinister Soul of the White Forest</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#004d40] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">First Synchro & Extension</h3>
+                            </div>
+                            <p class="text-cyan-100">Silvy's effect triggers, adding <strong class="text-accent">Woes of the White Forest</strong> to hand. Synchro Summon <strong class="text-accent">Rciela, Sinister Soul of the White Forest</strong> using Astellar and Silvy. Rciela's effect then revives a monster from your GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                   <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="diabell-img-container" class="card-image-container flex-shrink-0 card-placeholder">Diabell, Queen of the White Forest</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#004d40] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Ascend to the Queen</h3>
+                            </div>
+                            <p class="text-cyan-100">Using Rciela and the revived monster, Synchro Summon the Level 8 boss monster, <strong class="text-accent">Diabell, Queen of the White Forest</strong>, and Set the "Woes" you searched earlier. Your "Tales" will also reset itself to the field.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Standard Endboard Fortress</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Diabell -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Diabell, Queen of the White Forest</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="diabell-endboard-img-container" class="card-image-container card-placeholder">Diabell, Queen of the White Forest</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><strong class="text-accent">Quick-Effect Interruption:</strong> On opponent's turn, send a Spell/Trap to GY to summon a Synchro Tuner.</li>
+                        <li><strong class="text-accent">Resource Recursion:</strong> Recovers a Spell/Trap from the GY if summoned using a Synchro Tuner.</li>
+                    </ul>
+                </div>
+                <!-- Silvera -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Silvera, Wolf Tamer of the White Forest</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="silvera-img-container" class="card-image-container card-placeholder">Silvera, Wolf Tamer of the White Forest</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><strong class="text-accent">The Payoff:</strong> Summoned by Diabell's effect during the opponent's turn.</li>
+                        <li><strong class="text-accent">Mass Disruption:</strong> Flips all of your opponent's face-up monsters into face-down Defense Position, effectively ending their turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Recursive Engine:</strong> "Costless" activations generate immense card advantage and out-grind opponents.</li>
+                        <li><span class="pro-icon"><i class="fas fa-search"></i></span> <strong class="text-green-300">High Consistency:</strong> Multiple one-card starters lead to reliable and powerful opening plays.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">Potent Disruption:</strong> The Diabell -> Silvera combo provides a repeatable, non-targeting board wipe that shuts down monster-heavy strategies.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Choke Points:</strong> Highly vulnerable to hand traps like Ash Blossom on the initial starter's effect.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Search Dependant:</strong> A well-timed Droll & Lock Bird can end the turn immediately after the first search.</li>
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">Floodgate Vulnerability:</strong> Struggles against effects that prevent Special Summons, GY effects, or Synchro plays.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergistic Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent">Sinful Spoils:</strong> The premier engine for top-tier consistency and power, linking directly via Elzette, Azamina.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-hat-wizard"></i></span> <strong class="text-accent">Azamina:</strong> Adds Fusion plays for a higher power ceiling and more layered disruption, at the cost of high complexity.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-box-open"></i></span> <strong class="text-accent">Toy Box:</strong> Provides insurance against hand traps by guaranteeing a monster on board, creating a more resilient opening.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">MODERATE IMPACT:</strong> While the core White Forest archetype is entirely unrestricted, its most powerful variants are affected by hits to the synergistic "Sinful Spoils" engine.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Restricted Engine Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Original Sinful Spoils - Snake-Eye (Forbidden)</strong></li>
+                            <li><strong class="text-yellow-400">WANTED: Seeker of Sinful Spoils (Limited)</strong></li>
+                            <li>Limits the consistency and power of the premier competitive build.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "White Forest" Main Deck monsters at 3</li>
+                            <li>All "White Forest" Spells/Traps at 3</li>
+                            <li>All "White Forest" Extra Deck monsters</li>
+                            <li>The core recursive engine remains at full strength.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its core engine untouched, the "pure" version of White Forest is fully consistent. However, the limitations on the "Sinful Spoils" engine temper the explosive power of the deck's most dominant variant, requiring pilots to adapt their builds for competitive play.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- WHITE FOREST CANVAS ANIMATION ---
+            const canvas = document.getElementById('forest-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speedY = Math.random() * 1 + 0.5;
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.color = `rgba(167, 255, 235, ${Math.random() * 0.5 + 0.3})`;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'astellar-img-container': 'Astellar of the White Forest',
+                'rciela-img-container': 'Rciela, Sinister Soul of the White Forest',
+                'diabell-img-container': 'Diabell, Queen of the White Forest',
+                'diabell-endboard-img-container': 'Diabell, Queen of the White Forest',
+                'silvera-img-container': 'Silvera, Wolf Tamer of the White Forest'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+            
+        });
+    </script>
+</body>
+</html>
+

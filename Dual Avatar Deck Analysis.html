@@ -1,0 +1,525 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual Avatar Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* White and Light Gray for LIGHT attribute, with a dark background for contrast */
+            background-color: #0c0d12;
+            color: #e5e7eb;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1e293b; /* Dark slate blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 2px solid #60a5fa; /* Blue/Light attribute border */
+        }
+        .combo-step-card {
+            background-color: #111827; /* Deep gray */
+            border: 1px solid #93c5fd;
+        }
+        .pro-con-card {
+            background-color: #111827;
+            border: 1px solid #93c5fd;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1e293b;
+            color: #dbeafe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1e293b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #f87171; }
+        .neutral-icon { color: #93c5fd; }
+        .text-accent {
+            color: #fcd34d; /* Yellow/Gold for LIGHT theme accent */
+        }
+        .arrow-color {
+            color: #60a5fa;
+        }
+
+        /* --- Custom Dual Avatar Banner --- */
+        .banner {
+            position: relative;
+            height: 150px;
+            background: linear-gradient(135deg, #111827, #374151);
+            overflow: hidden;
+            border-radius: 1rem;
+            border: 4px solid #fcd34d; /* Gold border */
+            box-shadow: 0 0 30px rgba(252, 211, 77, 0.3); /* Gold glow */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .banner-title {
+            font-family: 'Jost', sans-serif;
+            font-size: 3rem;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+            letter-spacing: 0.1em;
+            position: relative;
+            z-index: 2;
+        }
+        .banner-subtitle {
+            font-size: 1.125rem;
+            color: #dbeafe;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Martial Arts/Ki effect */
+        .ki-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(252, 211, 77, 0.2) 0%, rgba(252, 211, 77, 0.05) 30%, transparent 70%);
+            animation: pulse 4s infinite ease-in-out;
+            z-index: 1;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.5; }
+        }
+
+        /* Themed Link Styling */
+        .lore-link {
+            color: #fcd34d; /* Accent color */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 2px solid #60a5fa; /* Blue underline for contrast */
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #ffffff;
+            border-bottom: 2px solid #fcd34d;
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 120px; }
+            .banner-title { font-size: 2.25rem; }
+            .banner-subtitle { font-size: 1rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Dual Avatar Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="ki-glow"></div>
+                <div class="banner-content">
+                    <h1 class="banner-title">Dual Avatar</h1>
+                    <p class="banner-subtitle">The Fusion Art of Manifested Power</p>
+                </div>
+            </div>
+        </header>
+
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">Dual Avatar</strong> archetype is a specialized LIGHT Warrior Fusion strategy that centers entirely around precise resource management and powerful, repeatable Fusion Summons. The core mechanic relies on leveraging **self-destruction as a resource exchange** and utilizing the singular ignition Spell, <strong class="text-accent font-bold">Dual Avatar Invitation</strong>, to rapidly flood the board with Fusion materials and Extra Deck threats. The deck separates its Fusions into two tactical categories—<strong class="text-accent font-bold">Armored</strong> (utility) and <strong class="text-accent font-bold">Empowered</strong> (finisher)—demanding expert sequencing to achieve optimal results.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Foundational Mechanics: The Art of Fusion</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2 flex items-center"><i class="fas fa-hand-rock mr-3"></i> Destruction Economy</h3>
+                    <p class="text-gray-300">The deck uses its own destruction effects to advance its game state. Monsters like <strong class="text-accent font-bold">Dual Avatar Fists - Yuhi</strong> search a critical Spell when they destroy a Dual Avatar monster (often a <strong class="text-accent font-bold">Dual Avatar Spirit Token</strong>) you control. This turns a negative action (destruction) into a positive resource gain.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2 flex items-center"><i class="fas fa-mask mr-3"></i> The Invitation Lock</h3>
+                    <p class="text-gray-300">The key ignition card, <strong class="text-accent font-bold">Dual Avatar Invitation</strong>, Special Summons multiple <strong class="text-accent font-bold">Dual Avatar Spirit Tokens</strong> and allows for up to two Fusion Summons. Crucially, it locks you into only Special Summoning Fusion Monsters from the Extra Deck for the rest of the turn, demanding commitment to the archetype's strategy.</p>
+                </div>
+                <div class="card p-6 md:col-span-2">
+                    <h3 class="text-xl font-bold text-accent mb-2 flex items-center"><i class="fas fa-yin-yang mr-3"></i> Armored and Empowered</h3>
+                    <p class="text-gray-300">The Fusion monsters are split into two complementary forces: <strong class="text-blue-400">Armored</strong> (Level 6) for utility (e.g., <strong class="text-accent font-bold">Armored Un-Gyo's</strong> immediate negation) and <strong class="text-red-400">Empowered</strong> (Level 8) for control and finishing (e.g., <strong class="text-accent font-bold">Manifested A-Un's</strong> quick effect banish). Understanding this <a href="https://yugipedia.com/wiki/Dual_Avatar" target="_blank" class="lore-link">manifestation of two wills</a> is central to mastering the deck.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The 2-Card Invitation Starter</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the most efficient path to access the core ignition Spell, maximizing resources for the Fusion climb.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="perfect-sync-img-container" class="card-image-container card-placeholder">Perfect Sync - A-Un</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2d3a4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold text-accent">Set Up the Engine</h3>
+                        </div>
+                        <p class="text-gray-300">Activate <strong class="text-accent font-bold">Perfect Sync - A-Un</strong>. Then, Normal Summon <strong class="text-accent font-bold">Dual Avatar Fists - Yuhi</strong>, which triggers A-Un to Special Summon a <strong class="text-accent font-bold">Dual Avatar Spirit Token</strong>.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="yuhi-img-container" class="card-image-container card-placeholder">Dual Avatar Fists - Yuhi</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2d3a4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold text-accent">Search and Ignite</h3>
+                        </div>
+                        <!-- CHANGED: Added text-accent class to highlight Yuhi and Token -->
+                        <p class="text-gray-300">Activate <strong class="text-accent font-bold">Yuhi's</strong> effect, targeting the newly summoned <strong class="text-accent font-bold">Token</strong> for destruction as cost, to search <strong class="text-accent font-bold">Dual Avatar Invitation</strong> from your Deck.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="invitation-img-container" class="card-image-container card-placeholder">Dual Avatar Invitation</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2d3a4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold text-accent">Fusion Barrage</h3>
+                        </div>
+                        <!-- CHANGED: Added text-accent class to highlight Yuhi in this step -->
+                        <p class="text-gray-300">Activate <strong class="text-accent font-bold">Invitation</strong> (discard 1). Summon 3+ Tokens. Use the Tokens and <strong class="text-accent font-bold">Yuhi</strong> to execute two Fusion Summons, typically aiming for <strong class="text-accent font-bold">Armored Un-Gyo</strong> (negation) and <strong class="text-accent font-bold">Manifested A-Un</strong> (banish).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- The Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Endboard Construction and Disruption</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">The final board focuses on layered disruption using the powerful, defensive Fusion Boss Monsters.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Manifested A-Un -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Dual Avatar - Manifested A-Un</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="manifested-img-container" class="card-image-container card-placeholder">Dual Avatar - Manifested A-Un</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-red-400 font-bold">Quick Effect Banish:</strong> If Fusion Summoned using <strong class="text-accent font-bold">Empowered Mitsu-Jaku</strong>, it gains a powerful Quick Effect to banish any one card on the field during your opponent's turn.</li>
+                        <!-- CHANGED: Added text-accent class to highlight Yuhi and Kokoku -->
+                        <li><strong class="text-red-400 font-bold">Float Effect:</strong> If destroyed, it Special Summons <strong class="text-accent font-bold">Yuhi</strong> and <strong class="text-accent font-bold">Kokoku</strong> from the Deck, ensuring follow-up plays.</li>
+                    </ul>
+                </div>
+                <!-- Armored Un-Gyo & Traps -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Armored Un-Gyo and Back-Up</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="un-gyo-img-container" class="card-image-container card-placeholder">Dual Avatar Feet - Armored Un-Gyo</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-blue-400 font-bold">Immediate Negation:</strong> Upon its Fusion Summon, **Armored Un-Gyo** can immediately negate the effects of one face-up monster until the end of the turn.</li>
+                        <!-- CHANGED: Added text-accent class to highlight Kokoku -->
+                        <li><strong class="text-blue-400 font-bold">Set Dual Avatar Ascendance:</strong> A key Trap/Quick-Play Spell that can be searched by <strong class="text-accent font-bold">Kokoku</strong>, offering non-destruction removal or material evasion.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis and Hybridization</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <!-- CHANGED: Added text-accent class to highlight Yuhi -->
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Resource Resilience:</strong> Built-in monster recursion (<strong class="text-accent font-bold">Yuhi</strong>) and engine reset options.</li>
+                        <li><span class="pro-icon"><i class="fas fa-hand-fist"></i></span> <strong class="text-green-400 font-bold">Hybrid Compatibility:</strong> The strict Fusion lock is easily leveraged by engines like Branded/Despia.</li>
+                        <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-green-400 font-bold">Layered Disruption:</strong> Combines negation, banishment, and non-destruction removal.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">The Choke Point:</strong> Negating <strong class="text-accent font-bold">Dual Avatar Invitation</strong> often ends the turn immediately.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Non-Destruction Removal:</strong> The deck's primary recovery mechanics rely on being destroyed; banishment or spinning shuts it down completely.</li>
+                    </ul>
+                </div>
+                <!-- External Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Branded/Albaz:</strong> The most potent pairing, offering superior consistency via <strong class="text-orange-400">Branded Fusion</strong> <span class="text-orange-400">(semi-limited to 2)</span> and stronger defensive boss monsters like **Mirrorjade**.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-search"></i></span> <strong class="text-accent font-bold">Fusion Deployment:</strong> Provides instant access to main deck materials (<strong class="text-accent font-bold">Yuhi</strong> or <strong class="text-accent font-bold">Kokoku</strong>) without needing the Normal Summon.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Archetype Components: The Arsenal of Dual Avatar</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Cards -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Dual Avatar Fists - Yuhi</h3>
+                    <p class="text-gray-300 mb-2"><strong>Level 4 LIGHT Warrior</strong></p>
+                    <!-- CHANGED: Added text-accent class to Yuhi and Token -->
+                    <p class="text-gray-300">Searches a Dual Avatar Spell Card upon destroying a Dual Avatar monster you control. Recycles itself from the GY when a Fusion monster is destroyed.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Dual Avatar Feet - Kokoku</h3>
+                    <p class="text-gray-300 mb-2"><strong>Level 3 LIGHT Warrior</strong></p>
+                    <!-- CHANGED: Added text-accent class to Kokoku -->
+                    <p class="text-gray-300">Searches a Dual Avatar Trap Card (or Spell/Trap) on Normal or Special Summon. Can Fusion Summon during the opponent's turn if another Dual Avatar monster is destroyed.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Dual Avatar Invitation</h3>
+                    <p class="text-gray-300 mb-2"><strong>Normal Spell</strong></p>
+                    <p class="text-gray-300">The ignition card. Summons Tokens and allows for up to two Fusion Summons using monsters from the hand or field, with an Extra Deck Fusion lock.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Perfect Sync - A-Un</h3>
+                    <p class="text-gray-300 mb-2"><strong>Continuous Spell</strong></p>
+                    <p class="text-gray-300">Essential combo piece that summons a Token when a Dual Avatar monster is summoned, providing fodder for Yuhi's destruction cost.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // This function is kept as a fallback for the API call
+            function createAndAppendPlaceholder(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder animate-fadeIn';
+                placeholder.textContent = cardName;
+                container.appendChild(placeholder);
+            }
+
+            // --- NEW FUNCTION TO FETCH AND DISPLAY CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        throw new Error(`API returned status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        console.warn(`Image not found for "${cardName}". Using placeholder.`);
+                        createAndAppendPlaceholder(cardName, containerId);
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    createAndAppendPlaceholder(cardName, containerId);
+                }
+            }
+            
+            // --- UPDATED CALLS ---
+            const imageContainers = {
+                'perfect-sync-img-container': 'Perfect Sync - A-Un',
+                'yuhi-img-container': 'Dual Avatar Fists - Yuhi',
+                'invitation-img-container': 'Dual Avatar Invitation',
+                'manifested-img-container': 'Dual Avatar - Manifested A-Un',
+                'un-gyo-img-container': 'Dual Avatar Feet - Armored Un-Gyo'
+            };
+
+            // Loop through the defined containers and fetch the image for each one
+            for (const [containerId, cardName] of Object.entries(imageContainers)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

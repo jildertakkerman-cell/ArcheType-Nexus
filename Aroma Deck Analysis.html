@@ -1,0 +1,668 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aroma Deck Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4; /* Very light green */
+            color: #14532d; /* Dark Green */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #dcfce7;
+        }
+        .combo-step-card {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+        .pro-con-card {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #dcfce7;
+            color: #166534;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #dcfce7;
+        }
+        .pro-icon { color: #22c55e; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #3b82f6; }
+        .text-accent { color: #ec4899; } /* Pink accent */
+        .arrow-color { color: #ec4899; }
+        .heading-underline {
+            border-bottom: 3px solid #ec4899;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(240, 253, 244, 0.95);
+            border: 1px solid #dcfce7;
+            border-radius: 0.75rem;
+            color: #14532d;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif;
+            color: #ec4899;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #ec4899;
+        }
+        
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px; /* Matching Battlewasp size */
+            background: linear-gradient(to right, #fbcfe8, #dcfce7);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #fff;
+        }
+
+        #aroma-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.3);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 1px 1px 4px rgba(20, 83, 45, 0.2);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="aroma-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-green-900 mb-2 heading-underline">Aroma</h1>
+            <p class="text-lg md:text-xl text-green-700">A Plant Link Control Strategy</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-pink-600 mb-4">Executive Summary</h2>
+                <p class="text-green-800">
+                    The "Aroma" archetype is a sophisticated control strategy built around Life Point (LP) management. It establishes dominance by maintaining a higher LP total than the opponent, which activates powerful continuous protective effects. The deck converts LP gains into resource generation and disruption, but pure builds lack speed and consistency. Therefore, competitive viability is achieved through hybridization with the <strong class="text-accent font-bold">Plant Link Combo</strong> strategy, incorporating the Sunavalon, Sunseed, and Rikka engines to provide the necessary speed, Link climbing, and reliable LP gain triggers.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-pink-600 mb-6 text-center">Foundational Mechanics: The Life Point Economy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-green-800 mb-2">Continuous Advantage</h3>
+                    <p class="text-green-700">While your LP are higher than your opponent's, your Aroma monsters gain powerful continuous effects, such as immunity to battle destruction or protection from targeting by card effects. Maintaining this LP lead is critical to keeping your defensive shell intact.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-green-800 mb-2">LP Gain Triggers</h3>
+                    <p class="text-green-700">Whenever you gain LP, your Aroma and Aromaseraphy monsters trigger effects that generate card advantage, such as searching for Plant monsters, drawing cards, or destroying opposing cards. This transforms LP gain into a powerful combo engine.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-pink-600 mb-6 text-center">Core Combo: The Sunseed Genius Loci Starter</h2>
+            <p class="text-green-700 mb-8 text-center max-w-2xl mx-auto">The most potent 1-card starter, <strong class="text-accent font-bold">Sunseed Genius Loci</strong>, ignites the entire Plant Link engine to establish the Aroma control board.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="loci-img-container" class="card-image-container card-placeholder">Sunseed Genius Loci</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-pink-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Initiate Link Climb</h3>
+                        </div>
+                        <p class="text-green-700">Normal Summon <strong class="text-accent font-bold">Sunseed Genius Loci</strong> and immediately Link Summon <strong class="text-accent font-bold">Sunavalon Dryas</strong>. This begins the Sunavalon engine, searching for key extenders.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="healer-img-container" class="card-image-container card-placeholder">Sunvine Healer</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-pink-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Trigger LP Gain</h3>
+                        </div>
+                        <p class="text-green-700">Summon <strong class="text-accent font-bold">Sunvine Healer</strong> and use its effect to gain 300 LP. This mandatory LP gain is the most reliable way to trigger your Aroma effects during the combo.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="aroma-jasmine-img-container" class="card-image-container card-placeholder">Aromaseraphy Jasmine</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-pink-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Cascade Searches</h3>
+                        </div>
+                        <p class="text-green-700">Link Summon <strong class="text-accent font-bold">Aromaseraphy Jasmine</strong>. The LP gain from Healer triggers Jasmine's effect, allowing you to search for key Rikka or other Plant monsters to extend your plays.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-pink-600 mb-6 text-center">Optimal Endboard</h2>
+            <div class="card p-6 flex flex-col md:flex-row items-center md:items-start gap-4 mx-auto max-w-2xl">
+                <div class="flex flex-col items-center gap-4">
+                    <div id="marjoram-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Sweet Marjoram</div>
+                </div>
+                <div>
+                    <ul class="list-disc list-inside space-y-2 text-green-800">
+                        <li><strong class="text-accent font-bold">Aromaseraphy Sweet Marjoram:</strong> Provides targeting protection for all your Plant monsters.</li>
+                        <li><strong class="text-accent font-bold">Sacred Tree Beast, Hyperyton:</strong> Offers a powerful omni-negate for monsters, spells, or traps.</li>
+                        <li><strong class="text-accent font-bold">Rikka Konkon:</strong> A Field Spell that provides non-destruction monster removal by tributing an opponent's monster.</li>
+                        <li><strong class="text-accent font-bold">Dried Winds / Humid Winds:</strong> Continuous Traps that provide repeatable destruction and setup for future turns.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-pink-600 mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-600 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-green-700">
+                        <li><span class="pro-icon"><i class="fas fa-seedling"></i></span> <strong class="text-green-600 font-bold">High Resilience:</strong> Excellent recursion and recovery through the Plant Link engine.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-600 font-bold">Layered Protection:</strong> Combines targeting protection, battle immunity, and negation.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-600 font-bold">Strong Grind Game:</strong> Can out-resource opponents in long, drawn-out duels.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-600 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-green-700">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-600 font-bold">Fragile Starters:</strong> Vulnerable to hand traps on key combo starters like Genius Loci.</li>
+                        <li><span class="con-icon"><i class="fas fa-dna"></i></span> <strong class="text-red-600 font-bold">Hybrid Dependency:</strong> Pure builds are too slow; requires a complex, multi-archetype engine to function.</li>
+                         <li><span class="con-icon"><i class="fas fa-heart-broken"></i></span> <strong class="text-red-600 font-bold">LP Condition:</strong> Losing the LP advantage causes its entire defensive structure to collapse.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-800 mb-4">Key Synergies & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-green-700">
+                        <li><span class="neutral-icon"><i class="fas fa-sun"></i></span> <strong class="text-accent font-bold">Sunavalon/Sunseed:</strong> The core engine for Link climbing and triggering LP gain.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-snowflake"></i></span> <strong class="text-accent font-bold">Rikka:</strong> Provides powerful Xyz monsters, searching, and non-destruction removal.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-spa"></i></span> <strong class="text-accent font-bold">Generic Plants:</strong> Cards like <strong class="text-accent font-bold">Lonefire Blossom</strong> and <strong class="text-accent font-bold">Spore</strong> add consistency and extend combos.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section>
+            <h2 class="text-xl md:text-3xl font-bold text-pink-600 mb-6 text-center">Aroma Arsenal</h2>
+            <p class="text-green-700 mb-8 text-center max-w-2xl mx-auto">A detailed overview of the key cards that give this aromatic strategy its life.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Aromaseraphy Jasmine (Link-2)</h3>
+                    <p class="text-green-800">The most important engine piece. Searches any Plant monster from the deck when you gain LP, connecting all the hybrid pieces together.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Aromaseraphy Sweet Marjoram</h3>
+                    <p class="text-green-800">A Level 6 Synchro that provides targeting protection for your Plants and destroys an opponent's card when you gain LP.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Aromage Jasmine (Main Deck)</h3>
+                    <p class="text-green-800">Grants an additional Normal Summon for a Plant monster and lets you draw a card when you gain LP, boosting consistency.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">"Winds" Continuous Traps</h3>
+                    <p class="text-green-800"><strong class="text-accent font-bold">Humid Winds</strong>, <strong class="text-accent font-bold">Dried Winds</strong>, and <strong class="text-accent font-bold">Blessed Winds</strong> provide setup, repeatable destruction, and recursion, forming the core of the deck's control strategy.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- AROMA "HEALING GARDEN" ANIMATION ---
+            const canvas = document.getElementById('aroma-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let petals = [];
+                let pulses = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Petal {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 4 + 3;
+                        this.speedX = (Math.random() - 0.5) * 0.4;
+                        this.speedY = Math.random() * 0.5 + 0.2;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                        this.spin = Math.random() * Math.PI;
+                        this.spinSpeed = (Math.random() - 0.5) * 0.02;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        this.spin += this.spinSpeed;
+                        if (this.y > canvas.height) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = -10;
+                        }
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.spin);
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, this.size, this.size / 2, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(251, 207, 232, ${this.opacity})`; // Light Pink
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+                
+                class Pulse {
+                     constructor() {
+                        this.x = canvas.width / 2;
+                        this.y = canvas.height / 2;
+                        this.radius = 0;
+                        this.maxRadius = Math.min(canvas.width, canvas.height) * 0.7;
+                        this.life = 0;
+                        this.maxLife = 180; // Slow pulse
+                    }
+                    update() {
+                        this.life++;
+                        this.radius = (this.life / this.maxLife) * this.maxRadius;
+                    }
+                    draw() {
+                        if (this.life > this.maxLife) return;
+                        const opacity = Math.sin((this.life / this.maxLife) * Math.PI) * 0.1;
+                        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                        gradient.addColorStop(0, `rgba(187, 247, 208, 0)`);
+                        gradient.addColorStop(0.7, `rgba(187, 247, 208, ${opacity})`);
+                        gradient.addColorStop(1, `rgba(187, 247, 208, 0)`);
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
+                }
+
+                function init() {
+                    petals = [];
+                    pulses = [];
+                    const petalCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < petalCount; i++) {
+                        petals.push(new Petal());
+                    }
+                }
+
+                let frameCount = 0;
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    if (frameCount % 240 === 0) { // New pulse every 4 seconds
+                        pulses.push(new Pulse());
+                    }
+
+                    petals.forEach(p => { p.update(); p.draw(); });
+                    pulses.forEach(p => { p.update(); p.draw(); });
+                    pulses = pulses.filter(p => p.life < p.maxLife);
+                    
+                    frameCount++;
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- ENHANCED SCRIPT FOR CARD IMAGES WITH POPUPS ---
+            const cardDataCache = {};
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                const popup = document.getElementById('card-popup');
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-green-600">${cardType}</p>
+                        <div class="w-full h-px bg-green-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                const popup = document.getElementById('card-popup');
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            let activePopup = null;
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            const cardsToLoad = {
+                'loci-img-container': 'Sunseed Genius Loci',
+                'healer-img-container': 'Sunvine Healer',
+                'aroma-jasmine-img-container': 'Aromaseraphy Jasmine',
+                'marjoram-img-container': 'Aromaseraphy Sweet Marjoram'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

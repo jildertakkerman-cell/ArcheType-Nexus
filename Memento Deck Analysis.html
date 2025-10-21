@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memento Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2c2c;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a4a4a;
+        }
+        .combo-step-card {
+            background-color: #383838;
+            border: 1px solid #555;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #383838;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #383838;
+        }
+        .pro-icon { color: #4ade80; }
+        .con-icon { color: #f87171; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a78bfa; }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #a78bfa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a78bfa;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #c4b5fd;
+        }
+
+        /* --- Memento Animated Banner --- */
+        .banner {
+            position: relative;
+            height: 150px;
+            background-color: #111;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 2px solid #4a4a4a;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: content-appear 1s ease-out 0.5s forwards;
+        }
+        .banner-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 2.8rem;
+            color: #f5f5f5;
+            text-shadow: 0 0 5px #a78bfa, 0 0 10px #a78bfa, 0 0 15px #7c3aed;
+            letter-spacing: 0.1em;
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #d1d5db;
+            margin-top: 0.5rem;
+        }
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        @keyframes content-appear {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 120px; }
+            .banner-title { font-size: 2.2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white; border: 2px solid #6366f1; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+    <header class="mb-10 md:mb-16">
+        <div class="banner">
+            <canvas id="particle-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="banner-title">Memento</h1>
+                <p class="banner-subtitle">A Symphony of Self-Destruction and Creation</p>
+            </div>
+        </div>
+    </header>
+
+    <section class="mb-10 md:mb-16">
+        <div class="card p-6 animate-fadeIn">
+            <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">The Memento Philosophy</h2>
+            <p class="text-gray-300">
+                The <strong class="text-accent font-bold">Memento</strong> archetype operates on a seemingly paradoxical principle: strategic self-destruction as the primary engine for creation. Unlike archetypes where destroying one's own cards is a cost, for Memento, it is the central mechanic that converts on-field and in-hand resources into board presence, graveyard setup, and ultimately, overwhelming advantage. Understanding this core philosophy is the first step to mastering its complex and non-linear gameplay. This process populates the Graveyard with five "Memento" monsters of different names, setting the stage for the deck's ultimate boss monster.
+            </p>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">
+            <a href="https://yugipedia.com/wiki/Memento" target="_blank" class="lore-link">The Cast of Characters</a>: Core Cards
+        </h2>
+        <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+            The Memento archetype is composed of a diverse cast, each with a specific role. Understanding these roles—Starter, Extender, Payoff, or Utility—is essential for navigating the deck's intricate decision trees.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Starters & Extenders -->
+            <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-3"><i class="fas fa-play-circle text-accent"></i>Starters & Extenders</h3>
+                <div class="space-y-4">
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent">Mementotlan Angwitch</h4>
+                        <p class="text-sm text-gray-300">The premier starter. On summon, adds any "Memento" monster from Deck to hand.</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent">Mementotlan Dark Blade</h4>
+                        <p class="text-sm text-gray-300">Destroys a "Memento" to Special Summon another from the Deck.</p>
+                    </div>
+                     <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent">Mementotlan Tatsunootoshigo</h4>
+                        <p class="text-sm text-gray-300">Destroys a "Memento" to send others from Deck to GY, setting up combos.</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent">Mementotlan Shleepy</h4>
+                        <p class="text-sm text-gray-300">Summons itself from hand when a Memento is destroyed, enabling a Fusion Summon.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payoffs & Boss Monsters -->
+            <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-3"><i class="fas fa-skull-crossbones text-accent"></i>The Payoffs</h3>
+                <div class="space-y-4">
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent">Mementoal Tecuhtlica - Combined Creation</h4>
+                        <p class="text-sm text-gray-300">The main boss. 5000 ATK, attacks all monsters, and revives Mementos from the GY as a Quick Effect.</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent">Mementomictlan Tecuhtlica - Creation King</h4>
+                        <p class="text-sm text-gray-300">Fusion boss that mills 3 on summon and offers multi-card destruction.</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent">Mementotlan Twin Dragon</h4>
+                        <p class="text-sm text-gray-300">A utility Fusion that searches two monsters on summon and floats into another when destroyed.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Tatsunootoshigo Opening</h2>
+        <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">This walkthrough demonstrates how one card, <strong class="text-accent">Mementotlan Tatsunootoshigo</strong>, can generate a full board by initiating the deck's cascade of self-destruction and revival.</p>
+        <div class="flex flex-col items-center gap-4">
+            <!-- Step 1 -->
+            <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="tatsunootoshigo-img" class="card-image-container card-placeholder"></div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span><h3 class="text-lg font-bold">Summon & Mill</h3></div>
+                        <p class="text-gray-300">Special Summon <strong class="text-accent">Tatsunootoshigo</strong> from hand. Activate its effect, destroying itself to send <strong class="text-accent">Ghattic</strong>, <strong class="text-accent">Shleepy</strong>, and <strong class="text-accent">Angwitch</strong> from Deck to GY.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Step 2 -->
+            <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn" style="animation-delay: 0.2s;">
+                 <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="ghattic-img" class="card-image-container card-placeholder"></div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span><h3 class="text-lg font-bold">Revive & Recycle</h3></div>
+                        <p class="text-gray-300"><strong class="text-accent">Ghattic</strong> revives itself from the GY. Use its effect to add <strong class="text-accent">Shleepy</strong> back to hand. Then, destroy <strong class="text-accent">Ghattic</strong> to add <strong class="text-accent">Angwitch</strong> to hand.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Step 3 -->
+            <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn" style="animation-delay: 0.4s;">
+                 <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="twin-dragon-img" class="card-image-container card-placeholder"></div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span><h3 class="text-lg font-bold">Fusion & Advantage</h3></div>
+                        <p class="text-gray-300">Since Ghattic was destroyed, Special Summon <strong class="text-accent">Shleepy</strong> from hand. Use its effect to fuse itself and <strong class="text-accent">Angwitch</strong> into <strong class="text-accent">Twin Dragon</strong>. <strong class="text-accent">Twin Dragon</strong> destroys itself to search two Mementos (including <strong class="text-accent">Combined Creation</strong>), then revives another Memento, setting up the summon for the main boss.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+     <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final Masterpiece: A Typical Endboard</h2>
+        <div class="card p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center animate-fadeIn">
+            <div id="combined-creation-img" class="card-image-container mx-auto card-placeholder"></div>
+            <div>
+                <h3 class="text-xl font-bold text-accent mb-4">Anatomy of a Memento Board</h3>
+                <p class="text-gray-300 mb-4">A powerful Memento endboard is a multi-faceted web of layered interactions designed to systematically dismantle an opponent's turn. It's not just a wall of negates, but a diverse set of disruptions.</p>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <li><strong class="text-white">The Fortress:</strong> <span class="text-accent">Combined Creation</span> on field.</li>
+                    <li><strong class="text-white">The Negation:</strong> <span class="text-accent">Mementotlan Cranium Burst</span> to provide multiple monster negates.</li>
+                    <li><strong class="text-white">The Removal:</strong> <span class="text-accent">Creation King</span> in GY, ready to be revived for destruction.</li>
+                    <li><strong class="text-white">The Hand Trap:</strong> <span class="text-accent">Mementotlan Mace</span> in hand to steal an opponent's monster.</li>
+                    <li><strong class="text-white">The Follow-up:</strong> Link support like <span class="text-accent">S:P Little Knight</span> for non-destruction removal.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+                <h3 class="text-xl font-bold text-green-400 mb-4 flex items-center gap-3"><i class="fas fa-thumbs-up"></i>Strengths</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <li><strong class="text-green-300">High Power Ceiling:</strong> Capable of producing endboards with over eight distinct points of layered disruption.</li>
+                    <li><strong class="text-green-300">Resilience:</strong> With expert piloting, the deck can navigate multiple hand traps and interruptions using its Quick-Play Spells.</li>
+                    <li><strong class="text-green-300">OTK Potential:</strong> Akihiron enables Combined Creation to attack directly for 5000 damage, often leading to a swift victory.</li>
+                </ul>
+            </div>
+            <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center gap-3"><i class="fas fa-thumbs-down"></i>Weaknesses</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <li><strong class="text-red-300">Complexity & Timer:</strong> Long, intricate combos are difficult to master and can lead to losses against the in-game timer.</li>
+                    <li><strong class="text-red-300">Graveyard Dependency:</strong> Fundamentally reliant on the GY and can be severely hampered by floodgates like Dimension Shifter.</li>
+                    <li><strong class="text-red-300">Vulnerability to Maxx "C":</strong> Performs a high number of Special Summons, making an unanswered Maxx "C" a near-certain loss.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+        <div class="card p-6 animate-fadeIn">
+            <p class="text-gray-300 mb-4 text-center">
+                <strong class="text-green-400 font-bold">FULL POWER STATUS:</strong> The Memento archetype is currently completely unrestricted in the TCG format.
+            </p>
+            <div class="p-4 bg-green-900 bg-opacity-30 rounded-lg border-l-4 border-green-500">
+                <h4 class="text-lg font-bold text-green-300 mb-2">Unrestricted Cards</h4>
+                <p class="text-sm text-gray-300">All "Memento" and "Mementotlan" monsters, spells, and traps are legal at <strong class="text-white">3 copies per deck</strong>. This allows the archetype to operate at its maximum intended consistency and power level, with full access to all its starters, extenders, and boss monsters.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Particle Animation for Banner ---
+    const canvas = document.getElementById('particle-canvas');
+    if(canvas) {
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const particleCount = 50;
+        const colors = ['#a78bfa', '#7c3aed', '#f5f5f5', '#4ade80', '#3b82f6'];
+
+        const setCanvasSize = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        };
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.1) this.size -= 0.02;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        setCanvasSize();
+        initParticles();
+        animateParticles();
+        window.addEventListener('resize', () => {
+            setCanvasSize();
+            initParticles();
+        });
+    }
+
+    // --- Card Image Fetching ---
+    async function fetchAndDisplayCardImage(cardName, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error(`API error for ${cardName}`);
+            const data = await response.json();
+            const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+            if (imageUrl) {
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = cardName;
+                img.className = 'card-image';
+                container.innerHTML = '';
+                container.appendChild(img);
+                container.classList.remove('card-placeholder');
+            } else {
+                throw new Error(`Image not found for ${cardName}`);
+            }
+        } catch (error) {
+            console.error(error);
+            container.textContent = cardName; // Fallback to text
+        }
+    }
+
+    const cardsToLoad = {
+        'tatsunootoshigo-img': 'Mementotlan Tatsunootoshigo',
+        'ghattic-img': 'Mementotlan Ghattic',
+        'twin-dragon-img': 'Mementotlan Twin Dragon',
+        'combined-creation-img': 'Mementoal Tecuhtlica - Combined Creation'
+    };
+
+    for (const [id, name] of Object.entries(cardsToLoad)) {
+        fetchAndDisplayCardImage(name, id);
+    }
+});
+</script>
+
+</body>
+</html>

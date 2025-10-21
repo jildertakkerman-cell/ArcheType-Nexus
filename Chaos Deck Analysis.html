@@ -1,0 +1,625 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaos Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Dark Charcoal */
+            color: #f5f5f5; /* Off-White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #262626; /* Dark Gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #737373; /* Mid Gray Border */
+        }
+        .combo-step-card {
+            background-color: #404040; /* Darker Mid Gray */
+            border: 1px solid #a3a3a3; /* Light Gray Accent */
+        }
+        .pro-con-card {
+            background-color: #404040;
+            border: 1px solid #a3a3a3;
+        }
+        .card-placeholder {
+            background-color: #262626;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #262626;
+            cursor: pointer;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-light { color: #eab308; } /* Gold/Light */
+        .text-dark { color: #a855f7; } /* Purple/Dark */
+        .arrow-color { color: #a3a3a3; }
+        .heading-underline {
+            border-bottom: 2px solid #a3a3a3;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        a.lore-link {
+            color: #f5f5f5;
+            text-decoration: underline;
+            transition: color 0.3s;
+        }
+        a.lore-link:hover {
+            color: #eab308;
+        }
+
+        /* --- NEW CHAOS ANIMATED BANNER --- */
+        .chaos-banner {
+            position: relative;
+            height: 160px;
+            background-color: #050505;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 1px solid #737373;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        .chaos-banner::before, .chaos-banner::after {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            opacity: 0.15;
+            filter: blur(80px);
+        }
+
+        .chaos-banner::before {
+            background: radial-gradient(circle, #eab308 0%, transparent 60%);
+            left: -350px;
+            top: -350px;
+            animation: swirl-light 20s linear infinite alternate;
+        }
+
+        .chaos-banner::after {
+            background: radial-gradient(circle, #a855f7 0%, transparent 60%);
+            right: -350px;
+            bottom: -350px;
+            animation: swirl-dark 20s linear infinite alternate;
+        }
+
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: content-appear 1.5s ease-out 0.5s forwards;
+        }
+
+        .banner-title {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            letter-spacing: 0.2em;
+            color: #f5f5f5;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2), 
+                         0 0 15px rgba(168, 85, 247, 0.3), 
+                         0 0 25px rgba(234, 179, 8, 0.3);
+        }
+
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #d1d5db;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        @keyframes swirl-light {
+            from { transform: translate(0, 0) rotate(0deg); }
+            to { transform: translate(50px, -50px) rotate(90deg); }
+        }
+
+        @keyframes swirl-dark {
+            from { transform: translate(0, 0) rotate(0deg); }
+            to { transform: translate(-50px, 50px) rotate(-90deg); }
+        }
+
+        @keyframes content-appear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .chaos-banner { height: 140px; }
+            .banner-title { font-size: 2.5rem; }
+            .banner-subtitle { font-size: 0.8rem; }
+        }
+        /* --- END OF BANNER STYLES --- */
+
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        #card-popup {
+            background-color: #262626;
+            border-color: #737373;
+            color: #f5f5f5;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+        #card-popup h3 {
+            color: #a3a3a3;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        #card-popup p {
+            margin-bottom: 0.5rem;
+        }
+        #card-popup-stats {
+            color: #a3a3a3;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+    <!-- Card Popup -->
+    <div id="card-popup" class="fixed z-50 bg-gray-800 border-2 border-gray-500 text-white p-4 rounded-lg shadow-lg max-w-xs max-h-96 overflow-y-auto opacity-0 transition-opacity duration-200 pointer-events-none"></div>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner Section -->
+        <header class="chaos-banner mb-10 md:mb-16">
+            <div class="banner-content">
+                <h1 class="banner-title">CHAOS</h1>
+                <p class="banner-subtitle">The Duality of Light and Dark</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-200">
+                    The <strong class="text-light">Chaos</strong> archetype is one of the oldest and most influential concepts in Yu-Gi-Oh!, defined by its manipulation of <strong class="text-light">LIGHT</strong> and <strong class="text-dark">DARK</strong> attributes. At its core, it is a resource conversion engine that treats the Graveyard and Banish Zone as interconnected resource pools. By banishing one LIGHT and one DARK monster, the deck summons powerful boss monsters that have shaped the game for years. Modern Chaos strategies integrate powerful external engines like Bystial and P.U.N.K. to consistently fuel their plays and establish dominant end boards, continuing a <a href="https://yugipedia.com/wiki/Chaos" target="_blank" rel="noopener noreferrer" class="lore-link">long legacy</a> of duality and power.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Foundational Mechanics: The Balance of Power</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-yin-yang text-light mr-2"></i>Attribute Manipulation</h3>
+                    <p class="text-gray-200">The core mechanic involves banishing <strong class="text-light">LIGHT</strong> and <strong class="text-dark">DARK</strong> monsters from the Graveyard to summon powerful boss monsters. Success hinges on maintaining a careful balance of both attributes.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-infinity text-dark mr-2"></i>Resource Recursion</h3>
+                    <p class="text-gray-200">Cards like <strong class="text-light">Chaos Space</strong> allow you to recycle your banished monsters, creating a resource loop that fuels your plays turn after turn and ensures you never run out of threats.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Path to Synchro Dominance</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">The modern Chaos strategy uses the P.U.N.K. engine as a one-card starter to rapidly climb into powerful Synchro monsters.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="ze-amin-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Noh-P.U.N.K. Ze Amin</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#262626] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">The P.U.N.K. Starter</h3>
+                        </div>
+                        <p class="text-gray-200">Normal Summon <strong class="text-dark">Noh-P.U.N.K. Ze Amin</strong> to start the P.U.N.K. engine, which quickly puts a Level 3 Tuner and a Level 5 non-Tuner on the field.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="archfiend-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Chaos Archfiend</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#262626] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">The Level 8 Synchro</h3>
+                        </div>
+                        <p class="text-gray-200">Synchro Summon a Level 8 monster like <strong class="text-dark">Chaos Archfiend</strong>. This triggers the P.U.N.K. monsters in your Graveyard to revive one of your Tuners, setting up the next step.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="chaos-angel-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Chaos Angel</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#262626] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">The Final Boss</h3>
+                        </div>
+                        <p class="text-gray-200">Use your Level 8 Synchro and the revived Tuner to summon your final boss monster, typically the powerful Level 10 Synchro, <strong class="text-dark">Chaos Angel</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- End Board Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final End Board</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">The goal of the Chaos Synchro combo is to establish a multi-layered defensive board. The centerpiece is <strong class="text-dark">Chaos Angel</strong>, whose protection effects depend on the attributes of the materials used to summon it.</p>
+            <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                 <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
+                    <div id="chaos-angel-endboard-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Chaos Angel</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Chaos Angel</h3>
+                        <p class="text-gray-200"><strong class="text-light">LIGHT Material:</strong> Your Synchro monsters are unaffected by opponent's monster effects.<br><strong class="text-dark">DARK Material:</strong> Your monsters cannot be destroyed by battle.</p>
+                    </div>
+                </div>
+                <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
+                    <div id="baronne-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Baronne de Fleur</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Baronne de Fleur</h3>
+                        <div class="bg-red-500 bg-opacity-20 border border-red-500 rounded-lg p-3 mb-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                                <h4 class="text-red-400 font-bold text-sm">Currently Banned in TCG</h4>
+                            </div>
+                            <p class="text-red-300 mt-1 text-sm">Baronne de Fleur is currently banned. Modern builds use alternatives like Crystal Wing Synchro Dragon.</p>
+                        </div>
+                        <p class="text-gray-200">A generic Level 10 Synchro that provides a powerful omni-negate to protect your board from spells, traps, and monster effects.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Explosive Combos:</strong> Can create powerful Synchro end boards from a single card.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Resilient Boards:</strong> <strong class="text-dark">Chaos Angel</strong> provides excellent protection, making the board difficult to break.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">Strong Recursion:</strong> The deck can recycle its resources efficiently, allowing for a strong grind game.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Fragile Starters:</strong> The entire combo can be stopped by negating the initial Normal Summon.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Graveyard Dependent:</strong> Highly vulnerable to cards that banish or lock the Graveyard.</li>
+                         <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400 font-bold">Attribute Reliant:</strong> Needs a mix of <strong class="text-light">LIGHT</strong> and <strong class="text-dark">DARK</strong> monsters to function, which can lead to inconsistent hands.</li>
+                    </ul>
+                </div>
+                <!-- Tech & Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech & Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-light">Bystial Engine:</strong> Provides free bodies, graveyard disruption, and fuels your Chaos summons.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-music"></i></span> <strong class="text-dark">P.U.N.K. Engine:</strong> The most consistent way to access your high-level Synchro monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-space-shuttle"></i></span> <strong class="text-light">Chaos Space:</strong> The deck's most powerful spell, providing both searching and recursion.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Forces of Chaos</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">An overview of the key cards that define this classic and powerful engine.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-light mb-2">Black Luster Soldier - Envoy of the Beginning</h3>
+                    <p class="text-gray-200 mb-2"><strong>Warrior/Effect</strong></p>
+                    <p class="text-gray-200">The original Chaos boss monster. It boasts powerful battle effects, including banishing a monster or attacking twice.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-dark mb-2">Chaos Dragon Levianeer</h3>
+                    <p class="text-gray-200 mb-2"><strong>Dragon/Effect</strong></p>
+                    <p class="text-gray-200">A versatile boss monster with three powerful effects depending on the attributes of the monsters you banish to summon it.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-light mb-2">Chaos Space</h3>
+                    <p class="text-gray-200 mb-2"><strong>Normal Spell</strong></p>
+                    <p class="text-gray-200">The heart and soul of the deck's consistency, allowing you to search for your key monsters and recycle your banished resources.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-dark mb-2">Chaos Angel</h3>
+                    <p class="text-gray-200 mb-2"><strong>Fiend/Synchro/Effect</strong></p>
+                    <p class="text-gray-200">The premier end board piece for modern Chaos decks, providing non-targeting removal and powerful protection effects.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // This script block is only for fetching card images. The old image generation script is removed.
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+            let lastShown = 0;
+            let currentCard = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (currentCard === cardName) {
+                    hidePopup();
+                    return;
+                }
+                hidePopup(); // Ensure any existing popup is hidden first
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-gray-300">${cardType}</p>
+                        <div class="w-full h-px bg-gray-600 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+                lastShown = Date.now();
+                currentCard = cardName;
+            }
+
+            function hidePopup() {
+                if (Date.now() - lastShown < 100) return; // Ignore hide calls immediately after showing
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                    currentCard = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            const imageContainers = {
+                'ze-amin-img-container': 'Noh-P.U.N.K. Ze Amin',
+                'archfiend-img-container': 'Chaos Archfiend',
+                'chaos-angel-img-container': 'Chaos Angel',
+                'chaos-angel-endboard-img-container': 'Chaos Angel',
+                'baronne-img-container': 'Baronne de Fleur'
+            };
+
+            for (const [containerId, cardName] of Object.entries(imageContainers)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+        });
+    </script>
+
+

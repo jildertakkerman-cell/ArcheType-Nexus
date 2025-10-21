@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iron Chain Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a140f; /* Dark, earthy brown */
+            color: #e0dcd5; /* Off-white, parchment color */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2e261f; /* Darker leather brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #5a4b3c; /* Rusty brown border */
+        }
+        .combo-step-card {
+            background-color: #3f352b;
+            border: 1px solid #7a6a59;
+        }
+        .pro-con-card {
+            background-color: #3f352b;
+            border: 1px solid #7a6a59;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3f352b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3f352b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #d97706; } /* Amber/Rust Orange */
+        .arrow-color { color: #b45309; }
+        .heading-underline {
+            border-bottom: 2px solid #d97706;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #d97706;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #d97706;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a140f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #chain-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(46, 38, 31, 0.7) 0%, rgba(26, 20, 15, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            font-family: 'Roboto Mono', monospace;
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="chain-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Iron Chain</h1>
+            <p class="text-lg md:text-xl text-amber-200">Forged in Failure, Reforged in Combo</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-amber-100">
+                    The <strong class="text-accent font-bold">Iron Chain</strong> archetype, first introduced in 2008, is a fascinating case study in game design. Initially dismissed as a failure due to a muddled and self-conflicting strategy, its true potential was unlocked years later. Player ingenuity repurposed a few key members, transforming them into a potent, albeit fragile, combo engine. This analysis explores the dual legacy of the Iron Chain: its flawed original design and its unintended rebirth as a competitive force, 
+                    <a href="https://yugipedia.com/wiki/Iron_Chain" target="_blank" class="lore-link">a machine built from broken parts</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Fractured Blueprint Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Fractured Blueprint: Original Design</h2>
+            <p class="text-amber-100 mb-8 text-center max-w-2xl mx-auto">
+                The original "Iron Chain" lineup was plagued by internal contradictions, pulling the strategy in multiple directions at once and preventing any cohesive game plan from forming.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dragon text-4xl text-amber-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Conflicting Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Iron Chain Repairman</h4>
+                            <p class="text-sm text-amber-100">The most important card, but its revival effect prevents attacking, while its other effect requires it.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Iron Chain Snake</h4>
+                            <p class="text-sm text-amber-100">Central to the "mill" strategy, but its effect is useless against modern Xyz and Link monsters which have no Levels.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Iron Chain Dragon</h4>
+                            <p class="text-sm text-amber-100">The boss monster's power-up effect banishes monsters from the GY, directly conflicting with Repairman's need to revive them.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-amber-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Contradictory Spells</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Poison Chain</h4>
+                            <p class="text-sm text-amber-100">A mill-focused spell that only works if you do not attack, clashing with the battle-dependent effects of the monsters.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Paralyzing Chain</h4>
+                             <p class="text-sm text-amber-100">Converts milled cards into burn damage, but the output is too low to be a viable win condition on its own.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Unintended Application: Link-Spam Engine</h2>
+            <p class="text-amber-100 mb-8 text-center max-w-2xl mx-auto">The modern strategy abandons the archetype's original goal, focusing entirely on exploiting the non-once-per-turn effect of <strong class="text-accent font-bold">Iron Chain Repairman</strong> to build formidable boards.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="invoker-img-container" class="card-image-container flex-shrink-0 card-placeholder">M-X-Saber Invoker</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e261f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon the Linchpin</h3>
+                            </div>
+                            <p class="text-amber-100">Start by swarming two Level 3 monsters to Xyz Summon <strong class="text-accent font-bold">M-X-Saber Invoker</strong>. Its effect is used to summon <strong class="text-accent font-bold">Iron Chain Repairman</strong> directly from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="repairman-img-container" class="card-image-container flex-shrink-0 card-placeholder">Iron Chain Repairman</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e261f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Start the Loop</h3>
+                            </div>
+                            <p class="text-amber-100">With <strong class="text-accent font-bold">Iron Chain Coil</strong> in the Graveyard, activate Repairman's effect to Special Summon it. This forms the core repeatable loop of the combo.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="isolde-img-container" class="card-image-container flex-shrink-0 card-placeholder">Isolde, Two Tales of the Noble Knights</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e261f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Link Climb and Extend</h3>
+                            </div>
+                            <p class="text-amber-100">Use the monsters to Link Summon key extenders like <strong class="text-accent font-bold">Isolde, Two Tales of the Noble Knights</strong>. Use Isolde to summon another Warrior and mill Equip Spells, setting up further plays with cards like <strong class="text-accent font-bold">Power Tool Dragon</strong> to search for revival spells.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Endboard: Fruits of Labor</h2>
+            <p class="text-amber-100 mb-8 text-center max-w-2xl mx-auto">The goal of the extensive combo is to produce an endboard with multiple points of interaction, making it extremely difficult for the opponent to play.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Tri-Gate Wizard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Tri-Gate Wizard</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="trigate-img-container" class="card-image-container card-placeholder">Tri-Gate Wizard</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><strong class="text-accent font-bold">Multiple Negations:</strong> When co-linked, can provide multiple instances of negation and banishing effects.</li>
+                        <li><strong class="text-accent font-bold">Board Control:</strong> The primary boss monster for controlling the game state.</li>
+                    </ul>
+                </div>
+                <!-- Naturia Beast -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Naturia Beast</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="beast-img-container" class="card-image-container card-placeholder">Naturia Beast</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><strong class="text-accent font-bold">Spell Floodgate:</strong> Can single-handedly win games by repeatedly negating all of the opponent's Spell Cards.</li>
+                        <li><strong class="text-accent font-bold">Easy to Summon:</strong> The deck's EARTH composition makes summoning this Synchro monster trivial.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Ceiling:</strong> The combo version can create incredibly oppressive and resilient end boards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400 font-bold">Exploitable Engine:</strong> Repairman's non-HOPT effect makes it one of the most efficient looping engines available for Link spam.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Fragile:</strong> The combo is linear and has very specific choke points that can be disrupted by a single hand trap.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Outdated:</strong> The combo relies on cards that are now forbidden (e.g., <strong class="text-accent font-bold">M-X-Saber Invoker</strong>), making this specific version unplayable in modern formats.</li>
+                         <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400 font-bold">Dysfunctional Core:</strong> As a pure archetype, it is almost completely non-functional due to its conflicting mechanics.</li>
+                    </ul>
+                </div>
+                <!-- External Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key External Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><span class="neutral-icon"><i class="fas fa-user-shield"></i></span> <strong class="text-accent font-bold">Warrior Engine:</strong> Cards like <strong class="text-accent font-bold">Reinforcement of the Army</strong> and <strong class="text-accent font-bold">Isolde</strong> provide unparalleled consistency and searching.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-robot"></i></span> <strong class="text-accent font-bold">Machine/EARTH Engine:</strong> Cards like <strong class="text-accent font-bold">Scrap Recycler</strong> set up the graveyard, while generic EARTH Synchros provide powerful floodgates.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">SIGNIFICANT IMPACT:</strong> The Iron Chain archetype has been heavily affected by Warrior engine restrictions:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Isolde, Two Tales of the Noble Knights (0 copies)</strong> - Key Warrior engine piece</li>
+                            <li><strong class="text-red-400">M-X-Saber Invoker (0 copies)</strong> - Critical Rank 3 Xyz for combos</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All Iron Chain monsters (3 copies each)</li>
+                            <li>Chain Strike and archetype spells</li>
+                            <li>Iron Chain support traps</li>
+                            <li><strong class="text-yellow-400">Reinforcement of the Army (1 copy only)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> Iron Chain has been severely impacted by multiple Warrior engine restrictions. The loss of Isolde and M-X-Saber Invoker, combined with Reinforcement of the Army being limited, drastically reduces the deck's consistency and combo potential, forcing reliance on pure Iron Chain strategies.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ANIMATED CHAIN BANNER SCRIPT ---
+            const canvas = document.getElementById('chain-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let chains = [];
+                const chainCount = 20;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class ChainLink {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = Math.random() * 4 + 2;
+                    }
+
+                    draw(ctx, opacity) {
+                        ctx.strokeStyle = `rgba(217, 119, 6, ${opacity})`; // Amber color
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.ellipse(this.x, this.y, this.size, this.size * 0.5, Math.PI / 2, 0, 2 * Math.PI);
+                        ctx.stroke();
+                    }
+                }
+                
+                class Chain {
+                    constructor() {
+                        this.reset();
+                    }
+
+                    reset() {
+                        this.links = [];
+                        this.x = Math.random() * canvas.width;
+                        this.y = -50;
+                        this.speedY = Math.random() * 0.5 + 0.2;
+                        this.length = Math.floor(Math.random() * 15 + 10);
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+                    
+                    update() {
+                        this.y += this.speedY;
+                        if (this.y > canvas.height + 50) {
+                            this.reset();
+                        }
+
+                        // Add new links at the top
+                        if (this.links.length < this.length) {
+                           this.links.unshift(new ChainLink(this.x, this.y));
+                        } else {
+                            this.links.pop();
+                            this.links.unshift(new ChainLink(this.x, this.y));
+                        }
+
+                        // Update link positions
+                        for (let i = 1; i < this.links.length; i++) {
+                            this.links[i].y = this.links[i - 1].y - this.links[i - 1].size;
+                            this.links[i].x = this.x;
+                        }
+                    }
+
+                    draw(ctx) {
+                        this.links.forEach(link => {
+                            link.draw(ctx, this.opacity);
+                        });
+                    }
+                }
+
+                function init() {
+                    chains = [];
+                    for(let i = 0; i < chainCount; i++) {
+                        chains.push(new Chain());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    chains.forEach(chain => {
+                        chain.update();
+                        chain.draw(ctx);
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+
+            // --- CARD IMAGE FETCHING SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'invoker-img-container': 'M-X-Saber Invoker',
+                'repairman-img-container': 'Iron Chain Repairman',
+                'isolde-img-container': 'Isolde, Two Tales of the Noble Knights',
+                'trigate-img-container': 'Tri-Gate Wizard',
+                'beast-img-container': 'Naturia Beast'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

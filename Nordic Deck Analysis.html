@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nordic Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c1421; /* Deep Nordic Night */
+            color: #e0f2fe; /* Icy Blue Text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(13, 27, 42, 0.8); /* Dark Blue-Gray with transparency */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            border: 1px solid #3d5a80; /* Muted Blue Border */
+            backdrop-filter: blur(5px);
+        }
+        .combo-step-card {
+            background-color: #1c3a5e;
+            border: 1px solid #5c7d9d;
+        }
+        .pro-con-card {
+            background-color: #1c3a5e;
+            border: 1px solid #5c7d9d;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #294c60;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #294c60;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fca5a5; } /* Light Red/Rose for contrast */
+        .arrow-color { color: #90b4d4; }
+        .heading-underline {
+            border-bottom: 2px solid #90b4d4;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #90b4d4;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #90b4d4;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c1421;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3d5a80;
+        }
+
+        #aurora-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(12, 20, 33, 0.7); /* Dark overlay */
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.9);
+        }
+
+        .banner-header h1 {
+            font-family: 'Cinzel Decorative', serif;
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Banner -->
+        <header class="banner-header text-center">
+            <canvas id="aurora-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-bold text-white mb-2">Nordic</h1>
+            <p class="text-lg md:text-xl text-sky-200">A Strategic Deep Dive into the Asgardian Archetype</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-sky-100">
+                    The <strong class="font-bold text-sky-300">Nordic</strong> archetype, rooted in Norse mythology, has transformed from a slow, inconsistent Synchro strategy into a linear "Gullveig Turbo" deck. The modern strategy revolves entirely around resolving the effect of <strong class="font-bold text-sky-300">Gullveig of the Nordic Ascendant</strong>, a powerful Link Monster that single-handedly solves the archetype's historical consistency issues. By sacrificing on-field or in-hand resources, Gullveig enables the rapid summoning of the divine <strong class="font-bold text-sky-300">"Aesir"</strong> boss monsters. This analysis focuses on how the deck leverages a select few <a href="https://yugipedia.com/wiki/Nordic" target="_blank" class="lore-link">Nordic cards</a> to facilitate this one-card combo, the resulting end board, and its inherent vulnerabilities in the modern competitive landscape.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Roster -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Einherjar and Their Arsenal</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Gullveig -->
+                <div class="card p-6 flex flex-col md:flex-row gap-6 items-center">
+                    <div id="gullveig-img-container" class="card-image-container flex-shrink-0 card-placeholder">Gullveig of the Nordic Ascendant</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-sky-300 mb-2">The Engine's Heart: Gullveig</h3>
+                        <p class="text-sky-100">The entire deck is built to summon this LINK-1 monster. Its effect allows the player to banish up to three cards to Special Summon an equal number of "Nordic" monsters from the Deck, but locks the player into only summoning "Aesir" monsters from the Extra Deck for the rest of the turn.</p>
+                    </div>
+                </div>
+                <!-- Alviss -->
+                <div class="card p-6 flex flex-col md:flex-row gap-6 items-center">
+                    <div id="alviss-img-container" class="card-image-container flex-shrink-0 card-placeholder">Alviss of the Nordic Alfar</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-sky-300 mb-2">The Optimal Playmaker: Alviss</h3>
+                        <p class="text-sky-100">The most important Main Deck monster. If it's the only card banished for Gullveig's effect, it allows you to Special Summon an "Aesir" monster directly from the Extra Deck by sending the required materials from your field and Deck to the GY, making the combo incredibly efficient.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The Path to Valhalla</h2>
+            <p class="text-sky-100 mb-8 text-center max-w-2xl mx-auto">The "Alviss Line" is the deck's most powerful and resilient combo, capable of establishing a full board from just two cards while playing around common hand traps.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ivaldi-img-container" class="card-image-container flex-shrink-0 card-placeholder">Nordic Smith Ivaldi</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0d1b2a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Combo</h3>
+                            </div>
+                            <p class="text-sky-100">Normal Summon any Level 5 or lower "Nordic" monster (e.g., <strong class="text-sky-300">Nordic Smith Ivaldi</strong>). Immediately use it to Link Summon <strong class="text-accent">Gullveig of the Nordic Ascendant</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-4"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="alviss-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Alviss of the Nordic Alfar</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0d1b2a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Activate Gullveig & Alviss</h3>
+                            </div>
+                            <p class="text-sky-100">Activate Gullveig's effect, banishing only <strong class="text-sky-300">Alviss of the Nordic Alfar</strong> from your hand. This summons a "Nordic" from your Deck (like <strong class="text-sky-300">Ivaldi</strong> to search a trap). Alviss's effect then triggers.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-4"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="odin-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Odin, Father of the Aesir</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0d1b2a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon an Aesir God</h3>
+                            </div>
+                            <p class="text-sky-100">Alviss's effect resolves, sending the "Nordic" monster on your field and two from your deck to the GY to Special Summon an <strong class="text-accent">"Aesir"</strong> monster like <strong class="text-accent">Odin, Father of the Aesir</strong> directly from the Extra Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Fortress of Asgard: Ideal End Board</h2>
+            <div class="card p-6 lg:p-8 max-w-4xl mx-auto">
+                <p class="text-sky-100 mb-8 text-center">The goal is to establish a defensive wall with multiple layers of protection and a single, powerful point of interaction. This board represents the symbiotic link between Gullveig, its chosen Aesir god, and the hidden power of a Nordic Relic.</p>
+                
+                <div class="flex flex-col items-center gap-4">
+                    <!-- Top Row: Gullveig -->
+                    <div class="flex flex-col items-center w-2/3 md:w-1/3">
+                        <div id="gullveig-endboard-img-container" class="card-image-container mx-auto mb-2 card-placeholder"></div>
+                        <h4 class="font-bold text-sky-300">Gullveig's Protection</h4>
+                        <p class="text-sm text-sky-200 text-center">Points to the "Aesir" monster, granting targeting protection.</p>
+                    </div>
+        
+                    <!-- Arrow Down -->
+                    <i class="fas fa-long-arrow-alt-down text-4xl text-sky-400 my-2"></i>
+        
+                    <!-- Bottom Row: Odin and Svalinn -->
+                    <div class="flex flex-col md:flex-row justify-center items-end gap-8 w-full">
+                        <!-- Odin -->
+                        <div class="flex flex-col items-center w-full md:w-1/2">
+                            <div id="odin-endboard-img-container" class="card-image-container mx-auto mb-2 card-placeholder"></div>
+                            <h4 class="font-bold text-sky-300 text-lg">The Divine Bulwark</h4>
+                            <p class="text-sm text-sky-200 text-center">A high-ATK boss monster that can revive itself.</p>
+                        </div>
+                        
+                        <!-- Svalinn (Set) -->
+                        <div class="flex flex-col items-center w-2/3 md:w-1/3">
+                            <div id="svalinn-endboard-img-container" class="card-image-container mx-auto mb-2 card-placeholder transform md:rotate-90"></div>
+                             <h4 class="font-bold text-sky-300">Board-Wide Negation</h4>
+                            <p class="text-sm text-sky-200 text-center">The face-down Counter Trap threat.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-sky-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Consistency:</strong> The "Gullveig Turbo" strategy is accessible via almost any "Nordic" monster.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Nibiru-Resistant:</strong> The optimal Alviss combo summons exactly 4 times, playing around Nibiru.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">Explosive Turns:</strong> Capable of putting a 4000 ATK boss monster and a powerful negate on board from minimal investment.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-sky-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Fragile End Board:</strong> Relies on a single telegraphed negation and is vulnerable to non-targeting removal.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Passive Bosses:</strong> The "Aesir" monsters lack Quick Effects, offering no interaction during the opponent's Main Phase.</li>
+                        <li><span class="con-icon"><i class="fas fa-undo-alt"></i></span> <strong class="text-red-300">Poor Recovery:</strong> If the main board is broken, the deck struggles to mount a comeback.</li>
+                    </ul>
+                </div>
+                <!-- External Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-sky-100">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-sky-300">Adventurer Engine:</strong> Provides a crucial omni-negate to protect the main combo from hand traps.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-sky-300">Bystial Engine:</strong> Offers disruption and allows for a "Plan B" by making powerful generic Synchro monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-motorcycle"></i></span> <strong class="text-sky-300">Speedroid Engine:</strong> Enables combo extension without using the Normal Summon.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-sky-200">
+                            <li>All "Nordic" and "Aesir" cards are at 3 copies.</li>
+                            <li>The core engine of Gullveig, Alviss, and Ivaldi is at full power.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">External Restrictions</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-sky-200">
+                            <li><strong class="text-yellow-300">Rite of Aramesir (Limited)</strong></li>
+                            <li><strong class="text-yellow-300">Bystial Magnamhut (Limited)</strong></li>
+                            <li><strong class="text-yellow-300">Bystial Druiswurm (Limited)</strong></li>
+                             <li><strong class="text-yellow-300">Speedroid Terrortop (Limited)</strong></li>
+                             <li><strong class="text-red-400">Baronne de Fleur (Forbidden)</strong></li>
+                             <li><strong class="text-red-400">M-X-Saber Invoker (Forbidden)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-sky-900 bg-opacity-30 rounded border-l-4 border-sky-500">
+                    <p class="text-sm text-sky-200"><strong>Meta Implications:</strong> The core Nordic strategy is completely untouched by the banlist. However, the external engines it often relies upon for competitive viability have been hit. The limitations on key Adventurer and Bystial cards, and the forbidding of key generic bosses, slightly reduce the deck's ceiling but do not stop its primary game plan.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- AURORA BANNER ANIMATION ---
+            const canvas = document.getElementById('aurora-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.vx = (Math.random() - 0.5) * 0.5;
+                        this.vy = (Math.random() - 0.5) * 0.5 - 0.2; // Tend to move upwards
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.alpha = Math.random() * 0.5 + 0.2;
+                        this.color = `rgba(144, 180, 212, ${this.alpha})`;
+                    }
+
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'gullveig-img-container': 'Gullveig of the Nordic Ascendant',
+                'alviss-img-container': 'Alviss of the Nordic Alfar',
+                'ivaldi-img-container': 'Nordic Smith Ivaldi',
+                'alviss-combo-img-container': 'Alviss of the Nordic Alfar',
+                'odin-combo-img-container': 'Odin, Father of the Aesir',
+                'gullveig-endboard-img-container': 'Gullveig of the Nordic Ascendant',
+                'odin-endboard-img-container': 'Odin, Father of the Aesir',
+                'svalinn-endboard-img-container': 'Nordic Relic Svalinn'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

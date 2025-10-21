@@ -1,0 +1,949 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exodia Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a00; /* Dark, muted gold/black */
+            color: #f5e6c4; /* Papyrus/sand color */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b2b0e; /* Darker, muddy gold */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d4d1a; /* Muted gold border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3b3b14;
+            border: 1px solid #5a5a2a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3b3b14;
+            color: #f5e6c4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b3b14;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ffcc00; } /* Bright Gold */
+        .arrow-color { color: #d4b106; }
+        .heading-underline {
+            border-bottom: 2px solid #d4b106;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ffcc00;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffcc00;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ffcc00;
+        }
+        .banner-header {
+            position: relative;
+            min-height: 200px;
+            background: linear-gradient(45deg, #1a1a00 0%, #2b2b0e 50%, #1a1a00 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 2rem;
+            margin-bottom: 2.5rem;
+            border: 2px solid #ffcc00;
+            box-shadow: 
+                0 0 20px rgba(255, 204, 0, 0.3),
+                inset 0 0 30px rgba(255, 204, 0, 0.1);
+        }
+        #sealing-chains-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 204, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 204, 0, 0.1) 0%, transparent 50%),
+                linear-gradient(90deg, transparent 0%, rgba(255, 204, 0, 0.05) 50%, transparent 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 
+                2px 2px 4px rgba(0, 0, 0, 0.9),
+                0 0 10px rgba(255, 204, 0, 0.5);
+        }
+        .banner-header h1 {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(45deg, #ffcc00, #fff, #ffcc00);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: goldShimmer 3s ease-in-out infinite;
+        }
+        @keyframes goldShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        /* Modal styles */
+        .modal-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        .hidden {
+            display: none;
+        }
+        .modal-hidden {
+            pointer-events: none;
+        }
+        .modal-hidden .modal-overlay {
+            opacity: 0;
+        }
+        .modal-hidden .modal-content {
+            opacity: 0;
+            transform: scale(0.95) translateY(-20px);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="sealing-chains-banner"></canvas>
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-3">EXODIA</h1>
+            <h2 class="text-xl md:text-2xl text-yellow-200 mb-2 font-bold">THE FORBIDDEN ONE</h2>
+            <p class="text-base md:text-lg text-yellow-300 italic">"When all five pieces unite, the victor shall be decided instantly."</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-yellow-100 mb-6">
+                    For over two decades, the name <strong class="text-accent font-bold">Exodia</strong> has been synonymous with one of the most iconic and absolute win conditions in Yu-Gi-Oh!. The act of assembling the five "Forbidden One" cards represents ultimate, inevitable power. Historically confined to linear, non-interactive strategies, modern support has transformed the archetype's philosophy. It has pivoted from a passive combo deck into a proactive control strategy centered on a new, formidable boss monster. The deck no longer seeks to avoid interaction; it dares the opponent to break its well-defended fortress, ready to <a href="https://yugipedia.com/wiki/Obliterate!!!" target="_blank" class="lore-link">Obliterate!!!</a> their entire field.
+                </p>
+                <!-- Detailed Analysis Button -->
+                <button id="open-modal-btn" class="w-full bg-yellow-600 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 shadow-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-book-open"></i>
+                    Open Detailed Strategic Analysis
+                </button>
+            </div>
+        </section>
+
+        <!-- The Modern Engine Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Modern Engine: The Millennium & Wedju Support</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                The newest support provides unprecedented consistency, transforming the deck from a fragile gimmick into a resilient and proactive strategy.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Starters & Searchers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-key text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Consistency Core</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Millennium Ankh</h4>
+                            <p class="text-sm text-yellow-100">The keystone. This Spell summons the new boss monster by revealing the 5 Exodia pieces directly from your Deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Shield of the Millennium Dynasty</h4>
+                            <p class="text-sm text-yellow-100">A true one-card starter. It summons itself from the S/T Zone and searches for "Millennium Ankh".</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Sengenjin Wakes from a Millennium</h4>
+                            <p class="text-sm text-yellow-100">A versatile starter that can search any "Millennium" monster, providing flexibility in your combo lines.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Utility & Protection -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-alt text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Utility & Protection</h3>
+                    </div>
+                    <div class="space-y-4">
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Golem that Guards the Millennium Treasures</h4>
+                             <p class="text-sm text-yellow-100">Searches the Field Spell, "Wedju Temple", and protects the activation of "Millennium Ankh" from being negated.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Wedju Temple</h4>
+                            <p class="text-sm text-yellow-100">A Field Spell that turns any monster in hand into an extender by placing a "Millennium" monster from the Deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Maiden of the Millennium Moon</h4>
+                            <p class="text-sm text-yellow-100">Provides crucial targeting protection for your boss monster against common removal options.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The One-Card Path to the Incarnate</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough shows how one card, like <strong class="text-accent font-bold">Shield of the Millennium Dynasty</strong>, can lead to the deck's new unstoppable boss monster.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="shield-img-container" class="card-image-container flex-shrink-0 card-placeholder">Shield of the Millennium Dynasty</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b0e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Ritual</h3>
+                            </div>
+                            <p class="text-yellow-100">Activate <strong class="text-accent font-bold">Shield of the Millennium Dynasty</strong>, placing it in the S/T Zone. Then, pay 2000 LP to Special Summon it.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-chevron-down text-4xl arrow-color animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ankh-img-container" class="card-image-container flex-shrink-0 card-placeholder">Millennium Ankh</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b0e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Search the Keystone</h3>
+                            </div>
+                            <p class="text-yellow-100">Upon summon, Shield's effect activates, adding <strong class="text-accent font-bold">Millennium Ankh</strong> from your deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-chevron-down text-4xl arrow-color animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="incarnate-img-container" class="card-image-container flex-shrink-0 card-placeholder">The Unstoppable Exodia Incarnate</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b0e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Unleash the Forbidden One</h3>
+                            </div>
+                            <p class="text-yellow-100">Activate <strong class="text-accent font-bold">Millennium Ankh</strong>, revealing the five "Forbidden One" pieces from your Deck to Special Summon <strong class="text-accent font-bold">The Unstoppable Exodia Incarnate</strong> from your Extra Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Modern End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Unstoppable Exodia Incarnate</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="incarnate-img-container-endboard" class="card-image-container card-placeholder">The Unstoppable Exodia Incarnate</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent font-bold">Immunity:</strong> Cannot be destroyed by opponent's card effects.</li>
+                        <li><strong class="text-accent font-bold">S/T Negation:</strong> A Quick Effect to negate one Spell/Trap card or effect per turn.</li>
+                         <li><strong class="text-accent font-bold">ATK Boost:</strong> Can make its ATK become your current Life Points during damage calculation.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Exxod Fires of Rage</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="exxod-img-container" class="card-image-container card-placeholder">Exxod Fires of Rage</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent font-bold">Searched & Set:</strong> Set directly from the Deck by the Incarnate's End Phase effect.</li>
+                        <li><strong class="text-accent font-bold">Board Wipe:</strong> Destroys all cards your opponent controls if you have a Level 10+ "Exodia" monster.</li>
+                        <li><strong class="text-accent font-bold">Recursion:</strong> Can be banished from the GY to recur "Forbidden One" pieces.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Consistency:</strong> Multiple one-card starters make the main combo highly reliable.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Powerful Control:</strong> The end board provides destruction protection, negation, and a full board wipe.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400 font-bold">Resilience:</strong> Less vulnerable to common hand traps like <strong class="text-red-400">Maxx "C"</strong> <span class="text-red-400">(currently banned)</span> that punish special summoning decks.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-bullseye"></i></span> <strong class="text-red-400 font-bold">Clear Choke Points:</strong> A well-timed Ash Blossom on the starter's search can be devastating.</li>
+                        <li><span class="con-icon"><i class="fas fa-ghost"></i></span> <strong class="text-red-400 font-bold">Non-Destruction Removal:</strong> Highly vulnerable to "Kaiju" monsters or effects that tribute, banish, or return to hand.</li>
+                        <li><span class="con-icon"><i class="fas fa-predictable"></i></span> <strong class="text-red-400 font-bold">Linear Gameplan:</strong> The strategy is very predictable, making it easier for prepared opponents to counter.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent font-bold">Link Climbing:</strong> The Millennium engine can be used generically to quickly summon powerful Link monsters like S:P Little Knight.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent font-bold">Fiendsmith Engine:</strong> The Level 6 "Golem" has natural synergy with the popular Fiendsmith package, acting as material for their plays.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Detailed Analysis Modal -->
+    <div id="detailed-analysis-modal" class="modal-hidden fixed inset-0 flex items-center justify-center z-50">
+        <!-- Overlay -->
+        <div id="modal-overlay" class="modal-overlay fixed inset-0 bg-black bg-opacity-75"></div>
+        
+        <!-- Modal Content -->
+        <div id="modal-content" class="modal-content card w-11/12 max-w-3xl max-h-[90vh] flex flex-col relative">
+            <div class="flex justify-between items-center p-4 border-b border-[#4d4d1a]">
+                <h2 class="text-2xl font-bold text-accent font-cinzel">Detailed Strategic Analysis</h2>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="p-6 space-y-6 overflow-y-auto">
+                <!-- Classic Strategies Section -->
+                <section>
+                    <h3 class="text-xl font-bold text-white mb-3">The Foundational Archetype: Classic Strategies</h3>
+                    <p class="text-yellow-100 mb-4">Historically, players approached assembling the five "Forbidden One" pieces from two opposing standpoints: overwhelming speed or impenetrable defense.</p>
+                    <div class="space-y-4">
+                        <div class="p-4 rounded-lg bg-[#3b3b14]">
+                            <h4 class="font-bold text-accent">Strategy A: First Turn Kill (FTK) / Turbo Draw</h4>
+                            <p class="text-yellow-100 text-sm">The most aggressive strategy. The objective is to use a critical mass of Spell Cards to draw through the entire deck and assemble all five pieces before the opponent has a chance to take a turn. This "combo-solitaire" approach relies on engines like <strong class="text-white">Royal Magical Library</strong> and the <strong class="text-white">Bamboo Sword</strong> engine to cycle through the deck at incredible speed.</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-[#3b3b14]">
+                            <h4 class="font-bold text-accent">Strategy B: Stall and Survive</h4>
+                            <p class="text-yellow-100 text-sm">The antithesis of the FTK approach. This method focuses on defense and longevity, aiming to prolong the duel to draw the five pieces naturally. This is achieved by creating a board state the opponent cannot overcome, often using the infamous <strong class="text-white">"Crooked Cook"</strong> stall (a monster that can be made unaffected by all other cards) or by using "floodgate" cards like <strong class="text-white">Swords of Revealing Light</strong> or <strong class="text-red-400">Summon Limit</strong> <span class="text-red-400">(currently banned)</span> to cripple the opponent's strategy.</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Alternative Incarnations Section -->
+                <section>
+                    <h3 class="text-xl font-bold text-white mb-3">The Expanded Pantheon: Alternative Incarnations</h3>
+                    <p class="text-yellow-100 mb-4">Over the years, several attempts were made to expand the Exodia theme beyond its original five pieces, introducing boss monsters with alternative mechanics. These earlier designs highlight the successes of the modern support.</p>
+                    <div class="space-y-4">
+                        <div class="p-4 rounded-lg bg-[#3b3b14]">
+                            <h4 class="font-bold text-accent">Exodia Necross</h4>
+                            <p class="text-yellow-100 text-sm">Summoned only when all five pieces were in the Graveyard. It was immune to destruction by battle and Spell/Traps but was destroyed if any piece was removed from the GY. This created a fundamental conflict with the primary goal of keeping the pieces in hand, making it too fragile for competitive play.</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-[#3b3b14]">
+                            <h4 class="font-bold text-accent">Exodius the Ultimate Forbidden Lord</h4>
+                            <p class="text-yellow-100 text-sm">An ambitious design that shuffled all monsters from the GY back into the Deck to be summoned. It had a slow, alternative win condition requiring five separate attacks. Its contradictory effects (emptying the GY to summon, but needing monsters in GY for ATK) made it impractical for its intended purpose.</p>
+                        </div>
+                         <div class="p-4 rounded-lg bg-[#3b3b14]">
+                            <h4 class="font-bold text-accent">The Legendary Exodia Incarnate</h4>
+                            <p class="text-yellow-100 text-sm">The most successful of the older retrains. It was unaffected by other cards' effects and could recycle "Forbidden One" pieces from the Graveyard to the hand each turn. This card established the template of a powerful, protected boss monster that the modern support would later perfect, but its setup was less consistent.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- MODAL SCRIPT ---
+            const openBtn = document.getElementById('open-modal-btn');
+            const closeBtn = document.getElementById('close-modal-btn');
+            const modal = document.getElementById('detailed-analysis-modal');
+            const overlay = document.getElementById('modal-overlay');
+
+            const openModal = () => {
+                modal.classList.remove('modal-hidden');
+            };
+
+            const closeModal = () => {
+                modal.classList.add('modal-hidden');
+            };
+
+            openBtn.addEventListener('click', openModal);
+            closeBtn.addEventListener('click', closeModal);
+            overlay.addEventListener('click', closeModal);
+
+            // --- EXODIA MYSTICAL BANNER ANIMATION ---
+            const canvas = document.getElementById('sealing-chains-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                let particles = [];
+                let chains = [];
+                let exodiaSymbols = [];
+                let hieroglyphs = [];
+                
+                class ExodiaParticle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 4 + 2;
+                        this.speedX = (Math.random() * 2 - 1) * 0.3;
+                        this.speedY = (Math.random() * 2 - 1) * 0.3;
+                        this.opacity = Math.random() * 0.8 + 0.2;
+                        this.pulse = Math.random() * Math.PI * 2;
+                        this.type = Math.random() < 0.7 ? 'gold' : 'mystical';
+                    }
+                    update() {
+                        this.pulse += 0.03;
+                        this.opacity = (Math.sin(this.pulse) + 1) * 0.4 + 0.3;
+                        
+                        if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+                        if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                    }
+                    draw() {
+                        ctx.save();
+                        if (this.type === 'gold') {
+                            ctx.shadowColor = 'rgba(255, 204, 0, 0.8)';
+                            ctx.shadowBlur = 15;
+                            ctx.fillStyle = `rgba(255, 204, 0, ${this.opacity})`;
+                        } else {
+                            ctx.shadowColor = 'rgba(138, 43, 226, 0.6)';
+                            ctx.shadowBlur = 10;
+                            ctx.fillStyle = `rgba(138, 43, 226, ${this.opacity})`;
+                        }
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+
+                class SealingChain {
+                    constructor() {
+                        this.startX = Math.random() * canvas.width;
+                        this.startY = Math.random() * canvas.height;
+                        this.endX = Math.random() * canvas.width;
+                        this.endY = Math.random() * canvas.height;
+                        this.links = [];
+                        this.opacity = Math.random() * 0.4 + 0.1;
+                        this.pulse = Math.random() * Math.PI * 2;
+                        
+                        // Create chain links
+                        const linkCount = 8;
+                        for (let i = 0; i <= linkCount; i++) {
+                            const progress = i / linkCount;
+                            this.links.push({
+                                x: this.startX + (this.endX - this.startX) * progress,
+                                y: this.startY + (this.endY - this.startY) * progress,
+                                size: Math.random() * 3 + 2
+                            });
+                        }
+                    }
+                    update() {
+                        this.pulse += 0.02;
+                        this.opacity = (Math.sin(this.pulse) + 1) * 0.15 + 0.1;
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.strokeStyle = `rgba(192, 192, 192, ${this.opacity})`;
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([5, 3]);
+                        
+                        // Draw chain line
+                        ctx.beginPath();
+                        ctx.moveTo(this.startX, this.startY);
+                        ctx.lineTo(this.endX, this.endY);
+                        ctx.stroke();
+                        
+                        // Draw chain links
+                        ctx.fillStyle = `rgba(160, 160, 160, ${this.opacity * 1.5})`;
+                        for (let link of this.links) {
+                            ctx.beginPath();
+                            ctx.arc(link.x, link.y, link.size, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        ctx.restore();
+                    }
+                }
+
+                class ExodiaSymbol {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.rotation = 0;
+                        this.rotationSpeed = (Math.random() * 2 - 1) * 0.01;
+                        this.opacity = Math.random() * 0.3 + 0.1;
+                        this.pulse = Math.random() * Math.PI * 2;
+                        this.size = Math.random() * 20 + 15;
+                        this.type = Math.floor(Math.random() * 5); // 0-4 for the 5 pieces
+                        this.driftX = (Math.random() * 2 - 1) * 0.2;
+                        this.driftY = (Math.random() * 2 - 1) * 0.2;
+                    }
+                    update() {
+                        this.rotation += this.rotationSpeed;
+                        this.pulse += 0.015;
+                        this.opacity = (Math.sin(this.pulse) + 1) * 0.15 + 0.1;
+                        this.x += this.driftX;
+                        this.y += this.driftY;
+                        
+                        // Wrap around edges
+                        if (this.x > canvas.width + 50) this.x = -50;
+                        if (this.x < -50) this.x = canvas.width + 50;
+                        if (this.y > canvas.height + 50) this.y = -50;
+                        if (this.y < -50) this.y = canvas.height + 50;
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.rotation);
+                        ctx.strokeStyle = `rgba(255, 204, 0, ${this.opacity})`;
+                        ctx.fillStyle = `rgba(255, 204, 0, ${this.opacity * 0.3})`;
+                        ctx.lineWidth = 2;
+                        ctx.shadowColor = 'rgba(255, 204, 0, 0.5)';
+                        ctx.shadowBlur = 10;
+                        
+                        // Draw different Exodia piece symbols
+                        const s = this.size;
+                        switch(this.type) {
+                            case 0: // Head - Eye symbol
+                                ctx.beginPath();
+                                ctx.ellipse(0, 0, s*0.6, s*0.3, 0, 0, Math.PI * 2);
+                                ctx.stroke();
+                                ctx.beginPath();
+                                ctx.arc(0, 0, s*0.2, 0, Math.PI * 2);
+                                ctx.fill();
+                                break;
+                            case 1: // Left Arm - L shape
+                                ctx.beginPath();
+                                ctx.moveTo(-s*0.3, -s*0.3);
+                                ctx.lineTo(-s*0.3, s*0.3);
+                                ctx.lineTo(s*0.3, s*0.3);
+                                ctx.stroke();
+                                break;
+                            case 2: // Right Arm - reverse L
+                                ctx.beginPath();
+                                ctx.moveTo(s*0.3, -s*0.3);
+                                ctx.lineTo(s*0.3, s*0.3);
+                                ctx.lineTo(-s*0.3, s*0.3);
+                                ctx.stroke();
+                                break;
+                            case 3: // Left Leg - Diamond
+                                ctx.beginPath();
+                                ctx.moveTo(0, -s*0.4);
+                                ctx.lineTo(s*0.3, 0);
+                                ctx.lineTo(0, s*0.4);
+                                ctx.lineTo(-s*0.3, 0);
+                                ctx.closePath();
+                                ctx.stroke();
+                                break;
+                            case 4: // Right Leg - Triangle
+                                ctx.beginPath();
+                                ctx.moveTo(0, -s*0.4);
+                                ctx.lineTo(s*0.3, s*0.4);
+                                ctx.lineTo(-s*0.3, s*0.4);
+                                ctx.closePath();
+                                ctx.stroke();
+                                break;
+                        }
+                        ctx.restore();
+                    }
+                }
+
+                class Hieroglyph {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.opacity = Math.random() * 0.2 + 0.05;
+                        this.pulse = Math.random() * Math.PI * 2;
+                        this.size = Math.random() * 15 + 10;
+                        this.glyph = Math.floor(Math.random() * 6);
+                        this.driftSpeed = Math.random() * 0.1 + 0.05;
+                    }
+                    update() {
+                        this.pulse += 0.01;
+                        this.opacity = (Math.sin(this.pulse) + 1) * 0.1 + 0.05;
+                        this.y -= this.driftSpeed;
+                        if (this.y < -50) {
+                            this.y = canvas.height + 50;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.strokeStyle = `rgba(205, 133, 63, ${this.opacity})`;
+                        ctx.lineWidth = 1.5;
+                        
+                        const s = this.size;
+                        // Draw Egyptian-style hieroglyphs
+                        switch(this.glyph) {
+                            case 0: // Ankh
+                                ctx.beginPath();
+                                ctx.arc(0, -s*0.2, s*0.2, 0, Math.PI * 2);
+                                ctx.moveTo(0, 0);
+                                ctx.lineTo(0, s*0.4);
+                                ctx.moveTo(-s*0.3, s*0.1);
+                                ctx.lineTo(s*0.3, s*0.1);
+                                ctx.stroke();
+                                break;
+                            case 1: // Eye of Horus
+                                ctx.beginPath();
+                                ctx.ellipse(0, 0, s*0.3, s*0.15, 0, 0, Math.PI * 2);
+                                ctx.moveTo(-s*0.1, s*0.1);
+                                ctx.lineTo(-s*0.1, s*0.3);
+                                ctx.stroke();
+                                break;
+                            case 2: // Scarab
+                                ctx.beginPath();
+                                ctx.ellipse(0, 0, s*0.25, s*0.4, 0, 0, Math.PI * 2);
+                                ctx.moveTo(-s*0.3, 0);
+                                ctx.lineTo(-s*0.4, -s*0.1);
+                                ctx.moveTo(s*0.3, 0);
+                                ctx.lineTo(s*0.4, -s*0.1);
+                                ctx.stroke();
+                                break;
+                            case 3: // Pyramid
+                                ctx.beginPath();
+                                ctx.moveTo(0, -s*0.3);
+                                ctx.lineTo(s*0.3, s*0.3);
+                                ctx.lineTo(-s*0.3, s*0.3);
+                                ctx.closePath();
+                                ctx.stroke();
+                                break;
+                            case 4: // Staff
+                                ctx.beginPath();
+                                ctx.moveTo(0, -s*0.4);
+                                ctx.lineTo(0, s*0.4);
+                                ctx.arc(0, -s*0.3, s*0.1, 0, Math.PI * 2);
+                                ctx.stroke();
+                                break;
+                            case 5: // Bird
+                                ctx.beginPath();
+                                ctx.moveTo(-s*0.3, 0);
+                                ctx.quadraticCurveTo(0, -s*0.2, s*0.3, 0);
+                                ctx.quadraticCurveTo(0, s*0.1, -s*0.3, 0);
+                                ctx.stroke();
+                                break;
+                        }
+                        ctx.restore();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    chains = [];
+                    exodiaSymbols = [];
+                    hieroglyphs = [];
+                    
+                    const particleCount = Math.min((canvas.width * canvas.height) / 6000, 40);
+                    const chainCount = Math.min(canvas.width / 150, 6);
+                    const symbolCount = Math.min(canvas.width / 200, 5);
+                    const hieroglyphCount = Math.min(canvas.width / 100, 12);
+                    
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new ExodiaParticle());
+                    }
+                    
+                    for (let i = 0; i < chainCount; i++) {
+                        chains.push(new SealingChain());
+                    }
+                    
+                    for (let i = 0; i < symbolCount; i++) {
+                        exodiaSymbols.push(new ExodiaSymbol());
+                    }
+                    
+                    for (let i = 0; i < hieroglyphCount; i++) {
+                        hieroglyphs.push(new Hieroglyph());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw hieroglyphs first (background layer)
+                    for (let hieroglyph of hieroglyphs) {
+                        hieroglyph.update();
+                        hieroglyph.draw();
+                    }
+                    
+                    // Draw sealing chains
+                    for (let chain of chains) {
+                        chain.update();
+                        chain.draw();
+                    }
+                    
+                    // Draw particles
+                    for (let particle of particles) {
+                        particle.update();
+                        particle.draw();
+                    }
+                    
+                    // Draw mystical connections between particles
+                    connectParticles();
+                    
+                    // Draw Exodia symbols (foreground layer)
+                    for (let symbol of exodiaSymbols) {
+                        symbol.update();
+                        symbol.draw();
+                    }
+                    
+                    requestAnimationFrame(animate);
+                }
+
+                function connectParticles() {
+                    for (let a = 0; a < particles.length; a++) {
+                        for (let b = a + 1; b < particles.length; b++) {
+                            let distance = Math.sqrt(
+                                (particles[a].x - particles[b].x) ** 2 +
+                                (particles[a].y - particles[b].y) ** 2
+                            );
+                            if (distance < 100) {
+                                let opacity = (1 - distance / 100) * 0.25;
+                                ctx.strokeStyle = `rgba(255, 204, 0, ${opacity})`;
+                                ctx.lineWidth = 1;
+                                ctx.setLineDash([]);
+                                ctx.beginPath();
+                                ctx.moveTo(particles[a].x, particles[a].y);
+                                ctx.lineTo(particles[b].x, particles[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- SCRIPT FOR CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'shield-img-container': 'Shield of the Millennium Dynasty',
+                'ankh-img-container': 'Millennium Ankh',
+                'incarnate-img-container': 'The Unstoppable Exodia Incarnate',
+                'incarnate-img-container-endboard': 'The Unstoppable Exodia Incarnate',
+                'exxod-img-container': 'Exxod, Master of The Guard' // Placeholder as "Fires of Rage" is new
+            };
+            
+             fetchAndDisplayCardImage("Exxod Fires of Rage", 'exxod-img-container').catch(() => {
+                 fetchAndDisplayCardImage("Obliterate!!!", 'exxod-img-container');
+             });
+
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                if(containerId !== 'exxod-img-container') {
+                    fetchAndDisplayCardImage(cardName, containerId);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+

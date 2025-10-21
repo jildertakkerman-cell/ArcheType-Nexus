@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryzeal Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a0b0b;
+            color: #fff0f0;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a1212;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #5c2a2a;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3b1e1e;
+            border: 1px solid #7d3a3a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3b1e1e;
+            color: #fde8e8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b1e1e;
+        }
+        .pro-icon { color: #4ade80; }
+        .con-icon { color: #f87171; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ffc700; }
+        .arrow-color { color: #ff8c00; }
+        .heading-underline {
+            border-bottom: 2px solid #ff8c00;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ffc700;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffc700;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #ffffff;
+        }
+
+        /* --- Ryzeal Animated Banner Styles --- */
+        .banner {
+            position: relative;
+            height: 140px;
+            background: #000;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 2px solid #5c2a2a;
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: content-appear 1s ease-out 0.5s forwards;
+        }
+        .banner-title {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0 0 8px rgba(255, 199, 0, 0.8), 0 0 15px rgba(255, 70, 0, 0.6);
+            letter-spacing: 0.1em;
+        }
+        .banner-subtitle {
+            font-size: 1.1rem;
+            color: #ffdab3;
+        }
+        canvas#ryzeal-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <canvas id="ryzeal-banner"></canvas>
+                <div class="banner-content sr-only">
+                    <h1 class="banner-title">Ryzeal</h1>
+                    <p class="banner-subtitle">An In-Depth Analysis of the Rank 4 Juggernaut</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-red-100">
+                    The <strong class="text-accent font-bold">Ryzeal</strong> archetype, introduced in <em>Crossover Breakers</em>, is a formidable strategy centered around the rapid summoning of Level 4 monsters to facilitate the Xyz Summon of powerful Rank 4 monsters. Its design philosophy emphasizes consistency and resilience, allowing it to establish a threatening board from a single card. The engine's core is a symbiotic relationship between its LIGHT Pyro and FIRE Thunder monsters, creating a self-perpetuating cycle of searching and summoning that forms the very <a href="https://yugipedia.com/wiki/Ryzeal" target="_blank" class="lore-link">protocol of the Ryzeal strategy</a>.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Architecture</h2>
+            <div class="card p-6">
+                <h3 class="text-lg font-bold text-white mb-2">The Duality of Power: LIGHT Pyros & FIRE Thunders</h3>
+                <p class="text-red-100">
+                    The fundamental design of the Ryzeal Main Deck is a masterclass in consistency. Monsters are categorized into two attribute/type pairings: LIGHT Pyro and FIRE Thunder. This division creates a reciprocal searching loop: a LIGHT Pyro monster searches a FIRE Thunder monster, which in turn searches a LIGHT Pyro monster. This ensures a single starter card develops the board by providing another necessary monster, naturally generating the materials for an Xyz Summon and making the deck incredibly difficult to "brick."
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Main Deck Operators</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ice Ryzeal</h3>
+                    <p class="text-red-100">The premier one-card starter. On Normal Summon, it Special Summons any other "Ryzeal" monster from the deck, immediately establishing two monsters on the field.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ext Ryzeal</h3>
+                    <p class="text-red-100">A versatile starter and extender. It can Special Summon itself by sending an Xyz Monster from the Extra Deck to the GY, a cost that can be used to set up other effects.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Sword Ryzeal</h3>
+                    <p class="text-red-100">The primary search target that continues the chain of advantage. When summoned, it adds a LIGHT Pyro monster from the Deck to the hand.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Star Ryzeal</h3>
+                    <p class="text-red-100">A crucial combo piece that provides access to the archetype's powerful backrow by setting a "Ryzeal" Spell/Trap directly from the deck.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Ice Ryzeal Standard</h2>
+            <p class="text-red-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how one card, <strong class="text-accent font-bold">Ice Ryzeal</strong>, can lead to a formidable end board.</p>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ice-ryzeal-img" class="card-image-container flex-shrink-0 card-placeholder">Ice Ryzeal</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1212] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Protocol</h3>
+                            </div>
+                            <p class="text-red-100">Normal Summon <strong class="text-accent font-bold">Ice Ryzeal</strong>. Activate its effect to Special Summon <strong class="text-accent font-bold">Sword Ryzeal</strong> from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl my-4 arrow-color"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="duo-drive-img" class="card-image-container flex-shrink-0 card-placeholder">Ryzeal Duo Drive</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1212] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Search and Assemble</h3>
+                            </div>
+                            <p class="text-red-100"><strong class="text-accent font-bold">Sword Ryzeal</strong> searches an extender like <strong class="text-accent font-bold">Ext Ryzeal</strong>. Use these monsters to Xyz Summon <strong class="text-accent font-bold">Ryzeal Duo Drive</strong>, whose effect is the main choke point, searching for key Spell/Trap support.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl my-4 arrow-color"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="detonator-img-combo" class="card-image-container flex-shrink-0 card-placeholder">Ryzeal Detonator</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1212] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon the Juggernaut</h3>
+                            </div>
+                            <p class="text-red-100">Using the extenders searched, swarm the field to Xyz Summon <strong class="text-accent font-bold">Ryzeal Detonator</strong>, the primary boss monster and main source of disruption.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Optimal Endboard: Establishing Control</h2>
+            <div class="card p-6">
+                <p class="text-red-100 mb-8 text-center max-w-3xl mx-auto">The goal of the Ryzeal combo is to construct a multi-layered board of interaction that can systematically dismantle an opponent's turn. The strength of this endboard lies not in unbreakable floodgates, but in a high volume of targeted, reactive disruptions, creating a daunting field from just a single starting card.</p>
+                
+                <!-- Standard Endboard -->
+                <h3 class="text-xl font-bold text-accent mb-6 text-center">Standard One-Card Combo Endboard (~5-7 Interruptions)</h3>
+                <div class="space-y-4">
+                    <!-- Main Board Presence -->
+                    <div class="flex flex-col md:flex-row items-center gap-6 p-4 combo-step-card rounded-lg">
+                        <div id="detonator-img-endboard" class="w-32 flex-shrink-0 card-placeholder">Ryzeal Detonator</div>
+                        <div class="flex-grow text-center md:text-left">
+                            <h4 class="font-bold text-white text-lg">Ryzeal Detonator</h4>
+                            <p class="text-sm text-red-100"><strong class="text-amber-300">Primary Disruption:</strong> Provides 2-3+ non-once-per-turn card destructions as a Quick Effect. It also protects other Xyz monsters by detaching its own materials.</p>
+                        </div>
+                    </div>
+                    <!-- Support Pieces -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 combo-step-card rounded-lg flex flex-col items-center text-center">
+                            <div id="cross-img-endboard" class="w-24 h-36 mb-2 card-placeholder">Ryzeal Cross</div>
+                            <h5 class="font-bold text-white">Ryzeal Cross</h5>
+                            <p class="text-xs text-red-100">Offers a crucial monster effect negation to protect your combos or disrupt the opponent.</p>
+                        </div>
+                        <div class="p-4 combo-step-card rounded-lg flex flex-col items-center text-center">
+                            <div id="mereologic-aggregator-img" class="w-24 h-36 mb-2 card-placeholder">Mereologic Aggregator</div>
+                             <h5 class="font-bold text-white">Aggregator in GY</h5>
+                            <p class="text-xs text-red-100">When detached from Detonator, its GY effect provides another targeted card effect negate.</p>
+                        </div>
+                        <div class="p-4 combo-step-card rounded-lg flex flex-col items-center text-center">
+                            <div id="plugin-img-endboard" class="w-24 h-36 mb-2 card-placeholder">Ryzeal Plugin</div>
+                            <h5 class="font-bold text-white">Set Spell/Trap</h5>
+                            <p class="text-xs text-red-100">Typically <strong class="text-amber-300">Ryzeal Plugin</strong> for revival or <strong class="text-amber-300">Plasma Hole</strong> for more destruction.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adaptive Toolbox -->
+                <h3 class="text-xl font-bold text-accent mt-12 mb-6 text-center">The Adaptive Rank 4 Toolbox</h3>
+                <p class="text-red-100 mb-8 text-center max-w-3xl mx-auto">Beyond its in-archetype bosses, Ryzeal excels as a versatile "toolbox" deck. Its consistent engine can easily pivot to summon powerful, generic Rank 4 Xyz monsters to counter specific matchups and adapt its endboard on the fly.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Bagooska Card -->
+                    <div class="group relative overflow-hidden rounded-xl border border-amber-500/30 bg-gradient-to-b from-[#3b1e1e] to-[#2a1212] p-6 transition-all duration-300 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/20">
+                        <div class="flex flex-col items-center text-center">
+                            <div id="bagooska-img-endboard" class="w-40 h-auto mb-4 card-placeholder"></div>
+                            <h4 class="font-bold text-accent text-lg">Number 41: Bagooska</h4>
+                            <div class="mt-2 flex items-center gap-2 text-amber-200">
+                                <i class="fas fa-bed"></i>
+                                <span class="font-semibold">Stall & Negate</span>
+                            </div>
+                            <p class="text-sm text-red-100 mt-2">Cripples monster-heavy strategies by forcing them into Defense Position and negating their activated effects.</p>
+                        </div>
+                        <div class="absolute top-0 left-0 h-full w-full bg-gradient-to-tr from-amber-500/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    </div>
+                    <!-- Abyss Dweller Card -->
+                    <div class="group relative overflow-hidden rounded-xl border border-red-500/30 bg-gradient-to-b from-[#3b1e1e] to-[#2a1212] p-6 transition-all duration-300 hover:border-red-400 hover:shadow-2xl hover:shadow-red-500/20">
+                        <div class="flex flex-col items-center text-center">
+                            <div id="abyss-dweller-img-endboard" class="w-40 h-auto mb-4 card-placeholder"></div>
+                            <h4 class="font-bold text-accent text-lg">Abyss Dweller <span class="text-red-400 font-bold">(BANNED)</span></h4>
+                            <div class="mt-2 flex items-center gap-2 text-red-300">
+                                <i class="fas fa-skull-crossbones"></i>
+                                <span class="font-semibold">Graveyard Lock</span>
+                            </div>
+                            <p class="text-sm text-red-200 mt-2">A historically critical tool against any meta contender that relied on activating effects in the Graveyard. It is now forbidden.</p>
+                        </div>
+                        <div class="absolute top-0 left-0 h-full w-full bg-gradient-to-tr from-red-500/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    </div>
+                    <!-- Rafflesia Card -->
+                    <div class="group relative overflow-hidden rounded-xl border border-green-500/30 bg-gradient-to-b from-[#3b1e1e] to-[#2a1212] p-6 transition-all duration-300 hover:border-green-400 hover:shadow-2xl hover:shadow-green-500/20">
+                        <div class="flex flex-col items-center text-center">
+                            <div id="rafflesia-img-endboard" class="w-40 h-auto mb-4 card-placeholder"></div>
+                            <h4 class="font-bold text-accent text-lg">Traptrix Rafflesia</h4>
+                            <div class="mt-2 flex items-center gap-2 text-green-200">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span class="font-semibold">Trap Disruption</span>
+                            </div>
+                            <p class="text-sm text-red-100 mt-2">Provides access to the powerful "Hole" Normal Trap lineup from the Deck, adding a flexible layer of disruption.</p>
+                        </div>
+                        <div class="absolute top-0 left-0 h-full w-full bg-gradient-to-tr from-green-500/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4"><i class="fas fa-check-circle mr-2"></i>Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><strong class="text-green-300">High Consistency:</strong> Multiple one-card starters make the deck incredibly reliable.</li>
+                        <li><strong class="text-green-300">Resilience:</strong> Can play through single hand traps and has built-in protection.</li>
+                        <li><strong class="text-green-300">Grind Game:</strong> Excellent resource looping thanks to its Spell/Trap support.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4"><i class="fas fa-times-circle mr-2"></i>Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><strong class="text-red-300">Choke Points:</strong> The effect of Ryzeal Duo Drive is a critical, well-known point of interaction.</li>
+                        <li><strong class="text-red-300">Board Breakers:</strong> Vulnerable to non-targeting removal like Ultimate Slayer and board wipes like Dark Ruler No More.</li>
+                        <li><strong class="text-red-300">Nibiru:</strong> The combo summons many monsters, making it susceptible to Nibiru if Ryzeal Cross is not active.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4"><i class="fas fa-cogs mr-2"></i>Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><strong class="text-blue-300">Fiendsmith Engine:</strong> Provides an alternative win condition and powerful omni-negation.</li>
+                        <li><strong class="text-blue-300">Rank 4 Toolbox:</strong> Easily incorporates generic Rank 4 Xyz monsters like Abyss Dweller and Bagooska.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">HEAVY IMPACT:</strong> The Ryzeal archetype has been significantly impacted by the current TCG banlist to curb its dominance:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Limited Cards (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300" id="limited-list">
+                            <li>Ryzeal Detonator</li>
+                            <li>Ext Ryzeal</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Semi-Limited Cards (2 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300" id="semi-limited-list">
+                           <li>Sword Ryzeal</li>
+                           <li>Ice Ryzeal</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its primary boss monster and key extenders limited, and its starters semi-limited, the consistency and ceiling of the Ryzeal deck are reduced. While still powerful, the deck can no longer rely on seeing multiple copies of its best cards and is more susceptible to disruption.</li>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('ryzeal-banner');
+            const ctx = canvas.getContext('2d');
+            let frame = 0;
+            
+            const setCanvasSize = () => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            };
+
+            function draw() {
+                frame++;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // --- TEXT ---
+                const text = "RYZEAL";
+                const fontSize = Math.min(canvas.width / 8, 70);
+                ctx.font = `700 ${fontSize}px 'Roboto Mono', monospace`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                // --- EFFECTS ---
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+
+                // 1. Glowing background text
+                ctx.fillStyle = `rgba(255, 140, 0, 0.4)`;
+                ctx.filter = 'blur(15px)';
+                ctx.fillText(text, centerX, centerY);
+                ctx.filter = 'none';
+
+                // 2. Glitch effect text layers
+                const glitchAmount = 5;
+                ctx.globalCompositeOperation = 'lighter';
+                
+                ctx.fillStyle = 'rgba(255, 100, 100, 0.5)';
+                const x1 = centerX + (Math.sin(frame * 0.1) * glitchAmount);
+                ctx.fillText(text, x1, centerY);
+                
+                ctx.fillStyle = 'rgba(100, 255, 255, 0.5)';
+                const x2 = centerX - (Math.cos(frame * 0.07) * glitchAmount);
+                ctx.fillText(text, x2, centerY);
+                
+                ctx.globalCompositeOperation = 'source-over';
+                
+                // 3. Main white text
+                ctx.fillStyle = '#FFFFFF';
+                ctx.shadowColor = 'rgba(255, 199, 0, 0.8)';
+                ctx.shadowBlur = 10;
+                ctx.fillText(text, centerX, centerY);
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+
+                // 4. Scan lines
+                for (let i = 0; i < canvas.height; i += 4) {
+                    ctx.fillStyle = `rgba(0, 0, 0, ${0.3 + Math.sin(frame * 0.05 + i * 0.1) * 0.2})`;
+                    ctx.fillRect(0, i, canvas.width, 2);
+                }
+
+                requestAnimationFrame(draw);
+            }
+
+            setCanvasSize();
+            draw();
+            window.addEventListener('resize', setCanvasSize);
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                         console.warn(`Image URL not found for "${cardName}". Using placeholder.`);
+                         container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'ice-ryzeal-img': 'Ice Ryzeal',
+                'duo-drive-img': 'Ryzeal Duo Drive',
+                'detonator-img-combo': 'Ryzeal Detonator',
+                'detonator-img-endboard': 'Ryzeal Detonator',
+                'cross-img-endboard': 'Ryzeal Cross',
+                'plugin-img-endboard': 'Ryzeal Plugin',
+                'mereologic-aggregator-img': 'Mereologic Aggregator',
+                'bagooska-img-endboard': 'Number 41: Bagooska the Terribly Tired Tapir',
+                'abyss-dweller-img-endboard': 'Abyss Dweller',
+                'rafflesia-img-endboard': 'Traptrix Rafflesia'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

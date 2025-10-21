@@ -1,0 +1,713 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bounzer Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Choosing a techy font -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Dark Charcoal */
+            color: #e0e0e0; /* Light Gray */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2c2c;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #5a5a5a;
+        }
+        .combo-step-card {
+            background-color: #404040;
+            border: 1px solid #757575;
+        }
+        .pro-con-card {
+            background-color: #404040;
+            border: 1px solid #757575;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #2c2c2c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2c2c2c;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #f97316); /* Orange Glow */
+        }
+        .pro-icon { color: #22c55e; } /* Green */
+        .con-icon { color: #ef4444; } /* Red */
+        .neutral-icon { color: #3b82f6; } /* Blue */
+        .text-accent { color: #fb923c; } /* Light Orange */
+        .arrow-color { color: #f97316; } /* Orange */
+        .heading-underline {
+            border-bottom: 2px solid #fb923c;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        /* --- NEW BOUNZER ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: radial-gradient(ellipse at center, #3a3a3a 0%, #1a1a1a 70%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #5a5a5a;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent 0%, rgba(251, 146, 60, 0.1) 50%, transparent 100%);
+            animation: scanner 6s linear infinite;
+            z-index: 1;
+        }
+
+        .banner-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(251, 146, 60, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(251, 146, 60, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: pan-grid 20s linear infinite;
+            z-index: 0;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .banner-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: #fff;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 5px #fb923c, 0 0 10px #fb923c, 0 0 20px #f97316;
+            animation: text-flicker 4s infinite alternate;
+        }
+
+        .banner-header p {
+            font-size: 1.125rem;
+            color: #e0e0e0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.5rem;
+        }
+
+        .reticle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            z-index: 1;
+            animation: rotate-reticle 25s linear infinite;
+        }
+
+        .reticle-circle {
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(251, 146, 60, 0.5);
+            border-radius: 50%;
+            position: absolute;
+            animation: pulse-reticle 3s ease-in-out infinite;
+        }
+        
+        .reticle-circle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: #f97316;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #f97316;
+        }
+        
+        .reticle-line {
+            position: absolute;
+            background-color: rgba(251, 146, 60, 0.7);
+        }
+        .reticle-line.horizontal {
+            width: 120%;
+            height: 1px;
+            top: 50%;
+            left: -10%;
+            transform: translateY(-50%);
+        }
+        .reticle-line.vertical {
+            width: 1px;
+            height: 120%;
+            left: 50%;
+            top: -10%;
+            transform: translateX(-50%);
+        }
+
+        @keyframes scanner {
+            0% { left: -100%; }
+            50% { left: 150%; }
+            100% { left: 150%; }
+        }
+
+        @keyframes pan-grid {
+            from { background-position: 0 0; }
+            to { background-position: 200px 0; }
+        }
+        
+        @keyframes text-flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow:
+                0 0 5px #fb923c,
+                0 0 10px #fb923c,
+                0 0 20px #f97316,
+                0 0 40px #f97316,
+                0 0 70px #f97316;
+            }
+            20%, 24%, 55% {       
+                text-shadow: none;
+            }
+        }
+
+        @keyframes pulse-reticle {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(251, 146, 60, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(251, 146, 60, 0); }
+        }
+
+        @keyframes rotate-reticle {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .banner-header h1 { font-size: 2.25rem; }
+            .banner-header p { font-size: 1rem; }
+            .reticle { width: 100px; height: 100px; }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 26, 26, 0.95);
+            border: 1px solid #757575;
+            border-radius: 0.75rem;
+            color: #e0e0e0;
+            max-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+            word-wrap: break-word;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Orbitron', sans-serif;
+            color: #757575;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- REVISED Title Section -->
+        <header class="banner-header">
+            <div class="banner-grid"></div>
+            <div class="reticle">
+                <div class="reticle-circle"></div>
+                <div class="reticle-line horizontal"></div>
+                <div class="reticle-line vertical"></div>
+            </div>
+            <div class="banner-content">
+                <h1>BOUNZER</h1>
+                <p>TARGET ACQUIRED</p>
+            </div>
+        </header>
+        
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">Bounzer</strong> archetype is a niche group of Warrior monsters centered around generating materials for high-impact Rank 6 Xyz Monsters, chiefly their boss, <strong class="text-accent font-bold">Photon Strike Bounzer</strong>. Due to a critical lack of internal consistency, a competitive Bounzer strategy must be paired with external engines that specialize in summoning Level 6 monsters. This has defined Bounzers not as a standalone deck, but as a toolbox for a much larger and more powerful strategy, a <a href="#" class="text-accent underline hover:text-orange-300">squad of inter-dimensional warriors for hire.</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Components Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Components: The Bounzer Arsenal</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-fist-raised text-4xl text-orange-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Main Deck Warriors</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Phantom Bounzer</h4>
+                            <p class="text-sm text-gray-300">The theoretical resource generator. When destroyed on the field, it adds two "Bounzer" cards from the Deck to the hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Blade Bounzer</h4>
+                            <p class="text-sm text-gray-300">An outdated beatdown monster focused on the Battle Phase, allowing for a second attack by discarding a card.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Bounzer Guard</h4>
+                            <p class="text-sm text-gray-300">A Quick-Play Spell offering protection from targeting and battle destruction for a "Bounzer" monster.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Extra Deck & Key Tech -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star text-4xl text-orange-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Rank 6 Toolbox</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Photon Strike Bounzer</h4>
+                            <p class="text-sm text-gray-300">The archetypal boss. Provides a Quick Effect negation of a monster effect activated on the opponent's field.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Constellar Ptolemy M7</h4>
+                            <p class="text-sm text-gray-300">A generic Rank 6 utility monster. It provides resource recovery by returning a monster from the field or GY to the hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hieratic Engine</h4>
+                            <p class="text-sm text-gray-300">The most effective partner engine. Hieratic dragons can rapidly summon Level 6 monsters to facilitate Xyz plays.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: Hieratic Engine into Bounzer</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the standard two-card combo using the Hieratic engine to quickly summon a Rank 6 Xyz monster.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="content-wrapper flex flex-col md:flex-row gap-4 items-center">
+                        <div id="hieratic-su-img-container" class="card-image-container flex-shrink-0 card-placeholder">Hieratic Dragon of Su</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2c2c2c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon & Tribute</h3>
+                            </div>
+                            <p class="text-gray-300">Normal Summon a Hieratic monster like <strong class="text-accent font-bold">Hieratic Dragon of Su</strong>. Use its effect to Tribute itself, triggering its effect to Special Summon a Level 6 Normal Dragon from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="content-wrapper flex flex-col md:flex-row gap-4 items-center">
+                        <div id="hieratic-tefnuit-img-container" class="card-image-container flex-shrink-0 card-placeholder">Hieratic Dragon of Tefnuit</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2c2c2c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon Second Body</h3>
+                            </div>
+                            <p class="text-gray-300">Use another Hieratic monster or an extender like <strong class="text-accent font-bold">Hieratic Dragon of Tefnuit</strong> to place a second Level 6 monster on the field.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="content-wrapper flex flex-col md:flex-row gap-4 items-center">
+                        <div id="strike-bounzer-img-container" class="card-image-container flex-shrink-0 card-placeholder">Photon Strike Bounzer</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2c2c2c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Xyz Summon</h3>
+                            </div>
+                            <p class="text-gray-300">Overlay the two Level 6 monsters to Xyz Summon <strong class="text-accent font-bold">Photon Strike Bounzer</strong> or another powerful Rank 6 monster like <strong class="text-accent font-bold">Constellar Ptolemy M7</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="pro-icon"><i class="fas fa-tools"></i></span> <strong class="text-green-400 font-bold">Powerful Toolbox:</strong> Provides access to the strong and versatile generic Rank 6 Xyz monster pool.</li>
+                        <li><span class="pro-icon"><i class="fas fa-project-diagram"></i></span> <strong class="text-green-400 font-bold">Synergistic Engine:</strong> Pairs extremely well with the Hieratic engine for consistent Level 6 monster generation.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Lack of Internal Consistency:</strong> The archetype has no reliable starter or searcher, making it entirely dependent on external engines.</li>
+                         <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Vulnerable Negation:</strong> <strong class="text-accent font-bold">Photon Strike Bounzer's</strong> negation does not work on hand traps, a critical blind spot in the modern game.</li>
+                         <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Outdated Effects:</strong> Many of the main deck monsters have slow, battle-focused effects that are irrelevant in the current meta.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Engine Requirements</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent font-bold">Hieratics:</strong> The premier engine for consistently summoning two or more Level 6 monsters for Xyz plays.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-question-circle"></i></span> <strong class="text-accent font-bold">Others:</strong> While engines like Galaxy/Photon or Heroic Challengers have been considered, they lack the dedicated Level 6 focus of Hieratics.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // NOTE: The previous script for generating an image has been removed
+            // as the new banner is created entirely with CSS and does not require it.
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+            let lastShown = 0;
+            let currentCard = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (currentCard === cardName) {
+                    hidePopup();
+                    return;
+                }
+                hidePopup(); // Ensure any existing popup is hidden first
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-gray-300">${cardType}</p>
+                        <div class="w-full h-px bg-gray-600 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+                lastShown = Date.now();
+                currentCard = cardName;
+            }
+
+            function hidePopup() {
+                if (Date.now() - lastShown < 100) return; // Ignore hide calls immediately after showing
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                    currentCard = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            const cardsToLoad = {
+                'hieratic-su-img-container': 'Hieratic Dragon of Su',
+                'hieratic-tefnuit-img-container': 'Hieratic Dragon of Tefnuit',
+                'strike-bounzer-img-container': 'Photon Strike Bounzer'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

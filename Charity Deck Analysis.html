@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charity Card Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfaf6; /* Warm off-white, parchment-like */
+            color: #37352f; /* Dark, soft gray */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.6); /* Translucent white */
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0cda9; /* Soft gold border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(245, 241, 230, 0.7); /* Slightly more opaque cream */
+            border: 1px solid #d4c0a1;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #f5f1e6;
+            color: #5c5a52;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #d4c0a1;
+        }
+        .pro-icon { color: #16a34a; }
+        .con-icon { color: #dc2626; }
+        .neutral-icon { color: #2563eb; }
+        .text-accent { color: #a08c6c; } /* Muted gold/bronze */
+        .arrow-color { color: #a08c6c; }
+        .heading-underline {
+            border-bottom: 2px solid #a08c6c;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #8c7853;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #8c7853;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #37352f;
+            text-shadow: 0 0 3px rgba(160, 140, 108, 0.5);
+        }
+
+        /* --- CHARITY THEMED BANNER --- */
+        .banner {
+            position: relative;
+            min-height: 160px;
+            background: radial-gradient(ellipse at top, #fffbeb, #fdfaf6);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 1px solid #e0cda9;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+        .banner-content h1 {
+            font-family: 'Lora', serif;
+        }
+        .feather {
+            position: absolute;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23e0cda9" d="M168.2,408.3C168.2,408.3,168.2,408.3,168.2,408.3c-4.4-1.8-8.4-4.5-11.8-8.1c-13-14-15.3-34.1-5.6-50.4l112-185.8 c15.2-25.2,5.2-57.9-20-73.1s-57.9-5.2-73.1,20l-128,212.5C26.4,352.2,30,381.6,45.4,399c15.4,17.4,41,21,62.1,8.5l22.4-13.4 c5.7-3.4,12.6-1.5,16.1,4.2c3.4,5.7,1.5,12.6-4.2,16.1L120.4,428c-29.3,17.5-66.2,12.4-90.4-11.8c-24.2-24.2-29.3-61.1-11.8-90.4 l128-212.5c25.2-41.9,79.1-53.1,121-27.9s53.1,79.1,27.9,121l-112,185.8C197.1,414.2,182.2,416.7,168.2,408.3z M368.4,26.1 c-3.4-5.7-10.3-7.6-16.1-4.2L329.9,35.4c-5.7,3.4-7.6,10.3-4.2,16.1c3.4,5.7,10.3,7.6,16.1,4.2l22.4-13.4c21.1-12.6,46.7-8.9,62.1-8.5 c15.4,17.4,18.9,46.8,3.7,75.5L304.3,311.7c-9.7,16.3-29.8,18.6-50.4,5.6c-3.4-2.1-7.1-4.1-10.2-6.5c-4.2-3.4-10.3-2.9-14,1.3 c-3.7,4.2-2.9,10.3,1.3,14c4.3,3.4,9.2,6.4,14.6,8.8c14,6.2,29.3,7.6,43.9,4.2c27.1-6.3,47.2-24.2,58-45.6l128-212.5 c17.5-29.3,12.4-66.2-11.8-90.4C429.5-3.2,392.6-8.3,368.4,26.1z"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0;
+            animation: float-feather 15s infinite linear;
+        }
+        .feather.f1 { width: 40px; height: 40px; left: 15%; animation-duration: 12s; animation-delay: 0s; }
+        .feather.f2 { width: 25px; height: 25px; left: 30%; animation-duration: 18s; animation-delay: 3s; }
+        .feather.f3 { width: 50px; height: 50px; left: 50%; animation-duration: 10s; animation-delay: 1s; }
+        .feather.f4 { width: 30px; height: 30px; left: 70%; animation-duration: 16s; animation-delay: 5s; }
+        .feather.f5 { width: 35px; height: 35px; left: 85%; animation-duration: 14s; animation-delay: 2s; }
+
+        @keyframes float-feather {
+            0% { bottom: -60px; opacity: 0; transform: rotate(-20deg) translateX(0); }
+            10% { opacity: 0.2; }
+            50% { transform: rotate(20deg) translateX(20px); }
+            90% { opacity: 0.2; }
+            100% { bottom: 180px; opacity: 0; transform: rotate(-20deg) translateX(-20px); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Banner Section -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="feather f1"></div>
+                <div class="feather f2"></div>
+                <div class="feather f3"></div>
+                <div class="feather f4"></div>
+                <div class="feather f5"></div>
+                <div class="banner-content z-10">
+                    <h1 class="text-3xl md:text-5xl font-bold text-gray-800 mb-2">The Charitable Edge</h1>
+                    <p class="text-lg md:text-xl text-gray-600">A Strategic Analysis of "Charity" Card Design</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">The Philosophy of "Charitable" Design</h2>
+                <p class="text-gray-700">
+                    In the vast lexicon of Yu-Gi-Oh!, "Charity" is not a formal archetype, but a powerful design philosophy. The name signifies a potent effect—almost always centered on drawing multiple cards—balanced by a secondary action that appears to be a cost. The true skill lies in inverting this "cost," turning a supposed drawback into a tangible, often game-winning, advantage. This makes the series of powerful <a href="#card-deep-dive" class="lore-link">Charity cards</a> more than just tools for card advantage; they are masterclasses in resource management, where zones like the Graveyard and the top of the Deck become resources to exploit.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Four Faces of Charity Section -->
+        <section id="card-deep-dive" class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-8 text-center heading-underline">The Four Faces of Charity</h2>
+            
+            <!-- Graceful Charity -->
+            <div class="card p-6 mb-8">
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div id="graceful-charity-img" class="card-image-container card-placeholder">Graceful Charity</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Graceful Charity <span class="text-sm font-normal text-red-600">(Forbidden)</span></h3>
+                        <p class="text-gray-700 mb-4"><strong>Effect:</strong> Draw 3 cards, then discard 2 cards.</p>
+                        <p class="text-gray-700">The original and most powerful "Charity" card. Its nine-word text hides three critical functions: deck thinning, hand sculpting, and Graveyard setup. Because you draw *before* you discard, you make an optimal choice, discarding cards that are either least useful or, more importantly, are most useful in the Graveyard. For any deck that utilizes the GY, the discard is not a cost—it's a powerful secondary benefit, making it arguably stronger than even Pot of Greed.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Sylvan Charity -->
+                <div class="card p-6">
+                    <div class="flex flex-col h-full">
+                        <div id="sylvan-charity-img" class="card-image-container mx-auto mb-4 card-placeholder">Sylvan Charity</div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Sylvan Charity</h3>
+                        <p class="text-gray-700 mb-4 text-sm">Draw 3, then place 2 cards (at least one "Sylvan") on top of the Deck.</p>
+                        <p class="text-gray-700 flex-grow">A "fixed" Graceful Charity, locked to the Sylvan archetype. The "cost" of stacking the deck is the central pillar of the Sylvan game plan, which relies on "excavating" specific monsters to trigger their effects. This card removes the luck from excavation, turning a gamble into a calculated engine.</p>
+                    </div>
+                </div>
+                <!-- Common Charity -->
+                <div class="card p-6">
+                    <div class="flex flex-col h-full">
+                        <div id="common-charity-img" class="card-image-container mx-auto mb-4 card-placeholder">Common Charity</div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Common Charity</h3>
+                        <p class="text-gray-700 mb-4 text-sm">Draw 2, then banish 1 Normal Monster from hand (or send entire hand to GY).</p>
+                        <p class="text-gray-700 flex-grow">A high-risk, high-reward Trap Card for Normal Monster decks. It offers a potential +1 in card advantage but at the risk of losing your entire hand if you can't meet the condition. Its Trap speed is a major drawback in the modern, fast-paced game.</p>
+                    </div>
+                </div>
+                <!-- Galactic Charity -->
+                <div class="card p-6">
+                    <div class="flex flex-col h-full">
+                        <div id="galactic-charity-img" class="card-image-container mx-auto mb-4 card-placeholder">Galactic Charity</div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Galactic Charity</h3>
+                        <p class="text-gray-700 mb-4 text-sm">If you control a "Galaxy" Xyz, discard 1 to draw 2. Damage is halved this turn.</p>
+                        <p class="text-gray-700 flex-grow">A mid-game tool for the Galaxy/Photon archetype. It cannot fix a bad opening hand and explicitly prevents OTK plays by halving damage. This design firmly defines its purpose as a resource-building card, not an aggressive finisher.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- End Board Connection -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center heading-underline">The End Board Connection</h2>
+            <p class="text-gray-700 mb-8 text-center max-w-3xl mx-auto">"Charity" cards do not build an end board on their own; they are unparalleled enablers that accelerate other strategies into their win conditions. By providing consistency and specific resource placement, they transform a good opening hand into an unstoppable one.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4">Graceful Charity: The Graveyard Engine</h3>
+                    <p class="text-gray-700 mb-4">Graceful Charity was the ultimate setup tool. In the legendary Chaos Era, it simultaneously searched for boss monsters and loaded the Graveyard with the LIGHT and DARK monsters needed to summon them, leading to a board with overwhelming power.</p>
+                    <div class="flex items-center gap-4 mt-4 p-3 combo-step-card rounded-lg">
+                        <div id="bls-img" class="w-24 flex-shrink-0 card-placeholder">Black Luster Soldier - Envoy of the Beginning</div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Enabled End Board</h4>
+                            <p class="text-sm text-gray-700">Quickly summoning monsters like <strong class="text-accent">Black Luster Soldier - Envoy of the Beginning</strong> by filling the GY with necessary attributes.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4">Sylvan Charity: The Deck Stacker</h3>
+                    <p class="text-gray-700 mb-4">Sylvan Charity provides perfect information. It allows a player to place key Sylvan monsters on top of their deck, guaranteeing successful excavations from cards like <strong class="text-accent">Orea, the Sylvan High Arbiter</strong> to swarm the field and control the game.</p>
+                    <div class="flex items-center gap-4 mt-4 p-3 combo-step-card rounded-lg">
+                        <div id="orea-img" class="w-24 flex-shrink-0 card-placeholder">Orea, the Sylvan High Arbiter</div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Enabled End Board</h4>
+                            <p class="text-sm text-gray-700">Setting up the perfect excavation for <strong class="text-accent">Orea</strong> to clear the opponent's board and Special Summon from the deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status -->
+        <section class="animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                        <h4 class="font-bold text-lg text-red-700">Graceful Charity</h4>
+                        <p class="text-red-600 font-semibold">Forbidden</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg text-green-700">Sylvan Charity</h4>
+                        <p class="text-green-600 font-semibold">Unlimited</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg text-green-700">Common Charity</h4>
+                        <p class="text-green-600 font-semibold">Unlimited</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg text-green-700">Galactic Charity</h4>
+                        <p class="text-green-600 font-semibold">Unlimited</p>
+                    </div>
+                </div>
+                <div class="mt-4 p-4 bg-yellow-50 bg-opacity-50 rounded border-l-4 border-yellow-400">
+                    <p class="text-sm text-gray-700"><strong>Design Implications:</strong> The status of these cards reflects the evolution of game design. <strong class="text-accent">Graceful Charity</strong> remains banned due to its universal, format-warping power. In contrast, the other "Charity" cards are considered balanced because their power is carefully restricted to specific archetypes or high-risk conditions, promoting dedicated deck-building rather than generic good-stuff staples.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url_small;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                        container.classList.remove('card-placeholder');
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.textContent = cardName;
+                }
+            }
+
+            const cardsToLoad = {
+                'graceful-charity-img': 'Graceful Charity',
+                'sylvan-charity-img': 'Sylvan Charity',
+                'common-charity-img': 'Common Charity',
+                'galactic-charity-img': 'Galactic Charity',
+                'bls-img': 'Black Luster Soldier - Envoy of the Beginning',
+                'orea-img': 'Orea, the Sylvan High Arbiter'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

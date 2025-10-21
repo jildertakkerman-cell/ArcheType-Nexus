@@ -1,0 +1,527 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destiny HERO Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep midnight blue */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1a3a; /* Dark indigo */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a3a7a; /* Muted purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a2a5a; /* Slightly lighter indigo */
+            border: 1px solid #4a4a9a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2a5a;
+            color: #c7d2fe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+            min-height: 200px; /* Reduced height to fix layout */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #4a4a9a;
+        }
+        .text-accent {
+            color: #a78bfa; /* Vibrant violet */
+        }
+        .lore-link {
+            color: #a78bfa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a78bfa;
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #f5f3ff;
+            border-bottom-color: #f5f3ff;
+        }
+
+        /* --- Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            height: 160px;
+            background-color: #0c0a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3a3a7a;
+        }
+
+        #city-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(12, 10, 26, 0.3) 0%, rgba(12, 10, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(167, 139, 250, 0.7);
+        }
+        .banner-header h1 {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 2.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .banner-header h1 { font-size: 2.2rem; }
+            .banner-header p { font-size: 1rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="city-banner"></canvas>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2">Destiny HERO</h1>
+            <p class="text-lg md:text-xl text-purple-200">Analysis of the Dark City's Vigilantes</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-200">
+                    The <strong class="text-accent font-bold">Destiny HERO</strong> archetype represents a cadre of dark anti-heroes thematically centered around fate, time, and British vigilante culture. In the modern TCG, they have evolved from a standalone strategy into the powerful core of a synergistic "Omni-HERO" deck. This approach integrates the best of Destiny, Vision, Elemental, and Masked HERO sub-archetypes to create a cohesive and explosive engine. The deck's primary philosophy revolves around manipulating the Graveyard as a second hand, culminating in a devastating end board of powerful boss monsters that can control the game.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Four Pillars -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center">The Four Pillars of the Omni-HERO Strategy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Vision HERO -->
+                <div class="card p-6 text-center">
+                    <i class="fas fa-eye text-4xl text-accent mb-3"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">Pillar 1: The Ignition</h3>
+                    <p class="text-sm text-purple-200"><strong class="text-accent">Vision HERO</strong>s like Faris and Vyon initiate combos without a Normal Summon, swarming the field and setting up the Graveyard.</p>
+                </div>
+                <!-- Elemental & Masked HERO -->
+                <div class="card p-6 text-center">
+                    <i class="fas fa-mask text-4xl text-accent mb-3"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">Pillar 2: The Control</h3>
+                    <p class="text-sm text-purple-200"><strong class="text-accent">Elemental & Masked HERO</strong>s provide consistency and powerful floodgates, with Stratos searching key pieces and Dark Law locking down the opponent's Graveyard.</p>
+                </div>
+                <!-- Destiny HERO -->
+                <div class="card p-6 text-center">
+                    <i class="fas fa-skull text-4xl text-accent mb-3"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">Pillar 3: The Payload</h3>
+                    <p class="text-sm text-purple-200"><strong class="text-accent">Destiny HERO</strong>s are the heart of the engine and the ultimate goal, providing recursive resources from the GY and game-winning boss monsters like DPE and Plasma.</p>
+                </div>
+                <!-- Xtra HERO -->
+                <div class="card p-6 text-center">
+                    <i class="fas fa-link text-4xl text-accent mb-3"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">Pillar 4: The Nexus</h3>
+                    <p class="text-sm text-purple-200"><strong class="text-accent">Xtra HERO</strong> Link monsters like Cross Crusader tie everything together, converting board presence into searches and extending combos.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center">Core Combo: Vision HERO Faris + 1 HERO</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">This is the deck's fundamental combo, demonstrating the synergy that leads to a formidable end board. It's time for these cards to fulfill their <a href="https://yugipedia.com/wiki/Destiny_HERO" target="_blank" class="lore-link">destiny</a>.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="faris-img" class="card-image-container card-placeholder">Vision HERO Faris</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-indigo-900 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Ignite with Vision</h3>
+                            </div>
+                            <p class="text-purple-200">Special Summon <strong class="text-accent">Vision HERO Faris</strong> by discarding another HERO. Faris places <strong class="text-accent">Vision HERO Increase</strong> in the S/T Zone.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center text-accent my-2"><i class="fas fa-arrow-down text-2xl"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="vyon-img" class="card-image-container card-placeholder">Vision HERO Vyon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-indigo-900 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Set up the Graveyard</h3>
+                            </div>
+                            <p class="text-purple-200">Tribute Faris to summon Increase, which then summons <strong class="text-accent">Vision HERO Vyon</strong> from the Deck. Vyon sends a key Destiny HERO like <strong class="text-accent">Malicious</strong> to the GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center text-accent my-2"><i class="fas fa-arrow-down text-2xl"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cross-crusader-img" class="card-image-container card-placeholder">Xtra HERO Cross Crusader</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-indigo-900 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Bridge the Engines</h3>
+                            </div>
+                            <p class="text-purple-200">Link Summon <strong class="text-accent">Xtra HERO Cross Crusader</strong>. Use its effect to revive a Destiny HERO, then tribute it to search for the final pieces of your end board.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The End Board -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center">The Trinity of Disruption: The End Board</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-3xl mx-auto">
+                The ideal Omni-HERO end board creates a layered "soft lock" by attacking the three primary zones of interaction: the field, the Graveyard, and the hand.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- DPE -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">DPE: The Recurring Threat</h3>
+                    <div id="dpe-img" class="card-image-container mx-auto mb-4 card-placeholder">Destiny HERO - Destroyer Phoenix Enforcer</div>
+                    <p class="text-purple-200 text-sm">Provides recurring, non-targeting destruction. It can eliminate any on-field threat and revives itself every turn, creating a persistent resource drain for the opponent.</p>
+                </div>
+                <!-- Dark Law -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Dark Law: The GY Lock</h3>
+                    <div id="dark-law-img" class="card-image-container mx-auto mb-4 card-placeholder">Masked HERO Dark Law</div>
+                    <p class="text-purple-200 text-sm">Acts as a one-sided Macro Cosmos, banishing any card sent to the opponent's GY. It also rips a card from their hand if they search, attacking their resources directly.</p>
+                </div>
+                <!-- Plasma -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Plasma: The Field Negate</h3>
+                    <div id="plasma-img" class="card-image-container mx-auto mb-4 card-placeholder">Destiny HERO - Plasma</div>
+                    <p class="text-purple-200 text-sm">Functions as a one-sided Skill Drain, negating the effects of all face-up monsters the opponent controls. This shuts down most combo and monster-based strategies.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- City Banner Animation ---
+            const canvas = document.getElementById('city-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let rain = [];
+                let lightning = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class RainDrop {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height - canvas.height;
+                        this.speed = Math.random() * 4 + 2;
+                        this.length = Math.random() * 20 + 10;
+                    }
+                    update() {
+                        this.y += this.speed;
+                        if (this.y > canvas.height) {
+                            this.y = 0 - this.length;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.x, this.y + this.length);
+                        ctx.strokeStyle = 'rgba(170, 170, 220, 0.5)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+
+                class Lightning {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = 0;
+                        this.path = [];
+                        this.alpha = 1;
+                        this.createPath();
+                    }
+                    createPath() {
+                        let currentX = this.x;
+                        let currentY = this.y;
+                        this.path.push({ x: currentX, y: currentY });
+                        while (currentY < canvas.height) {
+                            currentX += (Math.random() - 0.5) * 20;
+                            currentY += Math.random() * 20 + 5;
+                            this.path.push({ x: currentX, y: currentY });
+                        }
+                    }
+                    update() {
+                        this.alpha -= 0.05;
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.globalAlpha = this.alpha;
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(this.path[0].x, this.path[0].y);
+                        for (let i = 1; i < this.path.length; i++) {
+                            ctx.lineTo(this.path[i].x, this.path[i].y);
+                        }
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+                
+                function init() {
+                    rain = [];
+                    for (let i = 0; i < 100; i++) {
+                        rain.push(new RainDrop());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    rain.forEach(drop => {
+                        drop.update();
+                        drop.draw();
+                    });
+
+                    if (Math.random() < 0.005) { // Chance of lightning
+                       lightning.push(new Lightning());
+                    }
+
+                    lightning.forEach((bolt, index) => {
+                        bolt.update();
+                        bolt.draw();
+                        if (bolt.alpha <= 0) {
+                            lightning.splice(index, 1);
+                        }
+                    });
+
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => { setCanvasSize(); init(); });
+            }
+
+            // --- Card Image Fetching ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.textContent = cardName; // Keep placeholder text on error
+                }
+            }
+
+            const cardsToLoad = {
+                'faris-img': 'Vision HERO Faris',
+                'vyon-img': 'Vision HERO Vyon',
+                'cross-crusader-img': 'Xtra HERO Cross Crusader',
+                'dpe-img': 'Destiny HERO - Destroyer Phoenix Enforcer',
+                'dark-law-img': 'Masked HERO Dark Law',
+                'plasma-img': 'Destiny HERO - Plasma'
+            };
+
+            Object.entries(cardsToLoad).forEach(([id, name]) => {
+                fetchAndDisplayCardImage(name, id);
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+

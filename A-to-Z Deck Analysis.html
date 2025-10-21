@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-to-Z Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0e1a; /* Deeper Navy Blue */
+            color: #d1d5db; /* Lighter Gray */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #161e2d; /* Dark Blue-Gray */
+            border-radius: 0.5rem; /* Sharper corners */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 1px solid #3a4a6e; /* Muted Blue Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #202a3a;
+            border-left: 4px solid #facc15; /* Golden-Yellow accent */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #161e2d;
+            border: 2px dashed #3a4a6e;
+            color: #9ca3af;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1rem;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+        }
+        .pro-icon { color: #4ade80; }
+        .con-icon { color: #f87171; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Golden-Yellow */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- A-to-Z ANIMATED BANNER (NEW) --- */
+        .banner-header {
+            position: relative;
+            height: 160px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #3a4a6e;
+            background-color: #111;
+        }
+        #blueprint-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header h1 {
+            font-family: 'Roboto Mono', monospace;
+            z-index: 2;
+            color: #fff;
+            font-size: 3rem;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.7);
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(17, 24, 39, 0.2) 0%, rgba(17, 24, 39, 0.9) 100%);
+            z-index: 2;
+        }
+
+         /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+         .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 14, 26, 0.95);
+            border: 1px solid #3a4a6e;
+            border-radius: 0.75rem;
+            color: #d1d5db;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15; /* Golden-Yellow accent */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+     <!-- Yu-Gi-Oh! Themed Home Button -->
+     <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center mb-10 md:mb-16">
+            <canvas id="blueprint-canvas"></canvas>
+            <h1>A-to-Z Arsenal</h1>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">A-to-Z</strong> archetype, featuring the iconic <strong class="text-accent">ABC-Dragon Buster</strong>, is a LIGHT Machine strategy centered on Union mechanics and Contact Fusion. The deck functions as a hyper-efficient, graveyard-centric combo engine that aims to assemble its pieces to summon its powerful boss monster. By using its components for Link Summons, the deck fills the Graveyard with resources that are then banished to bring out <strong class="text-accent">ABC-Dragon Buster</strong>, a monster known for its potent removal and recursive capabilities that allow the deck to out-grind opponents.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Mechanics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-link mr-2 text-accent"></i>Union Mechanic</h3>
+                    <p class="text-gray-300">Core monsters can equip themselves to other LIGHT Machines, providing protection from monster, spell, or trap effects. If the equipped monster would be destroyed, the Union monster is destroyed instead, offering crucial protection for key pieces on the board.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-atom mr-2 text-accent"></i>Contact Fusion</h3>
+                    <p class="text-gray-300">The archetype's boss monsters are summoned not with "Polymerization," but by banishing their constituent parts from the field and/or Graveyard. This turns the Graveyard into a primary resource zone, enabling explosive plays.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Core Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Core Engine: ABC Components</h2>
+            <p class="text-gray-300 mb-12 text-center max-w-2xl mx-auto">The modern strategy is built upon a self-sustaining resource loop generated by its three core monsters. Mastering their individual roles is key to piloting the deck.</p>
+            <div class="space-y-12">
+                <!-- A-Assault Core -->
+                <div class="card flex flex-col md:flex-row items-center gap-6 p-6 transition-all duration-300 hover:shadow-2xl hover:border-yellow-400">
+                    <div id="a-assault-core-img" class="card-image-container card-placeholder">A-Assault Core</div>
+                    <div class="flex-1">
+                        <h4 class="text-2xl font-bold text-accent mb-3">A-Assault Core</h4>
+                        <div class="flex items-center text-lg mb-2">
+                            <i class="fas fa-recycle w-6 mr-2 text-green-400"></i>
+                            <span class="font-bold text-gray-200">Role: Recursion</span>
+                        </div>
+                        <p class="text-gray-400 mb-4"><strong>GY Effect:</strong> When sent from field to GY, adds another Union monster from your GY to your hand. Essential for out-resourcing the opponent in longer duels.</p>
+                        <p class="text-gray-400"><strong>Equip Effect:</strong> Grants the equipped LIGHT Machine immunity to monster effects.</p>
+                    </div>
+                </div>
+
+                <!-- B-Buster Drake -->
+                <div class="card flex flex-col md:flex-row-reverse items-center gap-6 p-6 transition-all duration-300 hover:shadow-2xl hover:border-yellow-400">
+                    <div id="b-buster-drake-img" class="card-image-container card-placeholder">B-Buster Drake</div>
+                    <div class="flex-1 md:text-right">
+                        <h4 class="text-2xl font-bold text-accent mb-3">B-Buster Drake</h4>
+                         <div class="flex items-center text-lg mb-2 md:justify-end">
+                            <span class="font-bold text-gray-200 order-2 md:order-1">Role: Searcher</span>
+                            <i class="fas fa-search w-6 ml-0 mr-2 md:ml-2 md:mr-0 order-1 md:order-2 text-blue-400"></i>
+                        </div>
+                        <p class="text-gray-400 mb-4"><strong>GY Effect:</strong> When sent from field to GY, adds any Union monster from your Deck to your hand. This is the deck's primary combo starter.</p>
+                        <p class="text-gray-400"><strong>Equip Effect:</strong> Grants the equipped LIGHT Machine immunity to Spell effects.</p>
+                    </div>
+                </div>
+
+                <!-- C-Crush Wyvern -->
+                <div class="card flex flex-col md:flex-row items-center gap-6 p-6 transition-all duration-300 hover:shadow-2xl hover:border-yellow-400">
+                    <div id="c-crush-wyvern-img" class="card-image-container card-placeholder">C-Crush Wyvern</div>
+                    <div class="flex-1">
+                        <h4 class="text-2xl font-bold text-accent mb-3">C-Crush Wyvern</h4>
+                         <div class="flex items-center text-lg mb-2">
+                            <i class="fas fa-shipping-fast w-6 mr-2 text-red-400"></i>
+                            <span class="font-bold text-gray-200">Role: Extender</span>
+                        </div>
+                        <p class="text-gray-400 mb-4"><strong>GY Effect:</strong> When sent from field to GY, Special Summons one Union monster from your hand, enabling explosive Link plays.</p>
+                        <p class="text-gray-400"><strong>Equip Effect:</strong> Grants the equipped LIGHT Machine immunity to Trap effects.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Assembly Line: One-Card Combo</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">The deck's consistency shines through its one-card starter, <strong class="text-accent">Union Hangar</strong>, which single-handedly assembles the entire <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=A-to-Z&stype=1" target="_blank" class="lore-link">A-to-Z arsenal</a> and ends on its primary boss monster.</p>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex items-center mb-2"><span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span><h3 class="text-lg font-bold">Activate Union Hangar</h3></div>
+                    <p class="text-gray-300 ml-11">Activate <strong class="text-accent">Union Hangar</strong> to search for <strong class="text-accent">B-Buster Drake</strong>. Normal Summon it and use Hangar's second effect to equip <strong class="text-accent">Union Driver</strong> from the deck.</p>
+                </div>
+                <div class="text-center"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex items-center mb-2"><span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span><h3 class="text-lg font-bold">Utilize Union Driver</h3></div>
+                    <p class="text-gray-300 ml-11">Activate <strong class="text-accent">Union Driver's</strong> effect, banishing it to equip <strong class="text-accent">C-Crush Wyvern</strong> from deck. Use Wyvern's effect to Special Summon itself.</p>
+                </div>
+                <div class="text-center"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                 <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex items-center mb-2"><span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span><h3 class="text-lg font-bold">Link Summon & Trigger Effects</h3></div>
+                    <p class="text-gray-300 ml-11">Link Summon <strong class="text-accent">I:P Masquerena</strong> using Drake and Wyvern. Their effects trigger in GY: Drake searches <strong class="text-accent">A-Assault Core</strong>, and Wyvern summons it from hand.</p>
+                </div>
+                <div class="text-center"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex items-center mb-2"><span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span><h3 class="text-lg font-bold">Summon the Dragon Buster</h3></div>
+                    <p class="text-gray-300 ml-11">With all three components in the Graveyard, banish them to Special Summon <strong class="text-accent">ABC-Dragon Buster</strong> from the Extra Deck.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Standard Endboard Configuration</h2>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">ABC-Dragon Buster</h3>
+                    <div class="flex justify-center mb-4"><div id="abc-dragon-buster-img" class="card-image-container card-placeholder">ABC-Dragon Buster</div></div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent">Quick-Effect Banish:</strong> Discard 1 card to banish 1 card on the field.</li>
+                        <li><strong class="text-accent">"Tag-Out" Recursion:</strong> Tributes itself to revive its 3 banished components, setting up for next turn.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">I:P Masquerena</h3>
+                    <div class="flex justify-center mb-4"><div id="ip-masquerena-img" class="card-image-container card-placeholder">I:P Masquerena</div></div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent">Opponent's Turn Link:</strong> Allows for a Link Summon during the opponent's Main Phase.</li>
+                        <li><strong class="text-accent">Synergistic Disruption:</strong> After Dragon Buster tags out, use its 3 revived parts to Link into a disruptive threat like <strong class="text-accent">Knightmare Unicorn</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><i class="fas fa-check-circle pro-icon"></i> <strong class="text-green-300">Powerful Removal:</strong> ABC's banishing effect is a versatile tool against many threats.</li>
+                        <li><i class="fas fa-recycle pro-icon"></i> <strong class="text-green-300">Excellent Grind Game:</strong> The "tag-out" effect creates a resource loop that is difficult to break.</li>
+                        <li><i class="fas fa-cogs pro-icon"></i> <strong class="text-green-300">Engine Potential:</strong> The core ABC package is compact and can be integrated into other strategies.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                         <li><i class="fas fa-ban con-icon"></i> <strong class="text-red-300">Graveyard Hate:</strong> Highly vulnerable to cards like <strong class="text-accent">Dimension Shifter</strong> or <strong class="text-accent">Macro Cosmos</strong>.</li>
+                        <li><i class="fas fa-hand-paper con-icon"></i> <strong class="text-red-300">Chokepoints:</strong> Relies heavily on the resolution of <strong class="text-accent">Union Hangar</strong>, making it a prime target for negation.</li>
+                        <li><i class="fas fa-exclamation-triangle con-icon"></i> <strong class="text-red-300">Lack of In-Engine Negates:</strong> The pure strategy lacks monster effect negation, relying on external engines.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">Synergies & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><i class="fas fa-atom neutral-icon"></i> <strong class="text-accent">Therion Engine:</strong> <strong class="text-accent">Therion "King" Regulus</strong> provides a searchable and recursive monster negate.</li>
+                        <li><i class="fas fa-dragon neutral-icon"></i> <strong class="text-accent">Bystial Engine:</strong> Provides free bodies and GY disruption while setting up your own banished pile.</li>
+                        <li><i class="fas fa-tools neutral-icon"></i> <strong class="text-accent">Gadget Monsters:</strong> Gold and Silver Gadget serve as extenders for Rank 4 plays or Link climbing.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                 <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">MODERATE IMPACT:</strong> While the core A-to-Z engine is largely untouched, the banlist has hit some of its most powerful generic support cards.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Restricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Union Carrier (0 copies):</strong> Banned. A historical extender for the deck.</li>
+                            <li><strong class="text-yellow-400">Ancient Fairy Dragon (1 copy):</strong> Recently unbanned, enabling P.U.N.K. engine synergy.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-400">All ABC components (3 copies)</strong></li>
+                            <li><strong class="text-green-400">ABC-Dragon Buster (3 copies)</strong></li>
+                            <li><strong class="text-green-400">Union Hangar (3 copies)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-800 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The deck's primary engine is at full strength. However, the loss of generic powerful extenders means it must rely more heavily on synergistic engines like Therion and Bystial to build its most oppressive boards.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- BLUEPRINT ANIMATION SCRIPT ---
+            const canvas = document.getElementById('blueprint-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x || Math.random() * canvas.width;
+                        this.y = y || Math.random() * canvas.height;
+                        this.vx = (Math.random() - 0.5) * 0.5;
+                        this.vy = (Math.random() - 0.5) * 0.5;
+                        this.size = Math.random() * 2 + 1;
+                        this.color = `rgba(250, 204, 21, ${Math.random() * 0.5 + 0.2})`;
+                    }
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+
+                        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Grid lines
+                    ctx.strokeStyle = "rgba(55, 65, 81, 0.3)";
+                    ctx.lineWidth = 0.5;
+                    for (let i = 0; i < canvas.width; i += 20) {
+                        ctx.beginPath();
+                        ctx.moveTo(i, 0);
+                        ctx.lineTo(i, canvas.height);
+                        ctx.stroke();
+                    }
+                     for (let i = 0; i < canvas.height; i += 20) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, i);
+                        ctx.lineTo(canvas.width, i);
+                        ctx.stroke();
+                    }
+
+                    // Particles and connections
+                    for(let i=0; i<particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+
+                        for(let j=i+1; j<particles.length; j++) {
+                            const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+                            if (dist < 100) {
+                                ctx.beginPath();
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                ctx.strokeStyle = `rgba(250, 204, 21, ${1 - dist / 100})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.stroke();
+                            }
+                        }
+                    }
+
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-yellow-300">${cardType}</p>
+                        <div class="w-full h-px bg-yellow-600 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            const cardsToLoad = {
+                'a-assault-core-img': 'A-Assault Core',
+                'b-buster-drake-img': 'B-Buster Drake',
+                'c-crush-wyvern-img': 'C-Crush Wyvern',
+                'abc-dragon-buster-img': 'ABC-Dragon Buster',
+                'ip-masquerena-img': 'I:P Masquerena',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

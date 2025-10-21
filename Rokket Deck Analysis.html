@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rokket Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Exo+2:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #0c0a1f; /* Deep space purple/blue */
+            color: #e0e7ff; /* Lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(23, 20, 52, 0.8); /* Translucent dark purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            border: 1px solid #4a3a9a; /* Vibrant purple border */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .combo-step-card {
+            background-color: rgba(30, 25, 70, 0.8);
+            border: 1px solid #6b58d9;
+        }
+        .pro-con-card {
+            background-color: rgba(30, 25, 70, 0.8);
+            border: 1px solid #6b58d9;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5); /* Blue-violet glow */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1c164a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px #110d34;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ff00ff; } /* Magenta */
+        .text-highlight { color: #00ffff; } /* Cyan */
+        .arrow-color { color: #9370db; } /* Medium Purple */
+        .heading-underline {
+            border-bottom: 2px solid #ff00ff;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #00ffff;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #00ffff;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #00ffff;
+        }
+
+        /* --- Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c0a1f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a3a9a;
+        }
+
+        #targeting-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(12, 10, 31, 0.4) 0%, rgba(12, 10, 31, 0.9) 80%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px #ff00ff, 0 0 15px #000;
+        }
+        .banner-header h1 {
+             font-family: 'Exo 2', sans-serif;
+             font-weight: 800;
+             font-size: 3rem;
+        }
+        
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(145deg, #1e1b4b, #312e81);
+            color: white; border: 2px solid #818cf8; border-radius: 50%;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(129, 140, 248, 0.4), inset 0 0 10px rgba(0,0,0,0.5);
+            transition: all 0.3s ease; text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.1); box-shadow: 0 8px 25px rgba(129, 140, 248, 0.6); border-color: #a78bfa;
+        }
+        .ygo-home-button i { font-size: 24px; text-shadow: 0 0 8px #c7d2fe; }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="targeting-grid"></canvas>
+            <h1 class="text-white">Rokket Archetype</h1>
+            <p class="text-lg md:text-xl text-cyan-300">A Strategic Analysis of the Dragon Link Engine</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Introduction: The Ammunition and the Cannon</h2>
+                <p class="text-indigo-200">
+                    The "Rokket" archetype, a formidable cadre of DARK Dragon monsters, operates on a brilliantly simple and evocative design principle: they are <a href="https://yugipedia.com/wiki/Rokket" target="_blank" class="lore-link">live ammunition</a>, waiting to be fired by the powerful "Borrel" Link Monsters that act as their cannons. This core concept manifests as a "fire and reload" playstyle, where Borrel monsters target the Rokkets, triggering their destructive effects before they replace themselves from the deck, creating a self-sustaining loop. While potent, the archetype's true power was unlocked when it became the hyper-efficient engine for the metagame behemoth known as "Dragon Link," a strategy that leverages the Rokket core to summon a relentless barrage of powerful, generic Dragon monsters.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center animate-fadeIn">The Rokket Arsenal: Core Components</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-crosshairs text-4xl text-highlight mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Starters and Enablers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4">
+                            <h4 class="font-bold text-accent mb-1">Rokket Tracer</h4>
+                            <p class="text-sm text-indigo-200">The heart of the engine. A Level 4 Tuner that can destroy a face-up card you control to Special Summon any "Rokket" monster from your Deck.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="font-bold text-accent mb-1">Quick Launch</h4>
+                            <p class="text-sm text-indigo-200">A Quick-Play Spell that Special Summons any "Rokket" monster directly from the Deck, making it the most powerful one-card starter.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="font-bold text-accent mb-1">Striker Dragon</h4>
+                            <p class="text-sm text-indigo-200">A LINK-1 monster that searches "Boot Sector Launch" and provides recovery, ensuring consistency.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.4s;">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-rocket text-4xl text-highlight mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Ammunition</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4">
+                            <h4 class="font-bold text-accent mb-1">Magnarokket Dragon</h4>
+                            <p class="text-sm text-indigo-200">When targeted by a Link monster's effect, it destroys itself and sends one monster on the field to the GY (non-targeting).</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="font-bold text-accent mb-1">Silverrokket Dragon</h4>
+                            <p class="text-sm text-indigo-200">Destroys itself to banish one card from the opponent's Extra Deck, removing key threats before they can be summoned.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="font-bold text-accent mb-1">Absorouter Dragon</h4>
+                            <p class="text-sm text-indigo-200">A crucial extender. When sent to the GY, it searches any "Rokket" monster from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Quick Launch Engine</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">This foundational sequence demonstrates how a single Quick Launch can generate a multi-interruption board.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg animate-fadeIn">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="tracer-img-container" class="card-image-container card-placeholder">Rokket Tracer</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c164a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold text-highlight">Launch & Link</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent">Quick Launch</strong> to summon <strong class="text-accent">Rokket Tracer</strong>. Immediately Link Summon <strong class="text-accent">Striker Dragon</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4 animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg animate-fadeIn">
+                     <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="striker-img-container" class="card-image-container card-placeholder">Striker Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c164a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold text-highlight">Search & Extend</h3>
+                            </div>
+                            <p class="text-indigo-200"><strong class="text-accent">Striker Dragon</strong> searches <strong class="text-accent">Boot Sector Launch</strong>. Extend with another Dragon to Link into <strong class="text-accent">Dragunity Knight - Romulus</strong> to search <strong class="text-accent">Dragon Ravine</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4 animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg animate-fadeIn">
+                     <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="savage-img-container-combo" class="card-image-container card-placeholder">Borreload Savage Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c164a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold text-highlight">Build the Board</h3>
+                            </div>
+                            <p class="text-indigo-200">Use <strong class="text-accent">Dragon Ravine</strong> to send <strong class="text-accent">Absorouter Dragon</strong>, searching another Rokket. Use <strong class="text-accent">Boot Sector Launch</strong> to swarm the field and Synchro Summon <strong class="text-accent">Borreload Savage Dragon</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Architecting the Final Board</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                The culmination of the combo is a carefully constructed board designed to systematically dismantle the opponent's strategy. The goal is to assemble multiple, layered forms of interruption.
+            </p>
+
+            <div class="card p-6 md:p-8">
+                <!-- Main Boss: Borrelend -->
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
+                    <div class="lg:col-span-2 flex justify-center">
+                        <div id="borrelend-img-container" class="card-image-container card-placeholder">Borrelend Dragon</div>
+                    </div>
+                    <div class="lg:col-span-3">
+                        <h3 class="text-2xl font-bold text-highlight mb-2">Primary Anchor: Borrelend Dragon</h3>
+                        <p class="text-indigo-200 mb-4">The unbreakable wall and the deck's ultimate boss monster, designed for maximum disruption and resilience.</p>
+                        <ul class="space-y-3 text-indigo-200">
+                            <li class="flex items-start">
+                                <i class="fas fa-shield-alt text-accent mr-3 mt-1"></i>
+                                <span><strong class="text-highlight">Role:</strong> Untargetable & Indestructible Negator.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-bolt text-accent mr-3 mt-1"></i>
+                                <span><strong class="text-highlight">Effect:</strong> Provides a non-once-per-turn, unchainable monster effect negate.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-sync-alt text-accent mr-3 mt-1"></i>
+                                <span><strong class="text-highlight">Advantage:</strong> Summons a "Rokket" from the GY when it negates, replacing resources and preparing follow-up plays.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr class="border-t-2 border-purple-700/50 my-8">
+
+                <h3 class="text-2xl font-bold text-highlight mb-6 text-center">Key Supporting Pieces</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Savage Dragon -->
+                    <div class="flex flex-col text-left combo-step-card p-4 rounded-lg">
+                        <div class="flex items-center gap-4">
+                            <div id="savage-img-container" class="w-24 flex-shrink-0 card-placeholder h-36">Borreload Savage Dragon</div>
+                             <div>
+                                <h4 class="text-lg font-bold text-accent mb-2">Borreload Savage Dragon</h4>
+                                <p class="text-indigo-200 text-sm">The primary omni-negate, capable of stopping any card or effect by using Borrel Counters from an equipped Link Monster.</p>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Spheres -->
+                    <div class="flex flex-col text-left combo-step-card p-4 rounded-lg">
+                        <div class="flex items-center gap-4">
+                            <div id="spheres-img-container" class="w-24 flex-shrink-0 card-placeholder h-36">Hieratic Seal of the Heavenly Spheres</div>
+                             <div>
+                                 <h4 class="text-lg font-bold text-accent mb-2">Hieratic Seal of the Heavenly Spheres</h4>
+                                 <p class="text-indigo-200 text-sm">Provides reactive, non-destruction removal by bouncing a card, and then summons a Dragon from the Deck for a follow-up play.</p>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6 pro-con-card animate-fadeIn">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Consistency:</strong> Numerous one-card starters make the deck incredibly reliable.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Explosive Ceiling:</strong> Capable of building boards with multiple, layered interruptions.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Resilience & Adaptability:</strong> Non-linear combo paths allow skilled players to navigate disruption.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card animate-fadeIn" style="animation-delay: 0.2s;">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Choke Points:</strong> Highly vulnerable to hand traps on key searchers like Striker Dragon.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Graveyard Dependant:</strong> Susceptible to floodgates like Dimension Shifter or Macro Cosmos.</li>
+                        <li><span class="con-icon"><i class="fas fa-meteor"></i></span> <strong class="text-red-400">Board Breakers:</strong> Can struggle against cards like Dark Ruler No More or a well-timed Kaiju.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">TCG Banlist Impact</h2>
+            <div class="card p-6" id="banlist-section">
+                <!-- Banlist content will be dynamically inserted here -->
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Animated Banner Script ---
+            const canvas = document.getElementById('targeting-grid');
+            if(canvas){
+                const ctx = canvas.getContext('2d');
+                let width, height;
+                let lines = [];
+                const lineCount = 50;
+
+                function resize() {
+                    width = canvas.width = canvas.offsetWidth;
+                    height = canvas.height = canvas.offsetHeight;
+                    lines = [];
+                    for(let i = 0; i < lineCount; i++) {
+                        lines.push(new Line());
+                    }
+                }
+
+                class Line {
+                    constructor() {
+                        this.x = Math.random() * width;
+                        this.y = Math.random() * height;
+                        this.speed = Math.random() * 0.5 + 0.2;
+                        this.life = Math.random() * 200 + 50;
+                        this.death = this.life;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.color = Math.random() > 0.5 ? '#ff00ff' : '#00ffff'; // Magenta or Cyan
+                    }
+
+                    update() {
+                        this.life--;
+                        if (this.life <= 0) {
+                           Object.assign(this, new Line());
+                        }
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed;
+                        if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+                             Object.assign(this, new Line());
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.strokeStyle = this.color;
+                        ctx.globalAlpha = 1 - (this.life / this.death);
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.x - Math.cos(this.angle) * 10, this.y - Math.sin(this.angle) * 10);
+                        ctx.stroke();
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, width, height);
+                    ctx.globalAlpha = 1;
+                    lines.forEach(line => {
+                        line.update();
+                        line.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                resize();
+                animate();
+                window.addEventListener('resize', resize);
+            }
+
+            // --- Card Image and Banlist Script ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error('API Error');
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md card-image';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        container.textContent = cardName;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for ${cardName}:`, error);
+                    container.textContent = cardName;
+                }
+            }
+            
+            const cardsToLoad = {
+                'tracer-img-container': 'Rokket Tracer',
+                'striker-img-container': 'Striker Dragon',
+                'savage-img-container-combo': 'Borreload Savage Dragon',
+                'borrelend-img-container': 'Borrelend Dragon',
+                'savage-img-container': 'Borreload Savage Dragon',
+                'spheres-img-container': 'Hieratic Seal of the Heavenly Spheres',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+
+            // --- Banlist Logic ---
+            const banlistContainer = document.getElementById('banlist-section');
+            const coreCards = ["Rokket Tracer", "Quick Launch", "Striker Dragon", "Absorouter Dragon"];
+            
+            // This is a simplified representation. A full implementation would fetch the banlist JSON.
+            // For this example, we'll hardcode the status based on the provided document context.
+            const tcgBanlist = {
+                "Striker Dragon": "Limited" 
+                // Other relevant cards would be added here
+            };
+
+            let banlistHTML = `<p class="text-indigo-200 mb-4 text-center">
+                The Rokket/Dragon Link strategy has seen several key hits on the TCG Forbidden & Limited list over time. Here is the current status of some core components:
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+
+            coreCards.forEach(cardName => {
+                const status = tcgBanlist[cardName] || "Unlimited";
+                let statusColorClass = 'text-green-400';
+                if (status === 'Limited') statusColorClass = 'text-yellow-400';
+                if (status === 'Semi-Limited') statusColorClass = 'text-orange-400';
+                if (status === 'Forbidden') statusColorClass = 'text-red-400';
+
+                banlistHTML += `
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold ${statusColorClass} mb-1">${cardName}</h4>
+                        <p class="text-sm text-indigo-200">Status: <strong class="${statusColorClass}">${status}</strong> (${status === 'Unlimited' ? '3' : status === 'Semi-Limited' ? '2' : status === 'Limited' ? '1' : '0'} copies)</p>
+                    </div>
+                `;
+            });
+
+             banlistHTML += `</div>
+                <div class="mt-6 p-4 bg-opacity-30 rounded border-l-4 bg-indigo-900 border-indigo-500">
+                    <p class="text-sm text-indigo-200"><strong>Meta Implications:</strong> Despite key cards like Striker Dragon being Limited, the engine remains highly potent. The deck's non-linear nature and abundance of extenders allow it to play through these limitations, proving its resilience and continued top-tier viability in the competitive meta.</p>
+                </div>`;
+            
+            if(banlistContainer) {
+               banlistContainer.innerHTML = banlistHTML;
+            }
+        });
+    </script>
+</body>
+</html>
+

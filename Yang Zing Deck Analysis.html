@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yang Zing Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c141c; /* Deep, mystical blue-black */
+            color: #e0e7ff; /* Soft ethereal white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(16, 25, 38, 0.8); /* Translucent dark blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a506b; /* Muted sapphire border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(22, 35, 53, 0.8);
+            border: 1px solid #5c7b9a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #162335;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #162335;
+            border: 1px dashed #5c7b9a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent-fire { color: #f97316; } /* Orange */
+        .text-accent-water { color: #38bdf8; } /* Light Blue */
+        .text-accent-earth { color: #ca8a04; } /* Golden Brown */
+        .text-accent-wind { color: #34d399; } /* Green */
+        .text-accent-light { color: #fde047; } /* Yellow */
+        .text-accent-dark { color: #a78bfa; } /* Purple */
+
+        .arrow-color { color: #93c5fd; }
+        .heading-underline {
+            border-bottom: 2px solid #93c5fd;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fde047;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #fde047;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c141c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3a506b;
+        }
+
+        #constellation-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 20, 28, 0.4) 0%, rgba(12, 20, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(147, 197, 253, 0.6);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+        }
+
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="constellation-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">YANG ZING</h1>
+            <p class="text-lg md:text-xl text-blue-200">The Wyrm Ascendant: Symphony of Destruction and Rebirth</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent-light font-bold">Yang Zing</strong> archetype is a Synchro-focused strategy composed of Wyrm-Type monsters, renowned for its resilient and reactive playstyle. The core philosophy revolves around a "floating" engine: when a Yang Zing monster is destroyed, it is replaced by another from the deck. This turns destruction into advantage and fuels their second unique mechanic: the ability to perform Synchro Summons during the opponent's turn. This combination allows for a deeply tactical approach, aiming to out-grind the opponent and disrupt their plays by summoning powerful Synchro monsters at key moments. Their strength lies in turning an opponent's turn into their own, a testament to the power of the <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=yang%20zing&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=" target="_blank" class="lore-link">celestial Yang Zing cards</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Yang Zing Pantheon Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Nine Sons of the Dragon</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dragon text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Main Deck Wyrms</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Chiwen, Light of the Yang Zing</h4>
+                            <p class="text-sm text-indigo-200">The heart of the engine. This Level 1 Tuner revives itself from the Graveyard whenever a Yang Zing is destroyed, providing endless material for Synchro Summons.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-dark mb-1">Jiaotu, Darkness of the Yang Zing</h4>
+                            <p class="text-sm text-indigo-200">An explosive combo starter. By sending two Yang Zing cards from hand to GY, it summons two more from the deck, enabling instant Synchro plays.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-earth mb-1">Bi'an, Earth of the Yang Zing</h4>
+                            <p class="text-sm text-indigo-200">A key non-Tuner that grants battle immunity to any Synchro Monster it's used to summon, creating incredibly resilient bosses.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-fire mb-1">Suanni, Fire of the Yang Zing</h4>
+                            <p class="text-sm text-indigo-200">The primary beatstick of the main deck, granting a 500 ATK/DEF boost to the Synchro monster it helps create.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Synchros -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star-of-life text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Spells of Creation & Synchro Apex Predators</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Denglong, First of the Yang Zing</h4>
+                            <p class="text-sm text-indigo-200">The central nexus of all combos. It searches, sends from deck to GY, modulates its level, and even floats into another Yang Zing when it leaves the field.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Baxia, Brightness of the Yang Zing</h4>
+                            <p class="text-sm text-indigo-200">The primary board-breaking tool. Shuffles cards on the field back into the deck, bypassing most forms of protection.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-dark mb-1">Nine Pillars of Yang Zing</h4>
+                            <p class="text-sm text-indigo-200">A powerful Counter Trap that negates any effect and then destroys one of your own Yang Zing cards, triggering their floating effects and starting your combos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Denglong Engine</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+               The most fundamental combo revolves around summoning Denglong. This sequence transforms a simple Level 5 Synchro into multiple interruptions on the opponent's turn.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="denglong-img-container" class="card-image-container flex-shrink-0 card-placeholder">Denglong, First of the Yang Zing</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#162335] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon & Search</h3>
+                            </div>
+                            <p class="text-indigo-200">Synchro Summon <strong class="text-accent-light">Denglong</strong>. Use its effect to search <strong class="text-accent-dark">Nine Pillars of Yang Zing</strong>. Then, use its second effect to send <strong class="text-accent-light">Chiwen</strong> from your deck to the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="nine-pillars-img-container" class="card-image-container flex-shrink-0 card-placeholder">Nine Pillars of Yang Zing</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#162335] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Set the Trap</h3>
+                            </div>
+                            <p class="text-indigo-200">Set <strong class="text-accent-dark">Nine Pillars of Yang Zing</strong> and pass your turn. On your opponent's turn, activate it to negate a key card of theirs.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="herald-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Herald of the Arc Light</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#162335] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Trigger the Cascade</h3>
+                            </div>
+                            <p class="text-indigo-200">Nine Pillars of Yang Zing destroys your <strong class="text-accent-light">Denglong</strong>. This triggers Denglong's effect to summon a Yang Zing from deck (e.g., <strong class="text-accent-earth">Bi'an</strong>) and <strong class="text-accent-light">Chiwen's</strong> effect to revive itself. You can then immediately Synchro Summon a monster like <strong class="text-accent-light">Herald of the Arc Light</strong> for another negation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Celestial End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Baxia -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Baxia, Brightness of the Yang Zing</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="baxia-img-container" class="card-image-container card-placeholder">Baxia, Brightness of the Yang Zing</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-light">Powerful Removal:</strong> Shuffles cards on the field back into the deck, bypassing destruction immunity.</li>
+                        <li><strong class="text-accent-light">Engine Starter:</strong> Can destroy a card you control (like another Yang Zing) to revive a monster from the Graveyard.</li>
+                    </ul>
+                </div>
+                <!-- Chaofeng -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Chaofeng, Phantom of the Yang Zing</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="chaofeng-img-container" class="card-image-container card-placeholder">Chaofeng, Phantom of the Yang Zing</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-dark">Attribute Lock:</strong> Prevents your opponent from activating the effects of monsters with the same Attribute(s) as the Yang Zing monsters used for its summon.</li>
+                        <li><strong class="text-accent-dark">Persistent Threat:</strong> Provides advantage when it is destroyed or when it destroys an opponent's monster.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Resilience:</strong> The floating mechanic makes the board incredibly difficult to clear with traditional removal.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">Reactive Disruption:</strong> Summoning Synchros on the opponent's turn provides perfectly timed interruptions.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">High Ceiling:</strong> Capable of producing powerful end boards with multiple layers of negation and disruption.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Banishment:</strong> Cards like Dimension Shifter or Macro Cosmos completely shut down the floating engine.</li>
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-300">Graveyard Negation:</strong> Effects that negate activations in the GY (like Called by the Grave on Chiwen) can stop combos.</li>
+                         <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">"Missing the Timing":</strong> Some effects are optional "When... you can..." effects, which can be tricky for new pilots.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Powerful Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent-light">Swordsoul Toolbox:</strong> The Yang Zing Synchros serve as a powerful toolbox in Swordsoul decks for board breaking and floodgating.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-crown"></i></span> <strong class="text-accent-earth">True King / Dinosaur:</strong> Historically one of the most powerful pairings, using True King effects to trigger Yang Zings in hand.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent-wind">Zefra Integration:</strong> A true fusion of archetypes, using the Pendulum mechanic to swarm the field for explosive Synchro plays.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="my-10 md:my-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The Yang Zing archetype operates at full power in the current TCG format.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="banlist-limited" class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                           <!-- JS will populate this -->
+                        </ul>
+                    </div>
+                    <div id="banlist-unlimited" class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                         <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                           <!-- JS will populate this -->
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p id="meta-implications" class="text-sm text-gray-300"><strong>Meta Implications:</strong> With all core archetype cards unrestricted, Yang Zing can operate at its full potential. The consistency of its Denglong-centric combos is at maximum, allowing the deck to execute its powerful reactive Synchro plays without limitation.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONSTELLATION BANNER ANIMATION ---
+            const canvas = document.getElementById('constellation-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let stars = [];
+                const numStars = 200;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Star {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.vx = (Math.random() - 0.5) * 0.1;
+                        this.vy = (Math.random() - 0.5) * 0.1;
+                        this.alpha = Math.random() * 0.5 + 0.5;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(224, 231, 255, ${this.alpha})`;
+                        ctx.fill();
+                    }
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
+                        if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+                    }
+                }
+
+                function initStars() {
+                    stars = [];
+                    for (let i = 0; i < numStars; i++) {
+                        stars.push(new Star());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    stars.forEach(s => {
+                        s.update();
+                        s.draw();
+                    });
+                    
+                    // Draw lines between nearby stars
+                    ctx.strokeStyle = 'rgba(147, 197, 253, 0.1)';
+                    for (let i = 0; i < numStars; i++) {
+                        for (let j = i + 1; j < numStars; j++) {
+                            const dist = Math.hypot(stars[i].x - stars[j].x, stars[i].y - stars[j].y);
+                            if (dist < 100) {
+                                ctx.beginPath();
+                                ctx.moveTo(stars[i].x, stars[i].y);
+                                ctx.lineTo(stars[j].x, stars[j].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initStars();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initStars();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'denglong-img-container': 'Denglong, First of the Yang Zing',
+                'nine-pillars-img-container': 'Nine Pillars of Yang Zing',
+                'herald-img-container-combo': 'Herald of the Arc Light',
+                'baxia-img-container': 'Baxia, Brightness of the Yang Zing',
+                'chaofeng-img-container': 'Chaofeng, Phantom of the Yang Zing',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+            
+            // --- BANLIST CHECKER ---
+            const yangZingCards = [
+                "Denglong, First of the Yang Zing",
+                "Chiwen, Light of the Yang Zing",
+                "Jiaotu, Darkness of the Yang Zing",
+                "Bi'an, Earth of the Yang Zing",
+                "Suanni, Fire of the Yang Zing",
+                "Bixi, Water of the Yang Zing",
+                "Pulao, Wind of the Yang Zing",
+                "Taotie, Shadow of the Yang Zing",
+                "Baxia, Brightness of the Yang Zing",
+                "Yazi, Evil of the Yang Zing",
+                "Chaofeng, Phantom of the Yang Zing",
+                "Nine Pillars of Yang Zing",
+                "Yang Zing Creation",
+                "Yang Zing Path"
+            ];
+
+            const limitedContainer = document.querySelector('#banlist-limited ul');
+            const unlimitedContainer = document.querySelector('#banlist-unlimited ul');
+
+            async function checkBanlist() {
+                try {
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
+                    const banlistData = await response.json();
+                    
+                    const bannedCardNames = banlistData.data.reduce((acc, card) => {
+                        if (card.banlist_info && card.banlist_info.ban_tcg) {
+                            acc[card.name] = card.banlist_info.ban_tcg;
+                        }
+                        return acc;
+                    }, {});
+
+                    yangZingCards.forEach(cardName => {
+                        const status = bannedCardNames[cardName];
+                        const li = document.createElement('li');
+                        
+                        if (status === 'Limited' || status === 'Semi-Limited') {
+                            li.innerHTML = `<strong class="text-yellow-400">${cardName} (${status})</strong>`;
+                            limitedContainer.appendChild(li);
+                        } else if (status === 'Banned') {
+                             li.innerHTML = `<strong class="text-red-400">${cardName} (Forbidden)</strong>`;
+                            limitedContainer.appendChild(li);
+                        } else {
+                             li.innerHTML = `<strong class="text-green-400">${cardName}</strong>`;
+                             unlimitedContainer.appendChild(li);
+                        }
+                    });
+
+
+                } catch (error) {
+                    console.error("Failed to fetch banlist data:", error);
+                    const metaImplications = document.getElementById('meta-implications');
+                    if(metaImplications) metaImplications.textContent = "Could not fetch banlist data. Status is unverified.";
+                }
+            }
+
+            checkBanlist();
+        });
+    </script>
+</body>
+</html>
+
+

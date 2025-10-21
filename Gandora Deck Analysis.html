@@ -1,0 +1,516 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gandora Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0c0c;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1a1a;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a2a00;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #242424;
+            border: 1px solid #5c3d00;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-placeholder {
+            background-color: #242424;
+            color: #ff9800;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 2px dashed #4a2a00;
+        }
+        .pro-icon { color: #4caf50; }
+        .con-icon { color: #f44336; }
+        .neutral-icon { color: #2196f3; }
+        .text-accent { color: #ff9800; }
+        .arrow-color { color: #ff5722; }
+        .heading-underline {
+            border-bottom: 2px solid #ff9800;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ff9800;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff9800;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- GANDORA ANIMATED BANNER --- */
+        .banner {
+            position: relative;
+            height: 160px;
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #4a2a00;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+        }
+        #destruction-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-content {
+            z-index: 2;
+            position: relative;
+            text-shadow: 0 0 10px #000, 0 0 20px #ff5722;
+        }
+        .banner-title {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 3rem;
+            color: #fff;
+            letter-spacing: 0.1em;
+        }
+        .banner-subtitle {
+            font-size: 1.125rem;
+            color: #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 120px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 1rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <canvas id="destruction-canvas"></canvas>
+                <div class="banner-content">
+                    <h1 class="banner-title">GANDORA</h1>
+                    <p class="banner-subtitle">Annihilation Architects</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The "Gandora" monsters, once a series of iconic but disjointed boss monsters, have been reborn. The modern Gandora deck's identity has been completely rewritten by the "Shining Sarcophagus" engine. The central thesis is that <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=19892" target="_blank" class="lore-link">Shining Sarcophagus</a> is not just a support card; it is the core of the strategy. The deck revolves around establishing and protecting this Continuous Spell to unlock a consistent, control-oriented game plan, culminating in the devastating power of its new win condition, "Gandora-G the Dragon of Destruction."
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Monsters -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Dragons of Destruction</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4">Gandora-G, the Modern Juggernaut</h3>
+                    <div class="flex flex-col md:flex-row items-start gap-4 mt-4">
+                        <div id="gandora-g-img" class="card-image-container mx-auto md:mx-0 mb-4 md:mb-0 card-placeholder">Gandora-G the Dragon of Destruction</div>
+                        <p class="text-gray-300">The primary boss monster. It can be Special Summoned from the hand while "Shining Sarcophagus" is on the field. Its main effect allows you to pay half your LP to destroy and banish as many other cards on the field as possible, then Special Summon a monster that mentions "Shining Sarcophagus" from your deck. It gains 300 ATK for every banished card, making it a terrifying OTK enabler.</p>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4">The Legacy Arsenal</h3>
+                    <div class="flex flex-col md:flex-row items-start gap-4 mt-4">
+                        <div id="gigarays-img" class="card-image-container mx-auto md:mx-0 mb-4 md:mb-0 card-placeholder">Gigarays Gandora the Dragon of Destruction</div>
+                        <p class="text-gray-300">The original "Gandora," "Gandora-X," and "Gigarays Gandora" form a powerful secondary engine. By sending the different "Gandora" names to the Graveyard, you can summon "Gigarays Gandora the Dragon of Destruction" to unleash a catastrophic effect that banishes all other cards on the field and in both Graveyards, crippling many strategies permanently.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Shining Sarcophagus Engine -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Engine Room: Shining Sarcophagus</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-6 text-center max-w-3xl mx-auto">
+                    The true heart of the modern Gandora deck is not the dragons themselves, but the intricate and consistent engine built around the "Shining Sarcophagus" Continuous Spell. This engine provides searching, board presence, and layers of interaction.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-accent mb-2">Shining Sarcophagus</h4>
+                        <p class="text-gray-400 text-sm">The core of the deck. Searches any card that mentions it once per turn and cannot be destroyed by monster effects. Enables all your key plays.</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-accent mb-2">Gadget Trio</h4>
+                        <p class="text-gray-400 text-sm">The primary starter. On Normal or Special Summon, it searches "Shining Sarcophagus" or a Spell/Trap that mentions it.</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-accent mb-2">Silent Magician Zero & Silent Swordsman Zero</h4>
+                        <p class="text-gray-400 text-sm">The main control pieces. Provide a Spell negate and protection from targeting effects, respectively, while "Shining Sarcophagus" is active.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Blueprint for Annihilation: Core Combo</h2>
+            <div class="flex flex-col items-center gap-4">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-2xl flex items-start gap-4">
+                    <div id="gadget-trio-img" class="card-image-container card-placeholder">Gadget Trio</div>
+                    <div>
+                        <h3 class="text-lg font-bold mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 inline-flex">1</span>The Gadget Trio Opening</h3>
+                        <p class="text-gray-300">Normal Summon "Gadget Trio." Its effect activates, adding "Shining Sarcophagus" from your deck to your hand. This is the most common and crucial starting play.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-arrow-down text-4xl arrow-color"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-2xl flex items-start gap-4">
+                    <div id="sarcophagus-img" class="card-image-container card-placeholder">Shining Sarcophagus</div>
+                    <div>
+                        <h3 class="text-lg font-bold mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 inline-flex">2</span>Activate and Search</h3>
+                        <p class="text-gray-300">Activate "Shining Sarcophagus." Use its effect to search for "Ties That Bind," the key combo Spell that will build your board.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-arrow-down text-4xl arrow-color"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-2xl flex items-start gap-4">
+                    <div id="silent-duo-img" class="card-image-container card-placeholder">Silent Magician Zero & Silent Swordsman Zero</div>
+                    <div>
+                        <h3 class="text-lg font-bold mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 inline-flex">3</span>Establish Control</h3>
+                        <p class="text-gray-300">Activate "Ties That Bind" to Special Summon "Silent Magician Zero" and "Silent Swordsman Zero" from the deck, establishing your initial layer of protection and negation.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Battlefield</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Standard Control Board</h3>
+                    <p class="text-gray-300">The typical Turn 1 end board aims for resilience. It consists of:</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300 mt-4">
+                        <li><strong class="text-accent">Shining Sarcophagus:</strong> The recurring search engine.</li>
+                        <li><strong class="text-accent">Silent Magician Zero:</strong> A live Spell negate.</li>
+                        <li><strong class="text-accent">Silent Swordsman Zero:</strong> Protection from targeting effects.</li>
+                        <li><strong class="text-accent">Starter Monster:</strong> e.g., "Gadget Trio," for follow-up plays.</li>
+                    </ul>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The OTK Board</h3>
+                    <div class="flex flex-col md:flex-row items-start gap-4 mt-4">
+                        <div id="gandora-otk-img" class="card-image-container mx-auto md:mx-0 mb-4 md:mb-0 card-placeholder">Gandora-G the Dragon of Destruction</div>
+                        <p class="text-gray-300">When going second, the goal is a swift victory. After activating "Gandora-G's" effect to wipe the field, its ATK often skyrockets into the 8,000-10,000 range, enabling a game-ending attack. This explosive potential makes the deck a formidable threat against established boards.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Competitive Analysis -->
+        <section>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Analysis</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><span class="pro-icon mr-3 mt-1"><i class="fas fa-check-circle"></i></span> <span><strong class="text-green-400">High Power Ceiling:</strong> Can create formidable control boards from a single card.</span></li>
+                        <li class="flex items-start"><span class="pro-icon mr-3 mt-1"><i class="fas fa-bomb"></i></span> <span><strong class="text-green-400">Potent Board-Breaking:</strong> "Gandora-G" offers one of the strongest board wipes in the game.</span></li>
+                        <li class="flex items-start"><span class="pro-icon mr-3 mt-1"><i class="fas fa-bolt"></i></span> <span><strong class="text-green-400">Explosive OTK Potential:</strong> Can pivot from control to a game-ending offense with incredible speed.</span></li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><span class="con-icon mr-3 mt-1"><i class="fas fa-times-circle"></i></span> <span><strong class="text-red-400">Extreme Fragility:</strong> Highly reliant on resolving the search for "Shining Sarcophagus."</span></li>
+                        <li class="flex items-start"><span class="con-icon mr-3 mt-1"><i class="fas fa-hand-paper"></i></span> <span><strong class="text-red-400">Vulnerable to Hand Traps:</strong> The linear combo is easily disrupted by cards like "Ash Blossom" or "Infinite Impermanence."</span></li>
+                        <li class="flex items-start"><span class="con-icon mr-3 mt-1"><i class="fas fa-unlink"></i></span> <span><strong class="text-red-400">Centralized Strategy:</strong> Removal of "Shining Sarcophagus" can cause the entire board to collapse.</span></li>
+                    </ul>
+                </div>
+                <!-- Outlook -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">Competitive Outlook</h3>
+                     <p class="text-gray-300">The Gandora deck is a potent rogue strategy. Its raw power allows it to compete with top-tier decks, but its inconsistency and vulnerability to disruption prevent it from being a consistent tournament threat. Success often depends on integrating external engines (like Branded or Kashtira) to bait disruption and increase resilience, allowing its high-ceiling plays to resolve more consistently.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GANDORA DESTRUCTION BANNER ANIMATION ---
+            const canvas = document.getElementById('destruction-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = (Math.random() * 1 - 0.5);
+                        this.speedY = (Math.random() * 1 - 0.5);
+                        this.color = `rgba(255, 87, 34, ${Math.random()})`;
+                    }
+
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.size > 0.1) this.size -= 0.02;
+                        if (this.size <= 0.1) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.size = Math.random() * 2 + 1;
+                            this.speedX = (Math.random() * 1 - 0.5);
+                            this.speedY = (Math.random() * 1 - 0.5);
+                        }
+                    }
+
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD IMAGE FETCHING ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+            
+            const cardsToLoad = {
+                'gandora-g-img': 'Gandora-G the Dragon of Destruction',
+                'gigarays-img': 'Gigarays Gandora the Dragon of Destruction',
+                'gadget-trio-img': 'Gadget Trio',
+                'sarcophagus-img': 'Shining Sarcophagus',
+                'gandora-otk-img': 'Gandora-G the Dragon of Destruction',
+                'silent-duo-img': 'Silent Magician Zero'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+

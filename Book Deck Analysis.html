@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Lora', serif;
+            background-color: #1a1a2e; /* Deep midnight blue */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Cinzel Decorative', cursive;
+        }
+        p, ul, li {
+             font-family: 'Lora', serif;
+        }
+        .card {
+            background-color: rgba(26, 26, 46, 0.7); /* Translucent darker blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a4a8a; /* Muted purple border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(30, 30, 60, 0.8);
+            border: 1px solid #6a6acc;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2a57;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2a57;
+            border: 1px dashed #6a6acc;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fef08a; } /* Parchment Yellow */
+        .arrow-color { color: #fef08a; }
+        .heading-underline {
+            border-bottom: 2px solid #fef08a;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fef08a;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fef08a;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #fef08a;
+        }
+
+        /* --- NEW ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a2e;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a4a8a;
+        }
+
+        #magic-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 26, 46, 0.4) 0%, rgba(26, 26, 46, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(254, 240, 138, 0.7);
+        }
+        
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="magic-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Grimoire of Strategy</h1>
+            <p class="text-lg md:text-xl text-yellow-100">A Deep Dive into the "Book of" Cards</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200 leading-relaxed">
+                    The "Book of" cards are a recurring thematic series in Yu-Gi-Oh!, centered around knowledge, magic, and powerful, game-altering effects. This analysis covers both the versatile, standalone "Book of" Quick-Play Spells that serve as powerful disruption tools, and the cohesive "Spellbook" archetype, a masterclass in consistency and resource management. From the tactical disruption of <strong class="text-accent">Book of Moon</strong> to the intricate search loops of the "Spellbook" engine, these cards have left an indelible mark on the game's strategic landscape.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Ancient Tomes: Standalone Quick-Play Spells</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+               The standalone "Book" spells are renowned for their flexibility. Among them, a few <a href="https://yugipedia.com/wiki/Book_of_Moon" target="_blank" class="lore-link" title="More about Quick-Play 'Book' cards">powerful Quick-Play Spells</a> stand out for their ability to disrupt plays, protect assets, and fundamentally alter the game state in an instant.
+            </p>
+
+            <div class="space-y-8">
+                <!-- Book of Moon Section -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <div id="book-of-moon-img-container" class="card-image-container flex-shrink-0 card-placeholder">Book of Moon</div>
+                        <div class="flex-grow">
+                            <h3 class="text-2xl font-bold text-accent mb-3">The Archetypal Disruptor: Book of Moon</h3>
+                            <p class="text-indigo-200 mb-4 leading-relaxed">A legendary Quick-Play Spell with a deceptively simple effect. Flipping a monster face-down serves as a versatile tool for disrupting combos by preventing Synchro, Xyz, or Link Summons. It can also be used defensively to dodge targeting effects like <strong class="text-accent">Infinite Impermanence</strong> or to reset your own "once while face-up" monster effects.</p>
+                            <span class="text-green-400 font-bold">(Unlimited: 3 per Deck)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Book of Eclipse Section -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                         <div class="flex-grow">
+                            <h3 class="text-2xl font-bold text-accent mb-3">The Board Breaker: Book of Eclipse</h3>
+                            <p class="text-indigo-200 mb-4 leading-relaxed">A high-risk, high-reward tool for going second. It changes all face-up monsters to face-down Defense Position, disabling an entire board of interruptions. Its drawback—allowing your opponent to draw cards for each monster flipped—is often irrelevant in OTK-focused strategies. A key weakness is its inability to affect Link Monsters.</p>
+                             <span class="text-green-400 font-bold">(Unlimited: 3 per Deck)</span>
+                        </div>
+                         <div id="book-of-eclipse-img-container" class="card-image-container flex-shrink-0 card-placeholder">Book of Eclipse</div>
+                    </div>
+                </div>
+
+                <!-- Book of Lunar Eclipse Section -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <div id="book-of-lunar-eclipse-img-container" class="card-image-container flex-shrink-0 card-placeholder">Book of Lunar Eclipse</div>
+                        <div class="flex-grow">
+                            <h3 class="text-2xl font-bold text-accent mb-3">The Targeted Disruption: Book of Lunar Eclipse</h3>
+                            <p class="text-indigo-200 mb-4 leading-relaxed">This variant requires a discard to flip two monsters face-down. While more targeted than its solar counterpart, the cost results in a net loss of two cards from hand for two disruptions on field, making it less resource-efficient. Like Book of Eclipse, its utility in the modern game is hampered by its inability to affect Link Monsters.</p>
+                             <span class="text-green-400 font-bold">(Unlimited: 3 per Deck)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Magician's Library: The Spellbook Archetype</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">The "Spellbook" archetype, alongside its "Prophecy" monster counterparts, exemplifies a control-based strategy focused on consistency and resource recursion. While not as dominant as in its past, the engine remains a potent source of card advantage. Historically, it was known for the infamous "Jowgen Lock," combining the Special Summon floodgate of <strong class="text-accent">Jowgen the Spiritualist</strong> with the protection and removal of its in-archetype spells.</p>
+            
+            <div class="card p-6 mb-8">
+                 <h3 class="text-xl font-bold text-white mb-4 text-center">Engine Architecture: Search, Recursion, Payoff</h3>
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                     <div>
+                         <h4 class="font-bold text-accent mb-2">The Search Loop</h4>
+                         <p class="text-sm text-indigo-200">Initiated by <strong class="text-accent">Spellbook Magician of Prophecy</strong>, the engine chains searches through <strong class="text-accent">Spellbook of Secrets</strong> and <strong class="text-accent">Spellbook of the Master</strong> to access any card needed.</p>
+                     </div>
+                     <div>
+                         <h4 class="font-bold text-accent mb-2">The Resource Cycle</h4>
+                         <p class="text-sm text-indigo-200"><strong class="text-accent">The Grand Spellbook Tower</strong> recycles Spells from the GY, while <strong class="text-accent">Spellbook of Eternity</strong> recovers banished resources, ensuring long-term advantage.</p>
+                     </div>
+                     <div>
+                         <h4 class="font-bold text-accent mb-2">The Tools of Control</h4>
+                         <p class="text-sm text-indigo-200">The culmination is <strong class="text-accent">Spellbook of Fate</strong>, a powerful Quick-Play Spell that offers non-targeting banishment, fueled by the "books" accumulated in the Graveyard.</p>
+                     </div>
+                 </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Competitive Analysis & Inter-Archetypal Synergy</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The true measure of a card series' impact is its utility beyond its own strategy. Both the generic "Book of" cards and the "Spellbook" archetype have seen extensive use as engines or tech choices in a wide variety of other decks.
+            </p>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-4">The Spellbook Engine: A Compact Powerhouse</h3>
+                <p class="text-indigo-200 mb-4">
+                    In competitive play, the "Spellbook Engine" refers to a small package of cards—typically 2-3 <strong class="text-accent">Spellbook of Secrets</strong>, 1-2 <strong class="text-accent">Spellbook of Knowledge</strong>, and 1 <strong class="text-accent">Spellbook Magician of Prophecy</strong>—slotted into other decks. Its purpose is to trade the deck's Normal Summon for a net +1 in card advantage by drawing two cards, while also thinning the deck.
+                </p>
+                <h4 class="text-lg font-bold text-accent mb-2">Case Study: Invoked Spellbook</h4>
+                <p class="text-indigo-200">
+                    A classic hybrid, this deck combined the Spellbook engine with the "Invoked" engine. A common play was to Normal Summon <strong class="text-accent">Aleister the Invoker</strong> to search <strong class="text-accent">Invocation</strong>, then use <strong class="text-accent">Spellbook of Knowledge</strong> by sending Aleister to the GY to draw two cards. This provided card advantage and set up Aleister as Fusion Material in the Graveyard. The engines seamlessly facilitated one another, creating a powerful and consistent strategy.
+                </p>
+            </div>
+            <div class="card p-6 mt-8">
+                <h3 class="text-xl font-bold text-white mb-4">A Modern Parallel: The Diabellstar/Sinful Spoils Engine</h3>
+                <p class="text-indigo-200">
+                    To contextualize the Spellbook engine's role, it's useful to compare it to the modern "Diabellstar/Sinful Spoils" engine. The Spellbook engine operates on a "trade-off" model: you trade your Normal Summon for a +1 in card advantage. In contrast, the Diabellstar engine is a "pure generation" model. It doesn't use the Normal Summon and, for the cost of a discard, Special Summons a key monster that starts a full combo, often resulting in an entire board and overwhelming advantage. This shift from a simple resource trade to a high-yield investment encapsulates the evolution of engine design in Yu-Gi-Oh!.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-4 combo-step-card">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Spellbook of Judgment (0 copies)</strong> - The historical one-card engine that enabled the infamous "Jowgen Lock". Its ban significantly reduced the Spellbook archetype's ceiling.</li>
+                            <li><strong class="text-red-400">Jowgen the Spiritualist (0 copies)</strong> - With the key floodgate forbidden, this specific win condition for Spellbooks is no longer viable in the TCG.</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 combo-step-card">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards</h4>
+                         <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                             <li><strong class="text-yellow-300">Book of Moon (1 copy)</strong> - A staple disruption tool whose limitation impacts many decks, reducing the overall availability of this versatile Quick-Play Spell.</li>
+                         </ul>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-gray-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300">
+                        <strong>Meta Implications:</strong> The standalone "Book" spells remain powerful, but the limitation of <strong class="text-accent">Book of Moon</strong> makes it a less reliable tech choice. For the "Spellbook" archetype, the bans of key cards have shifted its identity from a lockdown-combo deck to a more traditional, grinding control strategy that leverages its consistent search engine for card advantage.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('magic-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + 10;
+                        this.speed = Math.random() * 1 + 0.5;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.color = `rgba(254, 240, 138, ${Math.random() * 0.5 + 0.3})`;
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < 0) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'book-of-moon-img-container': 'Book of Moon',
+                'book-of-eclipse-img-container': 'Book of Eclipse',
+                'book-of-lunar-eclipse-img-container': 'Book of Lunar Eclipse'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

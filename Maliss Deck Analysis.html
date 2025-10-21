@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maliss Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #0a0a1a;
+            color: #e0e0ff;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(13, 13, 34, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a00e0;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(26, 10, 41, 0.7);
+            border: 1px solid #8e2de2;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-placeholder {
+            background-color: #1a0a21;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px #4a00e0;
+        }
+        .text-accent {
+            color: #be29ec;
+        }
+        .arrow-color {
+            color: #8e2de2;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #8e2de2;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #be29ec;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #be29ec;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #be29ec;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+
+        /* --- Animated Banner --- */
+        .banner {
+            position: relative;
+            height: 150px;
+            background: #0a0a1a;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #4a00e0;
+            box-shadow: 0 8px 30px rgba(74, 0, 224, 0.5);
+        }
+        #glitch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-content {
+            z-index: 2;
+            position: relative;
+            text-shadow: 0 0 10px #000;
+        }
+        .banner-title {
+            font-family: 'Special Elite', cursive;
+            font-size: 2.8rem;
+            color: #fff;
+            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #8e2de2, 0 0 20px #8e2de2;
+            animation: flicker 3s infinite alternate;
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #c0c0ff;
+        }
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow:
+                0 0 4px #fff,
+                0 0 11px #fff,
+                0 0 19px #fff,
+                0 0 40px #8e2de2,
+                0 0 80px #8e2de2;
+            }
+            20%, 24%, 55% {        
+                text-shadow: none;
+            }    
+        }
+        
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white; border: 2px solid #6366f1; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus"><i class="fas fa-home"></i></a>
+
+    <div class="container mx-auto">
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <canvas id="glitch-canvas"></canvas>
+                <div class="banner-content">
+                    <h1 class="banner-title">Maliss</h1>
+                    <p class="banner-subtitle">Down the Rabbit Hole of a Digital Wonderland</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Archetype Overview</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Maliss</strong> archetype, first appearing in <em class="italic">Crossover Breakers</em>, is a DARK Cyberse Link strategy renowned for its recursive and explosive gameplay. The core mechanic involves a unique loop: banishing its own monsters to activate their effects, which then Special Summon themselves from the banished zone. This turns the banished zone into a dynamic resource pool, allowing for rapid Link climbing and the generation of immense card advantage from a single starter. The aesthetic masterfully blends themes from "Alice's Adventures in Wonderland" with the clandestine nature of computer malware, creating a surreal digital battleground. Prepare to go <a href="https://www.yugioh-card.com/en/products/crossover-breakers/" target="_blank" class="lore-link">down the rabbit hole</a> to understand their protocol.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Mainframe: Core Monster Roster</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-1">Maliss Dormouse</h3>
+                    <p class="text-sm text-indigo-200">The premier one-card starter. Its Ignition Effect banishes any "Maliss" monster from the Deck, initiating the core combo. When banished itself, it revives for 300 LP.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-1">Maliss White Rabbit</h3>
+                    <p class="text-sm text-indigo-200">The secondary starter. On summon, it Sets a "Maliss" Trap from the Deck, providing access to extenders or disruption. Revives from banish for 300 LP.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-1">Maliss Chessy Cat</h3>
+                    <p class="text-sm text-indigo-200">A key extender and consistency tool. It allows you to banish a "Maliss" card from hand to draw two cards, improving hand quality and triggering banished effects.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-1">Maliss March Hare</h3>
+                    <p class="text-sm text-indigo-200">Provides a free Special Summon from hand by banishing a "Maliss" card from hand or GY, enabling more explosive plays without using the Normal Summon.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The One-Card Dormouse</h2>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-4 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center gap-4">
+                    <div id="dormouse-img" class="card-image-container card-placeholder">Maliss Dormouse</div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold"><span class="bg-indigo-900 rounded-full px-3 py-1 mr-2">1</span> Normal Summon & Banish</h3>
+                        <p class="text-indigo-200 text-sm">Normal Summon <strong class="text-accent">Dormouse</strong>. Activate its effect, banishing <strong class="text-accent">White Rabbit</strong> from your Deck.</p>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-4 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center gap-4">
+                    <div id="rabbit-img" class="card-image-container card-placeholder">Maliss White Rabbit</div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold"><span class="bg-indigo-900 rounded-full px-3 py-1 mr-2">2</span> Revive & Link Climb</h3>
+                        <p class="text-indigo-200 text-sm"><strong class="text-accent">White Rabbit's</strong> banished effect triggers. Pay 300 LP to Special Summon it. Now with two monsters, begin your Link climb into your boss monsters.</p>
+                    </div>
+                </div>
+                 <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-4 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center gap-4">
+                    <div id="ransom-img" class="card-image-container card-placeholder">Maliss Red Ransom</div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold"><span class="bg-indigo-900 rounded-full px-3 py-1 mr-2">3</span> Search and Extend</h3>
+                        <p class="text-indigo-200 text-sm">Summon <strong class="text-accent">Maliss Red Ransom</strong> to search for the Field Spell, <strong class="text-accent">Maliss in Underground</strong>, which further extends your plays by providing another banish.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Optimal Endboard Configuration</h2>
+            <div class="card p-6 md:p-8">
+                <p class="text-indigo-200 mb-8 text-center">A typical Maliss endboard generated from one card aims to establish multiple points of interaction to control the opponent's turn.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Maliss Hearts Crypter -->
+                    <div class="combo-step-card p-4 rounded-lg flex items-start gap-4">
+                        <div id="crypter-img" class="card-image-container w-40 card-placeholder">Maliss Hearts Crypter</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-accent text-lg">Maliss Hearts Crypter</h4>
+                            <p class="text-sm text-indigo-200 mt-2">The board's primary problem-solver. Provides an un-negatable, non-targeting banish to remove any threat.</p>
+                        </div>
+                    </div>
+                    <!-- Maliss White Binder -->
+                    <div class="combo-step-card p-4 rounded-lg flex items-start gap-4">
+                        <div id="binder-img" class="card-image-container w-40 card-placeholder">Maliss White Binder</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-accent text-lg">Maliss White Binder</h4>
+                            <p class="text-sm text-indigo-200 mt-2">Offers graveyard disruption on summon and sets a "Maliss" Trap from the deck for an additional interaction.</p>
+                        </div>
+                    </div>
+                    <!-- Set Maliss MTP-07 -->
+                    <div class="combo-step-card p-4 rounded-lg flex items-start gap-4">
+                        <div id="mtp-img" class="card-image-container w-40 card-placeholder">Maliss MTP-07</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-accent text-lg">Set Maliss MTP-07</h4>
+                            <p class="text-sm text-indigo-200 mt-2">A versatile trap that searches a follow-up "Maliss" monster while also providing another targeted banish.</p>
+                        </div>
+                    </div>
+                    <!-- Firewall Dragon -->
+                    <div class="combo-step-card p-4 rounded-lg flex items-start gap-4">
+                        <div id="firewall-img" class="card-image-container w-40 card-placeholder">Firewall Dragon</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-accent text-lg">Firewall Dragon</h4>
+                            <p class="text-sm text-indigo-200 mt-2">A generic Link monster that provides a Quick Effect bounce, dealing with monsters that can't be destroyed or targeted.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> High consistency with multiple one-card starters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> Resilient, recursive engine that is difficult to stop permanently.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> Explosive Link climbing potential for powerful endboards.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> Extremely vulnerable to cards that prevent banishing (<strong class="text-accent">Artifact Lancea</strong>).</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> The Normal Summon starter is a key choke point for hand traps.</li>
+                         <li><span class="con-icon"><i class="fas fa-meteor"></i></span> Susceptible to mass board removal like <strong class="text-accent">Nibiru, the Primal Being</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-indigo-200">
+                            <li>Maliss Dormouse</li>
+                        </ul>
+                    </div>
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Semi-Limited (2 per Deck)</h4>
+                         <ul class="list-disc list-inside space-y-1 text-sm text-indigo-200">
+                            <li>Maliss in Underground</li>
+                        </ul>
+                    </div>
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted (3 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-indigo-200">
+                            <li>All other "Maliss" cards</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-indigo-200"><strong>Meta Implications:</strong> The limitation of <strong class="text-accent">Maliss Dormouse</strong> significantly impacts the deck's consistency, reducing the number of primary one-card starters. The semi-limitation of <strong class="text-accent">Maliss in Underground</strong> also hurts consistency. While still potent, the deck must now rely more heavily on its secondary starters and extenders to execute its core strategy.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Glitchy Banner Animation
+            const canvas = document.getElementById('glitch-canvas');
+            const ctx = canvas.getContext('2d');
+            let w = canvas.width = canvas.offsetWidth;
+            let h = canvas.height = canvas.offsetHeight;
+            let chars = 'MALISS<P>DORMOUSE<Q>WHITE<C>TB-11_ERROR_404_RABBIT_HOLE_NOT_FOUND_';
+            chars = chars.split('');
+            const fontSize = 14;
+            const columns = w / fontSize;
+            let drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(10, 10, 26, 0.1)';
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = '#8e2de2';
+                ctx.font = `${fontSize}px Roboto Mono`;
+                for (let i = 0; i < drops.length; i++) {
+                    let text = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > h && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+            setInterval(draw, 40);
+
+            // Card Image Fetching
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                         container.textContent = cardName;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.textContent = cardName;
+                }
+            }
+            
+            // Card names need to be precise for the API
+            fetchAndDisplayCardImage('Maliss Dormouse', 'dormouse-img');
+            fetchAndDisplayCardImage('Maliss White Rabbit', 'rabbit-img');
+            fetchAndDisplayCardImage('Maliss Red Ransom', 'ransom-img');
+            fetchAndDisplayCardImage('Maliss Hearts Crypter', 'crypter-img');
+            fetchAndDisplayCardImage('Maliss White Binder', 'binder-img');
+            fetchAndDisplayCardImage('Maliss MTP-07', 'mtp-img');
+            fetchAndDisplayCardImage('Firewall Dragon', 'firewall-img');
+        });
+    </script>
+</body>
+</html>
+
+

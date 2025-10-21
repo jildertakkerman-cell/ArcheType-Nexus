@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lswarm Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a112a; /* Dark Purple */
+            color: #e0d8f0; /* Light Lavender */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2e2245; /* Darker Purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.1);
+            border: 1px solid #581c87; /* Purple Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3b2d52;
+            border: 1px solid #7e22ce;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3b2d52;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #c084fc; } /* Lighter Purple Accent */
+        .arrow-color { color: #a855f7; }
+        .heading-underline {
+            border-bottom: 2px solid #a855f7;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #c084fc;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c084fc;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a112a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #lswarm-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(26, 17, 42, 0.5) 0%, rgba(26, 17, 42, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px rgba(233, 213, 255, 0.5), 0 0 15px rgba(168, 85, 247, 0.4);
+        }
+                    
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="lswarm-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Lswarm Archetype Analysis</h1>
+            <p class="text-lg md:text-xl text-purple-200">The Corrupted Anti-Meta Control Strategy</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-100">
+                    The <strong class="text-accent font-bold">"lswarm"</strong> archetype is a DARK-Attribute strategy focused on Rank 4 Xyz Summoning to establish powerful anti-meta floodgates. Primarily composed of corrupted versions of other monsters, the archetype's main goal is to summon <strong class="text-accent font-bold">Evilswarm Ophion</strong>, a potent boss monster that completely shuts down the Special Summoning of Level 5 or higher monsters. With its straightforward control-oriented playstyle and powerful support cards, the archetype aims to simplify the game state and prevent opponents from accessing their most powerful extra deck monsters. The 
+                    <a href="https://yugipedia.com/wiki/Lswarm" target="_blank" class="lore-link">full extent of their corrupting influence</a>
+                     is a testament to their anti-meta design.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Swarm's Vanguard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-biohazard text-4xl text-purple-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Evilswarm Castor</h4>
+                            <p class="text-sm text-purple-100">The primary starter. Grants an additional Normal Summon for a "lswarm" monster, enabling an instant Rank 4 Xyz Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Evilswarm Kerykeion</h4>
+                            <p class="text-sm text-purple-100">The main extender and recovery tool. It can banish a "lswarm" from the GY to add another to hand, and grants an extra Normal Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Evilswarm Mandragora</h4>
+                            <p class="text-sm text-purple-100">A free Special Summon from the hand if the opponent controls more monsters than you, providing easy material for an Xyz Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-skull-crossbones text-4xl text-purple-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Infestation's Arsenal</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Evilswarm Ophion</h4>
+                            <p class="text-sm text-purple-100">The deck's signature boss monster. While it has Xyz Material, Level 5 or higher monsters cannot be Special Summoned. It also searches for "Infestation" Spell/Trap cards.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Infestation Pandemic</h4>
+                            <p class="text-sm text-purple-100">The primary protection card. This Quick-Play Spell makes all face-up "lswarm" monsters you control unaffected by other Spell/Trap effects for the turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: Summoning the Ophion Lock</h2>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="castor-img" class="card-image-container flex-shrink-0 card-placeholder">Evilswarm Castor</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e2245] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Swarm</h3>
+                            </div>
+                            <p class="text-purple-100">Normal Summon <strong class="text-accent">Evilswarm Castor</strong>. Activate its effect to gain an additional Normal Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ophion-img" class="card-image-container flex-shrink-0 card-placeholder">Evilswarm Ophion</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e2245] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Establish the Lock</h3>
+                            </div>
+                            <p class="text-purple-100">Normal Summon another Level 4 "lswarm" monster (like <strong class="text-accent">Mandragora</strong> or <strong class="text-accent">Heliotrope</strong>). Overlay both monsters to Xyz Summon <strong class="text-accent">Evilswarm Ophion</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="pandemic-img" class="card-image-container flex-shrink-0 card-placeholder">Infestation Pandemic</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e2245] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Secure and Protect</h3>
+                            </div>
+                            <p class="text-purple-100">Activate <strong class="text-accent">Ophion's</strong> effect by detaching one material to search for <strong class="text-accent">Infestation Pandemic</strong> from your deck. Set it for protection on the opponent's turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Typical Endboard</h2>
+            <div class="card p-6 pro-con-card text-center">
+                <h3 class="text-xl font-bold text-white mb-4">The Ophion Floodgate</h3>
+                <div class="flex flex-col md:flex-row justify-center items-center gap-6">
+                    <div class="flex flex-col items-center">
+                        <div id="endboard-ophion-img" class="card-image-container card-placeholder mb-2">Evilswarm Ophion</div>
+                        <p class="font-bold text-accent">Evilswarm Ophion</p>
+                    </div>
+                    <div class="text-3xl text-purple-400">+</div>
+                    <div class="flex flex-col items-center">
+                        <div id="endboard-pandemic-img" class="card-image-container card-placeholder mb-2">Infestation Pandemic</div>
+                        <p class="font-bold text-accent">Set Infestation Pandemic</p>
+                    </div>
+                </div>
+                <p class="mt-4 text-purple-100 max-w-2xl mx-auto">This simple but effective endboard prevents the opponent from Special Summoning high-level monsters while protecting <strong class="text-accent">Ophion</strong> from Spell/Trap removal, forcing them to deal with it through battle or monster effects.</p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-100">
+                        <li><span class="pro-icon"><i class="fas fa-lock"></i></span> <strong class="text-green-400">Powerful Floodgate:</strong> Ophion's effect is devastating against many top-tier decks that rely on high-level monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400">Excellent Protection:</strong> Infestation Pandemic provides crucial protection against common board-breaking Spells and Traps.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Consistent:</strong> The deck has several ways to quickly summon Ophion on the first turn.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-100">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400">Matchup Dependent:</strong> Struggles against decks that do not rely on high-level monsters (e.g., Link, Xyz, or low-level spam decks).</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Vulnerable to Negation:</strong> A single hand trap like Effect Veiler or Infinite Impermanence on Castor can stop the main combo.</li>
+                        <li><span class="con-icon"><i class="fas fa-undo"></i></span> <strong class="text-red-400">Limited Recovery:</strong> Can struggle to rebuild its board once Ophion is removed.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Tech Choices & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-100">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent">Generic Rank 4s:</strong> Can easily incorporate powerful Rank 4 monsters like Abyss Dweller or Number 41: Bagooska.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-ban"></i></span> <strong class="text-accent">Floodgate Traps:</strong> Cards like Rivalry of Warlords and Gozen Match can supplement Ophion's lock.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">FULL POWER:</strong> The "lswarm" archetype is currently completely unrestricted on the TCG Forbidden & Limited list.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Evilswarm Castor (3 copies)</li>
+                            <li>Evilswarm Kerykeion (3 copies)</li>
+                            <li>Evilswarm Mandragora (3 copies)</li>
+                            <li>Evilswarm Ophion (3 copies)</li>
+                            <li>Infestation Pandemic (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Relevant Generic Restrictions</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Limited (1 per deck):</strong> Terraforming, Called by the Grave.</li>
+                             <li><strong class="text-yellow-400">Semi-Limited (2 per deck):</strong> Branded Fusion.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its entire core engine at full power, the "lswarm" strategy can be executed with maximum consistency. The deck does not suffer from any internal restrictions, allowing it to fully focus on its anti-meta control plan.</li>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('lswarm-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = Math.random() * 1 - 0.5;
+                        this.speedY = Math.random() * 1 - 0.5;
+                        this.color = `rgba(192, 132, 252, ${Math.random() * 0.5 + 0.2})`;
+                    }
+
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.size > 0.1) this.size -= 0.02;
+                    }
+
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function handleParticles() {
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+                        if (particles[i].size <= 0.1) {
+                            particles.splice(i, 1);
+                            i--;
+                        }
+                    }
+                }
+                
+                function createParticles(e) {
+                     const rect = canvas.getBoundingClientRect();
+                     const x = e.clientX ? e.clientX - rect.left : canvas.width / 2;
+                     const y = e.clientY ? e.clientY - rect.top : canvas.height / 2;
+                    
+                    for (let i = 0; i < 5; i++) {
+                        particles.push(new Particle(x, y));
+                    }
+                }
+
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    handleParticles();
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                animate();
+
+                // Create initial burst
+                setTimeout(() => createParticles({ clientX: canvas.width / 1.5, clientY: canvas.height / 1.5 }), 100);
+                setTimeout(() => createParticles({ clientX: canvas.width / 3, clientY: canvas.height / 3 }), 500);
+
+
+                canvas.addEventListener('mousemove', createParticles);
+                window.addEventListener('resize', setCanvasSize);
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'castor-img': 'Evilswarm Castor',
+                'ophion-img': 'Evilswarm Ophion',
+                'pandemic-img': 'Infestation Pandemic',
+                'endboard-ophion-img': 'Evilswarm Ophion',
+                'endboard-pandemic-img': 'Infestation Pandemic'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

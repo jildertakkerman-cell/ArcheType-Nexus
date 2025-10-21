@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenyi Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Philosopher:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c142a; /* Deep blue night sky */
+            color: #e0e7ff; /* Soft moonlight white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(17, 24, 39, 0.8); /* Darker, semi-transparent slate */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3b82f6; /* Bright blue energy border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(30, 41, 59, 0.7);
+            border: 1px solid #60a5fa;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1e293b;
+            color: #94a3b8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #3b82f6;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #60a5fa; } /* Ethereal blue for accents */
+        .arrow-color { color: #60a5fa; }
+        .heading-underline {
+            border-bottom: 2px solid #3b82f6;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #60a5fa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #60a5fa;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #60a5fa;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c142a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3b82f6;
+        }
+
+        #starfield-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 20, 42, 0.4) 0%, rgba(12, 20, 42, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(96, 165, 250, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Philosopher', sans-serif;
+             letter-spacing: 0.05em;
+        }
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="starfield-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">TENYI</h1>
+            <p class="text-lg md:text-xl text-blue-200">The Path of the Unseen Fist</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Tenyi</strong> archetype is a flexible, Wyrm-based engine focused on the principle of non-Effect monsters. It thrives by generating free board presence and leveraging a powerful toolbox of effects from the hand and Graveyard. Rather than building towards a single boss monster, Tenyi operates as a recursive system that enables explosive Link and Synchro plays. Its entire strategy hinges on controlling a non-Effect monster, which transforms the otherwise dormant <a href="https://db.ygoprodeck.com/search/?&archetype=Tenyi&sort=name&format=tcg" target="_blank" class="lore-link">Tenyi Spirits</a> into a versatile arsenal of extenders, disruption, and protection.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Tenyi Pantheon Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Tenyi Pantheon</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main Deck Spirits -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-ghost text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Main Deck Spirits</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tenyi Spirit - Ashuna</h4>
+                            <p class="text-sm text-blue-200">The primary extender. Banishes itself from the GY to summon any "Tenyi" monster from the Deck, but locks you into Wyrm monsters.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tenyi Spirit - Vishuda</h4>
+                            <p class="text-sm text-blue-200">The key board-breaker. Banishes itself from hand or GY to bounce an opponent's card, providing non-targeting removal.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tenyi Spirit - Adhara</h4>
+                            <p class="text-sm text-blue-200">The recursion tool. A Level 1 Tuner that banishes itself from GY to recover a banished Wyrm monster.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Extra Deck & Spells -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dragon text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Enablers and Sacred Arts</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Monk of the Tenyi</h4>
+                            <p class="text-sm text-blue-200">The indispensable Link-1 non-Effect monster. It is the key that turns on the entire Tenyi engine.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Draco Berserker of the Tenyi</h4>
+                            <p class="text-sm text-blue-200">A powerful Level 8 Synchro boss that offers monster effect negation through banishment and can facilitate OTKs.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Heavenly Dragon Circle</h4>
+                            <p class="text-sm text-blue-200">A versatile Quick-Play Spell for searching, extending plays, and dodging targeted effects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Path to Enlightenment</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The deck's fundamental play demonstrates its efficiency. A single Tenyi Spirit can initiate a sequence that enables the entire engine.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ashuna-img-container" class="card-image-container flex-shrink-0 card-placeholder">Tenyi Spirit - Ashuna</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The First Step</h3>
+                            </div>
+                            <p class="text-blue-200">With an empty field, Special Summon <strong class="text-accent">Tenyi Spirit - Ashuna</strong> from your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="monk-img-container" class="card-image-container flex-shrink-0 card-placeholder">Monk of the Tenyi</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon the Enabler</h3>
+                            </div>
+                            <p class="text-blue-200">Link Summon <strong class="text-accent">Monk of the Tenyi</strong> using Ashuna. You now control a non-Effect monster, activating your Tenyi effects.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="berserker-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Draco Berserker of the Tenyi</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Unleash the Dragon</h3>
+                            </div>
+                            <p class="text-blue-200">Use Ashuna's GY effect to summon <strong class="text-accent">Adhara</strong> (Tuner). Special Summon another Level 7 Tenyi like <strong class="text-accent">Vishuda</strong>, then Synchro Summon <strong class="text-accent">Draco Berserker of the Tenyi</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The End Board: Swordsoul Tenyi</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">While pure Tenyi is functional, its competitive peak is reached when combined with the Swordsoul archetype. This hybrid strategy creates a powerful and resilient end board with multiple points of interaction.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto max-w-5xl">
+                <!-- Chixiao -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Swordsoul Grandmaster - Chixiao</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="chixiao-img-container" class="card-image-container card-placeholder">Swordsoul Grandmaster - Chixiao</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200 text-sm">
+                        <li><strong class="text-accent">Monster Negate:</strong> Provides a targeted monster effect negate.</li>
+                        <li><strong class="text-accent">Searcher:</strong> Adds a "Swordsoul" card on summon.</li>
+                    </ul>
+                </div>
+                <!-- Baronne -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Baronne de Fleur <span class="text-red-500 font-bold">(FORBIDDEN)</span></h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="baronne-img-container" class="card-image-container card-placeholder">Baronne de Fleur</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200 text-sm">
+                        <li><strong class="text-accent">Omni-Negate:</strong> A powerful once-per-turn negation for any card effect.</li>
+                        <li><strong class="text-accent">Destruction:</strong> Can destroy one card on the field once per turn.</li>
+                    </ul>
+                </div>
+                <!-- Draco Berserker -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Draco Berserker of the Tenyi</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="berserker-img-container" class="card-image-container card-placeholder">Draco Berserker of the Tenyi</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200 text-sm">
+                        <li><strong class="text-accent">Banish Disruption:</strong> Banishes an opponent's monster when it activates an effect.</li>
+                        <li><strong class="text-accent">OTK Potential:</strong> Gains ATK and can attack again after destroying a monster.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn mb-10 md:mb-16" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Assessment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Consistency & Recursion:</strong> The engine provides free extenders and has a strong resource loop with Adhara and Ashuna.</li>
+                        <li><span class="pro-icon"><i class="fas fa-tools"></i></span> <strong class="text-green-300">Flexibility:</strong> The toolbox of effects allows players to adapt to various situations, especially when going second.</li>
+                        <li><span class="pro-icon"><i class="fas fa-project-diagram"></i></span> <strong class="text-green-300">Synergy:</strong> Functions as a top-tier engine, most notably with Swordsoul, covering its weaknesses perfectly.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-compress-arrows-alt"></i></span> <strong class="text-red-300">Choke Points:</strong> Highly reliant on establishing a non-Effect monster. Disrupting Monk of the Tenyi can be crippling.</li>
+                        <li><span class="con-icon"><i class="fas fa-book-dead"></i></span> <strong class="text-red-300">Graveyard Dependant:</strong> Vulnerable to floodgates like <strong class="text-accent">Dimension Shifter</strong> <span class="text-yellow-500 font-semibold">(Limited)</span> and <strong class="text-accent">Abyss Dweller</strong> <span class="text-red-500 font-semibold">(Forbidden)</span> that shut down GY effects.</li>
+                         <li><span class="con-icon"><i class="fas fa-atom"></i></span> <strong class="text-red-300">Limited In-Archetype Power:</strong> As a pure strategy, it lacks the overwhelming power to build a truly oppressive board on its own.</li>
+                    </ul>
+                </div>
+                <!-- Tech Choices -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Partners & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-handshake"></i></span> <strong class="text-accent">Swordsoul Engine:</strong> The premier partner, providing non-Effect Tokens that perfectly enable the Tenyi engine.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-stream"></i></span> <strong class="text-accent">Yang Zing:</strong> Can be used to create powerful floodgating Synchro monsters like <strong class="text-accent">Chaofeng, Phantom of the Yang Zing</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-plus-circle"></i></span> <strong class="text-accent">Generic Wyrm Support:</strong> Cards that search or support Wyrm-type monsters are invaluable.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">MODERATE IMPACT:</strong> While the core "Tenyi" and "Swordsoul" engines remain untouched, the strategy's overall power ceiling is affected by the restriction of key generic boss monsters.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Restricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Baronne de Fleur (Forbidden)</strong> - A premier generic Synchro boss monster.</li>
+                            <li><strong class="text-red-400">Abyss Dweller (Forbidden)</strong> - Key anti-graveyard tech.</li>
+                            <li><strong class="text-yellow-400">Dimension Shifter (Limited)</strong> - Powerful floodgate against GY decks.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core Engine</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Tenyi" Main Deck monsters (3 copies each)</li>
+                            <li>All "Tenyi" Extra Deck monsters (3 copies each)</li>
+                            <li>All "Swordsoul" Main Deck monsters (3 copies each)</li>
+                            <li>Swordsoul Grandmaster - Chixiao (3 copies)</li>
+                            <li>Heavenly Dragon Circle (3 copies)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The prohibition of <strong class="text-accent">Baronne de Fleur</strong> removes one of the deck's strongest and most generic end board pieces. This forces the strategy to rely more heavily on in-archetype options like <strong class="text-accent">Draco Berserker of the Tenyi</strong> and other generic Synchro monsters. While the core consistency of the Tenyi and Swordsoul engines remains intact, the deck's overall resilience and power ceiling are moderately reduced. The deck must now be more strategic in choosing its end board interruptions.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STARFIELD ANIMATION ---
+            const canvas = document.getElementById('starfield-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let stars = [];
+                const numStars = 200;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Star {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.speed = Math.random() * 0.5 + 0.1;
+                        this.opacity = Math.random() * 0.5 + 0.5;
+                    }
+                    update() {
+                        this.x += this.speed;
+                        if (this.x > canvas.width) {
+                            this.x = 0;
+                            this.y = Math.random() * canvas.height;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(147, 197, 253, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                function initStars() {
+                    stars = [];
+                    for (let i = 0; i < numStars; i++) {
+                        stars.push(new Star());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    stars.forEach(s => {
+                        s.update();
+                        s.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initStars();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initStars();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'ashuna-img-container': 'Tenyi Spirit - Ashuna',
+                'monk-img-container': 'Monk of the Tenyi',
+                'berserker-img-container-combo': 'Draco Berserker of the Tenyi',
+                'chixiao-img-container': 'Swordsoul Grandmaster - Chixiao',
+                'baronne-img-container': 'Baronne de Fleur',
+                'berserker-img-container': 'Draco Berserker of the Tenyi'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

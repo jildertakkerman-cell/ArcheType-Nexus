@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cupid Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Lora', serif;
+            background-color: #fce7f3; /* Light Pink */
+            color: #581c87; /* Dark Purple */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(217, 70, 239, 0.2);
+            border: 1px solid #fbcfe8; /* Lighter pink border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(253, 230, 242, 0.9); /* Opaque light pink */
+            border: 1px solid #f9a8d4;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #fdf2f8;
+            color: #9d174d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 2px dashed #f9a8d4;
+        }
+        .pro-icon { color: #10b981; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #3b82f6; }
+        .text-accent { color: #db2777; } /* Pink-Red */
+        .heading-underline {
+            border-bottom: 2px solid #db2777;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #c026d3;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c026d3;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #db2777;
+            text-shadow: 0 0 5px rgba(219, 39, 119, 0.5);
+        }
+
+        /* --- Cupid Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: linear-gradient(135deg, #fbcfe8 0%, #fce7f3 50%, #f5d0fe 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #f9a8d4;
+        }
+        #hearts-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.8);
+        }
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+             color: #86198f;
+        }
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #fbcfe8 0%, #f9a8d4 100%);
+            color: #9d174d; border: 2px solid #db2777;
+            border-radius: 50%; width: 60px; height: 60px; display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(219, 39, 119, 0.3);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(219, 39, 119, 0.5);
+        }
+        .ygo-home-button i { font-size: 22px; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="hearts-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-2">Cupid</h1>
+            <p class="text-lg md:text-xl text-fuchsia-800">Arrow of the Cosmos: A Deep Dive</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-purple-900 mb-4">Executive Summary</h2>
+                <p class="text-purple-800">
+                    The <strong class="text-accent font-bold">"Cupid"</strong> series is a fascinating case study in Yu-Gi-Oh! card design. While thematically linked, the Main Deck monsters lack the synergy to function as a true archetype. Instead, the series' entire competitive identity is carried by its powerful Synchro Tuner, <strong class="text-accent font-bold">Cupid Pitch</strong>. This single card has become a generic staple for "Synchro laddering" and combo extension, acting as a versatile bridge between different strategies. This analysis focuses on Cupid Pitch, its role in creating powerful end boards, and the surprising toolbox of <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=cupid&stype=1" target="_blank" class="lore-link">the Cupid monster lineup</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Cupid Quiver Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-purple-900 mb-8 text-center heading-underline">The Cupid Quiver</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main Deck Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-feather-alt text-4xl text-pink-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-purple-900">Main Deck Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="text-sm text-purple-800">The main deck monsters share a focus on Level modulation and a 600 DEF stat, but are generally too slow for modern play.</p>
+                        <ul class="list-disc list-inside space-y-2 text-purple-700">
+                            <li><strong class="text-accent">Cupid Volley:</strong> Mills cards to increase its Level.</li>
+                            <li><strong class="text-accent">Cupid Serve:</strong> Banishes from GY to increase its Level.</li>
+                            <li><strong class="text-accent">Cupid Dunk:</strong> Slowly increases its Level during Standby Phases.</li>
+                             <li><strong class="text-accent">Cupid Fore:</strong> Can be Special Summoned if you only control monsters with 600 DEF.</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- The Linchpin -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-crosshairs text-4xl text-pink-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-purple-900">The Linchpin: Cupid Pitch</h3>
+                    </div>
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cupid-pitch-img-container" class="card-image-container flex-shrink-0 card-placeholder">Cupid Pitch</div>
+                        <div class="text-purple-800 space-y-3">
+                           <p><strong>Level Modulation:</strong> Can increase or decrease its Level based on the Tuner used for its Summon, enabling precise Synchro plays.</p>
+                           <p><strong>The Search Effect:</strong> When used as Synchro Material, it searches any Level 8 or lower monster with 600 DEF, making it an incredible combo extender and toolbox.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-purple-900 mb-6 text-center heading-underline">Cupid's Flight Path: Core Combo</h2>
+             <p class="text-purple-800 mb-8 text-center max-w-2xl mx-auto">This basic sequence shows how Cupid Pitch "ladders" into a powerful boss monster while generating card advantage.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex items-center mb-2">
+                        <span class="bg-pink-200 text-pink-800 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                        <h3 class="text-lg font-bold text-purple-900">Summon Cupid Pitch</h3>
+                    </div>
+                    <p class="text-purple-800">Using a Level 2 Tuner and a Level 2 non-Tuner, Synchro Summon <strong class="text-accent">Cupid Pitch</strong>.</p>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl text-pink-400 my-2"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex items-center mb-2">
+                        <span class="bg-pink-200 text-pink-800 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                        <h3 class="text-lg font-bold text-purple-900">Modulate Level</h3>
+                    </div>
+                    <p class="text-purple-800">Activate Cupid Pitch's effect. Increase its Level by 2 (the Level of the Tuner used), making it a Level 6 Tuner.</p>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl text-pink-400 my-2"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex items-center mb-2">
+                        <span class="bg-pink-200 text-pink-800 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                        <h3 class="text-lg font-bold text-purple-900">Climb and Search</h3>
+                    </div>
+                    <p class="text-purple-800">Use the Level 6 Cupid Pitch and another monster (e.g., a Level 4) to Synchro Summon a Level 10 boss like <strong class="text-accent">Baronne de Fleur (Forbidden)</strong>. Cupid Pitch's effect triggers, searching for a key combo piece like <strong class="text-accent">Nemeses Corridor</strong>.</p>
+                    <p class="text-purple-700 text-sm mt-2 italic">Note: With Baronne de Fleur forbidden, modern combos often ladder into other powerful Level 10 Synchros like Swordsoul Supreme Sovereign - Chengying.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-purple-900 mb-6 text-center heading-underline">The Destination: Building the End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Modern Disruption Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-purple-900 mb-4 text-center">Swordsoul Supreme Sovereign - Chengying</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="chengying-img-container" class="card-image-container card-placeholder">Swordsoul Supreme Sovereign - Chengying</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-800">
+                        <li>A powerful Level 10 that banishes cards from the opponent's field and GY when other cards are banished.</li>
+                    </ul>
+                </div>
+                 <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-purple-900 mb-4 text-center">Chaos Angel</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="chaos-angel-img-container" class="card-image-container card-placeholder">Chaos Angel</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-800">
+                        <li>A Level 8 Synchro that can banish a card on the field and provides protection for your Synchro monsters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-purple-900 mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-600 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-800">
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-700">Incredible Flexibility:</strong> Cupid Pitch's level modulation allows it to fit into countless Synchro-based strategies.</li>
+                        <li><span class="pro-icon"><i class="fas fa-search"></i></span> <strong class="text-green-700">Powerful Toolbox:</strong> Its search effect can access a wide variety of powerful extenders, hand traps, or floodgates with 600 DEF.</li>
+                        <li><span class="pro-icon"><i class="fas fa-plus-circle"></i></span> <strong class="text-green-700">Card Advantage:</strong> A Synchro Summon using Cupid Pitch becomes a +1, replacing itself with a valuable card from the deck.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-600 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-800">
+                        <li><span class="con-icon"><i class="fas fa-users-slash"></i></span> <strong class="text-red-700">No Archetypal Support:</strong> The "Cupid" series has no dedicated Spells or Traps, making the Main Deck monsters unplayable on their own.</li>
+                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-700">Reliance on Other Engines:</strong> Cupid Pitch's power is entirely dependent on the strength of the decks that can utilize it.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-700">Banlist Vulnerability:</strong> Its power is tied to generic combo enablers. The ban of <strong class="text-accent">Crystron Halqifibrax</strong> significantly reduced its most powerful applications.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Banlist Status -->
+        <section class="my-10 md:my-16">
+            <h2 class="text-xl md:text-3xl font-bold text-purple-900 mb-6 text-center heading-underline">TCG Banlist Status</h2>
+            <div class="card p-6">
+                 <p class="text-purple-800 mb-4 text-center">
+                    The core Cupid cards are unrestricted, but its most powerful historical combo enabler is <strong class="text-red-600 font-bold">Forbidden</strong>.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-green-600 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-purple-700">
+                            <li>Cupid Pitch (3 copies)</li>
+                            <li>All Main Deck Cupid monsters</li>
+                            <li>Most generic search targets</li>
+                        </ul>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg bg-red-100 border-red-300">
+                        <h4 class="text-lg font-bold text-red-700 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-red-800">
+                            <li><strong class="font-bold">Crystron Halqifibrax (0 copies)</strong> - Historically the most powerful enabler for Cupid Pitch combos.</li>
+                            <li><strong class="font-bold">Baronne de Fleur (0 copies)</strong> - A premier generic Synchro boss monster.</li>
+                            <li><strong class="font-bold">Borreload Savage Dragon (0 copies)</strong> - Another top-tier generic Synchro boss.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('hearts-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let hearts = [];
+                const numHearts = 30;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Heart {
+                    constructor() { this.reset(); }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 100;
+                        this.size = Math.random() * 20 + 10;
+                        this.speedY = Math.random() * 1 + 0.5;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < -this.size) { this.reset(); }
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.globalAlpha = this.opacity;
+                        ctx.fillStyle = '#f9a8d4'; // Soft Pink
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y + this.size / 4);
+                        ctx.quadraticCurveTo(this.x, this.y, this.x + this.size / 4, this.y);
+                        ctx.quadraticCurveTo(this.x + this.size / 2, this.y, this.x + this.size / 2, this.y + this.size / 4);
+                        ctx.quadraticCurveTo(this.x + this.size / 2, this.y, this.x + this.size * 3 / 4, this.y);
+                        ctx.quadraticCurveTo(this.x + this.size, this.y, this.x + this.size, this.y + this.size / 4);
+                        ctx.quadraticCurveTo(this.x + this.size, this.y + this.size / 2, this.x + this.size * 3/4, this.y + this.size * 3/4);
+                        ctx.lineTo(this.x + this.size / 2, this.y + this.size);
+                        ctx.lineTo(this.x + this.size / 4, this.y + this.size * 3/4);
+                        ctx.quadraticCurveTo(this.x, this.y + this.size / 2, this.x, this.y + this.size / 4);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+
+                function initHearts() {
+                    hearts = [];
+                    for (let i = 0; i < numHearts; i++) { hearts.push(new Heart()); }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    hearts.forEach(h => { h.update(); h.draw(); });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initHearts();
+                animate();
+                window.addEventListener('resize', () => { setCanvasSize(); initHearts(); });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else { throw new Error("Image URL not found."); }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            fetchAndDisplayCardImage('Cupid Pitch', 'cupid-pitch-img-container');
+            fetchAndDisplayCardImage('Swordsoul Supreme Sovereign - Chengying', 'chengying-img-container');
+            fetchAndDisplayCardImage('Chaos Angel', 'chaos-angel-img-container');
+            fetchAndDisplayCardImage('Thunder Dragon Colossus', 'colossus-img-container');
+        });
+    </script>
+</body>
+</html>
+

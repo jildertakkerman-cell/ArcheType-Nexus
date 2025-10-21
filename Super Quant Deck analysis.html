@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Quant Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a1a;
+            color: #e0e7ff;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1633;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4c3d8e;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(26, 22, 51, 0.8);
+            border: 1px solid #6a5acd;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2457;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2457;
+            border: 1px dashed #6a5acd;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent-red { color: #f87171; }
+        .text-accent-blue { color: #60a5fa; }
+        .text-accent-green { color: #34d399; }
+        .text-accent-white { color: #e5e7eb; }
+        .text-accent-field { color: #facc15; }
+        .arrow-color { color: #a78bfa; }
+
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #facc15;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b, #4c1d95);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c3d8e;
+            text-align: center;
+        }
+        #star-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 15px rgba(167, 139, 250, 0.7);
+        }
+        .banner-title {
+             font-family: 'Orbitron', sans-serif;
+        }
+        .home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white; border: 2px solid #6366f1; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease; text-decoration: none;
+        }
+        .home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+        }
+        .home-button i { font-size: 22px; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="home-button" title="Return to Hub">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <header class="banner-header">
+            <canvas id="star-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 banner-title">SUPER QUANT</h1>
+                <p class="text-lg md:text-xl text-indigo-200">Pilots, Zords, and the Path to Great Magnus</p>
+            </div>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Archetype Doctrine</h2>
+                <p class="text-indigo-200">
+                    Inspired by the Super Sentai (Power Rangers) genre, the <strong class="text-accent-white font-bold">Super Quant</strong> archetype is a go-first combo strategy with a singular objective: assemble the ultimate Megazord. Individual "Super Quantum" pilots command their color-coordinated "Super Quantal Mech Beast" Xyz monsters. These machines then combine to form the colossal boss monster, <strong class="text-accent-white font-bold">Super Quantal Mech King Great Magnus</strong>. The entire deck is engineered to facilitate this final assembly, turning every duel into a mission to build the team and unleash its combined power.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center">The Ranger Corps & Command Center</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-astronaut text-4xl text-indigo-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Pilots: Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-blue mb-1">Super Quantum Blue Layer</h4>
+                            <p class="text-sm text-indigo-200">The most important card. On summon, it searches any "Super Quant" card, providing unparalleled consistency.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-red mb-1">Super Quantum Red Layer</h4>
+                            <p class="text-sm text-indigo-200">A primary extender and recovery agent. It can Special Summon itself and retrieve resources from the Graveyard.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-green mb-1">Super Quantum Green Layer</h4>
+                            <p class="text-sm text-indigo-200">A supplementary extender that Special Summons another "Super Quant" monster from hand.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-white mb-1">Super Quantal Fairy Alphan</h4>
+                            <p class="text-sm text-indigo-200">The deck's most explosive combo starter, capable of setting up the entire board from a single activation.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-satellite-dish text-4xl text-indigo-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Command Center: Key Spells</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-field mb-1">Super Quantal Mech Ship Magnacarrier</h4>
+                            <p class="text-sm text-indigo-200">The Field Spell that enables the entire strategy, allowing pilots to summon their Mech Beasts and combine into Great Magnus.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-white mb-1">Emergency Teleport</h4>
+                            <p class="text-sm text-indigo-200">A crucial consistency tool that Special Summons Blue Layer directly from the deck to start your combos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">It's Morphin' Time!: The "Telephan" Combo</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The deck's premier opening play requires Emergency Teleport and Super Quantal Fairy Alphan. This combination demonstrates how the <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Super+Quant&stype=1" target="_blank" class="lore-link">Super Quant cards</a> synergize to build a dominant board from just two cards.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="blue-layer-img" class="card-image-container flex-shrink-0 card-placeholder">Super Quantum Blue Layer</div>
+                        <div>
+                            <div class="flex items-center mb-2"><span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span><h3 class="text-lg font-bold">Initiate & Search</h3></div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent-white">Emergency Teleport</strong> to summon <strong class="text-accent-blue">Blue Layer</strong>. Use its effect to search for <strong class="text-accent-field">Magnacarrier</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="alphan-img" class="card-image-container flex-shrink-0 card-placeholder">Super Quantal Fairy Alphan</div>
+                        <div>
+                            <div class="flex items-center mb-2"><span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span><h3 class="text-lg font-bold">The Alphan Play</h3></div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent-white">Alphan</strong> and Tribute it. This summons one "Super Quantum" monster and sends two others to the GY, triggering multiple effects to swarm the field.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="great-magnus-img-combo" class="card-image-container flex-shrink-0 card-placeholder">Super Quantal Mech King Great Magnus</div>
+                        <div>
+                            <div class="flex items-center mb-2"><span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span><h3 class="text-lg font-bold">Assemble the Megazord</h3></div>
+                            <p class="text-indigo-200">Use <strong class="text-accent-field">Magnacarrier</strong> repeatedly to summon your Mech Beasts, then use its final effect to combine them into <strong class="text-accent-white">Great Magnus</strong> with 6+ materials.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final Formation: The Great Magnus Endboard</h2>
+            <div class="card p-6">
+                <div class="flex flex-col lg:flex-row items-center gap-6">
+                    <div id="great-magnus-img-end" class="w-full lg:w-1/3 card-placeholder">Super Quantal Mech King Great Magnus</div>
+                    <div class="w-full lg:w-2/3">
+                        <h3 class="text-2xl font-bold text-accent-white mb-4">Super Quantal Mech King Great Magnus</h3>
+                        <p class="text-indigo-200 mb-4">The ultimate boss monster. Its power scales with the number of materials it has:</p>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                            <li><strong class="text-accent-blue">2+ Materials:</strong> Quick Effect to shuffle any card on the field into the deck (non-targeting removal).</li>
+                            <li><strong class="text-accent-green">4+ Materials:</strong> Becomes unaffected by all other card effects, making it a nearly indestructible tower.</li>
+                            <li><strong class="text-accent-red">6+ Materials:</strong> Your opponent cannot add cards from their Deck to their hand, a devastating floodgate that shuts down most modern strategies.</li>
+                        </ul>
+                        <p class="text-indigo-200 mt-4">While incredibly powerful, its main vulnerability is non-effect removal, such as being Tributed by a <strong class="text-accent-red">Kaiju</strong> monster.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Ceiling:</strong> Capable of producing one of the most oppressive boss monsters in the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Consistent Combos:</strong> Multiple two-card combinations lead to the same powerful endboard.</li>
+                        <li><span class="pro-icon"><i class="fas fa-user-secret"></i></span> <strong class="text-green-300">Rogue Threat:</strong> Unfamiliarity with the deck's choke points can lead to opponent misplays.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">Fragile Choke Points:</strong> A single hand trap on Alphan or Blue Layer can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-meteor"></i></span> <strong class="text-red-300">Vulnerable to Kaijus:</strong> Great Magnus has a well-known weakness to being Tributed.</li>
+                        <li><span class="con-icon"><i class="fas fa-book-dead"></i></span> <strong class="text-red-300">Glass Cannon:</strong> The deck is all-in on its main combo and can struggle to recover if disrupted.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mt-10 md:mt-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-indigo-200 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">MINIMAL IMPACT:</strong> The Super Quant archetype remains almost entirely at full power, with only one generic support card on the list.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-indigo-200">
+                            <li><strong class="text-yellow-300">Emergency Teleport</strong> - Key consistency tool for summoning Blue Layer</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-indigo-200">
+                            <li>All "Super Quantum" Main Deck monsters</li>
+                            <li>All "Super Quantal Mech Beast" Xyz monsters</li>
+                            <li>Super Quantal Mech Ship Magnacarrier</li>
+                            <li>Super Quantal Mech King Great Magnus</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-indigo-200"><strong>Meta Implications:</strong> With its core engine completely untouched, Super Quant operates at near-peak efficiency. The limitation of "Emergency Teleport" slightly reduces the deck's consistency in accessing its primary starter, but the deck has enough alternative lines of play to remain a potent and consistent combo strategy.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Starfield Animation
+            const canvas = document.getElementById('star-canvas');
+            if(canvas) {
+                const ctx = canvas.getContext('2d');
+                let stars = [];
+                const numStars = 200;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Star {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.speed = Math.random() * 0.5 + 0.1;
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(224, 231, 255, ${Math.random()})`;
+                        ctx.fill();
+                    }
+                }
+
+                function initStars() {
+                    stars = [];
+                    for (let i = 0; i < numStars; i++) {
+                        stars.push(new Star());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    stars.forEach(s => {
+                        s.update();
+                        s.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initStars();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initStars();
+                });
+            }
+
+            // Card Image Fetcher
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'blue-layer-img': 'Super Quantum Blue Layer',
+                'alphan-img': 'Super Quantal Fairy Alphan',
+                'great-magnus-img-combo': 'Super Quantal Mech King Great Magnus',
+                'great-magnus-img-end': 'Super Quantal Mech King Great Magnus',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

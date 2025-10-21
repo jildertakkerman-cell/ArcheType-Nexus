@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Chalice Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a192f; /* Deep Navy Blue */
+            color: #e0f7fa; /* Light Cyan */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(28, 42, 74, 0.8); /* Translucent Dark Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #38bdf8; /* Light Blue Border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(14, 30, 60, 0.85);
+            border: 1px solid #7dd3fc;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #0c2a4d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px #38bdf8;
+            border: 1px dashed #7dd3fc;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fbbf24; } /* Amber/Gold */
+        .arrow-color { color: #fbbf24; }
+        .heading-underline {
+            border-bottom: 2px solid #fbbf24;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fde047; /* Bright Yellow */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #fde047;
+        }
+
+        /* --- World Chalice ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a192f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #38bdf8;
+        }
+
+        #world-tree-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 25, 47, 0.4) 0%, rgba(10, 25, 47, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+        }
+
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+        .ygo-home-button i { font-size: 22px; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="world-tree-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-bold text-white mb-2">WORLD CHALICE</h1>
+            <p class="text-lg md:text-xl text-amber-200">Analysis of a Link Combo Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-cyan-200">
+                    The <strong class="text-accent font-bold">World Chalice</strong> archetype is a combo-intensive strategy that defined the early Link Summoning era. It uniquely weaponizes Normal Monsters, transforming them into catalysts for explosive "Link climbing" sequences. The deck's philosophy is to generate overwhelming board presence from a single monster, using a network of interconnected "floating" effects to maintain card advantage and build towards powerful, multi-negation end boards. While incredibly potent, its power has been curtailed by the banlist, making its most dominant historical strategies no longer viable in the current TCG.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Chosen Heroes Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Chosen Heroes & Their Legacy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main Deck Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-users text-4xl text-sky-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Main Deck Warriors</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Normal Monsters</h4>
+                            <p class="text-sm text-cyan-200">Beckoned, Chosen, and Crowned by the World Chalice. These are the sparks that ignite the entire engine, used to summon the first Link monster.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Lee the World Chalice Fairy</h4>
+                            <p class="text-sm text-cyan-200">The primary searcher. On summon, she adds any "World Chalice" monster from Deck to hand, ensuring combo consistency.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">World Legacy - "World Chalice"</h4>
+                            <p class="text-sm text-cyan-200">The main extender. When this Normal Summoned monster leaves the field, it floods the board by summoning two "World Chalice" monsters from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Extra Deck Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dragon text-4xl text-sky-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Extra Deck Champions</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Imduk the World Chalice Dragon</h4>
+                            <p class="text-sm text-cyan-200">The foundational Link-1. Grants an extra Normal Summon to enable the Tribute of World Legacy - "World Chalice".</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Ningirsu the World Chalice Warrior</h4>
+                            <p class="text-sm text-cyan-200">The in-archetype boss. Provides card draw and powerful, non-targeting, non-destruction removal.</p>
+                        </div>
+                         <div class="card combo-step-card p-4 bg-red-900/50 border-red-500">
+                            <h4 class="text-lg font-bold text-red-400 mb-1">Ib the World Chalice Justiciar</h4>
+                            <p class="text-sm text-red-300">The most powerful consistency tool. This Synchro monster searches any "World Legacy" card, but is now <strong class="font-bold">FORBIDDEN</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Blueprint for Ascension</h2>
+            <p class="text-cyan-200 mb-8 text-center max-w-2xl mx-auto">
+                The deck's fundamental combo demonstrates how <a href="https://yugipedia.com/wiki/World_Chalice" target="_blank" class="lore-link">these chosen heroes</a> work in concert to turn two cards into a formidable board presence, showcasing the Link climbing and floating mechanics.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="imduk-img-container" class="card-image-container flex-shrink-0 card-placeholder">Imduk the World Chalice Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0a192f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Climb</h3>
+                            </div>
+                            <p class="text-cyan-200">Normal Summon a Normal Monster (e.g., <strong class="text-accent">Chosen by the World Chalice</strong>). Link it away for <strong class="text-accent">Imduk the World Chalice Dragon</strong>. Imduk's effect grants an additional Normal Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="wl-chalice-img-container" class="card-image-container flex-shrink-0 card-placeholder">World Legacy - "World Chalice"</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0a192f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Unleash the Swarm</h3>
+                            </div>
+                            <p class="text-cyan-200">Tribute Imduk to Normal Summon <strong class="text-accent">World Legacy - "World Chalice"</strong>. As Imduk is sent to GY, its effect summons a monster from hand. As "World Chalice" leaves the field (by being tributed), it summons two more monsters from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="lee-img-container" class="card-image-container flex-shrink-0 card-placeholder">Lee the World Chalice Fairy</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0a192f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Generate Advantage</h3>
+                            </div>
+                            <p class="text-cyan-200">One of the summoned monsters is <strong class="text-accent">Lee the World Chalice Fairy</strong>, whose effect triggers to search for another "World Chalice" monster, refueling your hand and setting up the next stage of Link Summons.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Bastion (Historical)</h2>
+            <div class="card p-8">
+                <p class="text-cyan-200 mb-6 text-center max-w-3xl mx-auto">The ultimate goal of the World Chalice combo is to construct a near-unbreakable board of co-linked monsters providing multiple layers of disruption. The most potent versions of this end board relied on cards that are now <strong class="text-red-400">FORBIDDEN</strong>, making this setup a relic of the deck's former power.</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div id="apollousa-img-container" class="card-placeholder flex-col justify-end p-2"><span class="font-bold text-white">Apollousa, Bow of the Goddess</span></div>
+                    <div id="ip-img-container" class="card-placeholder flex-col justify-end p-2"><span class="font-bold text-white">I:P Masquerena</span></div>
+                    <div id="trigate-img-container" class="card-placeholder flex-col justify-end p-2"><span class="font-bold text-white">Tri-Gate Wizard</span></div>
+                    <div id="sorrow-img-container" class="card-placeholder flex-col justify-end p-2"><span class="font-bold text-white">World Legacy's Sorrow</span></div>
+                </div>
+                 <ul class="list-disc list-inside space-y-2 text-cyan-200 mt-6">
+                    <li><strong class="text-accent">Apollousa, Bow of the Goddess (<span class="text-red-400">Forbidden</span>):</strong> Provided multiple monster effect negations.</li>
+                    <li><strong class="text-accent">I:P Masquerena:</strong> Enables Link Summoning during the opponent's turn for disruption (e.g., into Knightmare Unicorn or S:P Little Knight).</li>
+                    <li><strong class="text-accent">Tri-Gate Wizard:</strong> A co-linked Tri-Gate offers targeting protection and banishing removal.</li>
+                    <li><strong class="text-accent">World Legacy's Sorrow:</strong> A searchable Counter Trap that acts as an omni-negate while you control a co-linked monster.</li>
+                </ul>
+            </div>
+        </section>
+
+
+        <!-- TCG Banlist Status Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-400 font-bold">HEAVILY IMPACTED:</strong> While the core World Chalice Main Deck engine is unrestricted, the deck's competitive ceiling has been drastically lowered by key bans to its most powerful enablers and end board pieces.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Ib the World Chalice Justiciar</strong> - Consistency & combo engine.</li>
+                            <li><strong class="text-red-400">Guardragon Elpy</strong> - Key Guardragon combo piece.</li>
+                            <li><strong class="text-red-400">Guardragon Agarpain</strong> - Key Guardragon combo piece.</li>
+                             <li><strong class="text-red-400">Apollousa, Bow of the Goddess</strong> - Premier end board monster.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                             <li>All Main Deck "World Chalice" monsters (Lee, Guardragon, etc.)</li>
+                             <li>Imduk, Auram, Ningirsu, and Ib the Priestess</li>
+                             <li>"World Legacy" support cards like Succession and Sorrow</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The loss of Ib, the Guardragons, and Apollousa removes the deck's primary paths to creating oppressive boards. It can still perform its core Link-climbing combos but now relies on less powerful generic Extra Deck monsters, making it a significantly less viable competitive strategy compared to its peak.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- WORLD CHALICE BANNER ANIMATION ---
+            const canvas = document.getElementById('world-tree-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 70;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speedY = Math.random() * 1 + 0.5;
+                        this.size = Math.random() * 2 + 1;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                        this.color = `rgba(251, 191, 36, ${this.opacity})`; // Gold color
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                         container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName.replace(/-/g, ' ')}</div>`;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName.replace(/-/g, ' ')}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'imduk-img-container': 'Imduk the World Chalice Dragon',
+                'wl-chalice-img-container': 'World Legacy - "World Chalice"',
+                'lee-img-container': 'Lee the World Chalice Fairy',
+                'apollousa-img-container': 'Apollousa, Bow of the Goddess',
+                'ip-img-container': 'I:P Masquerena',
+                'trigate-img-container': 'Tri-Gate Wizard',
+                'sorrow-img-container': 'World Legacy\'s Sorrow',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

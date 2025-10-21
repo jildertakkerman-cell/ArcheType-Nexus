@@ -1,0 +1,721 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beetrooper Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a150e; /* Dark, earthy brown */
+            color: #fde68a; /* Pale honey/gold text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #292218; /* Darker honeycomb color */
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            border: 1px solid #78350f; /* Amber border */
+        }
+        .combo-step-card {
+            background-color: #3a3024;
+            border: 1px solid #9a3412;
+        }
+        .pro-con-card {
+            background-color: #3a3024;
+            border: 1px solid #9a3412;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3a3024;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3a3024;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #f59e0b);
+        }
+        .pro-icon { color: #4ade80; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f59e0b; } /* Bright Amber/Honey */
+        .arrow-color { color: #f59e0b; }
+        .heading-underline {
+            border-bottom: 2px solid #f59e0b;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f59e0b;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f59e0b;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #f59e0b;
+            border-radius: 0.75rem;
+            color: #fde68a;
+            max-width: 300px;
+            height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif;
+            color: #f59e0b;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #f59e0b;
+        }
+
+        /* --- NEW ANIMATED BANNER V2 --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #110e09;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #78350f;
+        }
+
+        #summoning-grid-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(26, 21, 14, 0.6); /* Darker overlay for readability */
+            z-index: 2;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: text-fade-in 1.5s ease-out 0.5s forwards;
+        }
+        
+        @keyframes text-fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Popup Styles */
+        #card-popup {
+            display: none; /* Hidden by default */
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+
+        #card-popup .popup-content {
+            background-color: #292218;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #f59e0b;
+        }
+
+        #card-popup h3 {
+            color: #f59e0b;
+        }
+
+        #card-popup p {
+            color: #fde68a;
+        }
+
+        #card-popup .close-popup {
+            color: #f59e0b;
+            cursor: pointer;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.25rem;
+        }
+
+        #card-popup img {
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+    <!-- Card Details Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header">
+            <canvas id="summoning-grid-banner"></canvas>
+            <div class="banner-content">
+                <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Beetrooper</h1>
+                <p class="text-lg md:text-xl text-amber-200">Analysis of the Insect Link Swarm Strategy</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-amber-200">
+                    The <strong class="text-accent font-bold">Beetrooper</strong> archetype embodies the essence of a swarm, functioning as a hyper-consistent, combo-oriented Link strategy. Its lore as a coordinated, 
+                    <a href="https://yugipedia.com/wiki/Beetrooper" target="_blank" class="lore-link">militaristic squadron of insect soldiers</a>
+                    is perfectly mirrored in its playstyle: rapidly deploying multiple units to the field to build overwhelming board presence. The deck's core identity is defined by its ability to convert a single monster into a full board, culminating in the summon of its powerful Link-4 boss monster, <strong class="text-accent font-bold">Giant Beetrooper Invincible Atlas</strong>. This strength comes with a rigid tactical constraint: once their main deployment begins, they are locked into only summoning Insect monsters.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Core Synergy Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Synergy: The Swarm Offensive</h2>
+            <p class="text-amber-200 mb-8 text-center max-w-2xl mx-auto">The Beetrooper battle plan is a masterclass in escalation, turning a small scouting party into a full-scale invasion force in a matter of moments.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="scout-step-img-container" class="card-image-container flex-shrink-0 card-placeholder">Beetrooper Scout Buggy</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#292218] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Deploy Scouts</h3>
+                            </div>
+                            <p class="text-amber-200">Begin with a starter like <strong class="text-accent font-bold">Beetrooper Scout Buggy</strong> or an ally like <strong class="text-accent font-bold">Battlewasp - Sting the Poison</strong>. This initial summon immediately generates a second body, establishing a foothold for Link summoning.</p>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                 <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="armor-horn-step-img-container" class="card-image-container flex-shrink-0 card-placeholder">Beetrooper Armor Horn</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#292218] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Call for Reinforcements</h3>
+                            </div>
+                            <p class="text-amber-200">Link summon <strong class="text-accent font-bold">Beetrooper Armor Horn</strong>. This key pivot grants an additional Normal Summon, instantly amplifying the swarm. This is where the crucial <strong class="text-accent font-bold">Insect-only lock</strong> begins.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                     <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="atlas-step-img-container" class="card-image-container flex-shrink-0 card-placeholder">Giant Beetrooper Invincible Atlas</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                 <span class="bg-[#292218] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon the Commander</h3>
+                            </div>
+                            <p class="text-amber-200">With an army assembled, Link Summon <strong class="text-accent font-bold">Giant Beetrooper Invincible Atlas</strong>. He then deploys a specialist like <strong class="text-accent font-bold">Sting Lancer</strong> from the deck to establish the ultimate defense: the <strong class="text-accent font-bold">Fly & Sting</strong> Counter Trap.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Final Endboard: The Fortress Hive</h2>
+            <p class="text-amber-200 mb-8 text-center max-w-2xl mx-auto">The ideal Beetrooper endboard is a well-defended fortress with a powerful commander, recursive defenses, and searchable hand traps.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Invincible Atlas</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="atlas-endboard-img-container" class="card-image-container card-placeholder">Giant Beetrooper Invincible Atlas</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-amber-200">
+                        <li><strong class="text-accent font-bold">Protected Commander:</strong> Cannot be targeted or destroyed by card effects, making him incredibly difficult to remove.</li>
+                         <li><strong class="text-accent font-bold">Recursive Threat:</strong> Can tribute an Insect to revive itself from the Graveyard.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Recursive Disruption</h3>
+                     <div class="flex justify-center mb-4">
+                        <div id="trap-endboard-img-container" class="card-image-container card-placeholder">Beetrooper Fly & Sting</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-amber-200">
+                        <li><strong class="text-accent font-bold">Beetrooper Fly & Sting:</strong> A recursive Counter Trap that negates monster effects. It can set itself from the GY every turn.</li>
+                        <li><strong class="text-accent font-bold">Hand Traps:</strong> The combo often ends with a searchable defensive hand trap like <strong class="text-accent font-bold">Retaliating "C"</strong> in hand.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Hyper Consistent:</strong> Numerous one-card starters make the core combo highly reliable.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">Powerful Grind Game:</strong> The recursive trap and GY effects allow the deck to out-resource many opponents.</li>
+                        <li><span class="pro-icon"><i class="fas fa-users"></i></span> <strong class="text-green-400 font-bold">Explosive Swarm:</strong> Can easily generate enough material for a Link-4 or higher.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-200">
+                        <li><span class="con-icon"><i class="fas fa-lock"></i></span> <strong class="text-red-400 font-bold">Insect Lock:</strong> Restricts access to powerful generic boss monsters.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Hand Trap Vulnerability:</strong> A well-timed hand trap on a key starter can disrupt the entire turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-skull"></i></span> <strong class="text-red-400 font-bold">Board Breaker Weakness:</strong> Susceptible to cards like <strong class="text-accent font-bold">Nibiru</strong> or <strong class="text-accent font-bold">Dark Ruler No More</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Allies & Support Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-200">
+                        <li><span class="neutral-icon"><i class="fas fa-bug"></i></span> <strong class="text-accent font-bold">Resonance Insect:</strong> A crucial support card whose non-once-per-turn search effects are the backbone of the deck's consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-crosshairs"></i></span> <strong class="text-accent font-bold">Battlewasp Engine:</strong> Provides highly efficient starters and extenders that seamlessly integrate into the swarm strategy.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent font-bold">Ragnaraika:</strong> A hybrid variant that uses the Beetrooper swarm to summon a powerful Link-5 boss monster.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+            let lastShown = 0;
+            let currentCard = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (currentCard === cardName) {
+                    hidePopup();
+                    return;
+                }
+                hidePopup(); // Ensure any existing popup is hidden first
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-amber-300">${cardType}</p>
+                        <div class="w-full h-px bg-amber-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+                lastShown = Date.now();
+                currentCard = cardName;
+            }
+
+            function hidePopup() {
+                if (Date.now() - lastShown < 100) return; // Ignore hide calls immediately after showing
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                    currentCard = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            const cardsToLoad = {
+                'scout-step-img-container': 'Beetrooper Scout Buggy',
+                'armor-horn-step-img-container': 'Beetrooper Armor Horn',
+                'atlas-step-img-container': 'Giant Beetrooper Invincible Atlas',
+                'atlas-endboard-img-container': 'Giant Beetrooper Invincible Atlas',
+                'trap-endboard-img-container': 'Beetrooper Fly & Sting'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+            
+            // --- NEW CANVAS ANIMATION SCRIPT ---
+            const canvas = document.getElementById('summoning-grid-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particlesArray;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y, directionX, directionY, size, color) {
+                        this.x = x;
+                        this.y = y;
+                        this.directionX = directionX;
+                        this.directionY = directionY;
+                        this.size = size;
+                        this.color = color;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                    update() {
+                        if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+                        if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+                        this.x += this.directionX;
+                        this.y += this.directionY;
+                        this.draw();
+                    }
+                }
+
+                function init() {
+                    particlesArray = [];
+                    const colors = ['#3b82f6', '#60a5fa', '#93c5fd'];
+                    let numberOfParticles = (canvas.height * canvas.width) / 9000;
+                    for (let i = 0; i < numberOfParticles; i++) {
+                        let size = (Math.random() * 2) + 1;
+                        let x = (Math.random() * (canvas.width - size * 2) + size);
+                        let y = (Math.random() * (canvas.height - size * 2) + size);
+                        let directionX = (Math.random() * 0.8) - 0.4;
+                        let directionY = (Math.random() * 0.8) - 0.4;
+                        let color = colors[Math.floor(Math.random() * colors.length)];
+                        particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+                    }
+                }
+
+                function connect() {
+                    let opacityValue = 1;
+                    for (let a = 0; a < particlesArray.length; a++) {
+                        for (let b = a + 1; b < particlesArray.length; b++) {
+                            let distance = Math.sqrt(Math.pow(particlesArray[a].x - particlesArray[b].x, 2) + Math.pow(particlesArray[a].y - particlesArray[b].y, 2));
+                            if (distance < 110) { // Connection distance
+                                opacityValue = 1 - (distance / 110);
+                                ctx.strokeStyle = `rgba(96, 165, 250, ${opacityValue})`;
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                                ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particlesArray.forEach(particle => particle.update());
+                    connect();
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

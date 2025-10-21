@@ -1,0 +1,706 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.E.S. Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #10101a; /* Near Black with a hint of blue */
+            color: #d1d5db; /* Light Gray */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1f2937; /* Dark Slate Gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4b5563; /* Medium Gray */
+        }
+        .combo-step-card {
+            background-color: #374151; /* Lighter Slate Gray */
+            border: 1px solid #6b7280;
+        }
+        .pro-con-card {
+            background-color: #374151;
+            border: 1px solid #6b7280;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1f2937;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1f2937;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #22d3ee); /* Cyan Glow */
+        }
+        .pro-icon { color: #22c55e; } /* Green */
+        .con-icon { color: #ef4444; } /* Red */
+        .neutral-icon { color: #60a5fa; } /* Blue */
+        .text-accent { color: #67e8f9; } /* Light Cyan */
+        .arrow-color { color: #22d3ee; } /* Cyan */
+        .heading-underline {
+            border-bottom: 2px solid #67e8f9;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #10101a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4b5563;
+        }
+
+        #hud-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(16, 16, 26, 0.4) 0%, rgba(16, 16, 26, 0.85) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px rgba(103, 232, 249, 0.5), 0 0 20px rgba(103, 232, 249, 0.3);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #67e8f9;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif;
+            color: #67e8f9;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #67e8f9;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="hud-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">B.E.S.</h1>
+            <p class="text-lg md:text-xl text-gray-300">An Analysis of Hybridization and Control</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">B.E.S. (Big E.S.p.A.C.E. Ship)</strong> archetype is a Machine-type theme centered on large beatstick monsters that use a counter system for survival. Originally hampered by a design flaw that pitted its two core mechanics against each other, modern support has transformed the strategy. The deck now relies on its powerful Field Spell, <strong class="text-accent font-bold">B.E.F. Zelos</strong>, and synergy with external Machine archetypes to function as a potent hybrid control or board-breaking threat, a long way from its origins as <a href="https://yugioh.fandom.com/wiki/Gradius_(archetype)" target="_blank" class="text-accent underline hover:text-cyan-300">a fleet inspired by a classic video game</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Components Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Components: The B.E.S. Fleet</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-rocket text-4xl text-cyan-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Starships</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">B.E.S. Big Core MK-3</h4>
+                            <p class="text-sm text-gray-300">The primary boss monster for the recursion loop. An essential Level 8 body for powerful Rank 8 Xyz plays.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">B.E.S. Blaster Cannon Core</h4>
+                            <p class="text-sm text-gray-300">Provides valuable backrow removal with its Quick Effect and serves as another key Level 8 for Xyz Summons.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">B.E.S. Big Core MK-2</h4>
+                            <p class="text-sm text-gray-300">A flexible Level 6 monster that can be summoned without tribute, providing material for Rank 6 or Link plays.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Engines -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-satellite-dish text-4xl text-cyan-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Command & Control</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">B.E.F. Zelos</h4>
+                            <p class="text-sm text-gray-300">The heart of the deck. Searches <strong class="text-accent font-bold">Boss Rush</strong>, protects your monsters, and Special Summons them from the hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Boss Rush</h4>
+                            <p class="text-sm text-gray-300">A Continuous Spell that provides endless recursion, Special Summoning a new B.E.S. monster from the Deck when one is destroyed.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hybrid Engines (Kaiju / Machina)</h4>
+                            <p class="text-sm text-gray-300">External engines are crucial for consistency and power, providing either board-breaking OTK potential or a resilient control setup.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Zelos Engine Startup</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the essential opening sequence required to get the B.E.S. engine online.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="content-wrapper flex flex-col md:flex-row gap-4 items-center">
+                        <div id="zelos-img-container" class="card-image-container flex-shrink-0 card-placeholder">B.E.F. Zelos</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate Zelos, Search Rush</h3>
+                            </div>
+                            <p class="text-gray-300">Activate <strong class="text-accent font-bold">B.E.F. Zelos</strong> from your hand. Its effect immediately adds <strong class="text-accent font-bold">Boss Rush</strong> from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="content-wrapper flex flex-col md:flex-row gap-4 items-center">
+                        <div id="boss-rush-img-container" class="card-image-container flex-shrink-0 card-placeholder">Boss Rush</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Activate Boss Rush</h3>
+                            </div>
+                            <p class="text-gray-300">Activate <strong class="text-accent font-bold">Boss Rush</strong>. This locks you out of Normal Summons, but sets up the crucial recursion effect for your B.E.S. monsters.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="content-wrapper flex flex-col md:flex-row gap-4 items-center">
+                        <div id="mk3-img-container" class="card-image-container flex-shrink-0 card-placeholder">B.E.S. Big Core MK-3</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon Your First Ship</h3>
+                            </div>
+                            <p class="text-gray-300">Use the effect of <strong class="text-accent font-bold">B.E.F. Zelos</strong> to Special Summon a B.E.S. monster like <strong class="text-accent font-bold">B.E.S. Big Core MK-3</strong> from your hand, establishing a powerful and protected threat.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Endboard Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Kaiju Variant Endboard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Kaiju Variant Endboard</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="hope-harbinger-img-container" class="card-image-container card-placeholder">Number 38: Hope Harbinger Dragon Titanic Galaxy</div>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-4">The primary goal is an OTK when going second. If forced to go first, the endboard focuses on a powerful Rank 8 Xyz monster to control the game.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent font-bold">Rank 8 Control:</strong> Usually ends on <strong class="text-accent font-bold">Number 38: Hope Harbinger Dragon Titanic Galaxy</strong> for a crucial spell negate.</li>
+                        <li><strong class="text-accent font-bold">Recursion Ready:</strong> Has <strong class="text-accent font-bold">Boss Rush</strong> active to replace any destroyed B.E.S. monster during the End Phase.</li>
+                    </ul>
+                </div>
+                <!-- Machina Variant Endboard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Machina Variant Endboard</h3>
+                     <div class="flex justify-center mb-4">
+                        <div id="citadel-img-container" class="card-image-container card-placeholder">Machina Citadel</div>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-4">This build aims for a highly resilient Turn 1 board with multiple layers of protection and reactive disruption.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent font-bold">Dual Recursion:</strong> <strong class="text-accent font-bold">Boss Rush</strong> and <strong class="text-accent font-bold">Machina Citadel</strong> create a loop that punishes destruction effects.</li>
+                        <li><strong class="text-accent font-bold">Layered Negation:</strong> Combines the protection of <strong class="text-accent font-bold">Zelos</strong> with a Rank 8 negate like <strong class="text-accent font-bold">Number 38</strong>.</li>
+                        <li><strong class="text-accent font-bold">Sticky Board:</strong> The combination of effects forces the opponent to use non-destruction removal to clear threats.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Incredible Protection:</strong> <strong class="text-accent font-bold">B.E.F. Zelos</strong> makes B.E.S. monsters immune to targeting and destruction effects.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">Persistent Recursion:</strong> The combination of <strong class="text-accent font-bold">Boss Rush</strong> and the Machina engine creates a board that is very difficult to clear.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400 font-bold">Zelos Dependency:</strong> The entire strategy crumbles if <strong class="text-accent font-bold">B.E.F. Zelos</strong> is removed from the field.</li>
+                         <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Inconsistent:</strong> Requires running multiple search cards for the Field Spell, which can lead to brick hands.</li>
+                         <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Vulnerable to Non-Destruction:</strong> Weak to effects that banish, shuffle, or Tribute monsters, bypassing Zelos's protection.</li>
+                    </ul>
+                </div>
+                <!-- Hybrid Strategies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Hybrid Strategies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="neutral-icon"><i class="fas fa-pastafarianism"></i></span> <strong class="text-accent font-bold">Kaiju OTK:</strong> Uses the Kaiju engine to break the opponent's board and push for a quick one-turn kill.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-cogs"></i></span> <strong class="text-accent font-bold">Machina Control:</strong> Integrates the Machina engine for a defensive, control-oriented build with multiple layers of recursion.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- NEW B.E.S. HUD ANIMATION ---
+            const canvas = document.getElementById('hud-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let animationFrameId;
+                let stars = [];
+                let scanY = 0;
+                let scanDir = 1;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Star {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.radius = Math.random() * 1.5;
+                        this.alpha = Math.random() * 0.5 + 0.3; // Base alpha
+                        this.twinkleSpeed = Math.random() * 0.02;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        const alpha = this.alpha + Math.sin(Date.now() * this.twinkleSpeed) * this.alpha * 0.5;
+                        ctx.fillStyle = `rgba(103, 232, 249, ${alpha})`;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    stars = [];
+                    const starCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < starCount; i++) {
+                        stars.push(new Star());
+                    }
+                }
+                
+                function drawGrid() {
+                    ctx.strokeStyle = 'rgba(75, 85, 99, 0.2)'; // Medium Gray, low opacity
+                    ctx.lineWidth = 1;
+                    const gridSize = 30;
+                    for (let x = 0; x < canvas.width; x += gridSize) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, canvas.height);
+                        ctx.stroke();
+                    }
+                    for (let y = 0; y < canvas.height; y += gridSize) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(canvas.width, y);
+                        ctx.stroke();
+                    }
+                }
+
+                function drawScanline() {
+                    scanY += scanDir * 0.75; // Slower scan speed
+                    if (scanY > canvas.height + 10 || scanY < -10) {
+                        scanDir *= -1; // Reverse direction
+                    }
+                    
+                    const gradient = ctx.createLinearGradient(0, scanY - 10, 0, scanY + 10);
+                    gradient.addColorStop(0, 'rgba(103, 232, 249, 0)');
+                    gradient.addColorStop(0.5, 'rgba(103, 232, 249, 0.4)');
+                    gradient.addColorStop(1, 'rgba(103, 232, 249, 0)');
+
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, scanY - 10, canvas.width, 20);
+                    
+                    ctx.strokeStyle = 'rgba(103, 232, 249, 0.6)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(0, scanY);
+                    ctx.lineTo(canvas.width, scanY);
+                    ctx.stroke();
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawGrid();
+                    stars.forEach(star => star.draw());
+                    drawScanline();
+                    animationFrameId = requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    cancelAnimationFrame(animationFrameId);
+                    setCanvasSize();
+                    init();
+                    animate();
+                });
+            }
+
+
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-blue-300">${cardType}</p>
+                        <div class="w-full h-px bg-blue-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            const cardsToLoad = {
+                'zelos-img-container': 'B.E.F. Zelos',
+                'boss-rush-img-container': 'Boss Rush',
+                'mk3-img-container': 'B.E.S. Big Core MK-3',
+                'hope-harbinger-img-container': 'Number 38: Hope Harbinger Dragon Titanic Galaxy',
+                'citadel-img-container': 'Machina Citadel'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

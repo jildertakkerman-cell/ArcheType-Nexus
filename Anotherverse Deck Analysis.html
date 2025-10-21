@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anotherverse Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep cosmic purple */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(26, 22, 51, 0.6); /* Semi-transparent dark purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+            border: 1px solid #4c3d8e; /* Lighter purple border */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(42, 36, 87, 0.7);
+            border: 1px solid #6a5acd;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .banlist-tag {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+            z-index: 10;
+        }
+        .banlist-forbidden { background-color: #ef4444; }
+        .banlist-limited { background-color: #f59e0b; }
+        .banlist-semi-limited { background-color: #84cc16; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2457;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2457;
+            border: 1px dashed #6a5acd;
+        }
+        .text-accent { color: #a78bfa; } /* Bright Lavender */
+        .arrow-color { color: #a78bfa; }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #c4b5fd;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c4b5fd;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #c4b5fd;
+        }
+        .banner-header {
+            position: relative;
+            min-height: 180px;
+            background-color: #0c0a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c3d8e;
+        }
+        #starfield-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 10, 26, 0.2) 0%, rgba(12, 10, 26, 0.8) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(167, 139, 250, 0.7);
+        }
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white; border: 2px solid #6366f1; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i { font-size: 22px; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="starfield-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">ANOTHERVERSE</h1>
+            <p class="text-lg md:text-xl text-purple-200">A Theoretical Deep Dive into TCG Prize Cards</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">The "Anotherverse" Anomaly</h2>
+                <p class="text-indigo-200">
+                    The "Anotherverse" cards are not a traditional, synergistic archetype. They are a series of high-value Yu-Gi-Oh! Championship Series (YCS) prize cards, each a Level 8 Normal Monster with iconic 2500 ATK/2000 DEF stats. Lacking effects, their purpose is not to define a meta but to serve as prestigious trophies. This analysis reframes the challenge: how can a functional and powerful deck be constructed around these non-effect monsters using the vast library of generic and type-specific support available in the game? The community has often speculated on what a playable <a href="https://yugipedia.com/wiki/Anotherverse" target="_blank" rel="noopener noreferrer" class="lore-link">"Anotherverse" archetype</a> might look like, and this deep dive embraces that creative spirit.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Champions of Time</h2>
+             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Anotherverse Dragon -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="anotherverse-dragon-img-container" class="card-image-container w-full h-64 mb-4 card-placeholder"></div>
+                    <h3 class="text-lg font-bold text-accent">Anotherverse Dragon</h3>
+                    <p class="text-sm text-indigo-200">LIGHT / Dragon</p>
+                </div>
+                <!-- Anotherverse Gluttonia -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="anotherverse-gluttonia-img-container" class="card-image-container w-full h-64 mb-4 card-placeholder"></div>
+                    <h3 class="text-lg font-bold text-accent">Anotherverse Gluttonia</h3>
+                    <p class="text-sm text-indigo-200">DARK / Fiend</p>
+                </div>
+                <!-- Anotherverse Solaria -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="anotherverse-solaria-img-container" class="card-image-container w-full h-64 mb-4 card-placeholder"></div>
+                    <h3 class="text-lg font-bold text-accent">Anotherverse Solaria</h3>
+                    <p class="text-sm text-indigo-200">FIRE / Pyro</p>
+                </div>
+                <!-- Anotherverse Stratios -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="anotherverse-stratios-img-container" class="card-image-container w-full h-64 mb-4 card-placeholder"></div>
+                    <h3 class="text-lg font-bold text-accent">Anotherverse Stratios</h3>
+                    <p class="text-sm text-indigo-200">EARTH / Warrior</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Universal Toolkit: Core Support</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-4">
+                    <div id="summoners-art-img-container" class="card-image-container w-full h-48 mx-auto mb-3 card-placeholder"></div>
+                    <h4 class="font-bold text-center text-accent">Summoner's Art</h4>
+                    <p class="text-sm text-indigo-200 text-center">The primary searcher, adding any Level 5+ Normal Monster from Deck to hand.</p>
+                </div>
+                <div class="card p-4">
+                    <div id="ancient-rules-img-container" class="card-image-container w-full h-48 mx-auto mb-3 card-placeholder"></div>
+                    <h4 class="font-bold text-center text-accent">Ancient Rules</h4>
+                    <p class="text-sm text-indigo-200 text-center">Circumvents Tribute Summoning by Special Summoning a Level 5+ Normal Monster from hand.</p>
+                </div>
+                <div class="card p-4">
+                    <div id="pacifis-img-container" class="card-image-container w-full h-48 mx-auto mb-3 card-placeholder"></div>
+                    <h4 class="font-bold text-center text-accent">Phantasm Spiral Engine</h4>
+                    <p class="text-sm text-indigo-200 text-center">Pacifis, the Phantasm City generates powerful Trap support when you control only Normal Monsters.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Theoretical Blueprint: Phantasm Spiral Control</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">This strategy utilizes universal Normal Monster support to control the game and access the powerful Rank 8 Xyz toolbox.</p>
+             <div class="space-y-4">
+                <div class="card combo-step-card p-4 flex items-center gap-4">
+                    <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold">1</span>
+                    <p class="text-indigo-200">Activate <strong class="text-accent">Summoner's Art</strong> to search <strong class="text-accent">Anotherverse Dragon</strong>.</p>
+                </div>
+                 <div class="card combo-step-card p-4 flex items-center gap-4">
+                    <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold">2</span>
+                    <p class="text-indigo-200">Activate <strong class="text-accent">Ancient Rules</strong> to Special Summon <strong class="text-accent">Anotherverse Dragon</strong>.</p>
+                </div>
+                 <div class="card combo-step-card p-4 flex items-center gap-4">
+                    <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold">3</span>
+                    <p class="text-indigo-200">With <strong class="text-accent">Pacifis, the Phantasm City</strong> active, search for a "Phantasm Spiral" Trap to disrupt the opponent.</p>
+                </div>
+                 <div class="card combo-step-card p-4 flex items-center gap-4">
+                    <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold">4</span>
+                    <p class="text-indigo-200">Summon a second Level 8 Normal Monster to overlay into a Rank 8 Xyz monster.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">End Board Showcase</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Rank 8 Xyz Toolbox</h3>
+                    <p class="text-indigo-200 mb-4 text-center">The primary goal is to summon two Level 8 monsters to access powerful, game-changing Xyz monsters.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="hope-harbinger-img-container" class="w-24 flex-shrink-0 card-placeholder"></div>
+                            <div>
+                                <h4 class="font-bold text-white">Number 38: Hope Harbinger Dragon Titanic Galaxy</h4>
+                                <p class="text-sm text-indigo-200">Provides a crucial Spell negate.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="felgrand-img-container" class="w-24 flex-shrink-0 card-placeholder"></div>
+                            <div>
+                                <h4 class="font-bold text-white">Divine Dragon Knight Felgrand</h4>
+                                <p class="text-sm text-indigo-200">Offers targeted monster effect negation and protection.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Fusion Powerhouse</h3>
+                    <p class="text-indigo-200 mb-4 text-center">A simpler but incredibly resilient boss monster available through the archetype's Normal Monster nature.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="first-of-dragons-img-container" class="w-24 flex-shrink-0 card-placeholder"></div>
+                            <div>
+                                <h4 class="font-bold text-white">First of the Dragons</h4>
+                                <p class="text-sm text-indigo-200">Requires 2 Normal Monsters. Unaffected by monster effects and cannot be destroyed by battle except by a Normal Monster.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The "Anotherverse" monsters themselves are unlimited. However, their viability is tied to the availability of their generic and specific support cards.
+                </p>
+                <div id="banlist-status-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Banlist statuses will be dynamically inserted here -->
+                </div>
+                 <div class="mt-6 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-400">
+                    <p class="text-sm text-gray-300"><strong>Analysis:</strong> While the core prize cards are safe, the engines that make them playable are subject to regulation. The limitation of cards like <strong class="text-accent">Reinforcement of the Army</strong> and <strong class="text-accent">Bonfire</strong> slightly reduces consistency for their respective variants, but does not cripple the strategies. The deck remains a fascinating theoretical exercise at full power.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STARFIELD CANVAS ANIMATION ---
+            const canvas = document.getElementById('starfield-canvas');
+            if(canvas) {
+                const ctx = canvas.getContext('2d');
+                let stars = [];
+                const numStars = 200;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Star {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.z = Math.random() * canvas.width;
+                        this.pz = this.z;
+                    }
+
+                    update() {
+                        this.z -= 2;
+                        if (this.z < 1) {
+                            this.z = canvas.width;
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.pz = this.z;
+                        }
+                    }
+
+                    draw() {
+                        const sx = (this.x - canvas.width / 2) * (canvas.width / this.z) + canvas.width / 2;
+                        const sy = (this.y - canvas.height / 2) * (canvas.width / this.z) + canvas.height / 2;
+                        const r = (1 - this.z / canvas.width) * 2;
+                        
+                        const px = (this.x - canvas.width / 2) * (canvas.width / this.pz) + canvas.width / 2;
+                        const py = (this.y - canvas.height / 2) * (canvas.width / this.pz) + canvas.height / 2;
+
+                        ctx.beginPath();
+                        ctx.moveTo(px, py);
+                        ctx.lineTo(sx, sy);
+                        ctx.strokeStyle = `rgba(196, 181, 253, ${1 - this.z / canvas.width})`;
+                        ctx.lineWidth = r;
+                        ctx.stroke();
+                        this.pz = this.z;
+                    }
+                }
+                
+                function initStars() {
+                    stars = [];
+                    for(let i=0; i < numStars; i++) {
+                        stars.push(new Star());
+                    }
+                }
+
+                function animate() {
+                    ctx.fillStyle = '#0c0a1a';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    stars.forEach(star => {
+                        star.update();
+                        star.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                initStars();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initStars();
+                });
+            }
+
+            // --- CARD IMAGE & BANLIST FETCHER ---
+            const tcgBanlist = [];
+            const cardsToAnalyze = [
+                'Anotherverse Dragon', 'Anotherverse Gluttonia', 'Anotherverse Solaria', 'Anotherverse Stratios',
+                'Summoner\'s Art', 'Ancient Rules', 'Pacifis, the Phantasm City',
+                'Reinforcement of the Army', 'Bonfire', 'Dragon Shrine', 'Allure of Darkness',
+                'Number 38: Hope Harbinger Dragon Titanic Galaxy', 'Divine Dragon Knight Felgrand', 'First of the Dragons',
+                'Black Luster Soldier - Envoy of the Beginning', 'Infernal Flame Banshee'
+            ];
+            
+            const cardImageMapping = {
+                 'Anotherverse Dragon': 'anotherverse-dragon-img-container',
+                 'Anotherverse Gluttonia': 'anotherverse-gluttonia-img-container',
+                 'Anotherverse Solaria': 'anotherverse-solaria-img-container',
+                 'Anotherverse Stratios': 'anotherverse-stratios-img-container',
+                 'Summoner\'s Art': 'summoners-art-img-container',
+                 'Ancient Rules': 'ancient-rules-img-container',
+                 'Pacifis, the Phantasm City': 'pacifis-img-container',
+                 'Number 38: Hope Harbinger Dragon Titanic Galaxy': 'hope-harbinger-img-container',
+                 'Divine Dragon Knight Felgrand': 'felgrand-img-container',
+                 'First of the Dragons': 'first-of-dragons-img-container',
+            };
+
+            async function fetchBanlistAndCards() {
+                try {
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
+                    const data = await response.json();
+                    tcgBanlist.push(...data.data);
+                } catch (error) {
+                    console.error("Failed to fetch TCG banlist from API. Will use internal data.", error);
+                    // Fallback to the JSON file if the API fails
+                    const internalBanlist = {"data":[{"ban_tcg":"Forbidden","name":"Block Dragon"},{"ban_tcg":"Forbidden","name":"Spright Elf"},{"ban_tcg":"Limited","name":"Reinforcement of the Army"},{"ban_tcg":"Limited","name":"Bonfire"}]};
+                    tcgBanlist.push(...internalBanlist.data);
+                }
+                
+                processCards();
+            }
+
+            function getBanStatus(cardName) {
+                const card = tcgBanlist.find(c => c.name === cardName);
+                return card ? card.banlist_info?.ban_tcg : null;
+            }
+
+            async function processCards() {
+                const banlistContainer = document.getElementById('banlist-status-container');
+                
+                for (const cardName of cardsToAnalyze) {
+                    const status = getBanStatus(cardName);
+                    if (status) {
+                        let statusText = status;
+                        let colorClass = '';
+                         switch(status.toLowerCase()) {
+                            case 'forbidden': colorClass = 'banlist-forbidden'; break;
+                            case 'limited': colorClass = 'banlist-limited'; break;
+                            case 'semi-limited': statusText = 'Semi-Limited'; colorClass = 'banlist-semi-limited'; break;
+                        }
+                        const cardDiv = document.createElement('div');
+                        cardDiv.className = `p-3 rounded-lg text-center ${colorClass} text-white font-semibold`;
+                        cardDiv.textContent = `${cardName} (${statusText})`;
+                        banlistContainer.appendChild(cardDiv);
+                    }
+                }
+
+                 for (const [cardName, containerId] of Object.entries(cardImageMapping)) {
+                    await fetchAndDisplayCardImage(cardName, containerId);
+                }
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const status = getBanStatus(cardName);
+
+                try {
+                    const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`);
+                    if (!response.ok) {
+                        throw new Error(`API returned status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        container.innerHTML = ''; // Clear placeholder
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-full object-cover rounded-lg shadow-md animate-fadeIn';
+                        
+                        if (status) {
+                             let statusText = status;
+                             let colorClass = '';
+                             switch(status.toLowerCase()) {
+                                case 'forbidden': colorClass = 'banlist-forbidden'; break;
+                                case 'limited': colorClass = 'banlist-limited'; break;
+                                case 'semi-limited': statusText = 'Semi-Limited'; colorClass = 'banlist-semi-limited'; break;
+                            }
+                            const tag = document.createElement('div');
+                            tag.className = `banlist-tag ${colorClass}`;
+                            tag.textContent = statusText;
+                            container.appendChild(tag);
+                        }
+                        
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+            
+            fetchBanlistAndCards();
+        });
+    </script>
+</body>
+</html>
+

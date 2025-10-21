@@ -1,0 +1,645 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluffal Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Kalam:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdf6f6; /* Very light, slightly pinkish-white */
+            color: #4c3b4d; /* Dark muted purple/brown */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5d9e5;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #faf7fa;
+            border: 1px solid #e5d9e5;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #faf7fa;
+            color: #4c3b4d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 2px dashed #d8bfd8; /* Thistle border */
+        }
+        .pro-icon { color: #10b981; } /* Emerald */
+        .con-icon { color: #ef4444; } /* Red */
+        .neutral-icon { color: #3b82f6; } /* Blue */
+        .text-accent { color: #86198f; } /* Fuchsia */
+        .arrow-color { color: #86198f; }
+        .heading-underline {
+            border-bottom: 2px solid #c026d3; /* Fuchsia */
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #86198f;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #86198f;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #c026d3;
+        }
+
+        /* --- FLUFFAL ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #fff;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #e5d9e5;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        #fluff-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 2;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.5);
+        }
+        
+        .banner-header h1 {
+            font-family: 'Kalam', cursive;
+            font-size: 3rem;
+            color: #86198f;
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+            .banner-header h1 {
+                font-size: 4rem;
+            }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="fluff-banner"></canvas>
+            <h1>Fluffal & Frightfur</h1>
+            <p class="text-lg md:text-xl text-gray-600">A Strategic Analysis of Cuddly Mayhem</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">Executive Summary</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    The <strong class="text-accent font-bold">Fluffal</strong> archetype is a deceptive and explosive Fusion-based strategy that blends whimsical charm with nightmarish aggression. The deck revolves around assembling its "Fluffal" and "Edge Imp" components with remarkable consistency, culminating in the summon of powerful <strong class="text-accent font-bold">Frightfur</strong> boss monsters. These terrifying creations are designed to dismantle an opponent's board and inflict massive battle damage, often achieving a one-turn kill (OTK).
+                </p>
+            </div>
+        </section>
+
+        <!-- The Three Pillars Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center">Anatomy of the Archetype</h2>
+            <p class="text-gray-600 mb-8 text-center max-w-3xl mx-auto">
+                The deck's engine is composed of three distinct groups of cards, each with a clearly defined role. The interplay between these groups is the foundation upon which all of the deck's combos are built.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Fluffals -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-teddy-bear text-4xl text-yellow-500 mr-4"></i>
+                        <h3 class="text-xl font-bold text-gray-800">Fluffals</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">The heart of the deck. These cute, plush-themed EARTH Fairy monsters are the resource engine, responsible for searching key pieces, drawing cards, and providing material for Fusion Summons.</p>
+                </div>
+                <!-- Edge Imps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cut text-4xl text-gray-600 mr-4"></i>
+                        <h3 class="text-xl font-bold text-gray-800">Edge Imps</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">The sinister component. These DARK Fiend monsters, often depicted as possessed sewing tools, are the essential second ingredient for every Frightfur Fusion, offering powerful utility effects.</p>
+                </div>
+                <!-- Frightfurs -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-skull-crossbones text-4xl text-red-700 mr-4"></i>
+                        <h3 class="text-xl font-bold text-gray-800">Frightfurs</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">The terrifying payoff. These DARK Fiend Fusion monsters are aggressive, battle-oriented boss monsters designed to break boards, boost their own ATK, and enable multiple attacks to end the duel swiftly.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Toy Vendor Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center">The Unblinking Eye: Deconstructing Toy Vendor</h2>
+            <div class="card p-6 flex flex-col md:flex-row items-center gap-6">
+                 <div id="toy-vendor-img-container" class="card-image-container flex-shrink-0 card-placeholder">Toy Vendor</div>
+                 <div class="text-gray-700">
+                     <p class="mb-4">
+                         At the absolute center of the Fluffal universe lies a single Continuous Spell: <strong class="text-accent font-bold">Toy Vendor</strong>. It is the deck's central nervous system, a resource conversion engine that every other card is designed to either search, activate, or exploit.
+                     </p>
+                     <ul class="list-disc list-inside space-y-2">
+                        <li>Its on-field effect lets you discard a card to draw, setting up your Graveyard with cards like <strong class="text-accent font-bold">Edge Imp Chain</strong>.</li>
+                        <li>Its Graveyard effect is even more powerful: when sent to the GY from anywhere, it searches for a "Fluffal" monster or "Edge Imp Sabres". This effect is <strong class="font-bold">not once per turn</strong>.</li>
+                     </ul>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center">Core Combo: The "Wings of Despair" Draw Engine</h2>
+            <p class="text-gray-600 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how a simple two-card combination can explode into massive card advantage, turning a modest hand into a game-winning one.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="bear-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fluffal Bear</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#e5d9e5] text-gray-800 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Set the Stage</h3>
+                            </div>
+                            <p class="text-gray-600">Use the effect of <strong class="text-accent font-bold">Fluffal Bear</strong> in hand, sending it to the GY to Set <strong class="text-accent font-bold">Toy Vendor</strong> directly from your Deck. This play avoids common hand traps like Ash Blossom.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="wings-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fluffal Wings</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#e5d9e5] text-gray-800 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Prepare for Flight</h3>
+                            </div>
+                            <p class="text-gray-600">Activate <strong class="text-accent font-bold">Toy Vendor's</strong> effect, discarding <strong class="text-accent font-bold">Fluffal Wings</strong>. You'll draw one card and potentially get a Special Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="dog-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fluffal Dog</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#e5d9e5] text-gray-800 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Reap the Rewards</h3>
+                            </div>
+                            <p class="text-gray-600">Activate the effect of <strong class="text-accent font-bold">Fluffal Wings</strong> in your GY. Banish it and Bear to draw 2 cards and search 1 monster via Toy Vendor's GY effect. This two-card start results in a net +2 card advantage.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center">The Final Act: Typical Endboards</h2>
+            <p class="text-gray-600 mb-8 text-center max-w-3xl mx-auto">
+                While primarily a "go-second" OTK deck, Fluffals can establish disruptive boards when forced to go first. The sheer power of their Fusions, reminiscent of ancient evils that once scarred the very <a href="#" class="lore-link">earth, bound</a> by shadow, can overwhelm unprepared opponents.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- OTK Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">The OTK Board (Going Second)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="wolf-img-container" class="card-image-container card-placeholder">Frightfur Wolf</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li><strong class="text-accent font-bold">Frightfur Tiger:</strong> Destroys multiple cards on the field to clear the way.</li>
+                        <li><strong class="text-accent font-bold">Frightfur Kraken:</strong> Provides non-destruction removal and can attack twice.</li>
+                         <li><strong class="text-accent font-bold">Frightfur Wolf:</strong> The finisher. Summoned with many materials via <strong class="text-accent font-bold">Frightfur Fusion</strong>, it attacks multiple times for game.</li>
+                    </ul>
+                </div>
+                <!-- Control Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">The Disruptive Board (Going First)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="sabre-tooth-img-container" class="card-image-container card-placeholder">Frightfur Sabre-Tooth</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li><strong class="text-accent font-bold">Frightfur Sabre-Tooth:</strong> Summoned with 3+ materials, it becomes indestructible by battle or card effects.</li>
+                        <li><strong class="text-accent font-bold">Edge Imp Scythe:</strong> Allows you to Fusion Summon on your opponent's turn, often into <strong class="text-accent font-bold">Frightfur Cruel Whale</strong> to destroy a key card.</li>
+                         <li><strong class="text-accent font-bold">Generic Links:</strong> Access to cards like <strong class="text-accent font-bold">I:P Masquerena</strong> to make a disruptive <strong class="text-accent font-bold">Knightmare Unicorn</strong> or <strong class="text-accent font-bold">Apollousa</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-600 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-600 font-bold">Incredible Consistency:</strong> High number of searchers and one-card starters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bomb"></i></span> <strong class="text-green-600 font-bold">Explosive Draw Power:</strong> Can generate immense card advantage mid-combo.</li>
+                        <li><span class="pro-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-green-600 font-bold">Potent OTK Potential:</strong> Excels at going second to break boards and win in a single turn.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-600 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li><span class="con-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-red-600 font-bold">Weak Going First:</strong> Historically poor matchup when forced to go first without a dedicated side strategy.</li>
+                                                <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-600 font-bold">Graveyard Hate:</strong> Highly vulnerable to floodgates like <strong class="text-accent font-bold">Abyss Dweller</strong> (<span class="text-red-300">currently banned</span>) and <strong class="text-accent font-bold">Dimension Shifter</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-stream"></i></span> <strong class="text-red-600 font-bold">Known Chokepoints:</strong> Vulnerable to disruption if the pilot fails to properly chain-block key effects.</li>
+                    </ul>
+                </div>
+                <!-- External Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">External Engines & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Chimera Engine:</strong> A natural partner, as both are Fusion-based and use the GY. Provides disruption Fluffals lack.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent font-bold">Branded Engine:</strong> Access to incredibly powerful boss monsters like <strong class="text-accent font-bold">Mirrorjade</strong> by using Fluffal/Edge Imp attributes as material.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- FLUFFAL BANNER ANIMATION ---
+            const canvas = document.getElementById('fluff-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                let stitchLine = null;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 4 + 2;
+                        this.speedX = (Math.random() * 0.4) - 0.2;
+                        this.speedY = (Math.random() * 0.4) - 0.2;
+                        this.color = `rgba(134, 25, 143, ${Math.random() * 0.2 + 0.05})`;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.size > 0.2) this.size -= 0.02;
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                class StitchLine {
+                    constructor() {
+                        this.reset();
+                    }
+                    reset() {
+                        this.startY = Math.random() * canvas.height;
+                        this.endY = Math.random() * canvas.height;
+                        this.currentX = -10;
+                        this.speed = Math.random() * 3 + 2;
+                        this.alpha = 1;
+                    }
+                    update() {
+                        this.currentX += this.speed;
+                        if (this.currentX > canvas.width + 10) {
+                           this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.moveTo(this.currentX - 10, this.startY);
+                        ctx.lineTo(this.currentX, this.endY);
+                        ctx.strokeStyle = `rgba(76, 59, 77, ${this.alpha})`;
+                        ctx.lineWidth = 1.5;
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 9000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                    if (!stitchLine) {
+                        stitchLine = new StitchLine();
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    
+                    if(stitchLine) {
+                        stitchLine.update();
+                        stitchLine.draw();
+                    }
+                    
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD IMAGE FETCHING SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'toy-vendor-img-container': 'Toy Vendor',
+                'bear-img-container': 'Fluffal Bear',
+                'wings-img-container': 'Fluffal Wings',
+                'dog-img-container': 'Fluffal Dog',
+                'wolf-img-container': 'Frightfur Wolf',
+                'sabre-tooth-img-container': 'Frightfur Sabre-Tooth'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+
+    <!-- Banlist Status Section -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-bold text-accent mb-6 text-center">
+            <i class="fas fa-balance-scale mr-2"></i>Current Banlist Status
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Limited Cards -->
+            <div class="bg-gradient-to-br from-orange-100 to-orange-50 border border-orange-300 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-orange-700 mb-3 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Limited (1 copy)
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-orange-600"><strong>Called by the Grave</strong> - Combo protection</li>
+                    <li class="text-orange-600"><strong>Triple Tactics Talent</strong> - Disruption response</li>
+                </ul>
+            </div>
+
+            <!-- Semi-Limited Cards -->
+            <div class="bg-gradient-to-br from-yellow-100 to-yellow-50 border border-yellow-300 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-yellow-700 mb-3 flex items-center">
+                    <i class="fas fa-pause mr-2"></i>Semi-Limited (2 copies)
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-yellow-600"><strong>Branded Fusion</strong> - For Branded engine variant</li>
+                </ul>
+            </div>
+
+            <!-- Forbidden Cards -->
+            <div class="bg-gradient-to-br from-red-100 to-red-50 border border-red-300 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-red-700 mb-3 flex items-center">
+                    <i class="fas fa-ban mr-2"></i>Forbidden
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-red-600">No Fluffal cards banned</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-6 bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-300 rounded-lg p-4">
+            <h3 class="text-lg font-bold text-pink-700 mb-3 flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>Banlist Impact Analysis
+            </h3>
+            <div class="text-sm text-pink-600 space-y-2">
+                <p><strong>Core Engine Intact:</strong> All Fluffal, Edge Imp, and Frightfur cards remain unrestricted, preserving the deck's explosive OTK potential centered around Toy Vendor.</p>
+                <p><strong>Branded Hybrid:</strong> The optional Branded engine operates with Semi-Limited Branded Fusion, still enabling access to powerful fusion boss monsters like Mirrorjade.</p>
+                <p><strong>Fusion Freedom:</strong> Polymerization and Frightfur Fusion maintain unlimited access, ensuring consistent fusion summoning capabilities.</p>
+                <p><strong>Competitive Edge:</strong> The archetype benefits from complete freedom to execute its signature combo lines without banlist interference.</p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
+
+

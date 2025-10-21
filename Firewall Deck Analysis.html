@@ -1,0 +1,507 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firewall Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0E1A; /* Very dark blue */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #111827; /* Dark gray-blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #1E293B; /* Slate blue border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #1E293B; /* Slightly lighter slate blue */
+            border: 1px solid #334155;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #334155;
+            color: #94A3B8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 2px dashed #475569;
+        }
+        .pro-icon { color: #22c55e; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #38bdf8; }
+        .text-accent { color: #67e8f9; } /* Bright Cyan */
+        .arrow-color { color: #22d3ee; }
+        .heading-underline {
+            border-bottom: 2px solid #67e8f9;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f472b6; /* A different accent for the hint */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f472b6;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f472b6;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0A0E1A;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #1E293B;
+        }
+        #firewall-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(10, 14, 26, 0.4) 0%, rgba(10, 14, 26, 0.9) 80%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(103, 232, 249, 0.5);
+            font-family: 'Roboto Mono', monospace;
+        }
+        .banner-header h1 {
+            letter-spacing: 0.1em;
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Banner Section -->
+        <header class="banner-header text-center">
+            <canvas id="firewall-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 uppercase">Firewall</h1>
+            <p class="text-lg md:text-xl text-cyan-200">Analysis of the Digital Fortress</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Firewall</strong> archetype is a combo-centric Cyberse strategy focused on "Link Climbing"—using monsters to summon increasingly powerful Link Monsters. The deck's core identity revolves around its Main Deck monsters, which generate significant advantage when used as Link Material, creating a recursive loop that fuels extensive combos. The ultimate goal is to summon the high-Link "Firewall Dragon" bosses, whose powers scale based on the variety of monster types in the Graveyard. It rarely operates alone, functioning as a powerful engine within broader Cyberse strategies like <strong class="text-accent font-bold">Code Talker</strong> and <strong class="text-accent font-bold">Mathmech</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Components Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Core Main Deck Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-key text-2xl text-accent mr-3"></i>
+                        <h3 class="text-lg font-bold">Firewall Defenser</h3>
+                    </div>
+                    <p class="text-sm text-blue-200">The premier one-card starter. When sent to the GY for a Cyberse Link Summon, it Special Summons another "Firewall" monster directly from your Deck, igniting your entire combo chain.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-search text-2xl text-accent mr-3"></i>
+                        <h3 class="text-lg font-bold">Firewall Phantom</h3>
+                    </div>
+                    <p class="text-sm text-blue-200">The resource architect. When used as Link Material, it searches any "Cynet" Spell/Trap, giving you access to powerful extenders like <strong class="text-accent">Cynet Codec</strong> or protection like <strong class="text-accent">Cynet Conflict</strong>.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-infinity text-2xl text-accent mr-3"></i>
+                        <h3 class="text-lg font-bold">Firewall Guardian</h3>
+                    </div>
+                    <p class="text-sm text-blue-200">A free resource for Link climbing. When sent to the GY as Link Material, it refuses to be <a href="https://yugipedia.com/wiki/Earthbound_Immortal" target="_blank" class="lore-link">Earthbound</a>, Special Summoning itself back to provide an extra body for further summons.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Core Combo: The Defenser Starter</h2>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="defenser-img" class="card-image-container card-placeholder">Firewall Defenser</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#111827] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate Protocol</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon <strong class="text-accent">Firewall Defenser</strong>. Use it to Link Summon <strong class="text-accent">Salamangreat Balelynx</strong>. This triggers Defenser's effect in the GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <i class="fas fa-arrow-down text-3xl arrow-color my-2"></i>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="phantom-img" class="card-image-container card-placeholder">Firewall Phantom</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#111827] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Generate Advantage</h3>
+                            </div>
+                            <p class="text-blue-200">Defenser's effect resolves, Special Summoning <strong class="text-accent">Firewall Phantom</strong> from the Deck. Now you have two monsters on board from one card.</p>
+                        </div>
+                    </div>
+                </div>
+                <i class="fas fa-arrow-down text-3xl arrow-color my-2"></i>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="codec-img" class="card-image-container card-placeholder">Cynet Codec</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#111827] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Access the Network</h3>
+                            </div>
+                            <p class="text-blue-200">                            <p class="text-blue-200">Use Balelynx and Phantom to Link Summon a Link-2 monster (e.g., <strong class="text-accent">Splash Mage</strong> - <span class="text-red-300">currently banned</span>; use <strong class="text-accent">Aromaseraphy Jasmine</strong> as a legal alternative). Phantom's GY effect now triggers, allowing you to search for <strong class="text-accent">Cynet Codec</strong> and start the resource loop.</p></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- The Final Bastion: End Board -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Final Bastion: Ideal End Board</h2>
+            <div class="card p-8">
+                <div class="flex flex-col lg:flex-row items-center gap-8">
+                    <div id="singularity-img" class="w-full lg:w-1/3 card-image-container card-placeholder">Firewall Dragon Singularity</div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-accent mb-4">A Multi-Layered Defense</h3>
+                        <p class="text-blue-200 mb-4">A successful combo culminates in an oppressive board designed to dismantle the opponent's turn. The centerpiece is <strong class="text-accent">Firewall Dragon Singularity</strong>, supported by various forms of interaction.</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start"><i class="fas fa-reply-all text-cyan-400 mt-1 mr-3"></i><span><strong class="text-white">Multiple Bounces:</strong> Singularity can return multiple cards your opponent controls to the hand as a Quick Effect.</span></li>
+                            <li class="flex items-start"><i class="fas fa-ban text-cyan-400 mt-1 mr-3"></i><span><strong class="text-white">Monster Negates:</strong> <strong class="text-accent">Firewall Dragon Darkfluid</strong> can provide multiple monster effect negations.</span></li>
+                            <li class="flex items-start"><i class="fas fa-shield-alt text-cyan-400 mt-1 mr-3"></i><span><strong class="text-white">Omni-Negation:</strong> A set <strong class="text-accent">Cynet Conflict</strong> provides a powerful Counter Trap to negate any card or effect.</span></li>
+                             <li class="flex items-start"><i class="fas fa-hand-rock text-cyan-400 mt-1 mr-3"></i><span><strong class="text-white">GY & Hand Disruption:</strong> The <strong class="text-accent">Mathmech</strong> engine adds <strong class="text-accent">Mathmech Superfactorial</strong>, which can remove threats from the field, GY, and hand.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Strategic Analysis</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 flex items-center"><i class="fas fa-angle-double-up mr-2"></i>Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-white">Extremely High Ceiling:</strong> Can produce one of the most oppressive end boards in the game.</li>
+                        <li><strong class="text-white">Mid-Combo Resilience:</strong> <strong class="text-accent">Cynet Codec</strong> generates enough resources to play through multiple interruptions.</li>
+                        <li><strong class="text-white">Powerful OTK Potential:</strong> Boss monsters like <strong class="text-accent">Neo Tempest Terahertz</strong> can end the game in a single Battle Phase.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center"><i class="fas fa-angle-double-down mr-2"></i>Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-white">Fragile Choke Points:</strong> Vulnerable to specific hand traps like <strong class="text-accent">Droll & Lock Bird</strong> and <strong class="text-accent">Nibiru</strong>.</li>
+                        <li><strong class="text-white">High Complexity:</strong> Long, non-linear combo lines demand significant pilot skill and matchup knowledge.</li>
+                        <li><strong class="text-white">Engine Requirements:</strong> Can draw inconsistent hands due to the need for multiple engines and one-of combo pieces.</li>
+                    </ul>
+                </div>
+                <!-- Alliances -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-sky-400 mb-4 flex items-center"><i class="fas fa-project-diagram mr-2"></i>Forging Alliances</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-white">Code Talker Engine:</strong> A mandatory pairing. Required to activate <strong class="text-accent">Cynet Codec</strong> and generate the resources needed to Link climb.</li>
+                        <li><strong class="text-white">Mathmech Engine:</strong> The most competitive framework, offering a more resilient starter (<strong class="text-accent">Mathmech Circular</strong>) and additional disruption.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="container mx-auto px-4 py-12 max-w-6xl">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            
+            <div class="bg-gradient-to-br from-blue-800/20 to-cyan-900/20 backdrop-blur-sm rounded-xl p-6 border border-blue-500/30">
+                <div class="space-y-4">
+                    <div class="bg-yellow-600/20 border border-yellow-500/30 rounded-lg p-4">
+                        <h3 class="text-yellow-400 font-bold text-lg mb-2">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>LIMITED CARDS (1 Copy)
+                        </h3>
+                        <ul class="space-y-2">
+                            <li class="text-yellow-300">
+                                <span class="font-bold">Nibiru, the Primal Being</span> - Major threat to combo-heavy strategies
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-green-600/20 border border-green-500/30 rounded-lg p-4">
+                        <h3 class="text-green-400 font-bold text-lg mb-2">
+                            <i class="fas fa-check-circle mr-2"></i>IMPACT ANALYSIS
+                        </h3>
+                        <p class="text-green-300">
+                            <strong>Current Status:</strong> Firewall strategies face moderate banlist impact. Nibiru being limited to 1 reduces but doesn't eliminate the threat to link combo chains that require multiple summons. The deck benefits from playing around the 5-summon threshold.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- FIREWALL BANNER ANIMATION ---
+            const canvas = document.getElementById('firewall-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let cols;
+                let ypos;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                    cols = Math.floor(canvas.width / 20);
+                    ypos = Array(cols).fill(0);
+                };
+
+                const matrix = () => {
+                    ctx.fillStyle = 'rgba(10, 14, 26, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = '#67e8f9';
+                    ctx.font = '15pt monospace';
+
+                    ypos.forEach((y, ind) => {
+                        const text = String.fromCharCode(Math.random() * 128);
+                        const x = ind * 20;
+                        ctx.fillText(text, x, y);
+
+                        if (y > 100 + Math.random() * 10000) {
+                            ypos[ind] = 0;
+                        } else {
+                            ypos[ind] = y + 20;
+                        }
+                    });
+                };
+
+                setCanvasSize();
+                const intervalId = setInterval(matrix, 50);
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = ''; // Clear placeholder
+                        container.appendChild(img);
+                        container.classList.remove('card-placeholder');
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    // Placeholder remains if fetch fails
+                }
+            }
+            
+            // --- LOAD IMAGES ---
+            const cardsToLoad = {
+                'defenser-img': 'Firewall Defenser',
+                'phantom-img': 'Firewall Phantom',
+                'codec-img': 'Cynet Codec',
+                'singularity-img': 'Firewall Dragon Singularity',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K9 Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0F1A; /* Deep Navy Blue */
+            color: #E0EFFF; /* Light Cyan */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1A2035; /* Dark Slate Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3A4A7A; /* Muted Indigo Border */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(100, 180, 255, 0.15);
+        }
+        .combo-step-card {
+            background-color: #202A44; /* Slightly lighter slate */
+            border: 1px solid #4A5A8A;
+        }
+        .pro-con-card {
+            background-color: #202A44;
+            border: 1px solid #4A5A8A;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #202A44;
+            color: #A0B0E0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 2px dashed #3A4A7A;
+        }
+        .text-accent {
+            color: #64B4FF; /* Bright Sky Blue */
+        }
+        .arrow-color {
+            color: #64B4FF;
+        }
+        .heading-underline {
+            border-bottom: 3px solid #64B4FF;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #64B4FF;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #64B4FF;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #A0CFFF;
+            text-shadow: 0 0 5px #64B4FF;
+        }
+
+        /* --- K9 ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            height: 140px;
+            background-color: #0A0F1A;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            border: 2px solid #3A4A7A;
+        }
+        #hud-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(10, 15, 26, 0.1) 0%, rgba(10, 15, 26, 0.8) 100%);
+            z-index: 2;
+        }
+        .banner-content {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+        }
+        .banner-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.75rem;
+            color: #E0EFFF;
+            text-shadow: 0 0 8px rgba(100, 180, 255, 0.7), 0 0 15px rgba(100, 180, 255, 0.5);
+        }
+        .banner-subtitle {
+            font-size: 1.1rem;
+            color: #A0B0E0;
+            letter-spacing: 1px;
+        }
+        @media (max-width: 768px) {
+            .banner-header { height: 120px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.9rem; }
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Animated Banner -->
+        <header class="banner-header">
+            <canvas id="hud-banner"></canvas>
+            <div class="banner-content">
+                <h1 class="banner-title">K9 ARCHETYPE</h1>
+                <p class="banner-subtitle">OPERATIONAL BRIEFING</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The K9 archetype is a tactical, control-oriented strategy centered on disrupting the opponent's plays and summoning powerful Rank 5 Xyz Monsters. The core philosophy of the deck is to punish modern gameplay, particularly the use of "hand traps." By using an opponent's own interruptions as a trigger, the 
+                    <a href="https://yugipedia.com/wiki/K9" target="_blank" class="lore-link">K9 unit</a>
+                    can deploy its operatives from the hand or Graveyard, turning a defensive move by the opponent into an offensive advantage for the K9 player.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center">The K9 Unit: Operatives & Equipment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Main Deck Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-secret text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Main Deck Operatives</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-accent mb-1">K9-17 Izuna (The Pointman)</h4>
+                            <p class="text-sm text-blue-200">The primary reactive starter. Special Summons itself from the hand when the opponent activates a hand/GY monster effect, then sends any "K9" card from Deck to GY.</p>
+                        </div>
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-accent mb-1">K9-ØØ Lupis (The Vanguard)</h4>
+                            <p class="text-sm text-blue-200">A key extender that summons itself from hand or GY. Grants targeting protection to Xyz monsters using it as material and enables Xyz Summons on the opponent's turn.</p>
+                        </div>
+                         <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-accent mb-1">K9-04 Noroi (The One-Card Combo)</h4>
+                            <p class="text-sm text-blue-200">A true one-card starter. On Normal Summon, it Special Summons another "K9" monster directly from the Deck, providing instant access to a Rank 5 Xyz Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Tactical Support</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-accent mb-1">"A Case for K9" (Continuous Spell)</h4>
+                            <p class="text-sm text-blue-200">The essential searcher for the archetype. On activation, it adds any "K9" monster from Deck to hand.</p>
+                        </div>
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-accent mb-1">K9-X Forced Release (Quick-Play Spell)</h4>
+                            <p class="text-sm text-blue-200">A powerful disruption tool. It ranks up a Rank 5 Xyz monster into another "K9" Xyz monster and then destroys a card on the field.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center">Standard Operating Procedure: Reactive Combo</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">This sequence demonstrates the archetype's signature play, turning an opponent's hand trap into a powerful board presence during their own turn.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="izuna-img-container" class="card-image-container flex-shrink-0 card-placeholder">K9-17 Izuna</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1A2035] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Trigger & Summon</h3>
+                            </div>
+                            <p class="text-blue-200">When the opponent activates a monster effect in their hand (e.g., Ash Blossom), chain <strong class="text-accent">K9-17 Izuna's</strong> effect to Special Summon it from your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-chevron-down text-2xl arrow-color animate-fadeIn"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="lupis-img-container" class="card-image-container flex-shrink-0 card-placeholder">K9-ØØ Lupis</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1A2035] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Mill & Revive</h3>
+                            </div>
+                            <p class="text-blue-200">Izuna's on-summon effect activates. Send <strong class="text-accent">K9-ØØ Lupis</strong> from Deck to GY. Then, activate Lupis's effect in the GY to Special Summon itself.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-2">
+                     <i class="fas fa-chevron-down text-2xl arrow-color animate-fadeIn"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ripper-img-container" class="card-image-container flex-shrink-0 card-placeholder">K9-17 "Ripper"</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1A2035] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Xyz Summon & Control</h3>
+                            </div>
+                            <p class="text-blue-200">With two Level 5 monsters, immediately Xyz Summon <strong class="text-accent">K9-17 "Ripper"</strong>. It now has targeting protection (from Lupis) and can negate another hand/GY effect.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center">The Ideal End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mx-auto max-w-4xl">
+                <!-- K9-17 "Ripper" -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">K9-17 "Ripper"</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ripper-endboard-img-container" class="card-image-container card-placeholder">K9-17 "Ripper"</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">The Interrogator:</strong> Searches any "K9" card and can negate an opponent's hand or Graveyard monster effect.</li>
+                        <li><strong class="text-accent">Targeting Protection:</strong> Becomes immune to targeting when made with K9-ØØ Lupis.</li>
+                    </ul>
+                </div>
+                <!-- K9-X "Werewolf" -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">K9-X "Werewolf"</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="werewolf-img-container" class="card-image-container card-placeholder">K9-X "Werewolf"</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">The Alpha:</strong> A powerful Rank 9 summoned via Quick-Play Spells.</li>
+                        <li><strong class="text-accent">Hand Rip:</strong> During the opponent's turn, it can look at their hand and banish one card, providing one of the strongest forms of disruption.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Anti-Hand Trap:</strong> Directly counters and benefits from one of the most common forms of interaction in the modern game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400">High Consistency:</strong> Multiple one-card starters and searchers ensure reliable access to the core engine.</li>
+                         <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-green-400">Flexible Disruption:</strong> The "Rank-Up Toolbox" allows for adaptive responses to various threats on the opponent's turn.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Passive Play:</strong> Can struggle against decks that don't rely on hand/GY monster effects, such as Trap-based strategies.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Floodgate Vulnerability:</strong> Highly susceptible to cards like Skill Drain and Dimensional Barrier that shut down Xyz summoning or monster effects.</li>
+                        <li><span class="con-icon"><i class="fas fa-bomb"></i></span> <strong class="text-red-400">Board Breakers:</strong> Vulnerable to non-monster effect board wipes like Evenly Matched and Dark Ruler No More.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">Synergies & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-blue-400">Vanquish Soul:</strong> The premier hybrid variant. K9 attributes fuel VS effects, while VS provides proactive plays the K9 engine lacks.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-blue-400">Crystron:</strong> A powerful grind-game variant that uses both archetypes' recursion to build resilient, multi-negate boards.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-robot"></i></span> <strong class="text-blue-400">Cyber Dragon:</strong> An aggressive, OTK-focused build that uses the K9 engine to more consistently summon Cyber Dragon Infinity.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The K9 archetype operates at full power in the current TCG format:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li class="text-gray-400 italic">No K9 archetype cards are currently forbidden</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All K9 monsters (3 copies each)</li>
+                            <li>"A Case for K9" and support spells</li>
+                            <li>K9-X Forced Release</li>
+                            <li>All K9 Xyz monsters</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With no banlist restrictions, K9 maintains maximum flexibility and consistency. The archetype can run optimal ratios of all operatives and tactical support, providing reliable anti-hand trap strategies and meta adaptability.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- K9 HUD BANNER ANIMATION ---
+            const canvas = document.getElementById('hud-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                let scanLineY = 0;
+                let scanLineSpeed = 0.5;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 1.5 + 0.5;
+                        this.speedX = (Math.random() * 0.4) - 0.2;
+                        this.speedY = (Math.random() * 0.4) - 0.2;
+                        this.color = `rgba(100, 180, 255, ${Math.random() * 0.5 + 0.2})`;
+                    }
+
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw particles
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+
+                    // Draw subtle grid
+                    ctx.strokeStyle = 'rgba(58, 74, 122, 0.2)';
+                    ctx.lineWidth = 0.5;
+                    for (let i = 0; i < canvas.width; i += 20) {
+                        ctx.beginPath();
+                        ctx.moveTo(i, 0);
+                        ctx.lineTo(i, canvas.height);
+                        ctx.stroke();
+                    }
+                    for (let i = 0; i < canvas.height; i += 20) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, i);
+                        ctx.lineTo(canvas.width, i);
+                        ctx.stroke();
+                    }
+
+                    // Draw scan line
+                    scanLineY += scanLineSpeed;
+                    if (scanLineY > canvas.height) scanLineY = 0;
+                    ctx.strokeStyle = 'rgba(100, 180, 255, 0.5)';
+                    ctx.shadowColor = '#64B4FF';
+                    ctx.shadowBlur = 10;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(0, scanLineY);
+                    ctx.lineTo(canvas.width, scanLineY);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+
+
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- SCRIPT FOR CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'izuna-img-container': 'K9-17 Izuna',
+                'lupis-img-container': 'K9-ØØ Lupis',
+                'ripper-img-container': 'K9-17 "Ripper"',
+                'ripper-endboard-img-container': 'K9-17 "Ripper"',
+                'werewolf-img-container': 'K9-X "Werewolf"'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

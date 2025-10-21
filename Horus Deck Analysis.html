@@ -1,0 +1,553 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horus Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Dark charcoal, like the inside of a tomb */
+            color: #f5eeda; /* Parchment/sand color */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2a24; /* Dark stone */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+            border: 1px solid #4a4438; /* Stone border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #38352e;
+            border: 1px solid #5a5347;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #38352e;
+            color: #f5eeda;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #38352e;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fcd34d; } /* Gold */
+        .arrow-color { color: #eab308; } /* Darker Gold */
+        .heading-underline {
+            border-bottom: 2px solid #eab308;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fcd34d;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fcd34d;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- New Horus Banner Styles --- */
+        .banner {
+            position: relative;
+            height: 140px;
+            background: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #4a4438;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80"><path fill="%23eab308" fill-opacity="0.05" d="M40 0L50 10L40 20L30 10Z M0 40L10 50L20 40L10 30Z M40 40L50 50L40 60L30 50Z M20 20L30 30L40 20L30 10Z M60 20L70 30L80 20L70 10Z M20 60L30 70L40 60L30 50Z M60 60L70 70L80 60L70 50Z M40 80L50 70L40 60L30 70Z"></path></svg>');
+            z-index: 1;
+        }
+        
+        .banner-content {
+            z-index: 3;
+            position: relative;
+        }
+        
+        .banner-title {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(252, 211, 77, 0.7), 0 0 20px rgba(234, 179, 8, 0.5);
+            animation: title-glow 4s ease-in-out infinite alternate;
+        }
+        .banner-subtitle {
+            font-size: 1.125rem;
+            color: #f5eeda;
+        }
+        
+        .sand-particles {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        .particle {
+            position: absolute;
+            background: #fcd34d;
+            border-radius: 50%;
+            opacity: 0;
+            animation: rise 10s infinite linear;
+        }
+
+        @keyframes title-glow {
+            from { text-shadow: 0 0 8px rgba(252, 211, 77, 0.6), 0 0 15px rgba(234, 179, 8, 0.4); }
+            to { text-shadow: 0 0 18px rgba(252, 211, 77, 0.8), 0 0 35px rgba(234, 179, 8, 0.6); }
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(0); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-140px); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 120px; }
+            .banner-title { font-size: 2.25rem; }
+            .banner-subtitle { font-size: 1rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- New Horus Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="sand-particles" id="sand-particles"></div>
+                <div class="banner-content">
+                    <h1 class="banner-title">Horus</h1>
+                    <p class="banner-subtitle">A Strategic Deep Dive into the Modern Pharaoh's Engine</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">A New Dynasty for an Old King</h2>
+                <p class="text-yellow-100">
+                    The modern <strong class="text-accent font-bold">Horus</strong> archetype, introduced in <strong class="text-accent font-bold">Age of Overlord</strong>, represents a complete conceptual and strategic reimagining of the classic "Horus the Black Flame Dragon". This new dynasty functions as a compact, Graveyard-centric, and relentlessly recursive engine. Its core identity is to rapidly deploy multiple Level 8 monsters from the Graveyard, providing a powerful and flexible foundation for a wide array of Extra Deck strategies, all thanks to the indispensable Continuous Spell, <strong class="text-accent font-bold">King's Sarcophagus</strong>, and the might of the 
+                    <a href="https://yugipedia.com/wiki/Four_Sons_of_Horus" target="_blank" class="lore-link">four sons of Horus</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Royal Court Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Royal Court: Core Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-ankh text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Sons of Horus</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Imsety, Glory of Horus</h4>
+                            <p class="text-sm text-yellow-100">The prime minister and primary starter. It sends itself and another card from hand to GY to search "King's Sarcophagus" and provides non-targeting removal.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Duamutef, Blessing of Horus</h4>
+                            <p class="text-sm text-yellow-100">The draw engine. Its triggered effect allows you to draw cards, refueling your hand for longer combos or grind games.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hapi, Guidance of Horus</h4>
+                            <p class="text-sm text-yellow-100">The recursion specialist. It can recycle key cards from either Graveyard or the banished pile, providing critical resource loops.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Qebehsenuef, Protection of Horus</h4>
+                            <p class="text-sm text-yellow-100">The royal guard. Its triggered effect protects all of your Horus monsters from being targeted by attacks or card effects for the turn.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells/Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Pharaoh's Decree</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">King's Sarcophagus</h4>
+                            <p class="text-sm text-yellow-100">The heart of the entire engine. This Continuous Spell protects your Horus monsters, sends them from Deck to GY, and enables their revival.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Canopic Protector</h4>
+                             <p class="text-sm text-yellow-100">A Continuous Trap that provides reactive summons during the opponent's turn and can reset itself from the GY.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Horus the Black Flame Deity</h4>
+                             <p class="text-sm text-yellow-100">The ultimate boss monster. A powerful finisher that can be Special Summoned from the hand and wipe the entire field of monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Engine's Blueprint: The One-Card Starter</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough shows how one card, <strong class="text-accent font-bold">Imsety, Glory of Horus</strong>, can initiate the entire engine's explosive plays.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="imsety-img-container" class="card-image-container flex-shrink-0 card-placeholder">Imsety, Glory of Horus</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2c2a24] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Search</h3>
+                            </div>
+                            <p class="text-yellow-100">Activate <strong class="text-accent font-bold">Imsety's</strong> effect in hand. Send itself and another card to the GY to add <strong class="text-accent font-bold">King's Sarcophagus</strong> from your Deck to hand, then draw 1 card.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sarcophagus-img-container" class="card-image-container flex-shrink-0 card-placeholder">King's Sarcophagus</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2c2a24] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Setup</h3>
+                            </div>
+                            <p class="text-yellow-100">Activate <strong class="text-accent font-bold">King's Sarcophagus</strong>. Use its effect up to four times, sending cards from your hand to the GY to mill all four <strong class="text-accent font-bold">Sons of Horus</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="resurrection-img-container" class="card-image-container flex-shrink-0 card-placeholder">Four Sons of Horus on Field</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2c2a24] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Resurrection</h3>
+                            </div>
+                            <p class="text-yellow-100">With the Sarcophagus active, use the effects of all four <strong class="text-accent font-bold">Sons of Horus</strong> in your GY to Special Summon them, instantly creating a board of four Level 8 monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Constructing the Endboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto max-w-5xl">
+                <!-- Hope Harbinger -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">Hope Harbinger</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="hope-harbinger-img-container" class="card-image-container card-placeholder">Number 38: Hope Harbinger Dragon Titanic Galaxy</div>
+                    </div>
+                    <p class="text-sm text-center text-yellow-100">A cornerstone Rank 8 that provides a powerful, once-per-turn Spell negate.</p>
+                </div>
+                <!-- Photon Lord -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">Photon Lord</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="photon-lord-img-container" class="card-image-container card-placeholder">Number 90: Galaxy-Eyes Photon Lord</div>
+                    </div>
+                    <p class="text-sm text-center text-yellow-100">Offers crucial disruption with a Quick Effect to negate a monster effect.</p>
+                </div>
+                <!-- I:P Masquerena -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">I:P Masquerena</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ip-masquerena-img-container" class="card-image-container card-placeholder">I:P Masquerena</div>
+                    </div>
+                    <p class="text-sm text-center text-yellow-100">Enables a Link Summon on the opponent's turn for reactive plays into monsters like <strong class="text-accent">S:P Little Knight</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Explosive Potential:</strong> Can summon up to four Level 8 monsters from a single spell.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">Recursion & Resilience:</strong> The Sons can be revived every turn, making the board difficult to clear permanently.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400 font-bold">Compact & Flexible:</strong> Requires a very small main deck footprint, making it an ideal engine for hybrid strategies.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400 font-bold">Centralized Choke Point:</strong> The entire engine is critically dependent on resolving and protecting <strong class="text-accent font-bold">King's Sarcophagus</strong>.</li>
+                                                <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Graveyard Hate:</strong> Highly susceptible to floodgates like <strong class="text-accent font-bold">Abyss Dweller</strong> (<span class="text-red-300">currently banned</span>) or <strong class="text-accent font-bold">Dimension Shifter</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-random"></i></span> <strong class="text-red-400 font-bold">Hybrid Inconsistency:</strong> Can suffer from drawing incongruous hands in hybrid builds, leading to bricking.</li>
+                    </ul>
+                </div>
+                <!-- Forging Alliances -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Forging Alliances</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Tearlaments:</strong> Discarding Tearlaments monsters for Sarcophagus triggers their fusion effects.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-ghost"></i></span> <strong class="text-accent font-bold">Phantom Knights:</strong> Discarding PK cards starts their GY-based combo chains.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent font-bold">Synchro Variants:</strong> Provides an endless supply of Level 8 non-Tuner material for high-level Synchro Summons.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- HORUS BANNER SAND PARTICLE ANIMATION ---
+            const particleContainer = document.getElementById('sand-particles');
+            if(particleContainer) {
+                const particleCount = 50;
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    const size = Math.random() * 3 + 1;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.bottom = `${-size}px`;
+                    const animationDuration = Math.random() * 8 + 5; // 5 to 13 seconds
+                    const animationDelay = Math.random() * 10; // 0 to 10 seconds
+                    particle.style.animationDuration = `${animationDuration}s`;
+                    particle.style.animationDelay = `${animationDelay}s`;
+                    particleContainer.appendChild(particle);
+                }
+            }
+
+            // --- EXISTING SCRIPT FOR CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                // A special case for the "Resurrection" image, which is just a placeholder concept
+                if (cardName === 'Four Sons of Horus on Field') {
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                    return;
+                }
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'imsety-img-container': 'Imsety, Glory of Horus',
+                'sarcophagus-img-container': 'King\'s Sarcophagus',
+                'resurrection-img-container': 'Four Sons of Horus on Field',
+                'hope-harbinger-img-container': 'Number 38: Hope Harbinger Dragon Titanic Galaxy',
+                'photon-lord-img-container': 'Number 90: Galaxy-Eyes Photon Lord',
+                'ip-masquerena-img-container': 'I:P Masquerena'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

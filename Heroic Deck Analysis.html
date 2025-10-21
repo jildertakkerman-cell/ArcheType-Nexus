@@ -1,0 +1,536 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroic Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a0f0f; /* Deep, dark brownish-red */
+            color: #f5e6ca; /* Parchment/Light Gold */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #3b2020; /* Dark Red-Brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #8c4a4a; /* Muted Red Border */
+        }
+        .combo-step-card {
+            background-color: #4a2a2a;
+            border: 1px solid #a36b6b;
+        }
+        .pro-con-card {
+            background-color: #4a2a2a;
+            border: 1px solid #a36b6b;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3b2020;
+            color: #f5e6ca;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b2020;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Gold */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            /* Brushed metal / weathered banner effect */
+            background: 
+                linear-gradient(rgba(26, 15, 15, 0.7), rgba(26, 15, 15, 0.7)),
+                linear-gradient(90deg, #3b2020 0%, #5a3a3a 50%, #3b2020 100%);
+            background-size: cover;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 2px solid #8c4a4a;
+        }
+
+        .banner-title {
+            font-family: 'Cinzel', serif;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .ember-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .ember {
+            position: absolute;
+            background-color: #facc15;
+            border-radius: 50%;
+            opacity: 0;
+            animation: drift 7s infinite ease-in-out;
+            box-shadow: 0 0 5px #facc15, 0 0 10px #fca5a5;
+        }
+
+        @keyframes drift {
+            0% {
+                transform: translateY(110%) translateX(0) scale(1);
+                opacity: 0;
+            }
+            20% {
+                 opacity: 0.8;
+            }
+            80% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-10%) translateX(calc(10px * (2 * (0.5 - var(--x-rand))))) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <div class="ember-container"></div>
+            <h1 class="banner-title text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Heroic</h1>
+            <p class="text-lg md:text-xl text-yellow-200">An In-Depth Analysis of the Warrior's Path to Victory</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-yellow-100">
+                    The <strong class="text-accent font-bold">Heroic</strong> archetype is a specialized cadre of EARTH Warrior monsters defined by aggressive, battle-centric gameplay. Its core strategy is to function as a "go-second" deck, aiming to achieve a One-Turn Kill (OTK) by leveraging effects that dramatically increase the ATK of its monsters to lethal levels. The deck's identity has evolved from reactive battle interactions to a highly synergistic engine focused on executing a single, decisive final blow with its powerful Xyz monsters. A unique feature is the "500 LP" mechanic, transforming Life Points into a strategic resource to unlock high-reward effects on many <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Heroic&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=" target="_blank" class="lore-link">Heroic cards</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Challenger's Armory Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Challenger's Armory</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                The "Heroic Challenger" monsters form the backbone of the Main Deck, initiating combos and providing the materials necessary for their "Heroic Champion" commanders.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-khanda text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Vanguard: Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Heroic Challenger - Thousand Blades</h4>
+                            <p class="text-sm text-yellow-100">The deck's premier starter. Discards a "Heroic" card to Special Summon any "Heroic" monster from the Deck, initiating the main combo.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Heroic Challenger - Morning Star</h4>
+                            <p class="text-sm text-yellow-100">A powerful extender summoned by Thousand Blades. On summon, it searches for a "Heroic" Spell/Trap, typically "Heroic Chance" for the OTK.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Heroic Challenger - Assault Halberd</h4>
+                             <p class="text-sm text-yellow-100">An ideal go-second card that Special Summons itself. Inflicting battle damage allows it to search any "Heroic" card from the deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Call to Arms: Essential Spells</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Heroic Chance</h4>
+                            <p class="text-sm text-yellow-100">The primary OTK enabler. This Spell targets one "Heroic" monster and doubles its ATK for the turn, pushing its damage to game-ending levels.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Heroic Envoy</h4>
+                             <p class="text-sm text-yellow-100">The archetype's dedicated searcher, adding any "Heroic" monster from Deck to hand. It also has a recovery effect from the Graveyard at 500 LP.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Heroic Call</h4>
+                             <p class="text-sm text-yellow-100">A versatile extender that Special Summons a Warrior from the hand or Graveyard, providing material for Xyz Summons.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Claivesolish OTK</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how a two-card hand can lead to a game-winning assault.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="thousand-blades-img" class="card-image-container flex-shrink-0 card-placeholder">Heroic Challenger - Thousand Blades</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#3b2020] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Assault</h3>
+                            </div>
+                            <p class="text-yellow-100">Normal Summon <strong class="text-accent font-bold">Heroic Challenger - Thousand Blades</strong> and activate its effect, discarding another "Heroic" card to Special Summon <strong class="text-accent font-bold">Heroic Challenger - Morning Star</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="morning-star-img" class="card-image-container flex-shrink-0 card-placeholder">Heroic Challenger - Morning Star</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#3b2020] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Gather Your Arms</h3>
+                            </div>
+                            <p class="text-yellow-100">On summon, <strong class="text-accent font-bold">Morning Star's</strong> effect activates. Add the Spell Card <strong class="text-accent font-bold">Heroic Chance</strong> from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="claivesolish-img-combo" class="card-image-container flex-shrink-0 card-placeholder">Heroic Champion - Claivesolish</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#3b2020] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon the Champion</h3>
+                            </div>
+                            <p class="text-yellow-100">Overlay your two Level 4 monsters to Xyz Summon <strong class="text-accent font-bold">Heroic Champion - Claivesolish</strong>. Enter the Battle Phase, use its effect to reduce your LP to 500 and double its ATK to 5000. Then, activate <strong class="text-accent font-bold">Heroic Chance</strong> to double its ATK again to 10,000.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Final Endboard: The Unstoppable Juggernauts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Claivesolish -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Heroic Champion - Claivesolish</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="claivesolish-img" class="card-image-container card-placeholder">Heroic Champion - Claivesolish</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent font-bold">Primary OTK Enabler:</strong> Reduces your LP to 500 to double a Heroic monster's ATK.</li>
+                        <li><strong class="text-accent font-bold">Battle Dominance:</strong> Gains ATK equal to an opponent's monster it battles, ensuring victory in combat.</li>
+                    </ul>
+                </div>
+                <!-- Excalibur -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Heroic Champion - Excalibur</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="excalibur-img" class="card-image-container card-placeholder">Heroic Champion - Excalibur</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent font-bold">Classic Finisher:</strong> Detaches 2 materials to double its original ATK to 4000.</li>
+                        <li><strong class="text-accent font-bold">Simple & Effective:</strong> Combined with Heroic Chance, it can reach 8000 ATK for a swift OTK.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Consistency:</strong> The deck has multiple one-card starters and searchers, leading to reliable combos.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">Explosive OTK Potential:</strong> Capable of generating immense ATK values to end the game in a single Battle Phase.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400 font-bold">Generic Warrior Synergy:</strong> Can easily incorporate powerful generic Warrior support cards.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">"Glass Cannon" Nature:</strong> The strategy is linear and predictable, making it vulnerable to well-timed disruption.</li>
+                        <li><span class="con-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-red-400 font-bold">Limited Going-First Options:</strong> Struggles to build a resilient board when forced to take the first turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Vulnerable to Hand Traps:</strong> Key starters are susceptible to cards like Ash Blossom & Joyous Spring, which can end the turn.</li>
+                    </ul>
+                </div>
+                <!-- External Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Isolde Engine:</strong> <span class="text-red-400 text-sm">(currently banned)</span> Provides a powerful, albeit resource-intensive, way to start combos and extend plays.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-star"></i></span> <strong class="text-accent font-bold">Utopia Double Package:</strong> A compact, alternative OTK engine that can be easily included in the Extra Deck.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- BANNER EMBER ANIMATION ---
+            const emberContainer = document.querySelector('.ember-container');
+            if (emberContainer) {
+                const createEmber = () => {
+                    const ember = document.createElement('div');
+                    ember.className = 'ember';
+                    const size = Math.random() * 4 + 2;
+                    ember.style.width = `${size}px`;
+                    ember.style.height = `${size}px`;
+                    ember.style.left = `${Math.random() * 100}%`;
+                    ember.style.setProperty('--x-rand', Math.random());
+                    const duration = Math.random() * 5 + 5; // 5 to 10 seconds
+                    ember.style.animationDuration = `${duration}s`;
+                    ember.style.animationDelay = `${Math.random() * 5}s`;
+                    emberContainer.appendChild(ember);
+
+                    setTimeout(() => {
+                        ember.remove();
+                    }, (duration * 1000) + 5000); // Remove after animation + delay
+                };
+                setInterval(createEmber, 200);
+            }
+
+            // --- CARD IMAGE FETCHING ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'thousand-blades-img': 'Heroic Challenger - Thousand Blades',
+                'morning-star-img': 'Heroic Challenger - Morning Star',
+                'claivesolish-img-combo': 'Heroic Champion - Claivesolish',
+                'claivesolish-img': 'Heroic Champion - Claivesolish',
+                'excalibur-img': 'Heroic Champion - Excalibur'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onomat Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1d; /* Dark charcoal background */
+            color: #f0f0f0;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2c34; /* Dark gray card background */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 2px solid #444;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+            border-color: #FFD700;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #383842;
+            border: 1px solid #555;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-placeholder {
+            background-color: #4a4a58;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 2px dashed #FFD700;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #FFD700; } /* Gold accent */
+        .text-secondary-accent { color: #00A9FF; } /* Electric Blue */
+        .arrow-color { color: #FFD700; }
+        .heading-font {
+            font-family: 'Bangers', cursive;
+            letter-spacing: 2px;
+            color: #FFD700;
+            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+        }
+        .lore-link {
+            color: #00A9FF;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 2px dotted #00A9FF;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #00A9FF;
+        }
+
+        /* --- ONOMAT BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a1d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 2px solid #444;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(255, 215, 0, 0.2), transparent 40%),
+                radial-gradient(circle at 85% 75%, rgba(0, 169, 255, 0.2), transparent 40%);
+        }
+        #onomat-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+        .banner-content {
+            position: relative;
+            z-index: 2;
+        }
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Banner Section -->
+        <header class="banner-header text-center">
+            <canvas id="onomat-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="text-4xl md:text-6xl heading-font">ONOMAT ARCHETYPE</h1>
+                <p class="text-lg md:text-xl text-gray-300 mt-2">The Ultimate Xyz Summoning Engine!</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 heading-font">Executive Summary</h2>
+                <p class="text-gray-300 leading-relaxed">
+                    The "Onomat" archetype is a powerful and consistent collective of four distinct sub-archetypes: 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=gagaga&stype=1" target="_blank" class="lore-link">Gagaga</a>, 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=gogogo&stype=1" target="_blank" class="lore-link">Gogogo</a>, 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=dododo&stype=1" target="_blank" class="lore-link">Dododo</a>, and 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=zubaba&stype=1" target="_blank" class="lore-link">Zubaba</a>. 
+                    Rather than functioning as a standalone strategy, its primary purpose is to act as a highly synergistic engine for rapidly summoning Xyz Monsters, especially Rank 4 powerhouses. By bridging these four families with dedicated support, the Onomat strategy becomes a versatile toolkit for building formidable boards centered around the iconic "Utopia" monsters or other competitive Xyz-based strategies.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Roster Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center heading-font">The Core Roster</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Starters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-rocket text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Starters: Igniting the Engine</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-accent mb-1">Onomatopaira</h4>
+                            <p class="text-sm text-gray-300">The deck's premier search spell, allowing you to discard one card to add two different "Onomat" family monsters from your Deck to your hand.</p>
+                        </div>
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-accent mb-1">Utopic Onomatopoeia</h4>
+                            <p class="text-sm text-gray-300">The heart of the team, treated as a member of all four families. It enables explosive summons from the hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Extenders -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-project-diagram text-4xl text-secondary-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Extenders: Weaving the Web</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-secondary-accent mb-1">Zubababancho Gagagacoat</h4>
+                            <p class="text-sm text-gray-300">A key extender that special summons itself and can revive a "Gogogo" or "Dododo" monster from the Graveyard.</p>
+                        </div>
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-secondary-accent mb-1">Dodododwarf Gogogoglove</h4>
+                            <p class="text-sm text-gray-300">A versatile monster that can special summon another family member from hand or revive itself from the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center heading-font">Core Combo: The Utopia Line</h2>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="onomatopaira-img" class="card-image-container card-placeholder">Onomatopaira</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-accent text-black rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold text-white">Activate & Search</h3>
+                            </div>
+                            <p class="text-gray-300">Activate <strong class="text-accent">Onomatopaira</strong>. Discard one card to search for <strong class="text-secondary-accent">Utopic Onomatopoeia</strong> and <strong class="text-secondary-accent">Dodododwarf Gogogoglove</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center my-2"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="utopic-sage-img" class="card-image-container card-placeholder">ZS - Utopic Sage</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-accent text-black rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold text-white">Summon & Xyz</h3>
+                            </div>
+                            <p class="text-gray-300">Normal Summon <strong class="text-accent">Utopic Onomatopoeia</strong>. Use its effect to Special Summon <strong class="text-secondary-accent">Gogogoglove</strong>. Overlay both into <strong class="text-accent">ZS - Utopic Sage</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center my-2"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="dragonar-img" class="card-image-container card-placeholder">Number 99: Utopia Dragonar</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-accent text-black rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold text-white">Rank-Up & Dominate</h3>
+                            </div>
+                            <p class="text-gray-300">Use <strong class="text-accent">Utopic Sage's</strong> effect to summon <strong class="text-secondary-accent">ZS - Ascended Sage</strong> and search a Rank-Up-Magic spell. Use it to summon <strong class="text-accent">Number 99: Utopia Dragonar</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Typical End Board -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center heading-font">Typical End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="card p-6 text-center">
+                    <h3 class="text-xl font-bold text-accent mb-4">Number F0: Utopic Draco Future</h3>
+                    <div class="flex justify-center mb-4">
+                         <div id="draco-future-img" class="card-image-container card-placeholder">Number F0: Utopic Draco Future</div>
+                    </div>
+                    <p class="text-gray-300">Provides a powerful, non-targeting monster negate and can steal the negated monster permanently.</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <h3 class="text-xl font-bold text-accent mb-4">Number 38: Hope Harbinger</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="hope-harbinger-img" class="card-image-container card-placeholder">Number 38: Hope Harbinger Dragon Titanic Galaxy</div>
+                    </div>
+                    <p class="text-gray-300">Summoned by Utopia Dragonar, this monster provides a crucial Spell negate and protection for your board.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center heading-font">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><i class="fas fa-check-circle pro-icon mr-2"></i><strong class="text-green-300">High Consistency:</strong> Numerous one and two-card starters make the deck highly reliable.</li>
+                        <li><i class="fas fa-check-circle pro-icon mr-2"></i><strong class="text-green-300">Explosive Power:</strong> Capable of swarming the field to build imposing boards with multiple negates.</li>
+                        <li><i class="fas fa-check-circle pro-icon mr-2"></i><strong class="text-green-300">Flexibility:</strong> The engine can pivot between OTK strategies and control-oriented boards.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><i class="fas fa-times-circle con-icon mr-2"></i><strong class="text-red-300">Choke Points:</strong> Vulnerable to hand traps on key searchers like Onomatopaira.</li>
+                        <li><i class="fas fa-times-circle con-icon mr-2"></i><strong class="text-red-300">Graveyard Reliant:</strong> Many extenders rely on the Graveyard, making it weak to GY hate.</li>
+                        <li><i class="fas fa-times-circle con-icon mr-2"></i><strong class="text-red-300">Xyz-Lock:</strong> Many core cards lock you into only Xyz summoning from the Extra Deck.</li>
+                    </ul>
+                </div>
+                <!-- Tech/Hybrids -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">Hybrids & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><i class="fas fa-cogs neutral-icon mr-2"></i><strong class="text-blue-300">Ryzeal Engine:</strong> A competitively successful variant that uses the Onomat engine to fuel the powerful Ryzeal Xyz monsters.</li>
+                        <li><i class="fas fa-cogs neutral-icon mr-2"></i><strong class="text-blue-300">Gagagaga Girl (Xyz):</strong> Provides a toolbox to search any "Xyz" Spell/Trap, opening up unique strategies.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status -->
+        <section>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center heading-font">Current TCG Banlist Status</h2>
+            <div class="card p-6 bg-green-900 bg-opacity-30 border-green-500">
+                <div class="text-center mb-4">
+                     <i class="fas fa-check-circle text-5xl text-green-400"></i>
+                     <h3 class="text-2xl font-bold text-green-300 mt-2">Full Power!</h3>
+                </div>
+                <p class="text-gray-300 text-center leading-relaxed">
+                    The Onomat archetype is currently at <strong class="text-accent">full power</strong> in the TCG. All core "Onomat," "Gagaga," "Gogogo," "Dododo," and "Zubaba" cards are unlimited. This allows the engine to function with maximum consistency and power, giving pilots access to its entire arsenal of starters and extenders without restriction.
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ONOMAT CANVAS ANIMATION ---
+            const canvas = document.getElementById('onomat-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = canvas.width / 2;
+                        this.y = canvas.height / 2;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 4 + 1;
+                        this.radius = Math.random() * 3 + 1;
+                        this.life = Math.random() * 50 + 20;
+                        this.initialLife = this.life;
+                        const colors = ['#FFD700', '#00A9FF', '#FF00FF', '#FFFFFF'];
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                    }
+                    update() {
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed;
+                        this.life--;
+                        this.speed *= 0.98;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        const currentRadius = this.radius * (this.life / this.initialLife);
+                        // Ensure radius is not negative
+                        ctx.arc(this.x, this.y, Math.max(0, currentRadius), 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = Math.max(0, this.life / this.initialLife);
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function createBurst() {
+                    for(let i = 0; i < 30; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+                    particles = particles.filter(p => p.life > 0);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+
+                    if (Math.random() < 0.05) {
+                        createBurst();
+                    }
+                }
+                
+                setCanvasSize();
+                animate();
+                window.addEventListener('resize', setCanvasSize);
+            }
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'onomatopaira-img': 'Onomatopaira',
+                'utopic-sage-img': 'ZS - Utopic Sage',
+                'dragonar-img': 'Number 99: Utopia Dragonar',
+                'draco-future-img': 'Number F0: Utopic Draco Future',
+                'hope-harbinger-img': 'Number 38: Hope Harbinger Dragon Titanic Galaxy',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

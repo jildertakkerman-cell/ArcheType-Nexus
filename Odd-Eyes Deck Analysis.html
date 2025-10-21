@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odd-Eyes Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1f; /* Deep cosmic purple */
+            color: #e0e7ff; /* Light lavender-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(26, 23, 49, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a3a9a;
+            backdrop-filter: blur(5px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(39, 34, 76, 0.8);
+            border-color: #5c50b1;
+        }
+        .card-image-container {
+            flex-shrink: 0;
+        }
+        .card-placeholder {
+            background-color: #27224c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 150px;
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            border: 2px dashed #4a3a9a;
+        }
+        .text-accent-red { color: #ff5577; } /* Dichromatic red */
+        .text-accent-blue { color: #55aaff; } /* Dichromatic blue */
+        .heading-underline {
+            border-bottom: 2px solid;
+            border-image-slice: 1;
+            border-image-source: linear-gradient(to right, #ff5577, #55aaff);
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            background: linear-gradient(to right, #ff5577, #55aaff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .lore-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-image: linear-gradient(to right, #ff5577, #55aaff);
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-out;
+        }
+        .lore-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        /* --- Odd-Eyes Themed Animated Banner --- */
+        .banner-header {
+            position: relative;
+            height: 160px;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0c0a1f;
+            border: 1px solid #4a3a9a;
+        }
+        #banner-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-content {
+            z-index: 2;
+            text-align: center;
+        }
+        .banner-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow:
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 20px #55aaff,
+                0 0 30px #55aaff,
+                0 0 40px #ff5577,
+                0 0 50px #ff5577;
+        }
+        .banner-subtitle {
+            font-size: 1.125rem;
+            color: #e0e7ff;
+            margin-top: 0.5rem;
+        }
+
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(145deg, #2a2457, #1c183a);
+            color: white; border: 2px solid #7c6fe6; border-radius: 50%;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 20px rgba(124, 111, 230, 0.4);
+            transition: all 0.3s ease; text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 8px 30px rgba(124, 111, 230, 0.6);
+            border-color: #988eff;
+        }
+        .ygo-home-button i { font-size: 22px; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Banner -->
+        <header class="banner-header mb-10 md:mb-16">
+            <canvas id="banner-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="banner-title">Odd-Eyes</h1>
+                <p class="banner-subtitle">A Deep Dive into the Dichromatic Dragons</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold mb-4 heading-underline">Defining the Playstyle</h2>
+                <p class="text-lg">
+                    The Odd-Eyes archetype is a dynamic and complex force, representing a combo-centric Pendulum strategy renowned for its explosive, high-ceiling turns and access to a remarkably 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=odd-eyes&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=2&other=2&other=9&other=10&other=17" target="_blank" class="lore-link">versatile Extra Deck toolbox</a>.
+                    Its identity is flexible, often serving as the central chassis for a fusion of multiple archetypes like "Performapal," "Magician," and "Supreme King." At its core, Odd-Eyes can pivot between a "Vortex Control" approach, focusing on interruptions with Odd-Eyes Vortex Dragon, and an "OTK Turbo" strategy that leverages its swarming capabilities to end the duel in a single turn.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Engine -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8 heading-underline">The Core Engine: Mastering the Arc Pendulum Loop</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-red mb-3">The Lynchpin: Odd-Eyes Arc Pendulum Dragon</h3>
+                    <p>At the very center of the strategy lies <strong class="text-accent-blue">Odd-Eyes Arc Pendulum Dragon</strong>. Its Pendulum Effect is the engine's ignition: "If an 'Odd-Eyes' card(s) you control is destroyed by battle or card effect: You can Special Summon 1 'Odd-Eyes' monster from your hand, Deck, or GY." This transforms any self-destruction into a free Special Summon, forming the basis of the deck's most explosive plays.</p>
+                </div>
+                <div id="arc-pendulum-img-container" class="card-image-container w-48 mx-auto">
+                    <div class="card-placeholder">Odd-Eyes Arc Pendulum Dragon</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mt-8">
+                <div id="sky-iris-img-container" class="card-image-container w-48 mx-auto md:order-2">
+                    <div class="card-placeholder">Sky Iris</div>
+                </div>
+                <div class="card p-6 md:order-1">
+                    <h3 class="text-xl font-bold text-accent-red mb-3">The Catalyst: Sky Iris</h3>
+                    <p>The premier method for triggering Arc Pendulum Dragon is the Field Spell, <strong class="text-accent-blue">Sky Iris</strong>. Its effect to target and destroy another face-up card you control to search an "Odd-Eyes" card is the primary engine starter. This re-frames the deck's mechanics: destruction is not a cost but an activation condition for a far more powerful effect.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Arsenal: Key Cards -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8 heading-underline">The Arsenal: Key Cards & Their Roles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Searchers -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-blue mb-4">Search & Consistency</h3>
+                    <ul class="space-y-3">
+                        <li><strong class="text-accent-red">Performapal Skullcrobat Joker:</strong> Premier one-card starter, searching any Odd-Eyes, Performapal, or Magician monster.</li>
+                        <li><strong class="text-accent-red">Spiral Flame Strike:</strong> Versatile spell that either searches a Level 7 Odd-Eyes or acts as removal.</li>
+                        <li><strong class="text-accent-red">Odd-Eyes Revolution Dragon:</strong> Discards itself to search any Dragon Pendulum monster.</li>
+                    </ul>
+                </div>
+                <!-- Playmakers -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-blue mb-4">Main Deck Playmakers</h3>
+                     <ul class="space-y-3">
+                        <li><strong class="text-accent-red">Odd-Eyes Persona Dragon:</strong> A Scale 1 with a Quick Effect to negate an Extra Deck monster's effect.</li>
+                        <li><strong class="text-accent-red">Performapal Odd-Eyes Dissolver:</strong> The primary in-archetype Fusion enabler.</li>
+                        <li><strong class="text-accent-red">Performapal Odd-Eyes Synchron:</strong> The main Tuner, enabling access to powerful Synchro monsters.</li>
+                    </ul>
+                </div>
+                <!-- Extra Deck Toolbox -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-blue mb-4">Extra Deck Toolbox</h3>
+                     <ul class="space-y-3">
+                        <li><strong class="text-accent-red">Odd-Eyes Absolute Dragon:</strong> The linchpin Xyz monster that summons Vortex Dragon from the Extra Deck when sent to the GY.</li>
+                        <li><strong class="text-accent-red">Hieratic Seal of the Heavenly Spheres:</strong> A powerful Link-2 that provides interruption and summons Persona Dragon from the deck.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Configuration -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8 heading-underline">Optimal Endboard: Vortex Control</h2>
+            <p class="text-center mb-8 max-w-3xl mx-auto">The primary goal when going first is to construct a board with multiple layers of interaction. The "Absolute-to-Vortex" play is the most resource-efficient way to achieve this, converting two Level 7 monsters into a powerful Link monster and the deck's ultimate boss monster.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6 flex flex-col items-center">
+                    <h3 class="text-xl font-bold text-accent-red mb-4">Odd-Eyes Vortex Dragon</h3>
+                    <div id="vortex-dragon-img-container" class="card-image-container w-48 mb-4">
+                        <div class="card-placeholder">Odd-Eyes Vortex Dragon</div>
+                    </div>
+                    <p class="text-center">The premier boss monster, providing an omni-negate by shuffling a face-up Pendulum monster from the Extra Deck into the Main Deck. It also provides non-destructive removal upon being summoned.</p>
+                </div>
+                <div class="card p-6 flex flex-col items-center">
+                    <h3 class="text-xl font-bold text-accent-red mb-4">Hieratic Seal of the Heavenly Spheres</h3>
+                    <div id="hieratic-seal-img-container" class="card-image-container w-48 mb-4">
+                        <div class="card-placeholder">Hieratic Seal of the Heavenly Spheres</div>
+                    </div>
+                    <p class="text-center">A key enabler and interruption. As a Quick Effect, it can Tribute itself to bounce an opponent's card, then summons Odd-Eyes Persona Dragon from the deck for a monster negate.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8 heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 flex items-center gap-2"><i class="fas fa-check-circle"></i> Strengths</h3>
+                    <ul class="space-y-4 text-sm">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-rocket text-green-300 mt-1"></i>
+                            <div><strong class="text-green-300">High Ceiling & Explosiveness:</strong> Capable of creating massive boards with multiple interruptions or executing swift One-Turn Kills (OTKs).</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-sync-alt text-green-300 mt-1"></i>
+                            <div><strong class="text-green-300">Consistency:</strong> A deep pool of versatile and redundant searchers ensures reliable access to core engine components.</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-toolbox text-green-300 mt-1"></i>
+                            <div><strong class="text-green-300">Flexible Toolbox:</strong> The Extra Deck provides a wide range of answers, allowing pivots between control and aggressive strategies.</div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center gap-2"><i class="fas fa-times-circle"></i> Weaknesses</h3>
+                    <ul class="space-y-4 text-sm">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-ban text-red-300 mt-1"></i>
+                            <div><strong class="text-red-300">Anti-Pendulum Floodgates:</strong> Extremely vulnerable to cards like <strong class="text-accent-red">Anti-Spell Fragrance</strong> which prevent placing Pendulum Scales.</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-hand-paper text-red-300 mt-1"></i>
+                            <div><strong class="text-red-300">Key Choke Points:</strong> Relies on key Normal Summons and spells which can be negated by common hand traps like <strong class="text-accent-red">Effect Veiler</strong>.</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-lock text-red-300 mt-1"></i>
+                            <div><strong class="text-red-300">Extra Deck Locking:</strong> Cards that prevent Extra Deck access, such as <strong class="text-accent-red">Dimension Barrier</strong>, can be crippling.</div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Deck Building Philosophy -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2"><i class="fas fa-cogs"></i> Deck Building Philosophy</h3>
+                    <ul class="space-y-4 text-sm">
+                         <li class="flex items-start gap-2">
+                            <i class="fas fa-book-open text-blue-300 mt-1"></i>
+                            <div><strong class="text-blue-300">Core Ratios:</strong> Maximize consistency by running three copies of crucial engine pieces like Odd-Eyes Arc Pendulum Dragon and Spiral Flame Strike.</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-puzzle-piece text-blue-300 mt-1"></i>
+                            <div><strong class="text-blue-300">Synergistic Engines:</strong> Integrates seamlessly with "Performapal", "Magician", and "Supreme King" engines to enhance consistency and power.</div>
+                        </li>
+                         <li class="flex items-start gap-2">
+                            <i class="fas fa-tools text-blue-300 mt-1"></i>
+                            <div><strong class="text-blue-300">Tech Choices:</strong> Flexible slots are filled with hand traps and board-breakers to adapt to the specific metagame.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8 heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-center mb-6">The competitive viability of Odd-Eyes is heavily influenced by the Forbidden & Limited List. While the core archetype cards are currently unrestricted, the status of powerful generic Pendulum support can dramatically alter the deck's power level.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <div id="banlist-forbidden" class="pro-con-card p-4 rounded-lg">
+                        <h4 class="font-bold text-lg text-red-500 mb-2">Forbidden</h4>
+                        <ul class="space-y-1">
+                            <!-- Populated by script -->
+                        </ul>
+                    </div>
+                    <div id="banlist-limited" class="pro-con-card p-4 rounded-lg">
+                        <h4 class="font-bold text-lg text-yellow-500 mb-2">Limited</h4>
+                        <ul class="space-y-1">
+                            <!-- Populated by script -->
+                        </ul>
+                    </div>
+                    <div id="banlist-unlimited" class="pro-con-card p-4 rounded-lg">
+                        <h4 class="font-bold text-lg text-green-500 mb-2">Unlimited</h4>
+                        <ul class="space-y-1">
+                            <!-- Populated by script -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Banner Animation ---
+            const canvas = document.getElementById('banner-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const particleCount = 100;
+
+            function resizeCanvas() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            }
+
+            class Particle {
+                constructor(x, y) {
+                    this.x = x || Math.random() * canvas.width;
+                    this.y = y || Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.radius = Math.random() * 1.5 + 0.5;
+                    this.color = Math.random() > 0.5 ? '#ff5577' : '#55aaff';
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (const particle of particles) {
+                    particle.update();
+                    particle.draw();
+                }
+
+                ctx.globalAlpha = 0.4;
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+                        if (dist < 100) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = particles[i].color;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                 ctx.globalAlpha = 1.0;
+
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                initParticles();
+            });
+
+            resizeCanvas();
+            initParticles();
+            animate();
+
+            // --- Card Image and Banlist Fetching ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                try {
+                    const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`);
+                    const data = await response.json();
+                    const imageUrl = data.data[0].card_images[0].image_url;
+                    container.innerHTML = `<img src="${imageUrl}" alt="${cardName}" class="w-full h-auto rounded-lg shadow-lg">`;
+                } catch (error) {
+                    console.error(`Failed to fetch image for ${cardName}:`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+            
+            async function checkBanlist() {
+                const keyCards = [
+                    "Odd-Eyes Arc Pendulum Dragon",
+                    "Performapal Skullcrobat Joker",
+                    "Harmonizing Magician",
+                    "Heavymetalfoes Electrumite",
+                    "Astrograph Sorcerer",
+                    "Supreme King Dragon Darkwurm",
+                    "Supreme King Gate Zero",
+                    "Terraforming"
+                ];
+
+                const forbiddenList = document.querySelector('#banlist-forbidden ul');
+                const limitedList = document.querySelector('#banlist-limited ul');
+                const unlimitedList = document.querySelector('#banlist-unlimited ul');
+                
+                try {
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
+                    const banlistData = await response.json();
+                    
+                    const banStatus = {};
+                    banlistData.data.forEach(card => {
+                        if (keyCards.includes(card.name)) {
+                            banStatus[card.name] = card.banlist_info.ban_tcg;
+                        }
+                    });
+
+                    keyCards.forEach(cardName => {
+                        const status = banStatus[cardName] || 'Unlimited';
+                        const li = document.createElement('li');
+                        li.textContent = cardName;
+                        if (status === 'Forbidden') {
+                            forbiddenList.appendChild(li);
+                        } else if (status === 'Limited' || status === 'Semi-Limited') {
+                            li.textContent += ` (${status === 'Limited' ? '1' : '2'})`;
+                            limitedList.appendChild(li);
+                        } else {
+                            unlimitedList.appendChild(li);
+                        }
+                    });
+                     if (forbiddenList.children.length === 0) forbiddenList.innerHTML = '<li>None</li>';
+                     if (limitedList.children.length === 0) limitedList.innerHTML = '<li>None</li>';
+
+                } catch (error) {
+                    console.error('Failed to fetch banlist data:', error);
+                    forbiddenList.innerHTML = '<li>Error loading</li>';
+                    limitedList.innerHTML = '<li>Error loading</li>';
+                    unlimitedList.innerHTML = '<li>Error loading</li>';
+                }
+            }
+
+            const cardsToLoad = {
+                'arc-pendulum-img-container': 'Odd-Eyes Arc Pendulum Dragon',
+                'sky-iris-img-container': 'Sky Iris',
+                'vortex-dragon-img-container': 'Odd-Eyes Vortex Dragon',
+                'hieratic-seal-img-container': 'Hieratic Seal of the Heavenly Spheres',
+            };
+
+            for (const [id, name] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(name, id);
+            }
+            
+            checkBanlist();
+        });
+    </script>
+</body>
+</html>
+

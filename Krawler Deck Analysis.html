@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krawler Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a0d; /* Dark, earthy olive */
+            color: #f0f0e6;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%234a4a2a' fill-opacity='0.1' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.99 7.5V30L0 22.5zM15 0l12.99 7.5V22.5L15 15zM28 15L15 7.5V0L28 7.5zM14 49l14-7.5v-15L14 34zM3 41.5l10.99 6.34L25 41.5v-12.7L14 35.16zM0 34l12.99 7.5V49L0 41.5z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a2a1a; /* Darker, more muted olive */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #5a5a3a; /* Earthy green border */
+            backdrop-filter: blur(10px);
+            background-color: rgba(42, 42, 26, 0.8);
+        }
+        .combo-step-card {
+            background-color: #3b3b24;
+            border: 1px solid #6b6b4b;
+        }
+        .pro-con-card {
+            background-color: #3b3b24;
+            border: 1px solid #6b6b4b;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3b3b24;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b3b24;
+        }
+        .pro-icon { color: #6ee7b7; }
+        .con-icon { color: #f87171; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* A vibrant, insect-like yellow */
+        .arrow-color { color: #ca8a04; }
+        .heading-underline {
+            border-bottom: 2px solid #ca8a04;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        .banner {
+            position: relative;
+            height: 140px;
+            background: linear-gradient(45deg, #1a1a0d, #2a2a1a);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #5a5a3a;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.5), 0 0 20px rgba(202, 138, 4, 0.4);
+        }
+        .banner-subtitle {
+            font-size: 1.125rem;
+            color: #f0f0e6;
+        }
+
+        .circuit-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <canvas id="circuit-banner" class="circuit-lines"></canvas>
+                <div class="banner-content">
+                    <h1 class="banner-title">Krawler</h1>
+                    <p class="banner-subtitle">An Analytical Deep Dive into the World Legacy's Nemesis</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-yellow-100">
+                    The <strong class="text-accent font-bold">Krawler</strong> archetype, first introduced in the Circuit Break set, is an EARTH Insect archetype primarily centered around the <a href="https://yugipedia.com/wiki/FLIP_monster" target="_blank" class="lore-link">FLIP mechanic</a>. Its core identity is a control-oriented strategy designed to out-resource an opponent through a persistent and resilient board state. The gameplay loop involves setting Krawler monsters, using their disruptive FLIP effects, and leveraging their shared "floating" effect to swarm the field when removed by an opponent. The ultimate goal is to establish control, often by deploying the powerful boss monster, <strong class="text-accent font-bold">Deus X-Krawler</strong>, to lock the opponent out of their key monster effects.
+                </p>
+            </div>
+        </section>
+
+        <!-- Anatomy of the Swarm Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Anatomy of the Swarm</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main Deck Drones -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bug text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Main Deck Drones</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Krawler Receptor</h4>
+                            <p class="text-sm text-yellow-100">The primary searcher, adding any "Krawler" monster from Deck to hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Krawler Spine</h4>
+                            <p class="text-sm text-yellow-100">Designated monster removal, destroying one monster on the field.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Krawler Glial</h4>
+                            <p class="text-sm text-yellow-100">The recursion engine, Special Summoning a "Krawler" from the hand or Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Game-Changers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-crown text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Game-Changers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Krawler Soma</h4>
+                            <p class="text-sm text-yellow-100">Modernized the archetype with explosive swarming capability, turning one monster into a field of four.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Deus X-Krawler</h4>
+                            <p class="text-sm text-yellow-100">The ultimate boss monster. When flipped, it applies a one-sided Skill Drain, negating all opponent's monster effects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Deus Lock Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Deus Lock" Endboard</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                The primary goal when going first is to establish the "Deus Lock," a powerful board that shuts down opponent's monster effects. This is the typical end state of the core combo.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start justify-center max-w-4xl mx-auto">
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="lib-img-container" class="card-image-container mb-3 card-placeholder">Lib the World Key Blademaster</div>
+                    <h4 class="text-lg font-bold text-accent">Lib the World Key Blademaster</h4>
+                    <p class="text-sm text-yellow-100">Searches and sets World Legacy Pawns to enable the flip.</p>
+                </div>
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="deus-img-container" class="card-image-container mb-3 card-placeholder">Deus X-Krawler</div>
+                    <h4 class="text-lg font-bold text-accent">Deus X-Krawler</h4>
+                    <p class="text-sm text-yellow-100">(Face-Down) The core of the lock, waiting to be flipped.</p>
+                </div>
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="pawns-img-container" class="card-image-container mb-3 card-placeholder">World Legacy Pawns</div>
+                    <h4 class="text-lg font-bold text-accent">World Legacy Pawns</h4>
+                    <p class="text-sm text-yellow-100">(Set) The trigger to flip Deus during the opponent's turn.</p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The "Deus Lock" Setup</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the one-card combo using "Girsu, the Orcust Mekk-Knight" to establish the lock.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="girsu-img-container" class="card-image-container flex-shrink-0 card-placeholder">Girsu, the Orcust Mekk-Knight</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a2a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon Girsu & Mill</h3>
+                            </div>
+                            <p class="text-yellow-100">Normal Summon <strong class="text-accent font-bold">Girsu</strong>. Its effect sends <strong class="text-accent font-bold">World Legacy's Mind Meld</strong> from Deck to Graveyard and summons a World Legacy Token.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="lib-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Lib the World Key Blademaster</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a2a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Link Summon Lib</h3>
+                            </div>
+                            <p class="text-yellow-100">Link Summon <strong class="text-accent font-bold">Lib the World Key Blademaster</strong> using Girsu and the Token. Lib's effect sets <strong class="text-accent font-bold">World Legacy Pawns</strong> from the deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="mind-meld-img-container" class="card-image-container flex-shrink-0 card-placeholder">World Legacy's Mind Meld</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a2a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon Deus</h3>
+                            </div>
+                            <p class="text-yellow-100">Activate <strong class="text-accent font-bold">Mind Meld's</strong> GY effect: banish it to Special Summon <strong class="text-accent font-bold">Deus X-Krawler</strong> from the deck face-down to a zone Lib points to. This completes the endboard.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-infinity"></i></span> <strong class="text-green-400 font-bold">Exceptional Grind Game:</strong> Floating into two monsters makes it hard to clear the board.</li>
+                        <li><span class="pro-icon"><i class="fas fa-lock"></i></span> <strong class="text-green-400 font-bold">Powerful Floodgate:</strong> Deus X-Krawler can single-handedly win games.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Resilience & Pressure:</strong> Punishes opponents for using removal effects on face-up Krawlers.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-hourglass-half"></i></span> <strong class="text-red-400 font-bold">Inherent Slowness:</strong> Being FLIP-based, it can be too slow against aggressive combo decks.</li>
+                        <li><span class="con-icon"><i class="fas fa-eye-slash"></i></span> <strong class="text-red-400 font-bold">Vulnerable While Face-Down:</strong> Non-destruction removal on face-down monsters bypasses their best effects.</li>
+                        <li><span class="con-icon"><i class="fas fa-hammer"></i></span> <strong class="text-red-400 font-bold">Difficulty Breaking Boards:</strong> Struggles going second against established boards of negations.</li>
+                    </ul>
+                </div>
+                <!-- Hybrid Variants -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Symbiotic Strategies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-bolt"></i></span> <strong class="text-accent font-bold">Krawler Spright:</strong> Uses Krawlers as a consistent stream of Level 2 bodies for explosive Spright plays.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-scroll"></i></span> <strong class="text-accent font-bold">Prediction Princess Krawler:</strong> Focuses on assembling a recurring and protected Deus Lock with Prediction Princess Tarotrei.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-accent font-bold">Excellent News:</strong> All Krawler archetype cards are currently unrestricted in the TCG format:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Fully Unrestricted Archetype</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All Krawler Main Deck monsters (3 copies each)</li>
+                            <li>All World Legacy Link monsters</li>
+                            <li>Deus X-Krawler (3 copies)</li>
+                            <li>World Legacy support spells/traps</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-blue-400 mb-2">Support Card Status</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Girsu, the Orcust Mekk-Knight: Unrestricted</li>
+                            <li>Lib the World Key Blademaster: Unrestricted</li>
+                            <li>Generic Link support: Check current status</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-400">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> Krawler's unrestricted status allows for maximum consistency in building the Link climbing engine. The deck can utilize its full suite of flip effects and World Legacy synergy without banlist concerns affecting its core strategy.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animated Banner Script
+            const canvas = document.getElementById('circuit-banner');
+            if(canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                let connections = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.vx = (Math.random() - 0.5) * 0.5;
+                        this.vy = (Math.random() - 0.5) * 0.5;
+                        this.radius = 2;
+                    }
+
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(250, 204, 21, 0.5)';
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = Math.floor((canvas.width * canvas.height) / 10000);
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+
+                    for (let i = 0; i < particles.length; i++) {
+                        for (let j = i + 1; j < particles.length; j++) {
+                            const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+                            if (dist < 100) {
+                                ctx.beginPath();
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                ctx.strokeStyle = `rgba(202, 138, 4, ${1 - dist / 100})`;
+                                ctx.stroke();
+                            }
+                        }
+                    }
+
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // Card Image Loading Script
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url_small;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'lib-img-container': 'Lib the World Key Blademaster',
+                'deus-img-container': 'Deus X-Krawler',
+                'pawns-img-container': 'World Legacy Pawns',
+                'girsu-img-container': 'Girsu, the Orcust Mekk-Knight',
+                'lib-combo-img-container': 'Lib the World Key Blademaster',
+                'mind-meld-img-container': "World Legacy's Mind Meld"
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+    
+</body>
+</html>

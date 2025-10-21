@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magikey Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e; /* Deep midnight blue */
+            color: #e0e7ff; /* Lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2a4a; /* Dark violet */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4f4c8a; /* Muted purple border */
+        }
+        .combo-step-card {
+            background-color: #383561;
+            border: 1px solid #5a579e;
+        }
+        .pro-con-card {
+            background-color: #383561;
+            border: 1px solid #5a579e;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image-container.small {
+            max-width: 100px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #383561;
+            color: #e0e7ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.8rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 150px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Gold accent */
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+        .heading-underline {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+        }
+        .heading-underline::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: linear-gradient(90deg, #fde047, #7c3aed);
+        }
+
+        .banner-header {
+            position: relative;
+            height: 140px;
+            background-color: #1a1a2e;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4f4c8a;
+        }
+        #keyhole-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, rgba(44, 42, 74, 0.5) 0%, rgba(26, 26, 46, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .banner-header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            color: #fde047;
+        }
+        .banner-header p {
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .banner-header h1 { font-size: 2.2rem; }
+            .banner-header p { font-size: 1rem; }
+        }
+
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i { font-size: 22px; }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="keyhole-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-bold text-white mb-2">Magikey</h1>
+            <p class="text-lg md:text-xl text-indigo-200">Unlocking the Mechanism of a Multi-Summon Strategy</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4" style="font-family: 'Cinzel', serif;">The Magikey Philosophy</h2>
+                <p class="text-indigo-200 leading-relaxed">
+                    The "Magikey" archetype is a fascinating multi-tool strategy that leverages Normal Monsters to fuel its Ritual, Fusion, Synchro, and Xyz plays. Its core philosophy treats the Graveyard as a resource palette, where the diversity of monster Attributes—DARK, LIGHT, EARTH, WATER, FIRE, and WIND—directly translates to power. Effects ranging from monster destruction to effect negation are unlocked based on the opponent's monsters sharing an Attribute with a monster in the Magikey player's Graveyard. This creates a unique, attribute-based control strategy where the goal is to have an answer for every monster the opponent might summon. By understanding its mechanics, one can truly start to <a href="https://yugipedia.com/wiki/Magikey" target="_blank" class="lore-link">unlock the potential of these cards</a>.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center" style="font-family: 'Cinzel', serif;">The Keys to the Kingdom</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Starters & Enablers -->
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+                    <div class="flex items-center mb-4"><i class="fas fa-key text-3xl text-yellow-300 mr-4"></i><h3 class="text-xl font-bold text-white">Starters & Enablers</h3></div>
+                    <div class="space-y-4">
+                        <p><strong class="text-accent">Magikey World:</strong> The heart of the deck, searching both a "Magikey" monster and the crucial spell, Magikey Maftea.</p>
+                        <p><strong class="text-accent">Magikey Maftea:</strong> A versatile spell that can perform either a Ritual or Fusion Summon, often using a Normal Monster from the Deck.</p>
+                        <p><strong class="text-accent">Maginificent Magikey Mafteal:</strong> Grants an extra Normal Summon and revives a monster from the GY, enabling Synchro/Xyz plays.</p>
+                    </div>
+                </div>
+                <!-- Searchers & Extenders -->
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <div class="flex items-center mb-4"><i class="fas fa-search text-3xl text-yellow-300 mr-4"></i><h3 class="text-xl font-bold text-white">Searchers & Extenders</h3></div>
+                    <div class="space-y-4">
+                        <p><strong class="text-accent">Magikey Mechmusket - Batosbuster:</strong> The primary Ritual monster and a versatile searcher for any "Magikey" card.</p>
+                        <p><strong class="text-accent">Magikey Spirit - Vepartu:</strong> An Xyz monster that searches the Normal Monsters needed to fuel your plays.</p>
+                        <p><strong class="text-accent">Magikey Beast - Ansyalabolas:</strong> A Fusion monster that recycles Magikey Maftea from the GY for extended combos.</p>
+                    </div>
+                </div>
+                <!-- Bosses & Interruptions -->
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.3s;">
+                    <div class="flex items-center mb-4"><i class="fas fa-lock text-3xl text-yellow-300 mr-4"></i><h3 class="text-xl font-bold text-white">Bosses & Interruptions</h3></div>
+                    <div class="space-y-4">
+                        <p><strong class="text-accent">Magikey Fiend - Transfurlmine:</strong> The main turn-one boss monster; destroys opponent's monsters based on GY attributes and sets a "Magikey" Spell/Trap from the deck.</p>
+                        <p><strong class="text-accent">Magikey Mechmortar - Garesglasser:</strong> The deck's primary monster effect negation.</p>
+                        <p><strong class="text-accent">Magikey Unlocking:</strong> A searchable Counter Trap for negating Spells/Traps and manipulating opponent's monster attributes.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center" style="font-family: 'Cinzel', serif;">Core Combo & Endboard</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">The deck's primary combo is remarkably consistent, turning a simple two-card opening (<strong class="text-accent">Magikey World</strong> + any other card) into a synergistic control board.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                <!-- Combo Steps -->
+                <div class="space-y-4 animate-fadeIn">
+                    <div class="combo-step-card p-4 rounded-lg flex gap-4 items-center">
+                        <div id="world-img-container" class="card-image-container small card-placeholder">Magikey World</div>
+                        <div><strong>Step 1:</strong> Activate <strong class="text-accent">Magikey World</strong> to search <strong class="text-accent">Batosbuster</strong>.</div>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg"><strong>Step 2:</strong> Use World's second effect to add <strong class="text-accent">Magikey Maftea</strong>, placing the other card from your hand on the bottom of the deck.</div>
+                    <div class="combo-step-card p-4 rounded-lg flex gap-4 items-center">
+                        <div id="batosbuster-img-container" class="card-image-container small card-placeholder">M. Batosbuster</div>
+                        <div><strong>Step 3:</strong> Activate <strong class="text-accent">Maftea</strong>, tributing Batosbuster from hand to Ritual Summon another Batosbuster from the deck.</div>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg"><strong>Step 4:</strong> The summoned Batosbuster's effect triggers, searching for <strong class="text-accent">Mafteal</strong>.</div>
+                    <div class="combo-step-card p-4 rounded-lg flex gap-4 items-center">
+                        <div id="mafteal-img-container" class="card-image-container small card-placeholder">M. Mafteal</div>
+                        <div><strong>Step 5:</strong> Use Mafteal's effects to gain an extra Normal Summon, summon itself, and revive the Batosbuster from the GY.</div>
+                    </div>
+                     <div class="combo-step-card p-4 rounded-lg flex gap-4 items-center">
+                        <div id="transfurlmine-combo-img-container" class="card-image-container small card-placeholder">M. Transfurlmine</div>
+                        <div><strong>Step 6:</strong> Tune the Level 4 Mafteal and Level 4 Batosbuster to Synchro Summon the Level 8 <strong class="text-accent">Magikey Fiend - Transfurlmine</strong>.</div>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg"><strong>Step 7:</strong> Transfurlmine's effect activates, Setting <strong class="text-accent">Magikey Unlocking</strong> directly from the Deck.</div>
+                </div>
+                <!-- Endboard -->
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Standard Endboard</h3>
+                    <div class="flex flex-col items-center gap-4">
+                        <div id="transfurlmine-img-container" class="card-image-container card-placeholder">Magikey Fiend - Transfurlmine</div>
+                        <div id="unlocking-img-container" class="card-image-container card-placeholder">Magikey Unlocking</div>
+                    </div>
+                    <div class="mt-4 text-indigo-200">
+                        <p class="mb-2"><i class="fas fa-check text-green-400 mr-2"></i><strong>Monster Destruction:</strong> Transfurlmine can destroy any LIGHT or DARK monster the opponent summons.</p>
+                        <p class="mb-2"><i class="fas fa-check text-green-400 mr-2"></i><strong>Spell/Trap Negation:</strong> Magikey Unlocking provides a one-time negate for a key opponent's card.</p>
+                        <p><i class="fas fa-check text-green-400 mr-2"></i><strong>Attribute Manipulation:</strong> After Unlocking resolves, it can change all opponent's monsters to an attribute in your GY, ensuring Transfurlmine can destroy them.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center" style="font-family: 'Cinzel', serif;">Forging New Keys: External Synergies</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+                    <h3 class="text-xl font-bold text-white mb-4 flex items-center"><i class="fas fa-ship text-yellow-300 mr-3"></i>The Suship Alliance</h3>
+                    <p class="text-indigo-200">The "Gunkan Suship" engine provides a compact and efficient way to summon Rank 4 Xyz monsters. <strong class="text-accent">Gunkan Suship Shari</strong> is a FIRE Normal Monster, fulfilling an attribute requirement for Magikey while kickstarting its own engine, allowing easy access to generic tools like <strong class="text-accent">Abyss Dweller</strong> or the in-archetype <strong class="text-accent">Vepartu</strong>.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <h3 class="text-xl font-bold text-white mb-4 flex items-center"><i class="fas fa-church text-yellow-300 mr-3"></i>The Dogmatika Doctrine</h3>
+                    <p class="text-indigo-200">The "Dogmatika" engine excels at populating the Graveyard with diverse attributes directly from the Extra Deck. Cards like <strong class="text-accent">Nadir Servant</strong> can send monsters like <strong class="text-accent">Herald of the Arc Light</strong> (LIGHT) or <strong class="text-accent">Garura, Wings of Resonant Life</strong> (WIND), empowering your Magikey bosses. Herald also provides a bonus search for a Ritual Monster or Spell, boosting consistency.</p>
+                </div>
+                 <div class="card p-6 md:col-span-2 animate-fadeIn" style="animation-delay: 0.3s;">
+                    <h3 class="text-xl font-bold text-white mb-4 flex items-center"><i class="fas fa-cogs text-yellow-300 mr-3"></i>Generic & Engine Support</h3>
+                    <p class="text-indigo-200"><strong class="text-accent">Unexpected Dai</strong> and <strong class="text-accent">Painful Decision</strong> provide consistency by summoning or searching Normal Monsters from the deck. <strong class="text-accent">Diviner of the Herald</strong> is an exceptional starter, sending <strong class="text-accent">Herald of the Arc Light</strong> from the Extra Deck to the GY to search for a Ritual piece like Batosbuster, kickstarting the entire Magikey engine while providing a LIGHT attribute in the graveyard.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center" style="font-family: 'Cinzel', serif;">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="pro-con-card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 flex items-center"><i class="fas fa-thumbs-up mr-3"></i>Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong>Unique Interruption:</strong> The attribute-based control can bypass traditional protection effects.</li>
+                        <li><strong>Searchable Negation:</strong> Access to a searchable Counter Trap provides built-in protection.</li>
+                        <li><strong>Toolbox Flexibility:</strong> Can pivot between Ritual, Fusion, Synchro, and Xyz summoning to adapt to different game states.</li>
+                    </ul>
+                </div>
+                <div class="pro-con-card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center"><i class="fas fa-thumbs-down mr-3"></i>Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong>Inconsistency:</strong> Relies on drawing Normal Monsters, leading to "bricking" if starters are not found.</li>
+                        <li><strong>Fragility:</strong> The linear combo is vulnerable to a single, well-timed handtrap like Ash Blossom on Magikey World.</li>
+                        <li><strong>Poor Recovery:</strong> Invests most resources into the first turn; struggles to rebuild if its board is broken.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline" style="font-family: 'Cinzel', serif;">Current TCG Banlist Status</h2>
+            <div class="card p-6 animate-fadeIn">
+                <p class="text-indigo-200 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The Magikey archetype operates at full power in the current TCG format with no cards on the Forbidden & Limited list.
+                </p>
+                <div class="mt-4 p-4 bg-green-900 bg-opacity-30 rounded-lg border-l-4 border-green-500">
+                    <p class="text-sm text-green-200"><strong>Meta Implications:</strong> With complete access to all archetype components, Magikey can perform its combos as intended. Players have full access to three copies of <strong class="text-accent">Magikey World</strong>, <strong class="text-accent">Magikey Maftea</strong>, and all other core cards, ensuring maximum consistency for its linear strategy.</p>
+                </div>
+            </div>
+        </section>
+</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Banner Animation ---
+            const canvas = document.getElementById('keyhole-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const particleCount = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = Math.random() * 1 - 0.5;
+                        this.speedY = Math.random() * 1 - 0.5;
+                        this.color = `rgba(250, 204, 21, ${Math.random() * 0.5 + 0.2})`; // Gold color
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.size > 0.1) this.size -= 0.02;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function handleParticles() {
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+                        if (particles[i].size <= 0.1) {
+                            particles.splice(i, 1);
+                            i--;
+                        }
+                    }
+                    while(particles.length < particleCount){
+                        particles.push(new Particle());
+                    }
+                }
+                
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    handleParticles();
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                window.addEventListener('resize', setCanvasSize);
+                animate();
+            }
+
+            // --- Card Image Fetching ---
+            function createPlaceholder(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder';
+                placeholder.textContent = cardName;
+                container.appendChild(placeholder);
+            }
+
+            async function fetchCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error('Network response was not ok.');
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        createPlaceholder(cardName, containerId);
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    createPlaceholder(cardName, containerId);
+                }
+            }
+            
+            // Endboard Images
+            fetchCardImage('Magikey Fiend - Transfurlmine', 'transfurlmine-img-container');
+            fetchCardImage('Magikey Unlocking', 'unlocking-img-container');
+
+            // Combo Images
+            fetchCardImage('Magikey World', 'world-img-container');
+            fetchCardImage('Magikey Mechmusket - Batosbuster', 'batosbuster-img-container');
+            fetchCardImage('Maginificent Magikey Mafteal', 'mafteal-img-container');
+            fetchCardImage('Magikey Fiend - Transfurlmine', 'transfurlmine-combo-img-container');
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,594 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danger! Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark Slate Gray */
+            color: #d1d5db; /* Light Gray */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1f2937; /* Darker Gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4b5563; /* Gray Border */
+        }
+        .combo-step-card {
+            background-color: #374151;
+            border: 1px solid #6b7280;
+        }
+        .pro-con-card {
+            background-color: #374151;
+            border: 1px solid #6b7280;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #374151;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #374151;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Amber/Yellow */
+        .arrow-color { color: #f59e0b; }
+        .heading-underline {
+            border-bottom: 2px solid #f59e0b;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #000;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4b5563;
+        }
+
+        #static-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.1;
+            filter: grayscale(1) contrast(2);
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(17,24,39,0.4) 0%, rgba(17,24,39,0.9) 80%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            font-family: 'Special Elite', cursive;
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 1);
+        }
+        .banner-header h1 {
+             text-transform: uppercase;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .flicker-text {
+            animation: flicker 1.5s infinite;
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="static-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-yellow-300 mb-2 flicker-text">CLASSIFIED: DANGER!</h1>
+            <p class="text-lg md:text-xl text-gray-300">An Analysis of the Cryptid Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">Danger!</strong> archetype is a unique, high-variance engine defined by its mandatory random discards and explosive Special Summoning capabilities. Themed around <a href="https://yugipedia.com/wiki/Danger!" target="_blank" class="lore-link">elusive global cryptids</a>, the archetype functions less as a standalone deck and more as one of the most potent generic Link-spam engines in the game. Its power is fully realized when paired with DARK-attribute themes, most notably Dark World, where it enables devastating combos by turning probabilistic risks into consistent field presence and card advantage.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Cryptid Armory Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Cryptid Armory</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">
+                The effectiveness of the Danger! engine stems from combining a non-once-per-turn reveal mechanic with powerful secondary effects that trigger upon being discarded.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Primary Extenders -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-running text-4xl text-yellow-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Primary Extenders</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Danger!? Tsuchinoko?</h4>
+                            <p class="text-sm text-gray-300">Arguably the best card in the engine. If discarded, it Special Summons itself, providing a "free" monster for Link plays and ensuring board presence.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Danger!? Jackalope?</h4>
+                            <p class="text-sm text-gray-300">A crucial combo starter. If discarded, it Special Summons any other "Danger!" monster from the Deck, turning a random discard into a specific, strategic summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Consistency & Utility -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-search text-4xl text-yellow-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Consistency & Utility</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Danger! Nessie!</h4>
+                            <p class="text-sm text-gray-300">The primary searcher. When discarded, it adds any other "Danger!" card from the Deck to the hand, providing access to key engine pieces.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Danger! Bigfoot!</h4>
+                            <p class="text-sm text-gray-300">Provides board-breaking power. If discarded, it targets and destroys one face-up card the opponent controls. An essential tool for going second.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Nessie + Jackalope Starter</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how a two-card combination can generate overwhelming advantage and board presence.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="nessie-img-container" class="card-image-container flex-shrink-0 card-placeholder">Danger! Nessie!</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Reveal</h3>
+                            </div>
+                            <p class="text-gray-300">Reveal <strong class="text-accent font-bold">Danger! Nessie!</strong> in hand. Your opponent randomly discards one card from your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="jackalope-img-container" class="card-image-container flex-shrink-0 card-placeholder">Danger!? Jackalope?</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Guaranteed Advantage</h3>
+                            </div>
+                            <p class="text-gray-300"><strong class="text-accent font-bold">Scenario A (Jackalope discarded):</strong> Its effect triggers, summoning another Danger! monster (e.g., Tsuchinoko) from the Deck. <strong class="text-accent font-bold">Nessie</strong> remains in hand for another reveal.</p>
+                            <p class="text-gray-300 mt-2"><strong class="text-accent font-bold">Scenario B (Nessie discarded):</strong> Its effect triggers, searching for another Danger! card. This guarantees you have resources to continue your plays.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="saryuja-img-container" class="card-image-container flex-shrink-0 card-placeholder">Saryuja Skull Dread</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Link Climb & Extend</h3>
+                            </div>
+                            <p class="text-gray-300">Repeat the process until you have enough monsters on board. Link Summon a powerful extender like <strong class="text-accent font-bold">Saryuja Skull Dread</strong> to draw 4 cards and fix your hand, leading into your final end board.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Typical Endboard Configuration</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Apollousa -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Apollousa, Bow of the Goddess</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="apollousa-img-container" class="card-image-container card-placeholder">Apollousa, Bow of the Goddess</div>
+                    </div>
+                    <div class="bg-red-500 bg-opacity-20 border border-red-500 rounded-lg p-4 mb-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                            <h4 class="text-red-400 font-bold">Currently Banned in TCG</h4>
+                        </div>
+                        <p class="text-red-300 mt-2">Apollousa, Bow of the Goddess is currently banned in the TCG. Modern builds use alternatives like Accesscode Talker or Knightmare Unicorn.</p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent font-bold">Multiple Monster Negates:</strong> The primary defensive tool, providing up to four monster effect negations to shut down the opponent's plays.</li>
+                    </ul>
+                </div>
+                <!-- Grapha, Dragon Overlord -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Grapha, Dragon Overlord of Dark World</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="grapha-img-container" class="card-image-container card-placeholder">Grapha, Dragon Overlord of Dark World</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent font-bold">Omni-Negate:</strong> When the opponent activates a monster effect, Spell, or Trap, this card can change that effect to "Your opponent discards 1 card," providing powerful, versatile disruption.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Field Report: Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Ceiling:</strong> Capable of producing overwhelming boards and hand-loops that can instantly win the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-redo-alt"></i></span> <strong class="text-green-400 font-bold">Resilience:</strong> The high volume of engine pieces allows the deck to play through some hand traps and continue its combos.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400 font-bold">Synergistic Power:</strong> Acts as a best-in-class engine for any DARK-based strategy that benefits from discarding.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Droll & Lock Bird:</strong> Shuts down the "draw 1" effect from successful Danger! summons, turning the advantage engine into a net loss of cards.</li>
+                        <li><span class="con-icon"><i class="fas fa-meteor"></i></span> <strong class="text-red-400 font-bold">Nibiru, the Primal Being:</strong> The deck must summon 5+ monsters to build its board, making it extremely vulnerable to being wiped by Nibiru before establishing negates.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Graveyard Hate:</strong> Floodgates that banish cards, like Macro Cosmos or Dimension Shifter, prevent discard effects from resolving properly.</li>
+                    </ul>
+                </div>
+                <!-- Key Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="neutral-icon"><i class="fas fa-skull"></i></span> <strong class="text-accent font-bold">Dark World Engine:</strong> The premier partner. Danger! monsters provide the perfect "discard by effect" trigger for powerful Dark World monster effects.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-feather-alt"></i></span> <strong class="text-accent font-bold">Phantom Knights:</strong> The Danger! engine provides easy Level 3 extenders to facilitate Link summons into Cherubini and Rusty Bardiche to set up Fog Blades.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STATIC/NOISE ANIMATION FOR BANNER ---
+            const canvas = document.getElementById('static-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let w, h;
+                
+                const resize = () => {
+                    w = canvas.width = canvas.offsetWidth;
+                    h = canvas.height = canvas.offsetHeight;
+                };
+                window.addEventListener('resize', resize);
+                resize();
+
+                let animationFrameId;
+
+                const noise = () => {
+                    if (!ctx) return;
+                    const idata = ctx.createImageData(w, h);
+                    const buffer32 = new Uint32Array(idata.data.buffer);
+                    const len = buffer32.length;
+                    
+                    for (let i = 0; i < len; i++) {
+                        if (Math.random() < 0.5) {
+                            buffer32[i] = 0xff000000;
+                        }
+                    }
+                    
+                    ctx.putImageData(idata, 0, 0);
+                };
+
+                const loop = () => {
+                    noise();
+                    animationFrameId = requestAnimationFrame(loop);
+                };
+                
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) {
+                        if (!animationFrameId) {
+                           loop();
+                        }
+                    } else {
+                        if (animationFrameId) {
+                            cancelAnimationFrame(animationFrameId);
+                            animationFrameId = null;
+                        }
+                    }
+                });
+                observer.observe(canvas);
+            }
+
+            // --- SCRIPT FOR CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'nessie-img-container': 'Danger! Nessie!',
+                'jackalope-img-container': 'Danger!? Jackalope?',
+                'saryuja-img-container': 'Saryuja Skull Dread',
+                'apollousa-img-container': 'Apollousa, Bow of the Goddess',
+                'grapha-img-container': 'Grapha, Dragon Overlord of Dark World'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+
+    <!-- Banlist Status Section -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-bold text-accent mb-6 text-center">
+            <i class="fas fa-balance-scale mr-2"></i>Current Banlist Status
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Limited Cards -->
+            <div class="bg-gradient-to-br from-orange-900/30 to-orange-800/20 border border-orange-500/30 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-orange-400 mb-3 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Limited (1 copy)
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-orange-200"><strong>Called by the Grave</strong> - Important combo protection</li>
+                    <li class="text-orange-200"><strong>Triple Tactics Talent</strong> - Disruption response</li>
+                </ul>
+            </div>
+
+            <!-- Semi-Limited Cards -->
+            <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-800/20 border border-yellow-500/30 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-yellow-400 mb-3 flex items-center">
+                    <i class="fas fa-pause mr-2"></i>Semi-Limited (2 copies)
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-yellow-200">No directly relevant cards</li>
+                </ul>
+            </div>
+
+            <!-- Forbidden Cards -->
+            <div class="bg-gradient-to-br from-red-900/30 to-red-800/20 border border-red-500/30 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-red-400 mb-3 flex items-center">
+                    <i class="fas fa-ban mr-2"></i>Forbidden
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-red-200">No Danger! cards banned</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-6 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 border border-blue-500/30 rounded-lg p-4">
+            <h3 class="text-lg font-bold text-blue-400 mb-3 flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>Banlist Impact Analysis
+            </h3>
+            <div class="text-sm text-blue-200 space-y-2">
+                <p><strong>Engine Freedom:</strong> All Danger! monsters remain unrestricted, preserving the archetype's explosive Link spam potential and random discard synergies.</p>
+                <p><strong>Dark World Synergy:</strong> The powerful Dark World engine partnership remains fully intact, maintaining devastating combo potential when Danger! monsters are discarded by effect.</p>
+                <p><strong>Link Climbing:</strong> No restrictions on Saryuja Skull Dread or other key Link monsters ensure the deck's signature field-building combos operate at maximum efficiency.</p>
+                <p><strong>Competitive Edge:</strong> The deck's high-risk, high-reward gameplay style benefits from unrestricted access to all core components.</p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
+
+

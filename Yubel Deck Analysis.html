@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yubel Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #100c1c; /* Deep Violet Black */
+            color: #e0d8ff; /* Light Lavender */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(26, 20, 40, 0.8); /* Darker Purple with transparency */
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            border: 1px solid #5a3d7a; /* Muted Purple Border */
+            backdrop-filter: blur(8px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(40, 30, 60, 0.85);
+            border: 1px solid #8e44ad;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #281e3c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 15px #100c1c;
+            border: 1px dashed #8e44ad;
+        }
+        .pro-icon { color: #2ecc71; }
+        .con-icon { color: #e74c3c; }
+        .neutral-icon { color: #3498db; }
+        .text-accent { color: #f39c12; } /* Fiery Orange/Gold for accents */
+        .arrow-color { color: #f39c12; }
+        .heading-underline {
+            border-bottom: 2px solid #f39c12;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f39c12;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f39c12;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #f39c12;
+        }
+
+        /* --- YUBEL ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #100c1c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #5a3d7a;
+        }
+        #torment-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(16, 12, 28, 0.4) 0%, rgba(16, 12, 28, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(224, 37, 224, 0.7);
+        }
+        .banner-header h1 {
+             font-family: 'Cinzel Decorative', serif;
+        }
+
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #2c1a3b 0%, #4a2c63 50%, #2c1a3b 100%);
+            color: white; border: 2px solid #a36fde; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(163, 111, 222, 0.4), 0 0 20px rgba(163, 111, 222, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(163, 111, 222, 0.6), 0 0 30px rgba(163, 111, 222, 0.4);
+            border-color: #c392fa;
+        }
+        .ygo-home-button i {
+            font-size: 22px; text-shadow: 0 0 10px rgba(163, 111, 222, 0.8);
+        }
+
+        /* Fortress End Board Redesign Styles */
+        .fortress-layout {
+            position: relative;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+        .fortress-layout::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; height: 80%;
+            background: radial-gradient(ellipse at center, rgba(142, 68, 173, 0.1) 0%, rgba(16, 12, 28, 0) 65%);
+            z-index: 0;
+            pointer-events: none;
+        }
+        .main-boss-card {
+            position: relative; z-index: 10;
+            width: 100%; max-width: 500px;
+        }
+        .support-grid {
+            position: relative; z-index: 5;
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            .support-grid {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 100%;
+            }
+        }
+        .support-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .support-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 10px 40px rgba(142, 68, 173, 0.5);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="torment-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">YUBEL</h1>
+            <p class="text-lg md:text-xl text-purple-200">The Modern Nightmare Incarnate</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-200">
+                    The modern <strong class="text-accent font-bold">Yubel</strong> archetype represents a masterful evolution, transforming from a passive, reactive strategy into a proactive, combo-oriented competitive force. The deck revolves around "floating" through Yubel's various forms upon their destruction. New support has weaponized this core mechanic, giving the player full control over self-destruction to generate immense advantage. By integrating with powerful Fiend-Type engines like <strong class="text-accent">Unchained</strong> and <strong class="text-accent">Fiendsmith</strong>, Yubel has become a hyper-consistent strategy capable of creating multi-layered, resilient end boards that can systematically dismantle an opponent's game plan. It is a terrifying <a href="https://yugipedia.com/wiki/Yubel" target="_blank" class="lore-link">amalgamation of love and hate</a>, demanding both respect and a deep understanding of its intricate combo lines.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Yubel Arsenal Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Anatomy of the Archetype</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Core Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4"><i class="fas fa-ghost text-3xl text-purple-300 mr-4"></i><h3 class="text-xl font-bold text-white">Core Monsters</h3></div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-3"><h4 class="font-bold text-accent">Spirit of Yubel</h4><p class="text-sm">The modern cornerstone. Searches key Spells/Traps and floats into any Yubel form upon destruction.</p></div>
+                        <div class="card combo-step-card p-3"><h4 class="font-bold text-accent">Samsara D Lotus</h4><p class="text-sm">The premier one-card starter. Tributes itself to summon Spirit of Yubel directly from the Deck.</p></div>
+                        <div class="card combo-step-card p-3"><h4 class="font-bold text-accent">Gruesome Grave Squirmer</h4><p class="text-sm">A crucial extender that facilitates self-destruction and provides recursion from the Graveyard.</p></div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4"><i class="fas fa-book-dead text-3xl text-purple-300 mr-4"></i><h3 class="text-xl font-bold text-white">Support Suite</h3></div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-3"><h4 class="font-bold text-accent">Nightmare Throne</h4><p class="text-sm">The deck's best starter. Searches a key monster or destroys one from Deck to start combos.</p></div>
+                        <div class="card combo-step-card p-3"><h4 class="font-bold text-accent">Nightmare Pain</h4><p class="text-sm">A combo-enabler that destroys a DARK monster to search any card mentioning "Yubel".</p></div>
+                        <div class="card combo-step-card p-3"><h4 class="font-bold text-accent">Eternal Favorite</h4><p class="text-sm">A Trap that provides both recursion and a powerful "Super Polymerization"-like disruption.</p></div>
+                    </div>
+                </div>
+                <!-- Extra Deck -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4"><i class="fas fa-skull-crossbones text-3xl text-purple-300 mr-4"></i><h3 class="text-xl font-bold text-white">Extra Deck Bosses</h3></div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-3"><h4 class="font-bold text-accent">Phantom of Yubel</h4><p class="text-sm">A pseudo-negate that turns an opponent's monster effect into a trigger for your own engine.</p></div>
+                        <div class="card combo-step-card p-3"><h4 class="font-bold text-accent">Yubel - The Loving Defender Forever</h4><p class="text-sm">The ultimate Super Poly target that banishes monsters it battles and inflicts burn damage.</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The One-Card Combo</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">The deck's remarkable consistency is shown in its ability to build a full board from a single card. This sequence, initiated by <strong class="text-accent">Nightmare Throne</strong>, is the foundation of the strategy.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="nightmare-throne-img-container" class="card-image-container flex-shrink-0 card-placeholder">Nightmare Throne</div>
+                        <div>
+                            <div class="flex items-center mb-2"><span class="bg-[#1a1428] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span><h3 class="text-lg font-bold">Activate & Search</h3></div>
+                            <p class="text-purple-200">Activate <strong class="text-accent">Nightmare Throne</strong>. Use its effect to add <strong class="text-accent">Samsara D Lotus</strong> from Deck to hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2 animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="spirit-of-yubel-img-container" class="card-image-container flex-shrink-0 card-placeholder">Spirit of Yubel</div>
+                        <div>
+                            <div class="flex items-center mb-2"><span class="bg-[#1a1428] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span><h3 class="text-lg font-bold">Summon the Engine</h3></div>
+                            <p class="text-purple-200">Normal Summon <strong class="text-accent">Samsara D Lotus</strong> and Tribute it to Special Summon <strong class="text-accent">Spirit of Yubel</strong> from the Deck. Spirit's effect then searches for <strong class="text-accent">Nightmare Pain</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2 animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="yubel-forms-img-container" class="card-image-container flex-shrink-0 card-placeholder">Yubel & Yubel - Terror Incarnate</div>
+                        <div>
+                            <div class="flex items-center mb-2"><span class="bg-[#1a1428] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span><h3 class="text-lg font-bold">Unleash the Nightmare</h3></div>
+                            <p class="text-purple-200">Activate <strong class="text-accent">Nightmare Pain</strong>, destroying Spirit of Yubel. This triggers a chain to search an extender, Special Summon the original <strong class="text-accent">Yubel</strong>, and Special Summon <strong class="text-accent">Yubel - Terror Incarnate</strong>, setting up the board for Link plays.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Fortress End Board</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-3xl mx-auto">A typical Yubel end board is not just a wall of negates, but a layered system of interruptions designed to generate advantage while dismantling the opponent's plays. Each piece is protected and works in tandem with the others.</p>
+            
+            <div class="fortress-layout">
+                <!-- Main Boss -->
+                <div class="card main-boss-card p-6 flex flex-col md:flex-row items-center gap-6">
+                    <div id="phantom-of-yubel-main-img-container" class="card-image-container flex-shrink-0 card-placeholder">Phantom of Yubel</div>
+                    <div class="flex-grow">
+                        <h3 class="text-2xl font-bold text-accent mb-2">Phantom of Yubel</h3>
+                        <p class="font-semibold text-purple-200 mb-3">Core Interruption & Engine Starter</p>
+                        <p class="text-purple-300">This is the heart of your defense. Its pseudo-negate turns the opponent's first monster effect into a trigger for your own engine, protecting your combo while extending your board presence. It forces your opponent into a no-win situation from their first move.</p>
+                    </div>
+                </div>
+
+                <!-- Support Pillars -->
+                <div class="support-grid">
+                    <!-- Omni-Negate -->
+                    <div class="card support-card p-6 flex flex-col items-center text-center">
+                         <div id="varudras-img-container" class="w-32 mb-4 card-placeholder">Varudras / Fiendsmith's Desirae</div>
+                         <h4 class="text-lg font-bold text-accent mb-2">The Omni-Negate</h4>
+                         <p class="text-sm text-purple-300">Stops the opponent's most critical Spell, Trap, or follow-up monster effect that Phantom of Yubel cannot handle.</p>
+                    </div>
+                    <!-- Targeted Removal -->
+                    <div class="card support-card p-6 flex flex-col items-center text-center">
+                        <div id="unchained-soul-of-rage-img-container" class="w-32 mb-4 card-placeholder">Unchained Soul of Rage</div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Reactive Removal</h4>
+                        <p class="text-sm text-purple-300">Uses an opponent's monster to Link Summon during their turn, providing powerful, non-targeting removal for problematic threats.</p>
+                    </div>
+                    <!-- Non-Destruction Removal -->
+                    <div class="card support-card p-6 flex flex-col items-center text-center">
+                        <div id="sp-little-knight-img-container" class="w-32 mb-4 card-placeholder">S:P Little Knight</div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Flexible Banish</h4>
+                        <p class="text-sm text-purple-300">Provides a Quick Effect banish to deal with indestructible monsters or to dodge targeted effects, ensuring board presence.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card"><h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3><ul class="list-disc list-inside space-y-2 text-purple-200"><li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Hyper-Consistency:</strong> Numerous one-card starters lead to a full combo.</li><li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Resilience:</strong> Can play through multiple hand traps thanks to Phantom of Yubel.</li><li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Strong Grind Game:</strong> Excels in longer duels due to powerful recursion and resource loops.</li></ul></div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card"><h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3><ul class="list-disc list-inside space-y-2 text-purple-200"><li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-300">Backrow Dependent:</strong> Vulnerable to mass Spell/Trap removal like Harpie's Feather Duster.</li><li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Non-Destruction Removal:</strong> Effects that banish or return to hand bypass the core "float" mechanic.</li><li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Floodgates:</strong> Cards like Skill Drain or Abyss Dweller can shut down the entire strategy.</li></ul></div>
+                <!-- Tech Choices -->
+                <div class="card p-6 pro-con-card"><h3 class="text-xl font-bold text-white mb-4">Synergistic Engines</h3><ul class="list-disc list-inside space-y-2 text-purple-200"><li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent">Unchained:</strong> A perfect partner where Unchained monsters destroy Yubel cards for mutual benefit.</li><li><span class="neutral-icon"><i class="fas fa-tools"></i></span> <strong class="text-accent">Fiendsmith:</strong> Adds an omni-negate and extra bodies for Link Summons without using the Normal Summon.</li></ul></div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="my-10 md:my-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                 <p class="text-gray-300 mb-4 text-center">The Yubel archetype has seen some key adjustments on the TCG banlist, impacting its consistency and power level.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited / Semi-Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Phantom of Yubel (Limited):</strong> The deck's powerful pseudo-negate is now at 1 copy, reducing its recursive potential.</li>
+                            <li><strong class="text-yellow-300">Unchained Soul of Sharvara (Semi-Limited):</strong> A key Unchained extender is at 2 copies, slightly hampering the hybrid build's consistency.</li>
+                            <li><strong class="text-yellow-300">Terraforming (Limited):</strong> Reduces access to the powerful starter, Nightmare Throne.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Key Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                             <li><strong class="text-red-400">Apollousa, Bow of the Goddess (Forbidden):</strong> A common end board piece mentioned in theory, but now illegal for play.</li>
+                             <li>The core Yubel archetype itself remains largely unrestricted.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core engine is intact, hits to key consistency cards and Extra Deck options force the deck to adapt. The loss of multiple copies of Phantom of Yubel and Sharvara makes the deck slightly less resilient, but it remains a potent competitive threat.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('torment-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = (Math.random() * 2 - 1) * 0.5;
+                        this.speedY = (Math.random() * 2 - 1) * 0.5;
+                        this.color = `rgba(${Math.random() > 0.5 ? '224, 37, 224' : '142, 68, 173'}, ${Math.random() * 0.5 + 0.3})`;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.size > 0.1) this.size -= 0.02;
+                        if (this.size <= 0.1) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.size = Math.random() * 2 + 1;
+                            this.speedX = (Math.random() * 2 - 1) * 0.5;
+                            this.speedY = (Math.random() * 2 - 1) * 0.5;
+                        }
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+                window.addEventListener('resize', () => { setCanvasSize(); initParticles(); });
+            }
+            
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'nightmare-throne-img-container': 'Nightmare Throne',
+                'spirit-of-yubel-img-container': 'Spirit of Yubel',
+                'yubel-forms-img-container': 'Yubel',
+                'phantom-of-yubel-main-img-container': 'Phantom of Yubel',
+                'varudras-img-container': 'Varudras, the Final Bringer of the End Times',
+                'unchained-soul-of-rage-img-container': 'Unchained Soul of Rage',
+                'sp-little-knight-img-container': 'S:P Little Knight'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

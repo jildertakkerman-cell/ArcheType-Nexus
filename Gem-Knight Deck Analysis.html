@@ -1,0 +1,542 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gem-Knight Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a140d; /* Deep, earthy brown */
+            color: #f0e6d6; /* Parchment off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b2218; /* Darker wood/earth tone */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d3b2b; /* Lighter earth border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3b3024;
+            border: 1px solid #5a4a3a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3b3024;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b3024;
+        }
+        /* Fix for placeholder style bleed after image load */
+        .card-image-container.card-placeholder:has(img) {
+            display: block;
+            min-height: auto;
+            height: auto;
+            align-items: initial;
+            justify-content: initial;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fde047; } /* A brilliant yellow-gold */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fde047;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a140d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 2px solid #4d3b2b;
+        }
+
+        #gem-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(26, 20, 13, 0.6) 0%, rgba(26, 20, 13, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .banner-header h1 {
+             font-family: 'Cinzel Decorative', cursive;
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="gem-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Gem-Knight</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Dissection of a Modern OTK Juggernaut</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-yellow-100">
+                    The <strong class="text-accent font-bold">Gem-Knight</strong> archetype, an EARTH-attribute, Fusion-centric series, has undergone a significant transformation. Initially a straightforward beatdown strategy, it evolved into a fragile "glass cannon" First-Turn Kill (FTK) deck. However, modern support has reshaped it into a remarkably resilient, board-breaking, "go-second" One-Turn Kill (OTK) powerhouse. This evolution pivots the deck from non-interactive FTKs to a more engaging, battle-focused strategy, making the 
+                    <a href="https://yugipedia.com/wiki/Gem-Knight" target="_blank" class="lore-link">brilliant fusion of power and strategy</a>
+                     a formidable force in the current meta.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Engine Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Core Engine: The Fusion Loop</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                The foundation of every Gem-Knight strategy is a self-sustaining resource engine designed to generate significant card advantage, allowing for a rapid succession of Fusion Summons without depleting hand or field resources.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6 text-center">
+                    <div class="flex justify-center mb-4"><i class="fas fa-cogs text-4xl text-yellow-300"></i></div>
+                    <h3 class="text-xl font-bold text-white mb-2">Gem-Knight Fusion</h3>
+                    <p class="text-yellow-100">The heart of the machine. A standard fusion spell with a powerful, non-once-per-turn recursion effect from the Graveyard, turning the GY into an extension of the hand.</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <div class="flex justify-center mb-4"><i class="fas fa-hand-holding-medical text-4xl text-yellow-300"></i></div>
+                    <h3 class="text-xl font-bold text-white mb-2">Gem-Knight Lazuli</h3>
+                    <p class="text-yellow-100">The hand advantage generator. When sent to the GY by a card effect, it retrieves a Normal Monster, replenishing a resource used for a Fusion Summon.</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <div class="flex justify-center mb-4"><i class="fas fa-chess-knight text-4xl text-yellow-300"></i></div>
+                    <h3 class="text-xl font-bold text-white mb-2">Gem-Knight Obsidian</h3>
+                    <p class="text-yellow-100">The field presence generator. When sent from the hand to the GY, it Special Summons a Normal Monster, recovering a resource directly to the field.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The OTK Path</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough shows a simplified path from a one-card starter to a game-winning board.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="combo-starter-img" class="card-image-container flex-shrink-0 card-placeholder">Gem-Knight Nepyrim</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2218] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Combo</h3>
+                            </div>
+                            <p class="text-yellow-100">Normal Summon a starter like <strong class="text-accent font-bold">Gem-Knight Nepyrim</strong> or <strong class="text-accent font-bold">Gem-Armadillo</strong>. Use its effect to search for a key combo piece like <strong class="text-accent font-bold">Gem-Knight Fusion</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="combo-quartz-img" class="card-image-container flex-shrink-0 card-placeholder">Gem-Knight Phantom Quartz</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2218] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Establish the Link</h3>
+                            </div>
+                            <p class="text-yellow-100">Link Summon <strong class="text-accent font-bold">Gem-Knight Phantom Quartz</strong>. Its on-summon effect searches another "Gem-Knight" card, and its second effect recycles resources from the GY/banished zone for another Fusion Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="combo-lady-brilliant-img" class="card-image-container flex-shrink-0 card-placeholder">Gem-Knight Lady Brilliant Diamond</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2218] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon the Diamonds</h3>
+                            </div>
+                            <p class="text-yellow-100">Use <strong class="text-accent font-bold">Phantom Quartz</strong> to summon <strong class="text-accent font-bold">Gem-Knight Lady Brilliant Diamond</strong>, then use her effect to cheat out the main boss monster, <strong class="text-accent font-bold">Gem-Knight Master Diamond</strong>, and prepare for the final push.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The End Board</h2>
+            <div class="card p-6">
+                <p class="text-yellow-100 mb-4">The typical end board for a successful Gem-Knight OTK is simple yet devastating: an opponent's field cleared of all threats, and a board of high-ATK Fusion monsters ready to deliver the final blow. The key players on this board are:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex flex-col items-center text-center">
+                        <div id="board-master-diamond-img" class="card-image-container card-placeholder">Gem-Knight Master Diamond</div>
+                        <div class="mt-4">
+                            <h4 class="text-lg font-bold text-accent mb-2">Gem-Knight Master Diamond</h4>
+                            <p class="text-sm text-yellow-100">The centerpiece, ready to attack multiple times or destroy remaining cards by copying effects from the Graveyard.</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center text-center">
+                        <div id="board-prismaura-img" class="card-image-container card-placeholder">Gem-Knight Prismaura</div>
+                        <div class="mt-4">
+                             <h4 class="text-lg font-bold text-accent mb-2">Supporting Fusions</h4>
+                            <p class="text-sm text-yellow-100">(e.g., <strong class="text-accent font-bold">Prismaura</strong>, <strong class="text-accent font-bold">Citrine</strong>) Provide additional attacks and ensure the OTK is successful through their removal and protection effects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Consistency:</strong> A high density of one-card starters makes the core combo very reliable.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">Explosive OTK:</strong> Capable of breaking established boards and winning in a single Battle Phase.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400 font-bold">Resilient Engine:</strong> The resource loop allows the deck to play through some disruption.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Choke Points:</strong> Vulnerable to precision hand traps like <strong class="text-accent font-bold">Ash Blossom</strong> on key searchers or <strong class="text-accent font-bold">Droll & Lock Bird</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Graveyard Hate:</strong> Cards like <strong class="text-accent font-bold">Dimension Shifter</strong> or <strong class="text-accent font-bold">Macro Cosmos</strong> completely shut down the core engine.</li>
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400 font-bold">"Glass Cannon":</strong> While resilient, a failed OTK attempt can leave the player with few resources for defense.</li>
+                    </ul>
+                </div>
+                <!-- External Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Adamancipator:</strong> The shared Rock typing provides access to powerful extenders like <strong class="text-accent font-bold">Adamancipator Researcher</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent font-bold">Block Dragon:</strong> A massive extender that historically provided an unparalleled surge of resources for continued combos (<span class="text-red-300">currently banned in TCG</span>).</li>
+                        <li><span class="neutral-icon"><i class="fas fa-theater-masks"></i></span> <strong class="text-accent font-bold">Shaddoll:</strong> <strong class="text-accent font-bold">Shaddoll Fusion</strong> can send key Gem-Knights from the deck to the GY, setting up combos while breaking the opponent's board.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GEMSTONE BANNER ANIMATION ---
+            const canvas = document.getElementById('gem-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let gems = [];
+                const gemColors = ['rgba(255, 82, 82, 0.7)', 'rgba(52, 152, 219, 0.7)', 'rgba(46, 204, 113, 0.7)', 'rgba(241, 196, 15, 0.7)', 'rgba(155, 89, 182, 0.7)'];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Gem {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 100;
+                        this.size = Math.random() * 3 + 2;
+                        this.speedY = Math.random() * 1 + 0.5;
+                        this.color = gemColors[Math.floor(Math.random() * gemColors.length)];
+                        this.rotation = Math.random() * 360;
+                        this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        this.rotation += this.rotationSpeed;
+                        if (this.y < -this.size) {
+                            this.y = canvas.height + this.size;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.rotation);
+                        ctx.fillStyle = this.color;
+                        ctx.shadowColor = this.color;
+                        ctx.shadowBlur = 10;
+                        ctx.beginPath();
+                        // Simple diamond shape
+                        ctx.moveTo(0, -this.size);
+                        ctx.lineTo(this.size / 2, 0);
+                        ctx.lineTo(0, this.size);
+                        ctx.lineTo(-this.size / 2, 0);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+
+                function init() {
+                    gems = [];
+                    const gemCount = (canvas.width * canvas.height) / 15000;
+                    for (let i = 0; i < gemCount; i++) {
+                        gems.push(new Gem());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    gems.forEach(gem => {
+                        gem.update();
+                        gem.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- SCRIPT FOR CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'combo-starter-img': 'Gem-Knight Nepyrim',
+                'combo-quartz-img': 'Gem-Knight Phantom Quartz',
+                'combo-lady-brilliant-img': 'Gem-Knight Lady Brilliant Diamond',
+                'board-master-diamond-img': 'Gem-Knight Master Diamond',
+                'board-prismaura-img': 'Gem-Knight Prismaura'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

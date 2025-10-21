@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shaddoll Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0b10;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1820;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.1);
+            border: 1px solid #4a007a;
+        }
+        .combo-step-card {
+            background-color: #2a2633;
+            border: 1px solid #6a1ba9;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2633;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 185px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #4a007a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #8b5cf6; }
+        .text-accent { color: #c084fc; } /* Light Purple */
+        .arrow-color { color: #a855f7; }
+        .heading-underline {
+            border-bottom: 2px solid #a855f7;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #c084fc;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c084fc;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c0b10;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a007a;
+        }
+        #shaddoll-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(12, 11, 16, 0.5) 0%, rgba(12, 11, 16, 0.8) 70%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            font-family: 'Cinzel', serif;
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(192, 132, 252, 0.7);
+        }
+
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+        }
+
+        .end-board-zone {
+            background-color: rgba(0,0,0,0.2);
+            border: 2px dashed #4a007a;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .set-card {
+             width: 154px;
+             height: 106px;
+             background: linear-gradient(45deg, #4a007a, #8b5cf6);
+             border-radius: 8px;
+             border: 2px solid #c084fc;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             transform: rotate(90deg);
+             margin: 2rem 0;
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="shaddoll-banner"></canvas>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2">Shaddoll</h1>
+            <p class="text-lg md:text-xl text-purple-300">Masters of Shadow and Fusion</p>
+        </header>
+
+        <section class="mb-12">
+            <div class="card p-6 animate-fadeIn">
+                <h2 class="text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent">Shaddoll</strong> archetype is a masterclass in strategic design, focusing on resource management and powerful Fusion Summons. Its core mechanic revolves around Main Deck monsters that trigger potent effects when sent to the Graveyard by a card effect, turning the "cost" of Fusion Summoning into a net gain of advantage. This allows the deck to maintain a powerful board presence while generating resources to disrupt the opponent. The entire strategy is a dark puppet show, with each monster representing one of the <a href="https://yugipedia.com/wiki/Shaddoll" target="_blank" class="lore-link">marionettes controlled by shadowy strings</a>, culminating in the summon of their formidable "El Shaddoll" Fusion bosses.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">The Marionettes: Core Monsters</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">Shaddoll Squamata</h3>
+                    <p>The primary engine starter. When sent to the GY, it sends another "Shaddoll" card from your Deck to the GY, triggering another effect.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">Reeshaddoll Wendi</h3>
+                    <p>The main deck summoner. Its FLIP and GY effects Special Summon a "Shaddoll" monster from the Deck, extending combos.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.3s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">Shaddoll Hedgehog</h3>
+                    <p>The searcher. Adds a "Shaddoll" monster from Deck to hand when sent to the GY, ensuring you always have follow-up plays.</p>
+                </div>
+                 <div class="card p-6 animate-fadeIn" style="animation-delay: 0.4s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">Shaddoll Beast</h3>
+                    <p>The draw engine. Simply draws you a card when sent to the GY, replacing itself and thinning your deck.</p>
+                </div>
+                 <div class="card p-6 animate-fadeIn" style="animation-delay: 0.5s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">Shaddoll Dragon</h3>
+                    <p>Backrow removal. Destroys a Spell/Trap on the field when sent to the GY, clearing the way for your plays.</p>
+                </div>
+                 <div class="card p-6 animate-fadeIn" style="animation-delay: 0.6s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">Naelshaddoll Ariel</h3>
+                    <p>Graveyard disruption. When sent to the GY, it can banish up to 3 cards from any GY, crippling many opposing strategies.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Pulling the Strings: Spells & Traps</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.7s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">Shaddoll Fusion</h3>
+                    <p>The powerhouse Fusion Spell. If your opponent controls an Extra Deck monster, you can use materials directly from your Deck.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.8s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">El Shaddoll Fusion</h3>
+                    <p>A Quick-Play Fusion Spell that allows you to Fusion Summon on your opponent's turn, enabling powerful disruptions.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.9s;">
+                    <h3 class="text-xl font-bold text-accent mb-2">Shaddoll Schism</h3>
+                    <p>A Continuous Trap that lets you Fusion Summon every turn by banishing materials from your GY and provides non-targeting removal.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white mb-2 text-center heading-underline">The Fused Masters: Extra Deck</h2>
+            <p class="text-center text-gray-400 mb-8 max-w-2xl mx-auto">The "El Shaddoll" Fusion Monsters are the powerful bosses of the archetype, each bringing a unique and disruptive presence to the field.</p>
+            
+            <h3 class="text-2xl font-bold text-accent mb-6 text-center">The Pillars of the Strategy</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+                <!-- El Shaddoll Construct -->
+                <div class="card p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 animate-fadeIn" style="animation-delay: 1.0s;">
+                    <div id="construct-img-container" class="w-32 flex-shrink-0 card-placeholder">El Shaddoll Construct</div>
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold text-accent mb-2 text-center sm:text-left">El Shaddoll Construct</h4>
+                        <ul class="text-left text-gray-300 space-y-2 text-sm">
+                            <li class="flex items-start"><i class="fas fa-cogs text-purple-400 w-4 mr-2 mt-1 flex-shrink-0"></i><span><strong class="text-white">On Summon:</strong> Sends any "Shaddoll" card from Deck to GY, starting your combos.</span></li>
+                            <li class="flex items-start"><i class="fas fa-skull-crossbones text-purple-400 w-4 mr-2 mt-1 flex-shrink-0"></i><span><strong class="text-white">Battle Effect:</strong> Instantly destroys any Special Summoned monster it battles.</span></li>
+                            <li class="flex items-start"><i class="fas fa-recycle text-purple-400 w-4 mr-2 mt-1 flex-shrink-0"></i><span><strong class="text-white">GY Effect:</strong> Recovers a "Shaddoll" Spell/Trap when sent to the GY.</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- El Shaddoll Winda -->
+                <div class="card p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 animate-fadeIn" style="animation-delay: 1.1s;">
+                    <div id="winda-img-container" class="w-32 flex-shrink-0 card-placeholder">El Shaddoll Winda</div>
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold text-accent mb-2 text-center sm:text-left">El Shaddoll Winda</h4>
+                        <ul class="text-left text-gray-300 space-y-2 text-sm">
+                            <li class="flex items-start"><i class="fas fa-lock text-purple-400 w-4 mr-2 mt-1 flex-shrink-0"></i><span><strong class="text-white">Floodgate:</strong> Each player can only Special Summon once per turn.</span></li>
+                            <li class="flex items-start"><i class="fas fa-shield-alt text-purple-400 w-4 mr-2 mt-1 flex-shrink-0"></i><span><strong class="text-white">Protection:</strong> Cannot be destroyed by opponent's card effects.</span></li>
+                            <li class="flex items-start"><i class="fas fa-recycle text-purple-400 w-4 mr-2 mt-1 flex-shrink-0"></i><span><strong class="text-white">GY Effect:</strong> Recovers a "Shaddoll" Spell/Trap when sent to the GY.</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- El Shaddoll Apkallone -->
+                <div class="card p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 animate-fadeIn" style="animation-delay: 1.2s;">
+                    <div id="apkallone-img-container" class="w-32 flex-shrink-0 card-placeholder">El Shaddoll Apkallone</div>
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold text-accent mb-2 text-center sm:text-left">El Shaddoll Apkallone</h4>
+                        <ul class="text-left text-gray-300 space-y-2 text-sm">
+                            <li class="flex items-start"><i class="fas fa-ban text-purple-400 w-4 mr-2 mt-1 flex-shrink-0"></i><span><strong class="text-white">On Summon:</strong> Negates the effects of one face-up card on the field.</span></li>
+                            <li class="flex items-start"><i class="fas fa-search text-purple-400 w-4 mr-2 mt-1 flex-shrink-0"></i><span><strong class="text-white">GY Effect:</strong> Adds any "Shaddoll" card from Deck/GY to hand, then discards 1 card.</span></li>
+                            <li class="flex items-start"><i class="fas fa-shield-alt text-purple-400 w-4 mr-2 mt-1 flex-shrink-0"></i><span><strong class="text-white">Protection:</strong> Cannot be destroyed by battle.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-2xl font-bold text-accent mb-6 text-center">The Attribute Toolbox</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <div class="card p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 animate-fadeIn" style="animation-delay: 1.3s;">
+                    <div id="shekhinaga-img-container" class="w-32 flex-shrink-0 card-placeholder">El Shaddoll Shekhinaga</div>
+                    <div class="flex-grow text-center sm:text-left">
+                        <h4 class="text-lg font-bold text-accent mb-2">El Shaddoll Shekhinaga (EARTH)</h4>
+                        <p class="text-sm text-gray-400">Negates a Special Summoned monster's effect by sending a "Shaddoll" card from hand to GY.</p>
+                    </div>
+                </div>
+                 <div class="card p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 animate-fadeIn" style="animation-delay: 1.4s;">
+                     <div id="grysta-img-container" class="w-32 flex-shrink-0 card-placeholder">El Shaddoll Grysta</div>
+                    <div class="flex-grow text-center sm:text-left">
+                        <h4 class="text-lg font-bold text-accent mb-2">El Shaddoll Grysta (FIRE)</h4>
+                        <p class="text-sm text-gray-400">Negates a Special Summon by sending a "Shaddoll" card from hand to GY.</p>
+                    </div>
+                </div>
+                 <div class="card p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 animate-fadeIn" style="animation-delay: 1.5s;">
+                    <div id="anoyatyllis-img-container" class="w-32 flex-shrink-0 card-placeholder">El Shaddoll Anoyatyllis</div>
+                    <div class="flex-grow text-center sm:text-left">
+                        <h4 class="text-lg font-bold text-accent mb-2">El Shaddoll Anoyatyllis (WATER)</h4>
+                        <p class="text-sm text-gray-400">Prevents both players from Special Summoning from the hand or GY with Spell/Trap effects.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">The Ideal End Board: The Winda Lock</h2>
+            <div class="card p-6 md:p-8 animate-fadeIn" style="animation-delay: 1.6s;">
+                <p class="text-lg text-center text-gray-300 mb-8 max-w-3xl mx-auto">The primary goal for a Shaddoll deck going first is to establish the "Winda Lock." This board state is designed to severely limit the opponent's ability to play the game through multiple layers of disruption.</p>
+                
+                <div class="bg-black bg-opacity-20 p-4 sm:p-6 rounded-lg border-2 border-purple-800 shadow-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                        
+                        <div class="end-board-zone">
+                            <h4 class="font-bold text-white text-lg mb-2 tracking-widest">MONSTER ZONE</h4>
+                             <div id="winda-lock-img" class="w-32 md:w-40 h-auto card-placeholder flex items-center justify-center p-2">El Shaddoll Winda</div>
+                            <p class="text-sm text-gray-400 mt-2 text-center">Restricts Special Summons to once per turn for both players.</p>
+                        </div>
+        
+                        
+                        <div class="end-board-zone">
+                            <h4 class="font-bold text-white text-lg mb-2 tracking-widest">S/T ZONE</h4>
+                            <div class="set-card">
+                                <i class="fas fa-eye-slash text-4xl text-purple-300"></i>
+                            </div>
+                            <p class="text-sm text-gray-400 text-center">Set <strong class="text-white">Shaddoll Schism</strong> for opponent's turn disruption.</p>
+                        </div>
+        
+                        <div class="end-board-zone">
+                            <h4 class="font-bold text-white text-lg mb-2 tracking-widest">GRAVEYARD</h4>
+                            <div class="w-40 md:w-48 h-auto p-4 flex flex-col items-center justify-center">
+                                <i class="fas fa-ghost text-6xl text-purple-500 mb-2"></i>
+                                <span class="text-gray-400 font-bold text-center">Shaddoll Resources</span>
+                            </div>
+                             <p class="text-sm text-gray-400 mt-2 text-center">Materials ready to be banished for Schism's effect.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn" style="animation-delay: 1.7s;">
+                <!-- Strengths Card -->
+                <div class="card p-6 h-full">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 text-center">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-3 text-gray-300 text-sm">
+                        <li><span class="pro-icon"><i class="fas fa-recycle fa-fw mr-2"></i></span> <strong class="text-white">Resource Loop:</strong> GY effects refund the cost of Fusion Summoning, creating incredible card advantage and a strong grind game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-hammer fa-fw mr-2"></i></span> <strong class="text-white">Powerful Board-Breaking:</strong> "Shaddoll Fusion" is one of the best "going-second" cards in the game, punishing opponents who rely on Extra Deck monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-lock fa-fw mr-2"></i></span> <strong class="text-white">Potent Floodgates:</strong> "El Shaddoll Winda" can single-handedly stop many combo-intensive decks by limiting Special Summons.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 h-full">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 text-center">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-3 text-gray-300 text-sm">
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones fa-fw mr-2"></i></span> <strong class="text-white">Graveyard Dependant:</strong> Highly vulnerable to cards that banish, such as "Macro Cosmos" or "Abyss Dweller," which shut down the entire engine.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper fa-fw mr-2"></i></span> <strong class="text-white">Key Choke Points:</strong> The Fusion Spells are critical points of failure. A well-timed "Ash Blossom & Joyous Spring" can often end a Shaddoll player's turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-lightbulb fa-fw mr-2"></i></span> <strong class="text-white">Attribute Reliance:</strong> The need for a LIGHT monster to summon the main boss, "Construct," often forces the deck into hybrid builds for consistency.</li>
+                    </ul>
+                </div>
+                <!-- Synergies & Tech Cards -->
+                <div class="card p-6 h-full">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4 text-center">Synergies & Tech Cards</h3>
+                    <ul class="list-disc list-inside space-y-3 text-gray-300 text-sm">
+                        <li><span class="neutral-icon"><i class="fas fa-book-dead fa-fw mr-2"></i></span> <strong class="text-white">Invoked Engine:</strong> "Aleister the Invoker" provides a consistent path to a LIGHT monster and adds "Invoked Mechaba" for an extra negate.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-church fa-fw mr-2"></i></span> <strong class="text-white">Dogmatika Engine:</strong> "Nadir Servant" is a one-card starter, sending "Apkallone" to the GY to search for "Schism."</li>
+                        <li><span class="neutral-icon"><i class="fas fa-flask fa-fw mr-2"></i></span> <strong class="text-white">Super Polymerization:</strong> A powerful, unchainable board-breaker that uses opponent's monsters to summon your attribute-specific El Shaddolls.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6 animate-fadeIn" style="animation-delay: 1.4s;">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-400">El Shaddoll Construct (3 copies)</strong> - The boss monster is at full power.</li>
+                            <li><strong class="text-green-400">Shaddoll Schism (3 copies)</strong> - The main disruption tool is fully available.</li>
+                            <li>All Main Deck "Shaddoll" monsters are at 3 copies each.</li>
+                        </ul>
+                    </div>
+                    <div class="combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited / Semi-Limited Synergies</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Some generic powerful spells and common engine pieces may be limited, but the core Shaddoll archetype is untouched.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-purple-900 bg-opacity-30 rounded border-l-4 border-purple-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its most powerful cards like <strong class="text-accent">El Shaddoll Construct</strong> free from the banlist, the Shaddoll archetype operates at its full potential. This allows for maximum consistency and power in its combos and end boards.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('shaddoll-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let strings = [];
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class PuppetString {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = 0;
+                        this.targetY = canvas.height;
+                        this.speed = (Math.random() * 0.5) + 0.2;
+                        this.width = Math.random() * 2 + 0.5;
+                        this.color = `rgba(192, 132, 252, ${Math.random() * 0.5 + 0.2})`;
+                    }
+                    update() {
+                        this.y += this.speed;
+                        if (this.y > this.targetY) {
+                            this.y = 0;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.x, 0);
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = this.width;
+                        ctx.stroke();
+                    }
+                }
+
+                function init() {
+                    strings = [];
+                    let stringCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < stringCount; i++) {
+                        strings.push(new PuppetString());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    strings.forEach(s => {
+                        s.update();
+                        s.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image not found");
+                    }
+                } catch (error) {
+                    console.error(`Failed to load image for ${cardName}:`, error);
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            fetchAndDisplayCardImage('El Shaddoll Construct', 'construct-img-container');
+            fetchAndDisplayCardImage('El Shaddoll Winda', 'winda-img-container');
+            fetchAndDisplayCardImage('El Shaddoll Apkallone', 'apkallone-img-container');
+            fetchAndDisplayCardImage('El Shaddoll Shekhinaga', 'shekhinaga-img-container');
+            fetchAndDisplayCardImage('El Shaddoll Grysta', 'grysta-img-container');
+            fetchAndDisplayCardImage('El Shaddoll Anoyatyllis', 'anoyatyllis-img-container');
+            fetchAndDisplayCardImage('El Shaddoll Winda', 'winda-lock-img');
+        });
+    </script>
+</body>
+</html>
+
+

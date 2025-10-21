@@ -1,0 +1,653 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcana Force</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom, #1f2937, #111827);
+            color: #f3f4f6;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(31, 41, 55, 0.8); 
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border: 2px solid #4b5563;
+        }
+        .combo-step-card {
+            background-color: rgba(55, 65, 81, 0.9);
+            border: 2px solid #6b7280;
+        }
+        .pro-con-card {
+            background-color: rgba(55, 65, 81, 0.9);
+            border: 2px solid #6b7280;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #6d28d9;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #6d28d9;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fde047; } /* Golden yellow for accents */
+        .arrow-color { color: #fde047; }
+        .heading-underline {
+            border-bottom: 3px solid #fde047;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px; /* Matching Battlewasp size */
+            background-color: #111827;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 2px solid #4b5563;
+        }
+
+        #arcana-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(17, 24, 39, 0.5) 0%, rgba(17, 24, 39, 0.9) 80%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        #card-popup h3 {
+            color: #fde047;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        #card-popup p {
+            margin: 0.25rem 0;
+        }
+        #card-popup-stats {
+            color: #fde047;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="arcana-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Arcana Force</h1>
+            <p class="text-lg md:text-xl text-gray-300">A Deep Dive into Engineered Determinism</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-100 mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">Arcana Force</strong> archetype is a unique strategy that appears to be based on the high variance of coin flips. However, its competitive viability hinges on transforming this game of chance into a deterministic control system. By utilizing the Field Spell <strong class="text-accent font-bold">Light Barrier</strong> and other support, the deck's goal is to eliminate randomness and guarantee the powerful effects of its high-level boss monsters, such as the game-ending turn skip from <strong class="text-accent font-bold">Arcana Force XXI - The World</strong>.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-100 mb-6 text-center">The Coin Flip Protocol</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-gray-100 mb-2">High-Stakes Duality</h3>
+                    <p class="text-gray-300">Every "Arcana Force" monster has two effects, one for heads and one for tails, determined by a mandatory coin flip upon being summoned. These effects are often polar opposites, with one being highly beneficial and the other being significantly detrimental.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-gray-100 mb-2">Engineering Luck</h3>
+                    <p class="text-gray-300">The key to the deck is <strong class="text-accent font-bold">Light Barrier</strong>, a Field Spell that allows the player to choose the outcome of coin flips for their high-level "Arcana Force" monsters, turning a game of chance into a predictable and powerful strategy.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-100 mb-6 text-center">The World Lock Sequence</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">This sequence demonstrates how the deck uses its control elements to set up a game-winning turn skip.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="light-barrier-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-gray-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Establish Control</h3>
+                        </div>
+                        <p class="text-gray-300">The first priority is to activate <strong class="text-accent font-bold">Light Barrier</strong>. This is the cornerstone of the strategy and must be on the field to ensure the desired coin flip outcomes.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="temperance-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-gray-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Search the Key Piece</h3>
+                        </div>
+                        <p class="text-gray-300">Summon <strong class="text-accent font-bold">Arcana Force XIV - Temperance</strong> to search for <strong class="text-accent font-bold">Arcana Force XXI - The World</strong>. This may require <strong class="text-accent font-bold">Second Coin Toss</strong> if <strong class="text-accent font-bold">The Dark Ruler</strong> isn't on the field.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="the-world-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-gray-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Execute the Lock</h3>
+                        </div>
+                        <p class="text-gray-300">Tribute Summon <strong class="text-accent font-bold">Arcana Force XXI - The World</strong>. With <strong class="text-accent font-bold">Light Barrier</strong> active, choose the "Tails" effect to skip your opponent's next turn, at the cost of tributing two monsters in your End Phase.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-100 mb-6 text-center">Optimal Endboards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-gray-100 mb-2">The Control Lock</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent font-bold">Arcana Force XXI - The World:</strong> Actively skipping the opponent's turn.</li>
+                        <li><strong class="text-accent font-bold">Light Barrier:</strong> On the field to guarantee the coin flip result.</li>
+                        <li><strong class="text-accent font-bold">Two Tribute Fodder Monsters:</strong> Ready to be tributed in the End Phase to maintain The World's effect.</li>
+                    </ul>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-gray-100 mb-2">The Aggressive Grind</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent font-bold">Arcana Force EX - The Light Ruler:</strong> A 4000 ATK powerhouse that can revive Fairy monsters.</li>
+                        <li><strong class="text-accent font-bold">Light Barrier:</strong> Ensuring The Light Ruler gets its beneficial effect.</li>
+                        <li><strong class="text-accent font-bold">Agent Engine Support:</strong> Monsters like <strong class="text-accent font-bold">The Agent of Creation - Hyperion</strong> provide backup and removal.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-100 mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="pro-icon"><i class="fas fa-lock"></i></span> <strong class="text-green-400 font-bold">Powerful Lockdown:</strong> Skipping an opponent's turn is one of the strongest effects in the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bullseye"></i></span> <strong class="text-green-400 font-bold">Deterministic Strategy:</strong> With <strong class="text-accent font-bold">Light Barrier</strong>, the deck becomes highly consistent and predictable.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sun"></i></span> <strong class="text-green-400 font-bold">Strong External Synergy:</strong> The Light/Fairy support provides swarming and searching the archetype lacks.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="con-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-red-400 font-bold">Reliance on Light Barrier:</strong> The entire strategy collapses if the Field Spell is removed or negated.</li>
+                        <li><span class="con-icon"><i class="fas fa-users"></i></span> <strong class="text-red-400 font-bold">Heavy Tribute Costs:</strong> The boss monsters require a significant number of tributes to summon and maintain.</li>
+                         <li><span class="con-icon"><i class="fas fa-hourglass-start"></i></span> <strong class="text-red-400 font-bold">Slow Setup:</strong> The deck can be too slow to compete with modern combo decks without a perfect hand.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gray-100 mb-4">Key Synergies & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent font-bold">The Agent Engine:</strong> Provides the necessary tribute fodder and backup boss monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-gavel"></i></span> <strong class="text-accent font-bold">Valhalla, Hall of the Fallen:</strong> A powerful way to Special Summon the high-level Arcana Force monsters, bypassing their tribute cost.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-coins"></i></span> <strong class="text-accent font-bold">Second Coin Toss:</strong> A crucial backup for ensuring the effects of lower-level monsters like <strong class="text-accent font-bold">Temperance</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section>
+            <h2 class="text-xl md:text-3xl font-bold text-gray-100 mb-6 text-center">The Major Arcana</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">A detailed overview of the key cards and their role in the deck's destiny.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Arcana Force XXI - The World</h3>
+                    <p class="text-gray-300">The primary win condition. Its "Tails" effect skips the opponent's next turn.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Arcana Force EX - The Light Ruler</h3>
+                    <p class="text-gray-300">An aggressive boss monster that can reach 4000 ATK and recycles Fairy monsters.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Arcana Force EX - The Dark Ruler</h3>
+                    <p class="text-gray-300">The ultimate consistency tool, allowing the player to choose the result of all coin flips.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Arcana Force XIV - Temperance</h3>
+                    <p class="text-gray-300">The main in-archetype searcher, capable of finding any of the high-level boss monsters.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Light Barrier</h3>
+                    <p class="text-gray-300">The mandatory Field Spell that allows the player to choose coin flip outcomes.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ARCANA FORCE "COSMIC FATE" ANIMATION ---
+            const canvas = document.getElementById('arcana-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                let shapes = [];
+                let animationFrameId;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+                
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedX = (Math.random() - 0.5) * 0.2;
+                        this.speedY = (Math.random() - 0.5) * 0.2;
+                        this.radius = Math.random() * 1.5;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.x < 0 || this.x > canvas.width) this.x = Math.random() * canvas.width;
+                        if (this.y < 0 || this.y > canvas.height) this.y = Math.random() * canvas.height;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(253, 224, 71, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                class Shape {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 30 + 20;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = (Math.random() - 0.5) * 0.005;
+                        this.opacity = 0;
+                        this.maxOpacity = Math.random() * 0.1 + 0.05;
+                        this.life = 0;
+                        this.maxLife = Math.random() * 200 + 100;
+                    }
+                    update() {
+                        this.angle += this.speed;
+                        this.life++;
+                        this.opacity = this.maxOpacity * Math.sin(this.life / this.maxLife * Math.PI);
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.angle);
+                        ctx.strokeStyle = `rgba(253, 224, 71, ${this.opacity})`;
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeRect(-this.size / 2, -this.size * 0.75 / 2, this.size, this.size * 0.75);
+                        ctx.restore();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    shapes = [];
+                    const particleCount = (canvas.width * canvas.height) / 10000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                    for (let i = 0; i < 5; i++) {
+                        shapes.push(new Shape());
+                    }
+                }
+                
+                let frameCount = 0;
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    particles.forEach(p => { p.update(); p.draw(); });
+                    shapes.forEach(s => { s.update(); s.draw(); });
+                    
+                    if (frameCount % 60 === 0 && Math.random() < 0.5) { // Flash effect
+                        ctx.fillStyle = `rgba(253, 224, 71, 0.1)`;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
+                    
+                    shapes = shapes.filter(s => s.life < s.maxLife);
+                    if (shapes.length < 5) shapes.push(new Shape());
+                    
+                    frameCount++;
+                    animationFrameId = requestAnimationFrame(animate);
+                }
+
+                function startAnimation() {
+                    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                    setCanvasSize();
+                    init();
+                    animate();
+                }
+
+                startAnimation();
+                window.addEventListener('resize', startAnimation);
+            }
+
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    img.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        showPopup(event, cardInfo.name);
+                    });
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-blue-300">${cardType}</p>
+                        <div class="w-full h-px bg-blue-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+
+            fetchAndDisplayCardImage('Light Barrier', 'light-barrier-img-container');
+            fetchAndDisplayCardImage('Arcana Force XIV - Temperance', 'temperance-img-container');
+            fetchAndDisplayCardImage('Arcana Force XXI - The World', 'the-world-img-container');
+        });
+    </script>
+    <div id="card-popup" class="fixed z-50 bg-gray-900 border-2 border-[#fde047] text-white p-4 rounded-lg shadow-lg max-w-xs opacity-0 transition-opacity duration-200 pointer-events-none"></div>
+</body>
+</html>
+
+

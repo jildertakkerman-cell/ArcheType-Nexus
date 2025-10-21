@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primite Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a10; /* Dark, earthy brown */
+            color: #f0e6d2; /* Parchment/Light Tan */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b2b18; /* Darker Khaki/Olive */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d4d2b; /* Olive Border */
+        }
+        .combo-step-card {
+            background-color: #3b3b24;
+            border: 1px solid #5a5a3a;
+        }
+        .pro-con-card {
+            background-color: #3b3b24;
+            border: 1px solid #5a5a3a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3b3b24;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b3b24;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #d4af37; } /* Gold/Amber */
+        .arrow-color { color: #b8860b; } /* DarkGoldenRod */
+        .heading-underline {
+            border-bottom: 2px solid #b8860b;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #d4af37;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #d4af37;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a10;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4d4d2b;
+        }
+
+        #excavation-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(26, 26, 16, 0.75);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            font-family: 'Cinzel Decorative', serif;
+        }
+
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="excavation-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Primite</h1>
+            <p class="text-lg md:text-xl text-amber-200">Unearthing the Power of Primordial Monsters</p>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-amber-100">
+                    The <strong class="text-accent font-bold">Primite</strong> archetype revolutionizes the game by transforming Normal Monsters from potential "bricks" into the core of a powerful and consistent control engine. Rather than a standalone strategy, Primite is a compact and splashable package that provides any deck running Normal Monsters a reliable path to searchable interaction and board presence. It inverts the traditional value of cards, turning the game's simplest monsters into the keys that unlock a torrent of <a href="https://yugipedia.com/wiki/Primite" target="_blank" class="lore-link">primordial power</a>.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Archetype's Core Arsenal</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Primite Another Beryl</h3>
+                    <p class="text-sm text-amber-100">The one-card starter. Its Normal Summon sets any "Primite" Spell/Trap from the Deck. It can also send a Normal Monster from Deck to GY and recurs itself from the GY, making it the engine's heart.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Primite Lordly Lode</h3>
+                    <p class="text-sm text-amber-100">The primary search target. This Continuous Spell searches any "Primite" card and then Special Summons a Normal Monster from the hand, Deck, or GY, enabling all your other plays.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Primite Imperial Dragon</h3>
+                    <p class="text-sm text-amber-100">The archetype's boss monster. It functions as a hand trap to Normal Summon a "Primite" monster and, upon Tribute Summon, unleashes a devastating board wipe by negating and then banishing opponent's monsters.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Primite Drillbeam</h3>
+                    <p class="text-sm text-amber-100">A powerful Quick-Play Spell that serves as searchable interaction. It negates a card or effect and can banish it, but requires you to control a Normal Monster.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Primite Echo</h3>
+                    <p class="text-sm text-amber-100">A recurring Counter Trap that negates a monster summon. It can Set itself from the Graveyard, providing continuous disruption over multiple turns.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Primite Roar</h3>
+                    <p class="text-sm text-amber-100">An extender that can Special Summon a Normal Monster from the deck if you control no monsters. Its graveyard effect provides targeted removal.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The One-Card Starter</h2>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="beryl-img-container" class="card-image-container flex-shrink-0 card-placeholder">Primite Another Beryl</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon & Set</h3>
+                            </div>
+                            <p class="text-amber-100">Normal Summon <strong class="text-accent">Primite Another Beryl</strong>. On summon, activate its effect to Set <strong class="text-accent">Primite Lordly Lode</strong> directly from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color animate-fadeIn"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="lode-img-container" class="card-image-container flex-shrink-0 card-placeholder">Primite Lordly Lode</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Activate, Search, & Summon</h3>
+                            </div>
+                            <p class="text-amber-100">Activate <strong class="text-accent">Lordly Lode</strong>. Its effect triggers, allowing you to add <strong class="text-accent">Primite Drillbeam</strong> to your hand. Then, use its second effect to Special Summon a Normal Monster from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Typical End Board</h2>
+            <div class="card p-6 max-w-4xl mx-auto">
+                <p class="text-center text-amber-100 mb-6">The standard one-card combo with <strong class="text-accent">Primite Another Beryl</strong> efficiently establishes a field with multiple points of interaction and sets up for future turns.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <div class="flex flex-col items-center">
+                        <div id="beryl-board-img" class="card-image-container h-64 card-placeholder mb-2">Primite Another Beryl</div>
+                        <h4 class="font-bold text-white">Primite Another Beryl</h4>
+                        <p class="text-sm text-amber-200">(On field, ready for recursion setup)</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="normal-monster-board-img" class="card-image-container h-64 card-placeholder mb-2">Normal Monster</div>
+                        <h4 class="font-bold text-white">Normal Monster</h4>
+                        <p class="text-sm text-amber-200">(Enables your interaction)</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="drillbeam-board-img" class="card-image-container h-64 card-placeholder mb-2">Primite Drillbeam</div>
+                        <h4 class="font-bold text-white">Primite Drillbeam</h4>
+                        <p class="text-sm text-amber-200">(In hand, ready to negate)</p>
+                    </div>
+                </div>
+                 <p class="text-center text-amber-100 mt-6">This board provides a searchable negate via <strong class="text-accent">Drillbeam</strong>. You can then tribute <strong class="text-accent">Beryl</strong> to send another Normal Monster to the GY, setting up both its recursion for next turn and fueling <strong class="text-accent">Primite Imperial Dragon's</strong> powerful banishing effect.</p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Consistency:</strong> Strong one-card starters make the engine reliable.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Powerful Recursion:</strong> The ability to reuse key cards allows for a strong grind game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-green-400">High Flexibility:</strong> Integrates seamlessly with many strategies (Blue-Eyes, Red-Eyes, Phantasm Spiral).</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Normal Summon Reliant:</strong> Disruption on <strong class="text-accent">Another Beryl</strong> can stop the engine.</li>
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-400">Graveyard Hate:</strong> Cards like <strong class="text-accent">D.D. Crow</strong> can disrupt the recursion of Beryl and Echo.</li>
+                        <li><span class="con-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-red-400">Brick Potential:</strong> Drawing multiple Normal Monsters without engine access can be problematic.</li>
+                    </ul>
+                </div>
+                 <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergistic Partners</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Blue-Eyes/Red-Eyes:</strong> Provides consistency for classic Normal Monster-based decks.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-accent">Phantasm Spiral:</strong> The free Normal Summon allows for proactive plays in a reactive deck.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent">Fiendsmith/Bystial:</strong> Uses a Normal Monster as a consistent starter for a complex control strategy.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6 text-center">
+                <p class="text-gray-300">Loading banlist status...</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('excavation-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 100;
+                        this.speedY = Math.random() * 2 + 1;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.color = `rgba(212, 175, 55, ${Math.random() * 0.5 + 0.2})`; // Amber/Gold colors
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-full object-cover rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'beryl-img-container': 'Primite Another Beryl',
+                'lode-img-container': 'Primite Lordly Lode',
+                'beryl-board-img': 'Primite Another Beryl',
+                'normal-monster-board-img': 'Blue-Eyes White Dragon', // Example Normal Monster
+                'drillbeam-board-img': 'Primite Drillbeam'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+            
+            async function checkBanlist() {
+                const banlistContainer = document.getElementById('banlist-status');
+                try {
+                    const primiteCards = [
+                        "Primite Another Beryl", "Primite Lordly Lode", "Primite Imperial Dragon", 
+                        "Primite Drillbeam", "Primite Echo", "Primite Roar"
+                    ];
+                    
+                    const banlistResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
+                     if (!banlistResponse.ok) {
+                        throw new Error(`Failed to load banlist from API.`);
+                    }
+                    const banlistData = await banlistResponse.json();
+
+                    let banlistHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+                    
+                    const checkCard = (cardName) => {
+                        const cardInfo = banlistData.data.find(card => card.name === cardName);
+                        if (cardInfo && cardInfo.banlist_info && cardInfo.banlist_info.ban_tcg) {
+                            return cardInfo.banlist_info.ban_tcg;
+                        }
+                        return 'Unlimited';
+                    };
+
+                    let coreRestricted = false;
+                    let externalRestricted = false;
+                    let coreHTML = '<div class="card combo-step-card p-4"><h4 class="text-lg font-bold text-green-400 mb-2">Core Archetype</h4><ul class="list-disc list-inside space-y-1 text-sm text-gray-300">';
+                    let externalHTML = '<div class="card combo-step-card p-4"><h4 class="text-lg font-bold text-yellow-400 mb-2">Common Tech & Synergies</h4><ul class="list-disc list-inside space-y-1 text-sm text-gray-300">';
+                    
+                    primiteCards.forEach(cardName => {
+                        const status = checkCard(cardName);
+                        if(status !== 'Unlimited') {
+                            coreRestricted = true;
+                            coreHTML += `<li><strong class="text-red-400">${cardName} (${status})</strong></li>`;
+                        }
+                    });
+
+                    if(!coreRestricted) {
+                         coreHTML += '<li>All core "Primite" cards are Unlimited.</li>';
+                    }
+                     
+                    // Check some common synergistic cards
+                    const synergisticCards = ["Called by the Grave", "Hieratic Seal of the Heavenly Spheres"];
+                     synergisticCards.forEach(cardName => {
+                        const status = checkCard(cardName);
+                        if(status !== 'Unlimited') {
+                            externalRestricted = true;
+                            externalHTML += `<li><strong class="text-yellow-400">${cardName} (${status})</strong></li>`;
+                        }
+                    });
+                     if(!externalRestricted){
+                         externalHTML += '<li>No common synergistic cards are currently on the list.</li>';
+                     }
+
+
+                    coreHTML += '</ul></div>';
+                    externalHTML += '</ul></div>';
+                    
+                    banlistContainer.innerHTML = `
+                        <p class="text-gray-300 mb-4 text-center">
+                            <strong class="text-green-400 font-bold">ARCHETYPE UNRESTRICTED:</strong> The Primite archetype operates at full power. However, some common synergistic cards may be limited.
+                        </p>
+                        ${banlistHTML}${coreHTML}${externalHTML}</div>
+                        <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                            <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its core engine untouched, Primite remains a highly consistent and powerful strategy, able to adapt to various metagames by pairing with different Normal Monster packages.</p>
+                        </div>
+                    `;
+
+
+                } catch (error) {
+                    console.error("Error checking banlist:", error);
+                    banlistContainer.innerHTML = `<p class="text-red-400">Could not retrieve banlist information from the API.</p>`;
+                }
+            }
+
+            checkBanlist();
+        });
+    </script>
+</body>
+</html>
+

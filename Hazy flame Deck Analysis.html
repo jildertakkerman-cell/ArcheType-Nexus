@@ -1,0 +1,556 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazy Flame Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a0f0f; /* Deep, dark red-brown */
+            color: #fde8e8; /* Pale rose white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(45, 23, 23, 0.6); /* Translucent dark wood brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #6b211d; /* Darker flame red border */
+            backdrop-filter: blur(5px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(69, 29, 29, 0.6);
+            border: 1px solid #8e2b26;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3b2020;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b2020;
+        }
+        .pro-icon { color: #6ee7b7; }
+        .con-icon { color: #fca5a5; }
+        .neutral-icon { color: #93c5fd; }
+        .text-accent { color: #ff8c69; } /* Fiery Coral */
+        .lore-link {
+            color: #ff8c69;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff8c69;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ff8c69;
+        }
+
+        /* --- Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            height: 160px;
+            background-color: #1a0f0f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #6b211d;
+        }
+
+        #hazy-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(26, 15, 15, 0.4) 0%, rgba(26, 15, 15, 0.8) 80%);
+            z-index: 2;
+        }
+
+        .banner-title, .banner-subtitle {
+            font-family: 'Cinzel', serif;
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+        }
+        
+        .banner-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+        }
+
+        .banner-subtitle {
+             font-size: 1.1rem;
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                height: 200px;
+                margin-bottom: 4rem;
+            }
+            .banner-title {
+                font-size: 3.5rem;
+            }
+            .banner-subtitle {
+                font-size: 1.25rem;
+            }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center text-white">
+            <canvas id="hazy-banner"></canvas>
+            <h1 class="banner-title">Hazy Flame</h1>
+            <p class="banner-subtitle text-red-200">Forging an Untargetable Offensive</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-red-100">
+                    The <strong class="text-accent font-bold">Hazy Flame</strong> archetype is a unique Level 6 FIRE-based strategy focused on swarming the field with mythological beasts that share a powerful, inherent immunity to being targeted by an opponent's card effects. This core protection forms the foundation of a "glass cannon" playstyle, designed to rapidly assemble materials for potent Rank 6 Xyz Summons. The deck's ultimate goal is to summon its colossal boss monster, <strong class="text-accent font-bold">Hazy Flame Basiltrice</strong>, or pivot into oppressive floodgates like <strong class="text-accent font-bold">Evolzar Solda</strong>. Its success is a paradox, relying on explosive, resource-intensive combos that are highly dependent on a few key starter cards and a deep synergy with generic FIRE support.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Hazy Flame Bestiary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Hazy Flame Bestiary</h2>
+            <p class="text-red-100 mb-8 text-center max-w-2xl mx-auto">
+                While sharing a common immunity, each Hazy Flame monster serves a distinct role. The engine's success relies on the precise interaction between its primary combo starters and its utility-focused support creatures.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Prime Movers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-fire text-4xl text-red-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Prime Movers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hazy Flame Peryton</h4>
+                            <p class="text-sm text-red-100">The undisputed heart of the archetype. By tributing itself and sending a FIRE monster from hand to GY, it summons two "Hazy Flame" monsters from the deck, enabling an instant Rank 6 play.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hazy Flame Sphynx</h4>
+                            <p class="text-sm text-red-100">A key extender and recovery tool. By correctly guessing the top card of your deck, it can Special Summon a FIRE monster from the hand or Graveyard, reigniting combos.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Utility Corps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-alt text-4xl text-red-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Utility Corps</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hazy Flame Cerbereus</h4>
+                            <p class="text-sm text-red-100">The deck's dedicated searcher. When destroyed, it adds any "Hazy" card from the deck to the hand. Its 200 DEF makes it a prime target for <strong class="text-accent font-bold">Rekindling</strong>.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hazy Flame Hydra</h4>
+                            <p class="text-sm text-red-100">A complex enabler. Its Dinosaur typing unlocks <strong class="text-accent font-bold">Evolzar Solda</strong>, and it can attach extra materials to your Xyz monsters, supercharging their effects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Peryton Offensive</h2>
+            <p class="text-red-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the deck's most powerful opening, transforming a single <strong class="text-accent font-bold">Peryton</strong> into an oppressive floodgate.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="peryton-img-container" class="card-image-container flex-shrink-0 card-placeholder">Hazy Flame Peryton</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#3b2020] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Ignite the Engine</h3>
+                            </div>
+                            <p class="text-red-100">Activate <strong class="text-accent font-bold">Hazy Flame Peryton's</strong> effect, tributing it and sending a FIRE monster from your hand to the Graveyard. This is the crucial chokepoint of the combo.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 text-red-400 animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="hydra-img-container" class="card-image-container flex-shrink-0 card-placeholder">Hazy Flame Hydra</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#3b2020] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Unleash the Hydras</h3>
+                            </div>
+                            <p class="text-red-100">Special Summon two copies of <strong class="text-accent font-bold">Hazy Flame Hydra</strong> from your deck. Their Dinosaur typing is key to accessing the deck's true boss monster.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 text-red-400 animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="solda-img-container" class="card-image-container flex-shrink-0 card-placeholder">Evolzar Solda</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#3b2020] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Construct the Floodgate</h3>
+                            </div>
+                            <p class="text-red-100">Overlay the two Hydras to Xyz Summon <strong class="text-accent font-bold">Evolzar Solda</strong>. Both Hydras' effects trigger, attaching the two monsters from your GY to Solda as extra material, resulting in a 4-material negate powerhouse.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Grand Conflagration: Final Endboards</h2>
+             <p class="text-red-100 mb-8 text-center max-w-2xl mx-auto">The Hazy Flame strategy culminates in one of two powerful Rank 6 Xyz monsters, each offering a different philosophy of game control. The choice reflects a deep understanding of both your hand and the opponent's strategy, and the knowledge that these <a href="https://yugipedia.com/wiki/Hazy" target="_blank" class="lore-link">enigmatic flames</a> can forge more than one path to victory.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Evolzar Solda -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Floodgate: Evolzar Solda</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="solda-endboard-img-container" class="card-image-container card-placeholder">Evolzar Solda</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><strong class="text-accent font-bold">Proactive Disruption:</strong> Can negate an opponent's Special Summon and destroy the monster up to four times.</li>
+                        <li><strong class="text-accent font-bold">Destruction Proof:</strong> Immune to destruction by card effects as long as it has material.</li>
+                        <li><strong class="text-accent font-bold">Optimal Play:</strong> The strongest opening board, capable of shutting down combo decks entirely.</li>
+                    </ul>
+                </div>
+                <!-- Hazy Flame Basiltrice -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Fortress: Hazy Flame Basiltrice</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="basiltrice-img-container" class="card-image-container card-placeholder">Hazy Flame Basiltrice</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><strong class="text-accent font-bold">Reactive Removal:</strong> A recurring, targeting banish effect to control the board.</li>
+                        <li><strong class="text-accent font-bold">Layered Protection:</strong> Becomes untargetable at 4+ materials and indestructible at 5+ materials.</li>
+                        <li><strong class="text-accent font-bold">Sustainable Threat:</strong> Can be refueled each turn by <strong class="text-accent font-bold">Hazy Pillar</strong>, creating a powerful loop.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-300 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300 font-bold">Explosive Ceiling:</strong> Can create nearly unbreakable boards from a single card.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-300 font-bold">Comeback Potential:</strong> A single <strong class="text-accent font-bold">Rekindling</strong> can instantly rebuild a full board from an empty field.</li>
+                        <li><span class="pro-icon"><i class="fas fa-brain"></i></span> <strong class="text-green-300 font-bold">Toolbox Access:</strong> Can easily summon any generic Rank 6 Xyz monster to adapt to the game state.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-300 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300 font-bold">Chokepoint Vulnerability:</strong> Extremely reliant on resolving <strong class="text-accent font-bold">Peryton</strong>, making it susceptible to hand traps.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-holding"></i></span> <strong class="text-red-300 font-bold">Resource Intensive:</strong> Combos require a heavy investment of cards from hand, leaving few follow-up plays.</li>
+                        <li><span class="con-icon"><i class="fas fa-shield-slash"></i></span> <strong class="text-red-300 font-bold">Outdated Protection:</strong> Immunity to targeting is less effective against modern, non-targeting board wipes and Kaijus.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-300 mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-blue-300 font-bold">Fire King Engine:</strong> Provides searchable and repeatable ways to destroy <strong class="text-accent font-bold">Hazy Flame Cerbereus</strong> to trigger its search effect.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-fire-alt"></i></span> <strong class="text-blue-300 font-bold">Rekindling:</strong> The single most powerful spell for the deck, capable of winning games on its own by swarming the field with 200 DEF monsters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Hazy Flame Banner Animation ---
+            const canvas = document.getElementById('hazy-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speedY = Math.random() * 2 + 0.5;
+                        this.speedX = (Math.random() - 0.5) * 1.5;
+                        this.size = Math.random() * 2.5 + 1;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                        this.color = `rgba(255, ${Math.floor(Math.random() * 80 + 100)}, 80, ${this.opacity})`;
+                    }
+
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.filter = 'blur(2px)';
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- Card Image Fetching ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'peryton-img-container': 'Hazy Flame Peryton',
+                'hydra-img-container': 'Hazy Flame Hydra',
+                'solda-img-container': 'Evolzar Solda',
+                'solda-endboard-img-container': 'Evolzar Solda',
+                'basiltrice-img-container': 'Hazy Flame Basiltrice'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

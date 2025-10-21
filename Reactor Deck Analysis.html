@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reactor Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111111; /* Near black */
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1f1f1f; /* Very dark grey */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+            border: 1px solid #444; 
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a2a2a;
+            border: 1px solid #555;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #2a2a2a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px #111;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #ffab40; }
+        .text-accent { color: #ff5722; } /* Deep Orange */
+        .arrow-color { color: #ff5722; }
+        .heading-underline {
+            border-bottom: 2px solid #ff5722;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ff5722;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff5722;
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #111;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #444;
+        }
+        #reactor-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(17, 17, 17, 0.4) 0%, rgba(17, 17, 17, 0.85) 70%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(0, 0, 0, 1);
+        }
+        .banner-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.1em;
+        }
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home text-2xl"></i>
+    </a>
+
+<div class="container mx-auto">
+    <header class="banner-header text-center">
+        <canvas id="reactor-banner"></canvas>
+        <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Reactor</h1>
+        <p class="text-lg md:text-xl text-gray-300">Deconstructing a Flawed Legacy</p>
+    </header>
+
+    <section class="mb-10 md:mb-16">
+        <div class="card p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+            <p class="text-gray-300">
+                Originating from the 5D's era, the <strong class="text-accent font-bold">Reactor</strong> archetype is a fascinating case study in outdated game design. Comprised of DARK Machine monsters, its strategy is entirely reactive, aiming to punish an opponent's summons, spells, and traps by destroying them and inflicting minor burn damage. This slow, methodical assembly of specific monsters is meant to culminate in summoning the imposing boss monster, <strong class="text-accent font-bold">Flying Fortress SKY FIRE</strong>. Regarded as functionally obsolete, the modern challenge is not to play the archetype pure, but to solve its inherent flaws by integrating a fascinating, if flawed, collection of <a href="https://db.ygoprodeck.com/search/?&fname=reactor&sort=name&view=List" target="_blank" class="lore-link">Reactor cards</a> into a more robust external engine.
+            </p>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Reactor Trinity & The Fortress</h2>
+        <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+            The archetype's core gameplay loop revolves around three main deck monsters. Their greatest collective weakness is the "destroy, don't negate" paradigm, which is largely ineffective against modern cards whose effects resolve even if the card itself is destroyed.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="card p-4 flex flex-col items-center text-center">
+                <div id="spell-reactor-img" class="w-full h-48 card-placeholder mb-4">Spell Reactor • RE</div>
+                <h3 class="text-lg font-bold text-accent mb-2">Spell Reactor • RE</h3>
+                <p class="text-sm text-gray-400">Destroys an opponent's activating Spell Card. Useful against continuous or field spells.</p>
+            </div>
+            <div class="card p-4 flex flex-col items-center text-center">
+                <div id="trap-reactor-img" class="w-full h-48 card-placeholder mb-4">Trap Reactor • Y FI</div>
+                <h3 class="text-lg font-bold text-accent mb-2">Trap Reactor • Y FI</h3>
+                <p class="text-sm text-gray-400">The trap-destroying counterpart, sharing the same fundamental flaw as its spell-focused partner.</p>
+            </div>
+            <div class="card p-4 flex flex-col items-center text-center">
+                <div id="summon-reactor-img" class="w-full h-48 card-placeholder mb-4">Summon Reactor • SK</div>
+                <h3 class="text-lg font-bold text-accent mb-2">Summon Reactor • SK</h3>
+                <p class="text-sm text-gray-400">The lynchpin. Inflicts burn damage and is the only way to summon the archetype's boss monster.</p>
+            </div>
+            <div class="card p-4 flex flex-col items-center text-center bg-red-900/30 border-red-500/50">
+                <div id="sky-fire-img" class="w-full h-48 card-placeholder mb-4">Flying Fortress SKY FIRE</div>
+                <h3 class="text-lg font-bold text-red-400 mb-2">Flying Fortress SKY FIRE</h3>
+                <p class="text-sm text-gray-400">The Nomi boss monster, summoned only by tributing the main three Reactors.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Bolting on Modern Functionality</h2>
+        <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+            To make Reactors playable, external engines are not just helpful—they are mandatory. These cards solve the core problems of consistency, board presence, and having a reliable win condition.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-search mr-2 text-accent"></i>Consistency Solution</h3>
+                <p class="text-gray-300">The <strong class="text-accent">Orcustrated Climax</strong> package provides a desperately needed search engine. By sending the trap to the graveyard, its effect can be used to search any of the DARK Machine "Reactor" monsters.</p>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-shield-alt mr-2 text-accent"></i>Board Presence Solution</h3>
+                <p class="text-gray-300">The Field Spell <strong class="text-accent">Heavy Metal Raiders</strong> is the single most important support card. It provides battle protection and turns the Reactors' mediocre destruction effects into a way to swarm the field from the hand.</p>
+            </div>
+             <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-trophy mr-2 text-accent"></i>Win Condition Solution</h3>
+                <p class="text-gray-300"><strong class="text-accent">Desperado Barrel Dragon</strong> serves as a powerful, alternative boss monster that can be Special Summoned from the hand when a DARK Machine monster is destroyed, turning the Reactors into strategic bait.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Core Combo Walkthrough Section -->
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Heavy Metal Raiders Engine</h2>
+        <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how the critical Field Spell, <strong class="text-accent">Heavy Metal Raiders</strong>, transforms the deck from a slow, reactive pile into a functional combo engine.</p>
+        <div class="flex flex-col items-center gap-6">
+            <!-- Step 1 -->
+            <div class="card p-6 combo-step-card w-full max-w-lg">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="combo-spell-reactor-img" class="card-image-container flex-shrink-0 card-placeholder">Spell Reactor • RE</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f1f1f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">The Trigger</h3>
+                        </div>
+                        <p class="text-gray-300">Start with <strong class="text-accent">Heavy Metal Raiders</strong> on the field and <strong class="text-accent">Spell Reactor • RE</strong>. When your opponent activates any Spell Card, <strong class="text-accent">Spell Reactor's</strong> effect triggers to destroy it.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Arrow -->
+            <div class="w-full flex justify-center">
+                <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+            </div>
+            <!-- Step 2 -->
+            <div class="card p-6 combo-step-card w-full max-w-lg">
+                 <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="raiders-img" class="card-image-container flex-shrink-0 card-placeholder">Heavy Metal Raiders</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f1f1f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">The Engine Activates</h3>
+                        </div>
+                        <p class="text-gray-300">Because your DARK Machine monster destroyed a card on the field by an effect, the secondary effect of <strong class="text-accent">Heavy Metal Raiders</strong> now triggers, allowing you to Special Summon a DARK Machine from your hand.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Arrow -->
+            <div class="w-full flex justify-center">
+                <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+            </div>
+            <!-- Step 3 -->
+            <div class="card p-6 combo-step-card w-full max-w-lg">
+                 <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="combo-summon-reactor-img" class="card-image-container flex-shrink-0 card-placeholder">Summon Reactor • SK</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f1f1f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Accelerated Assembly</h3>
+                        </div>
+                        <p class="text-gray-300">You can now Special Summon <strong class="text-accent">Summon Reactor • SK</strong> directly from your hand, bypassing its Tribute Summon requirement and drastically speeding up the assembly of the three necessary pieces for <strong class="text-accent">SKY FIRE</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    <!-- Competitive Analysis Section -->
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="card p-6 pro-con-card">
+                <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">Favorable Matchups:</strong> Effective against slower, control-oriented decks that rely on key continuous Spells/Traps staying on the field.</li>
+                    <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">Attrition Game:</strong> The "Desperado Fortress" strategy can effectively grind out wins against decks with limited recovery options.</li>
+                </ul>
+            </div>
+            <div class="card p-6 pro-con-card">
+                <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400">Modern Combo Decks:</strong> Critically weak against any strategy that can establish multiple monster negations on their first turn.</li>
+                    <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400">Backrow Removal:</strong> Highly vulnerable to cards that can destroy <strong class="text-accent">Heavy Metal Raiders</strong>, leaving the weak Reactor monsters exposed.</li>
+                    <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400">Hand Traps:</strong> Extremely susceptible to common hand traps like <strong class="text-accent">Ash Blossom & Joyous Spring</strong> that can negate searches.</li>
+                </ul>
+            </div>
+            <div class="card p-6 pro-con-card">
+                <h3 class="text-xl font-bold text-yellow-400 mb-4">Hybridization & Tech</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                     <li><span class="neutral-icon"><i class="fas fa-cogs"></i></span> <strong class="text-yellow-400">Orcust Engine:</strong> Beyond just searching, a larger Orcust package can be integrated for more robust Link climbing and recursion.</li>
+                     <li><span class="neutral-icon"><i class="fas fa-ban"></i></span> <strong class="text-yellow-400">Jinzo Package:</strong> Including Jinzo creates a powerful anti-trap strategy, protecting your board from disruptive backrow and creating a lockdown.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Achievable Endboards & Strategy</h2>
+        <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+            The primary goal shifts from the difficult SKY FIRE summon to a more practical and resilient control board that forces the opponent into a no-win situation.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="card p-6 pro-con-card">
+                <h3 class="text-xl font-bold text-white mb-4 text-center">The Desperado Fortress</h3>
+                 <div class="flex justify-center mb-4">
+                    <div id="desperado-img" class="card-image-container card-placeholder">Desperado Barrel Dragon</div>
+                </div>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <li><strong class="text-accent">Heavy Metal Raiders</strong> active on the field, providing battle protection.</li>
+                    <li>One or two "Reactor" monsters on field as bait.</li>
+                    <li><strong class="text-accent">Desperado Barrel Dragon</strong> in hand, ready to be summoned if the opponent destroys a Reactor.</li>
+                    <li>This setup creates a punishing attrition game, grinding down the opponent's resources.</li>
+                </ul>
+            </div>
+            <div class="card p-6 pro-con-card">
+                <h3 class="text-xl font-bold text-white mb-4 text-center">The SKY FIRE Lockdown ("Perfect Hand")</h3>
+                <div class="flex justify-center mb-4">
+                    <div id="sky-fire-endboard-img" class="card-image-container card-placeholder">Flying Fortress SKY FIRE</div>
+                </div>
+                 <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <li><strong class="text-accent">Flying Fortress SKY FIRE</strong> successfully summoned to the field.</li>
+                    <li>Use its once-per-turn effects to destroy any card the opponent commits to the board.</li>
+                    <li>Creates a powerful soft-lock that is difficult to break without specific non-targeting removal.</li>
+                    <li>Highly rewarding, but extremely difficult and fragile to set up.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">TCG Banlist Impact</h2>
+        <div class="card p-6">
+            <div class="p-3 bg-green-900/30 rounded border-l-4 border-green-500">
+                <h3 class="text-lg font-bold text-green-400 mb-2">Full Power: Unrestricted</h3>
+                <p class="text-sm text-gray-300">
+                    The "Reactor" archetype and all its key external support cards (<strong class="text-accent">Heavy Metal Raiders, Desperado Barrel Dragon</strong>, etc.) are currently <strong class="text-green-400">unlimited</strong> in the TCG. This allows the deck to be built and played at its maximum potential. However, despite being at "full power," the archetype's core design flaws mean it remains a rogue strategy that relies heavily on its support engines to function in a modern competitive environment.
+                </p>
+            </div>
+        </div>
+    </section>
+
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('reactor-banner');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+
+            const setCanvasSize = () => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            };
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 1;
+                    this.speedX = Math.random() * 1 - 0.5;
+                    this.speedY = Math.random() * 1 - 0.5;
+                    this.color = `rgba(255, 87, 34, ${Math.random() * 0.5 + 0.2})`;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.size > 0.1) this.size -= 0.02;
+                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function init() {
+                particles = [];
+                let numberOfParticles = (canvas.width * canvas.height) / 9000;
+                for (let i = 0; i < numberOfParticles; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    if (particles[i].size <= 0.1) {
+                        particles.splice(i, 1);
+                        particles.push(new Particle());
+                        i--;
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+
+            setCanvasSize();
+            init();
+            animate();
+
+            window.addEventListener('resize', () => {
+                setCanvasSize();
+                init();
+            });
+        }
+        
+        async function fetchAndDisplayCardImage(cardName, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const data = await response.json();
+                const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardName;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                    throw new Error("Image URL not found.");
+                }
+            } catch (error) {
+                console.error(`Failed to fetch image for "${cardName}":`, error);
+                container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+            }
+        }
+
+        const cardsToLoad = {
+            'spell-reactor-img': 'Spell Reactor・RE',
+            'trap-reactor-img': 'Trap Reactor・Y FI',
+            'summon-reactor-img': 'Summon Reactor・SK',
+            'sky-fire-img': 'Flying Fortress SKY FIRE',
+            'desperado-img': 'Desperado Barrel Dragon',
+            'sky-fire-endboard-img': 'Flying Fortress SKY FIRE',
+            'combo-spell-reactor-img': 'Spell Reactor・RE',
+            'raiders-img': 'Heavy Metal Raiders',
+            'combo-summon-reactor-img': 'Summon Reactor・SK',
+        };
+
+        for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+            fetchAndDisplayCardImage(cardName, containerId);
+        }
+    });
+</script>
+</body>
+</html>
+

@@ -1,0 +1,706 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amorphage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a091f; /* Deep, sickly purple */
+            color: #d1ffd7; /* Pale green text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a0d2e; /* Darker purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a0e5f;
+        }
+        .combo-step-card {
+            background-color: #3e1a4c;
+            border: 1px solid #5a2e6d;
+        }
+        .pro-con-card {
+            background-color: #3e1a4c;
+            border: 1px solid #5a2e6d;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3e1a4c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3e1a4c;
+        }
+        .pro-icon { color: #4ade80; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #abff4f; } /* Toxic Lime Green */
+        .arrow-color { color: #abff4f; }
+        .heading-underline {
+            border-bottom: 2px solid #abff4f;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px; /* Matching Battlewasp size */
+            background-color: #1a091f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a0e5f;
+        }
+
+        #amorphage-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(26, 9, 31, 0.8); /* Dark Purple overlay */
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        #card-popup h3 {
+            color: #abff4f;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        #card-popup p {
+            margin: 0.25rem 0;
+        }
+        #card-popup-stats {
+            color: #abff4f;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="amorphage-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Amorphage</h1>
+            <p class="text-lg md:text-xl text-purple-200">An Analysis of the Pendulum Floodgate Strategy</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-200">
+                    The <strong class="text-accent font-bold">Amorphage</strong> archetype is a unique and highly specialized Pendulum-based stun and floodgate strategy. It forgoes a traditional Extra Deck-focused board in favor of a layered matrix of continuous negative effects. The deck's defining mechanic is a mandatory tribute during the Standby Phase, a seeming weakness that is cleverly transformed into the lynchpin of its search engine. By embracing its self-imposed restrictions, particularly the Extra Deck lock, the deck turns a disadvantage into a powerful tool, enabling the use of high-impact generic cards that are typically unusable in other strategies.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Foundational Mechanics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The Pendulum Lockdown</h3>
+                    <p class="text-purple-200">All Amorphage Pendulum Monsters share a condition: their powerful floodgate effects are only active while you control an "Amorphage" monster. This creates a multi-layered lockdown, capable of preventing searching, monster effects, and spell activations all at once.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The Tribute Engine</h3>
+                    <p class="text-purple-200">Each Amorphage Pendulum Scale requires a tribute during the Standby Phase, or it destroys itself. This apparent cost is the core of the deck's engine, as tributing a monster triggers <strong class="text-accent font-bold">Amorphage Infection</strong> to search for any Amorphage card, creating a self-sustaining loop.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo Walkthrough</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">The fundamental goal is to establish a pair of Pendulum Scales and a monster on the field to activate the floodgate effects. The process focuses on consistency over complexity.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="scales-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#4a0e5f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Establish Scales</h3>
+                        </div>
+                        <p class="text-purple-200">Place <strong class="text-accent font-bold">Amorphage Sloth</strong> (Scale 3) and <strong class="text-accent font-bold">Amorphage Gluttony</strong> (Scale 5) in the Pendulum Zones.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="monster-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#4a0e5f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Summon a Monster</h3>
+                        </div>
+                        <p class="text-purple-200">Normal Summon any Amorphage monster. This initial field presence is enough to activate the floodgate effects of the scales.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="infection-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#4a0e5f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Maintain the Loop</h3>
+                        </div>
+                        <p class="text-purple-200">During the Standby Phase, tribute the monster to pay the cost. With <strong class="text-accent font-bold">Amorphage Infection</strong> on the field, this triggers a search, and you can then Pendulum Summon the monster back to maintain the lock.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Endboard: Locking the Game State</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">The goal is not to build a board of negates, but to create a "zero-play" state where the opponent is unable to perform basic actions.</p>
+            <div class="card p-6 flex flex-col md:flex-row items-center md:items-start gap-4 mx-auto max-w-2xl">
+                <div class="flex flex-col items-center gap-4">
+                    <div id="endboard-monster-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                    <div id="endboard-infection-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                </div>
+                <div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><strong class="text-accent font-bold">Pendulum Scales:</strong> Typically <strong class="text-accent font-bold">Amorphage Sloth</strong> (to prevent Extra Deck summons) and <strong class="text-accent font-bold">Amorphage Gluttony</strong> (to prevent monster effects).</li>
+                        <li><strong class="text-accent font-bold">On-Field Monster:</strong> An <strong class="text-accent font-bold">Amorphage Sloth</strong> or <strong class="text-accent font-bold">Goliath</strong> to provide a continuous lock on Extra Deck summons.</li>
+                        <li><strong class="text-accent font-bold">Backrow Support:</strong> <strong class="text-accent font-bold">Amorphage Infection</strong> to ensure the tribute engine continues to generate resources each turn.</li>
+                        <li><strong class="text-accent font-bold">Ultimate Win Condition:</strong> Summoning <strong class="text-accent font-bold">Amorphactor Pain, the Imagination Dracoverlord</strong> to skip the opponent's Main Phase 1 entirely.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Powerful Floodgates:</strong> Can lock down multiple aspects of the opponent's game plan simultaneously.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">Self-Sustaining Engine:</strong> The tribute mechanic creates a consistent resource loop with Amorphage Infection.</li>
+                         <li><span class="pro-icon"><i class="fas fa-tools"></i></span> <strong class="text-green-400 font-bold">Generic Card Synergy:</strong> The Extra Deck lock allows the use of powerful cards like <strong class="text-accent font-bold">Pot of Extravagance</strong> and <strong class="text-accent font-bold">Dogmatika Punishment</strong> with no downside.</li>
+                    </ul>
+                </div>
+                
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Resource Management:</strong> If unable to tribute a monster, the Pendulum Scales will be destroyed, breaking the lock.</li>
+                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-400 font-bold">Backrow Vulnerability:</strong> Highly susceptible to generic Spell/Trap removal like <strong class="text-accent font-bold">Harpie's Feather Duster</strong>.</li>
+                    </ul>
+                </div>
+
+                <!-- Tech Cards Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent font-bold">Dracoslayer/Dracoverlord:</strong> Provide protection for Pendulum cards and additional lockdown effects.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-book-open"></i></span> <strong class="text-accent font-bold">High-Impact Draw Spells:</strong> Cards like <strong class="text-accent font-bold">Pot of Extravagance</strong> provide much-needed consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dog"></i></span> <strong class="text-accent font-bold">Dogmatika Punishment:</strong> Offers powerful removal by sending cards like <strong class="text-accent font-bold">Elder Entity N'tss</strong> from the irrelevant Extra Deck.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Amorphage Arsenal</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">A detailed overview of the key corrupted dragons and their support.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Amorphage Sloth</h3>
+                    <p class="text-purple-200">The primary boss monster. Its Pendulum effect prevents searching, and its monster effect provides the continuous Extra Deck lock.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Amorphage Gluttony</h3>
+                    <p class="text-purple-200">A key Pendulum scale that prevents non-"Amorphage" monsters from activating their effects.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Amorphage Infection</h3>
+                    <p class="text-purple-200">The core Continuous Spell. Searches for any "Amorphage" card whenever a monster is tributed, fueling the resource loop.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Amorphage Lysis</h3>
+                    <p class="text-purple-200">A Continuous Trap that replaces a destroyed Amorphage scale with a new one from the deck, providing resilience.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Amorphage Goliath</h3>
+                    <p class="text-purple-200">A secondary boss monster that locks the Extra Deck and has a Pendulum effect to banish cards sent to the GY.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Amorphactor Pain, the Imagination Dracoverlord</h3>
+                    <p class="text-purple-200">The ultimate win condition. A Ritual monster that forces the opponent to skip their next Main Phase 1 when summoned.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- AMORPHAGE "VIRAL CORRUPTION" ANIMATION ---
+            const canvas = document.getElementById('amorphage-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let veins = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Vein {
+                    constructor(x, y, parent = null) {
+                        this.x = x;
+                        this.y = y;
+                        this.parent = parent;
+                        this.children = [];
+                        this.angle = parent ? parent.angle + (Math.random() - 0.5) * 1.5 : Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 0.5 + 0.2;
+                        this.lineWidth = 3;
+                        this.life = 0;
+                        this.maxLife = 150 + Math.random() * 100;
+                        this.isFlaring = false;
+                        this.flareLife = 0;
+                    }
+
+                    update() {
+                        if (this.parent) {
+                            this.x += Math.cos(this.angle) * this.speed;
+                            this.y += Math.sin(this.angle) * this.speed;
+                        }
+                        this.life++;
+
+                        // Randomly flare
+                        if (Math.random() < 0.002 && !this.isFlaring) {
+                            this.isFlaring = true;
+                            this.flareLife = 60; // frames
+                        }
+                        if(this.isFlaring) {
+                            this.flareLife--;
+                            if(this.flareLife <= 0) this.isFlaring = false;
+                        }
+                    }
+
+                    draw() {
+                        if (!this.parent) return;
+                        
+                        const flareProgress = this.isFlaring ? this.flareLife / 60 : 0;
+                        const colorPurple = `rgba(90, 46, 109, ${0.4 - (this.life / this.maxLife) * 0.4})`;
+                        const colorGreen = `rgba(171, 255, 79, ${flareProgress * 0.8})`;
+
+                        // Base Vein
+                        ctx.beginPath();
+                        ctx.moveTo(this.parent.x, this.parent.y);
+                        ctx.lineTo(this.x, this.y);
+                        ctx.strokeStyle = colorPurple;
+                        ctx.lineWidth = this.lineWidth;
+                        ctx.stroke();
+
+                        // Flare effect
+                        if(this.isFlaring) {
+                            ctx.beginPath();
+                            ctx.moveTo(this.parent.x, this.parent.y);
+                            ctx.lineTo(this.x, this.y);
+                            ctx.strokeStyle = colorGreen;
+                            ctx.lineWidth = this.lineWidth + 1;
+                            ctx.shadowColor = '#abff4f';
+                            ctx.shadowBlur = 15 * flareProgress;
+                            ctx.stroke();
+                            ctx.shadowBlur = 0; // Reset shadow
+                        }
+                    }
+                }
+
+                function init() {
+                    veins = [new Vein(canvas.width/2, canvas.height/2, null)]; // Start from center
+                }
+
+                function animate() {
+                    // Slow fade effect
+                    ctx.fillStyle = `rgba(26, 9, 31, 0.05)`;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    if (veins.length < 100 && Math.random() < 0.5) {
+                        const parentVein = veins[Math.floor(Math.random() * veins.length)];
+                        veins.push(new Vein(parentVein.x, parentVein.y, parentVein));
+                    }
+                    
+                    veins.forEach(vein => {
+                        vein.update();
+                        vein.draw();
+                    });
+
+                    veins = veins.filter(v => v.life < v.maxLife);
+                    
+                    if(veins.length < 2) {
+                        veins.push(new Vein(Math.random()*canvas.width, Math.random()*canvas.height, new Vein(canvas.width/2, canvas.height/2)));
+                    }
+
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    img.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        showPopup(event, cardInfo.name);
+                    });
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-blue-300">${cardType}</p>
+                        <div class="w-full h-px bg-blue-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+
+            async function fetchAndDisplayMultipleCardImages(cardNames, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder animate-fadeIn';
+                placeholder.textContent = `Loading: ${cardNames.join(' & ')}...`;
+                container.appendChild(placeholder);
+                const imageWrapper = document.createElement('div');
+                imageWrapper.className = 'flex gap-1 w-full h-full';
+                for (const cardName of cardNames) {
+                    try {
+                        const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                        const response = await fetch(apiUrl);
+                        const data = await response.json();
+                        const cardInfo = data.data[0];
+                        const imageUrl = cardInfo.card_images[0].image_url;
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imageUrl;
+                        imgElement.alt = cardName;
+                        imgElement.className = 'w-1/2 h-auto rounded-md shadow-lg animate-fadeIn';
+                        imgElement.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            if (!cardDataCache[cardName]) cardDataCache[cardName] = cardInfo;
+                            showPopup(event, cardName);
+                        });
+                        imageWrapper.appendChild(imgElement);
+                    } catch (error) {
+                        console.error(`Error fetching image for ${cardName}:`, error);
+                    }
+                }
+                container.innerHTML = '';
+                container.appendChild(imageWrapper);
+            }
+
+            fetchAndDisplayMultipleCardImages(['Amorphage Sloth', 'Amorphage Gluttony'], 'scales-img-container');
+            fetchAndDisplayCardImage('Amorphage Lechery', 'monster-img-container');
+            fetchAndDisplayCardImage('Amorphage Infection', 'infection-img-container');
+            fetchAndDisplayMultipleCardImages(['Amorphage Sloth', 'Amorphage Goliath'], 'endboard-monster-img-container');
+            fetchAndDisplayCardImage('Amorphage Infection', 'endboard-infection-img-container');
+        });
+    </script>
+    <div id="card-popup" class="fixed z-50 bg-gray-900 border-2 border-[#abff4f] text-white p-4 rounded-lg shadow-lg max-w-xs opacity-0 transition-opacity duration-200 pointer-events-none"></div>
+</body>
+</html>
+
+

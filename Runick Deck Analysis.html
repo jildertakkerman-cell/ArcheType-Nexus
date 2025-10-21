@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Runick Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c1421; /* Deep, dark blue */
+            color: #e0e7ff; /* Light lavender-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(18, 28, 48, 0.7); /* Translucent dark slate */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2a3a5e;
+            backdrop-filter: blur(5px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(25, 39, 68, 0.7);
+            border: 1px solid #3c5a99;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .card-placeholder {
+            background-color: #121c30;
+            color: #a7b7d9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #2a3a5e;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fcd34d; } /* Golden-yellow for runes */
+        .arrow-color { color: #fcd34d; }
+        .heading-underline {
+            font-family: 'Cinzel', serif;
+            border-bottom: 2px solid #fcd34d;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fcd34d;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fcd34d;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #fcd34d;
+        }
+
+        /* --- Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c1421;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #2a3a5e;
+        }
+        #rune-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(12, 20, 33, 0.4) 0%, rgba(12, 20, 33, 0.8) 70%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+        }
+        
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white; border: 2px solid #6366f1; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+        .ygo-home-button i { font-size: 22px; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus"><i class="fas fa-home"></i></a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="rune-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-bold text-white mb-2">Runick</h1>
+            <p class="text-lg md:text-xl text-yellow-200">Analysis of a Deck-Out Control Strategy</p>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-blue-100">
+                    The Runick archetype introduces a unique control strategy that deviates from traditional combat-based win conditions. Instead, it aims for victory through resource attrition and forcing the opponent into a "deck-out"—the inability to draw a card. This is achieved through a suite of powerful Quick-Play Spells, a recursive Field Spell, and a toolkit of utility Fusion Monsters. By understanding the synergy between these components, one can appreciate the archetype's potent, albeit unconventional, path to victory. The strategy hinges on the continuous activation and recycling of the many <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=17381&st=Runick" target="_blank" class="lore-link">mystical Runick cards</a>.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">The Core Engine</h2>
+            <div class="space-y-8">
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <div id="fountain-img-container" class="card-image-container card-placeholder">Runick Fountain</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-accent mb-2">The Heart: Runick Fountain</h3>
+                            <p class="text-blue-100">This Field Spell is the absolute core of the Runick engine. It allows you to activate Runick Quick-Play Spells from your hand during your opponent's turn. More importantly, its once-per-turn effect lets you recycle up to three Runick Quick-Plays from your Graveyard to the bottom of your deck to draw the same number of cards. This creates an overwhelming advantage loop, turning every interaction into a net gain of resources.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-2xl font-bold text-accent mb-4 text-center">The Arsenal: Quick-Play Spells</h3>
+                    <p class="text-blue-100 mb-4 text-center">Each Runick Quick-Play has a dual effect: a unique disruptive ability paired with banishing cards from the opponent's deck, or summoning a Runick Fusion monster. Activating any of them forces you to skip your next Battle Phase, reinforcing the deck's control-oriented identity.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="font-bold text-accent">Runick Tip</h4>
+                            <p class="text-sm text-blue-200">Searches any "Runick" card. The deck's primary consistency tool.</p>
+                        </div>
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="font-bold text-accent">Runick Destruction</h4>
+                            <p class="text-sm text-blue-200">Destroys a Spell/Trap. Key for removing backrow and floodgates.</p>
+                        </div>
+                         <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="font-bold text-accent">Runick Flashing Fire</h4>
+                            <p class="text-sm text-blue-200">Destroys a Special Summoned monster. Your main source of monster removal.</p>
+                        </div>
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="font-bold text-accent">Runick Freezing Curses</h4>
+                            <p class="text-sm text-blue-200">Negates a monster's effects for a turn. Crucial for combo interruption.</p>
+                        </div>
+                         <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="font-bold text-accent">Runick Dispelling</h4>
+                            <p class="text-sm text-blue-200">Punishes opponent's searches by forcing a random discard.</p>
+                        </div>
+                         <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="font-bold text-accent">Runick Slumber</h4>
+                            <p class="text-sm text-blue-200">Protects a monster from destruction for a turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: Establishing the Fountain</h2>
+             <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="tip-img-container" class="card-image-container card-placeholder">Runick Tip</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#121c30] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate Any Runick Spell</h3>
+                            </div>
+                            <p class="text-blue-100">Activate any Runick Quick-Play Spell from your hand. Choose the effect to Special Summon one "Runick" monster from your Extra Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl my-4 text-accent"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="hugin-img-container" class="card-image-container card-placeholder">Hugin the Runick Wings</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#121c30] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon Hugin & Search</h3>
+                            </div>
+                            <p class="text-blue-100">Special Summon <strong class="text-accent">Hugin the Runick Wings</strong>. Its effect triggers on summon, allowing you to discard one card to add <strong class="text-accent">Runick Fountain</strong> from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl my-4 text-accent"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="fountain-combo-img-container" class="card-image-container card-placeholder">Runick Fountain</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#121c30] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Activate Fountain</h3>
+                            </div>
+                            <p class="text-blue-100">Activate <strong class="text-accent">Runick Fountain</strong>. The engine is now online, and Hugin provides protection by banishing itself if Fountain would be destroyed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Typical Endboard</h2>
+            <div class="card p-6">
+                <p class="text-blue-100 text-center mb-6">Unlike combo decks that build a board of monsters with multiple negates, a Runick endboard is defined by its state of resource advantage and control. The goal is to establish a lock that the opponent cannot break.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <div class="flex flex-col items-center">
+                        <div id="endboard-fountain-img-container" class="card-image-container card-placeholder mb-4">Runick Fountain</div>
+                        <h4 class="font-bold text-accent text-lg text-center">Active Runick Fountain</h4>
+                        <p class="text-sm text-blue-200 text-center">The core of your advantage engine, ready to recycle spells and draw cards.</p>
+                    </div>
+                     <div class="flex flex-col items-center">
+                        <div id="endboard-hugin-img-container" class="card-image-container card-placeholder mb-4">Hugin the Runick Wings</div>
+                        <h4 class="font-bold text-accent text-lg text-center">Protective Monster</h4>
+                        <p class="text-sm text-blue-200 text-center"><strong class="text-accent">Hugin</strong> or <strong class="text-accent">Munin</strong> on field or in GY, ready to protect your Fountain from destruction or targeting.</p>
+                    </div>
+                </div>
+                 <div class="mt-6 text-center">
+                    <i class="fas fa-hand-paper text-4xl text-blue-300 mb-2"></i>
+                    <h4 class="font-bold text-accent text-lg">Hand Full of Interruptions</h4>
+                    <p class="text-sm text-blue-200">3-5 Runick Quick-Play Spells in hand, ready to be activated on the opponent's turn for disruption and to trigger Fountain's draw effect.</p>
+                 </div>
+                 <div class="mt-6 text-center">
+                    <i class="fas fa-layer-group text-4xl text-blue-300 mb-2"></i>
+                    <h4 class="font-bold text-accent text-lg">Potentially a Floodgate</h4>
+                    <p class="text-sm text-blue-200">In "Stun" variants, this board would be supplemented with a powerful continuous trap like <strong class="text-accent">Skill Drain</strong> or <strong class="text-accent">Gozen Match</strong>.</p>
+                 </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="pro-con-card p-6 rounded-lg">
+                    <h3 class="text-xl font-bold text-green-400 mb-4"><i class="fas fa-thumbs-up mr-2"></i>Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-green-300">Unmatched Recursion:</strong> Fountain's recycling creates incredible staying power.</li>
+                        <li><strong class="text-green-300">High Consistency:</strong> Most spells act as starters by summoning Hugin.</li>
+                        <li><strong class="text-green-300">Flexible Engine:</strong> Easily hybridizes with other archetypes like Spright and Naturia.</li>
+                    </ul>
+                </div>
+                <div class="pro-con-card p-6 rounded-lg">
+                    <h3 class="text-xl font-bold text-red-400 mb-4"><i class="fas fa-thumbs-down mr-2"></i>Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-red-300">Central Choke Point:</strong> Extremely reliant on resolving Runick Fountain.</li>
+                        <li><strong class="text-red-300">Vulnerable to Banishment:</strong> Cards like Cosmic Cyclone bypass Hugin's protection.</li>
+                        <li><strong class="text-red-300">Spell Negation:</strong> Anti-Spell Fragrance or similar effects can shut the deck down completely.</li>
+                    </ul>
+                </div>
+                <div class="pro-con-card p-6 rounded-lg">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4"><i class="fas fa-tools mr-2"></i>Hybrid Synergies</h3>
+                     <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-blue-300">Spright:</strong> Hugin is a Level 2, making it a perfect starter for the Spright engine.</li>
+                        <li><strong class="text-blue-300">Naturia:</strong> Fountain recycles cards for Naturia Beast's infinite spell negation.</li>
+                        <li><strong class="text-blue-300">Stun:</strong> Hugin and Munin protect powerful floodgate cards from removal.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6 text-center">
+                <p class="text-gray-400">Loading banlist status...</p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Rune Canvas Animation ---
+            const canvas = document.getElementById('rune-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let runes = [];
+                const runeChars = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᚺ', 'ᚾ', 'ᛁ', 'ᛃ', 'ᛇ', 'ᛈ', 'ᛉ', 'ᛊ', 'ᛏ', 'ᛒ', 'ᛖ', 'ᛗ', 'ᛚ', 'ᛜ', 'ᛟ', 'ᛞ'];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.parentElement.offsetWidth;
+                    canvas.height = canvas.parentElement.offsetHeight;
+                };
+
+                class Rune {
+                    constructor() {
+                        this.reset();
+                    }
+
+                    reset() {
+                        this.char = runeChars[Math.floor(Math.random() * runeChars.length)];
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 20 + 10;
+                        this.opacity = 0;
+                        this.fadeSpeed = Math.random() * 0.02 + 0.01;
+                        this.life = 0; // 0 = fading in, 1 = fading out
+                    }
+
+                    draw() {
+                        ctx.font = `${this.size}px Cinzel`;
+                        ctx.fillStyle = `rgba(252, 211, 77, ${this.opacity})`;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = 'rgba(252, 211, 77, 0.7)';
+                        ctx.fillText(this.char, this.x, this.y);
+                    }
+
+                    update() {
+                        if (this.life === 0) { // Fading in
+                            this.opacity += this.fadeSpeed;
+                            if (this.opacity >= 0.7) {
+                                this.opacity = 0.7;
+                                this.life = 1;
+                            }
+                        } else { // Fading out
+                            this.opacity -= this.fadeSpeed * 0.5;
+                            if (this.opacity <= 0) {
+                                this.reset();
+                            }
+                        }
+                        this.draw();
+                    }
+                }
+
+                function initRunes() {
+                    runes = [];
+                    const numRunes = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < numRunes; i++) {
+                        runes.push(new Rune());
+                    }
+                }
+
+                function animateRunes() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    runes.forEach(rune => rune.update());
+                    requestAnimationFrame(animateRunes);
+                }
+
+                setCanvasSize();
+                initRunes();
+                animateRunes();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initRunes();
+                });
+            }
+
+            // --- Card Image Fetching ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'fountain-img-container': 'Runick Fountain',
+                'tip-img-container': 'Runick Tip',
+                'hugin-img-container': 'Hugin the Runick Wings',
+                'fountain-combo-img-container': 'Runick Fountain',
+                'endboard-fountain-img-container': 'Runick Fountain',
+                'endboard-hugin-img-container': 'Hugin the Runick Wings'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+
+            // --- Banlist Check ---
+            async function checkBanlist() {
+                const banlistContainer = document.getElementById('banlist-status');
+                const runickCardsToCheck = ['Runick Fountain', 'Runick Tip'];
+                try {
+                    const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg&name=${runickCardsToCheck.map(encodeURIComponent).join('|')}`);
+                    if (!response.ok) throw new Error('Failed to fetch banlist data');
+                    const data = await response.json();
+                    
+                    let statusHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+                    const statusMap = { 'Limited': 'text-yellow-400', 'Semi-Limited': 'text-blue-400', 'Forbidden': 'text-red-400'};
+
+                    if (data.data && data.data.length > 0) {
+                        data.data.forEach(card => {
+                            const banStatus = card.banlist_info ? card.banlist_info.ban_tcg : 'Unlimited';
+                            const statusColor = statusMap[banStatus] || 'text-green-400';
+                            statusHTML += `
+                                <div class="combo-step-card p-4 rounded-lg">
+                                    <h4 class="font-bold text-lg ${statusColor}">${card.name}</h4>
+                                    <p class="text-md ${statusColor}">${banStatus}</p>
+                                </div>`;
+                        });
+                    } else {
+                         runickCardsToCheck.forEach(cardName => {
+                             statusHTML += `
+                                <div class="combo-step-card p-4 rounded-lg">
+                                    <h4 class="font-bold text-lg text-green-400">${cardName}</h4>
+                                    <p class="text-md text-green-400">Unlimited</p>
+                                </div>`;
+                         });
+                    }
+
+                    statusHTML += '</div><div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500"><p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With key cards like Fountain being Semi-Limited, Runick pilots must be more strategic with resource management. While still powerful, the deck cannot recycle its resources with the same impunity, requiring more careful planning to maintain the advantage loop.</p></div>';
+
+                    banlistContainer.innerHTML = statusHTML;
+
+                } catch (error) {
+                    console.error('Error fetching banlist:', error);
+                    banlistContainer.innerHTML = '<p class="text-red-400">Could not load TCG banlist status.</p>';
+                }
+            }
+
+            checkBanlist();
+        });
+    </script>
+</body>
+</html>

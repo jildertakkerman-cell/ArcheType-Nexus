@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mecha Phantom Beast Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c1424; /* Deep Navy Blue */
+            color: #e0e7ff; /* Light Lavender Blue */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a233a; /* Darker Navy */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3b4c7c; /* Muted Blue Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #243050;
+            border: 1px solid #4a5c94;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #243050;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px #1a233a;
+        }
+        .pro-icon { color: #4ade80; } /* Light Green */
+        .con-icon { color: #f87171; } /* Light Red */
+        .neutral-icon { color: #93c5fd; } /* Light Blue */
+        .text-accent { color: #f59e0b; } /* Amber/Gold */
+        .arrow-color { color: #f59e0b; }
+        .heading-font {
+            font-family: 'Roboto Mono', monospace;
+        }
+        .lore-link {
+            color: #f59e0b;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f59e0b;
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        /* --- MPB Animated Banner --- */
+        .banner-header {
+            position: relative;
+            height: 160px;
+            background-color: #0c1424;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3b4c7c;
+        }
+
+        #radar-banner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 200%; /* Make canvas taller to fit the sweep */
+            z-index: 1;
+        }
+        
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(12, 20, 36, 0.4) 0%, rgba(12, 20, 36, 0.8) 70%, #0c1424 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px rgba(0,0,0,0.9);
+        }
+
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+        .ygo-home-button i { font-size: 22px; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="radar-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-bold text-white mb-2 heading-font">MECHA PHANTOM BEAST</h1>
+            <p class="text-lg md:text-xl text-blue-300">A Tactical Analysis of the WIND Machine Squadron</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-font">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Mecha Phantom Beast</strong> archetype is a squadron of WIND Machine monsters defined by their intricate token-based gameplay. Their strategy revolves around generating "Mecha Phantom Beast Tokens" which serve a triple purpose: providing potent destruction protection, modulating monster Levels for high-Rank Xyz summons, and acting as fuel for their most powerful effects. This creates a unique, resource-intensive playstyle that can pivot between defensive control and explosive offensive plays. However, the archetype's legacy is famously split between its intended "pure" strategy and its role as a host for one of the most powerful generic combo engines in the game's history via the now-banned <strong class="text-red-400 font-bold">Mecha Phantom Beast Auroradon</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Mechanics: The Token Economy -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Core Mechanic: The Token Economy</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The entire strategy is built on the "Mecha Phantom Beast Token," a Level 3 WIND Machine. This single resource creates a strategic trilemma, forcing the pilot to constantly decide between three critical functions.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6 text-center">
+                    <i class="fas fa-shield-alt text-4xl text-accent mb-4"></i>
+                    <h3 class="font-bold text-lg text-white mb-2">Protection</h3>
+                    <p class="text-sm text-blue-200">While you control a Token, all main deck Mecha Phantom Beast monsters cannot be destroyed by battle or card effects, forming a resilient defensive line.</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <i class="fas fa-layer-group text-4xl text-accent mb-4"></i>
+                    <h3 class="font-bold text-lg text-white mb-2">Level Modulation</h3>
+                    <p class="text-sm text-blue-200">Each monster's Level is increased by the total Levels of all Tokens you control, enabling access to high-Rank Xyz monsters like Rank 7 and 10.</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <i class="fas fa-gas-pump text-4xl text-accent mb-4"></i>
+                    <h3 class="font-bold text-lg text-white mb-2">Effect Fuel</h3>
+                    <p class="text-sm text-blue-200">The most powerful effects, from searching to special summoning, require Tributing Tokens as a cost, forcing a careful balance of resources.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Personnel Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Key Personnel: The Flight Crew & The Aces</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                Success hinges on deploying the right personnel at the right time. The <a href="https://yugipedia.com/wiki/Mecha_Phantom_Beast" target="_blank" class="lore-link">entire squadron</a> works in concert, from starters that initiate plays to the aces that finish the mission.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main Deck Monsters -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-plane-departure mr-2 text-accent"></i>The Flight Crew (Main Deck)</h3>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4">
+                            <h4 class="font-bold text-accent">Mecha Phantom Beast Tetherwolf</h4>
+                            <p class="text-sm text-blue-200">The premier starter. Generates a Token on Normal Summon, setting up your entire strategy.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="font-bold text-accent">Mecha Phantom Beast Megaraptor</h4>
+                            <p class="text-sm text-blue-200">The primary searcher. Tributes a Token to add any "Mecha Phantom Beast" monster from Deck to hand.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="font-bold text-accent">Mecha Phantom Beast O-Lion</h4>
+                            <p class="text-sm text-blue-200">A crucial Tuner and combo enabler. Generates a Token when sent to the GY from any location.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Extra Deck Monsters -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-star mr-2 text-accent"></i>The Aces (Extra Deck)</h3>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4">
+                            <h4 class="font-bold text-accent">Mecha Phantom Beast Dracossack</h4>
+                            <p class="text-sm text-blue-200">The archetype's signature Rank 7 boss. Summons Tokens and provides repeatable destruction.</p>
+                        </div>
+                        <div class="combo-step-card p-4 bg-red-900/30 border-red-500/50">
+                            <h4 class="font-bold text-red-400">Mecha Phantom Beast Auroradon <span class="text-xs">(BANNED)</span></h4>
+                            <p class="text-sm text-blue-200">The infamous Link-3 monster. Its generic summoning conditions and explosive Token generation made it a format-warping engine before it was forbidden.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Core Combo: Tetherwolf to Rank 10</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                This fundamental combo demonstrates how the archetype can quickly escalate from a single starter to a powerful Rank 10 Xyz monster, showcasing its explosive potential. While requiring a specific hand, it perfectly illustrates the core engine's mechanics.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="tetherwolf-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mecha Phantom Beast Tetherwolf</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a233a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiation</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon <strong class="text-accent">Mecha Phantom Beast Tetherwolf</strong>. Its effect activates, Special Summoning one "Mecha Phantom Beast Token".</p>
+                            <p class="mt-2 text-sm text-blue-300"><strong>Field:</strong> Tetherwolf, 1 Token</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center py-4">
+                    <i class="fas fa-arrow-down text-3xl arrow-color animate-pulse"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="harrliard-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mecha Phantom Beast Harrliard</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a233a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Extension & Swarm</h3>
+                            </div>
+                            <p class="text-blue-200">Use effects to summon <strong class="text-accent">Harrliard</strong> and <strong class="text-accent">Coltwing</strong>. A common sequence involves using <strong class="text-accent">Harrliard</strong> to tribute tokens and bring out other MPBs from hand, triggering multiple effects that flood the board.</p>
+                             <p class="mt-2 text-sm text-blue-300"><strong>Field Goal:</strong> Tetherwolf, Harrliard, Coltwing, 2+ Tokens</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                 <div class="w-full flex justify-center py-4">
+                    <i class="fas fa-arrow-down text-3xl arrow-color animate-pulse"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="gustav-max-img-container" class="card-image-container flex-shrink-0 card-placeholder">Superdreadnought Rail Cannon Gustav Max</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a233a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Level Modulation & Xyz Summon</h3>
+                            </div>
+                            <p class="text-blue-200">With two Tokens on the field, both <strong class="text-accent">Harrliard</strong> and <strong class="text-accent">Coltwing</strong> (Level 4) become Level 10 (4 + 2x3). Overlay them to Xyz Summon a Rank 10 monster like <strong class="text-accent">Superdreadnought Rail Cannon Gustav Max</strong>.</p>
+                            <p class="mt-2 text-sm text-blue-300"><strong>Final Board:</strong> Rank 10 Xyz, 1 MPB, 2 Tokens</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ideal Endboard -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Ideal "Pure" Endboard</h2>
+             <div class="card p-6">
+                 <div class="flex flex-col md:flex-row items-center gap-6">
+                     <div id="dracossack-img-container" class="card-image-container card-placeholder">Mecha Phantom Beast Dracossack</div>
+                     <div class="flex-1">
+                         <p class="text-blue-200 mb-4">
+                             The goal for a pure Mecha Phantom Beast deck is not an unbreakable wall of negates, but a resilient, resource-generating board designed for a long game. The centerpiece is <strong class="text-accent">Mecha Phantom Beast Dracossack</strong>, providing repeatable destruction while being protected by its own Tokens.
+                         </p>
+                         <ul class="list-disc list-inside space-y-2 text-blue-200">
+                             <li><strong class="text-white">Dracossack + 2 Tokens:</strong> Provides removal and self-protection.</li>
+                             <li><strong class="text-white">Megaraptor:</strong> Ensures follow-up plays by searching for key monsters.</li>
+                             <li><strong class="text-white">Set Backrow:</strong> Cards like <strong class="text-accent">Aerial Recharge</strong> for more Tokens or a generic disruption Trap.</li>
+                         </ul>
+                     </div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Competitive Debriefing</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="pro-con-card p-6">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Resilience:</strong> Token-based protection makes the board difficult to clear with standard removal.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400">Xyz Toolbox:</strong> Flexible access to powerful Rank 7, 9, and 10 Xyz monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-hourglass-half"></i></span> <strong class="text-green-400">Grind Game:</strong> Can out-resource opponents in longer duels when its engine is established.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="pro-con-card p-6">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400">Profound Inconsistency:</strong> Highly prone to drawing unplayable hands without a starter.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Normal Summon Reliant:</strong> The entire strategy hinges on the Normal Summon, creating an obvious choke point for disruption.</li>
+                        <li><span class="con-icon"><i class="fas fa-forward"></i></span> <strong class="text-red-400">Outdated Pace:</strong> Designed for a slower era of the game, making its setup turns vulnerable in the modern meta.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="pro-con-card p-6">
+                    <h3 class="text-xl font-bold text-blue-300 mb-4">Synergies & External Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                       <li><span class="neutral-icon"><i class="fas fa-wind"></i></span> <strong class="text-blue-300">Speedroid Engine:</strong> Cards like <strong class="text-accent">Speedroid Terrortop</strong> provide free Special Summons, bypassing the deck's crippling reliance on its Normal Summon.</li>
+                       <li><span class="neutral-icon"><i class="fas fa-music"></i></span> <strong class="text-blue-300">Symphonic Warrior Engine:</strong> The <strong class="text-accent">Guitaar</strong> and <strong class="text-accent">Miccs</strong> combo provides a crucial additional Normal Summon.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-robot"></i></span> <strong class="text-blue-300">Generic Machine Support:</strong> As WIND Machines, they synergize with a wide range of support cards that can extend combos or provide utility.</li>
+                   </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- TCG Banlist Impact -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-font">TCG Banlist Impact</h2>
+            <div id="banlist-section" class="card p-6">
+                <p class="text-center text-blue-200 mb-4">The competitive history of Mecha Phantom Beasts is defined by the banlist. While the core archetype remains untouched, its most powerful enabler is forbidden.</p>
+                <!-- Banlist content will be generated here by JS -->
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Radar Banner Animation
+            const canvas = document.getElementById('radar-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let angle = 0;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.parentElement.offsetWidth;
+                    canvas.height = canvas.parentElement.offsetHeight * 2; // Make taller
+                };
+
+                function drawRadar() {
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const radius = Math.min(centerX, centerY) * 1.5;
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Concentric circles
+                    ctx.strokeStyle = 'rgba(129, 140, 248, 0.2)';
+                    ctx.lineWidth = 1;
+                    for(let i = 1; i < 4; i++) {
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY, (radius / 4) * i, 0, 2 * Math.PI);
+                        ctx.stroke();
+                    }
+                    
+                    // Radar sweep
+                    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+                    gradient.addColorStop(0, 'rgba(129, 140, 248, 0.3)');
+                    gradient.addColorStop(0.8, 'rgba(129, 140, 248, 0.1)');
+                    gradient.addColorStop(1, 'rgba(129, 140, 248, 0)');
+                    
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(angle);
+                    ctx.translate(-centerX, -centerY);
+
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI / 3);
+                    ctx.closePath();
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+
+                function animate() {
+                    angle += 0.015;
+                    drawRadar();
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                animate();
+                window.addEventListener('resize', setCanvasSize);
+            }
+
+            // Card Image and Banlist Fetching
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder';
+                placeholder.textContent = cardName;
+                container.innerHTML = '';
+                container.appendChild(placeholder);
+
+                try {
+                    const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`);
+                    const data = await response.json();
+                    const cardData = data.data[0];
+                    if (cardData && cardData.card_images && cardData.card_images[0]) {
+                        const img = document.createElement('img');
+                        img.src = cardData.card_images[0].image_url;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for ${cardName}:`, error);
+                }
+            }
+
+            async function checkBanlist() {
+                const banlistContainer = document.getElementById('banlist-section');
+                const cardsToCheck = ['Mecha Phantom Beast Auroradon', 'Mecha Phantom Beast O-Lion', 'Block Dragon'];
+                let banlistHtml = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">';
+                
+                try {
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg&archetype=Mecha%20Phantom%20Beast');
+                    const data = await response.json();
+                    
+                    // Add Auroradon specifically to ensure it is shown
+                    if (!data.data.find(c => c.name === 'Mecha Phantom Beast Auroradon')) {
+                         const auroradonResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?name=Mecha%20Phantom%20Beast%20Auroradon');
+                         const auroradonData = await auroradonResponse.json();
+                         if (auroradonData.data) {
+                            data.data.push(auroradonData.data[0]);
+                         }
+                    }
+
+                    const relevantCards = data.data.filter(card => cardsToCheck.includes(card.name));
+
+                    // Sort to have banned cards first
+                    relevantCards.sort((a, b) => {
+                        const aStatus = a.banlist_info?.ban_tcg || 'Unlimited';
+                        const bStatus = b.banlist_info?.ban_tcg || 'Unlimited';
+                        if (aStatus === 'Banned' && bStatus !== 'Banned') return -1;
+                        if (bStatus === 'Banned' && aStatus !== 'Banned') return 1;
+                        return 0;
+                    });
+                    
+                    relevantCards.forEach(card => {
+                        const status = card.banlist_info?.ban_tcg || 'Unlimited';
+                        let statusColor = 'text-green-400';
+                        let copies = '3 Copies';
+                        if (status === 'Banned' || status === 'Forbidden') {
+                             statusColor = 'text-red-400';
+                             copies = '0 Copies (Forbidden)';
+                        } else if (status === 'Limited') {
+                             statusColor = 'text-yellow-400';
+                             copies = '1 Copy (Limited)';
+                        } else if (status === 'Semi-Limited') {
+                             statusColor = 'text-yellow-400';
+                            copies = '2 Copies (Semi-Limited)';
+                        }
+
+                        banlistHtml += `
+                            <div class="combo-step-card p-4 rounded-lg text-center ${status === 'Banned' || status === 'Forbidden' ? 'bg-red-900/30 border-red-500/50' : ''}">
+                                <h4 class="font-bold text-white">${card.name}</h4>
+                                <p class="text-sm ${statusColor}">${copies}</p>
+                            </div>
+                        `;
+                    });
+
+                    banlistHtml += '</div>';
+                    banlistContainer.innerHTML += banlistHtml;
+
+                } catch (error) {
+                    console.error('Failed to fetch banlist data:', error);
+                    banlistContainer.innerHTML += '<p class="text-red-400 text-center">Could not load banlist information.</p>';
+                }
+            }
+
+            fetchAndDisplayCardImage('Mecha Phantom Beast Dracossack', 'dracossack-img-container');
+            fetchAndDisplayCardImage('Mecha Phantom Beast Tetherwolf', 'tetherwolf-img-container');
+            fetchAndDisplayCardImage('Mecha Phantom Beast Harrliard', 'harrliard-img-container');
+            fetchAndDisplayCardImage('Superdreadnought Rail Cannon Gustav Max', 'gustav-max-img-container');
+            checkBanlist();
+        });
+    </script>
+</body>
+</html>
+

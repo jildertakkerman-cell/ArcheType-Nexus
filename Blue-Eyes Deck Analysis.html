@@ -1,0 +1,681 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue-Eyes Archetype: A Strategic Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c1524; /* Deep midnight blue */
+            color: #e0f2fe; /* Light sky blue text */
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .card {
+            background-color: rgba(30, 41, 59, 0.8); /* Semi-transparent Slate blue */
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            border: 1px solid #38bdf8; /* Light blue border */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.3);
+        }
+        .card-image-container {
+            width: 100px;
+            height: 146px; /* Maintain card aspect ratio */
+            flex-shrink: 0;
+            background-color: #0f172a;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid #38bdf8;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .card-placeholder-text {
+            color: white;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            padding: 0.5rem;
+        }
+        .text-accent {
+            color: #7dd3fc; /* Brighter sky blue */
+            font-weight: bold;
+        }
+        .heading-underline {
+            border-bottom: 3px solid #7dd3fc;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+            text-shadow: 0 0 8px rgba(125, 211, 252, 0.5);
+        }
+        /* --- ENHANCED BLUE-EYES ANIMATED BANNER --- */
+        .blue-eyes-banner {
+            position: relative;
+            padding: 4rem 2rem;
+            background: 
+                radial-gradient(circle at 30% 40%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(219, 234, 254, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #0c1524 0%, #1e293b 50%, #0c1524 100%);
+            border-radius: 1rem;
+            border: 3px solid #7dd3fc;
+            box-shadow: 
+                0 0 30px rgba(56, 189, 248, 0.6),
+                inset 0 0 30px rgba(56, 189, 248, 0.2),
+                0 10px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            text-align: center;
+            color: #fff;
+        }
+        #light-particles-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-content {
+            position: relative;
+            z-index: 2;
+        }
+        .banner-title {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            letter-spacing: 0.15em;
+            background: linear-gradient(45deg, #ffffff, #7dd3fc, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: dragonShimmer 4s ease-in-out infinite;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 25px rgba(125, 211, 252, 0.6);
+        }
+        .banner-subtitle {
+            font-size: 1.25rem;
+            color: #e0f2fe;
+            margin-top: 0.75rem;
+            text-shadow: 0 0 8px rgba(125, 211, 252, 0.8);
+        }
+        .blue-eyes-banner::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -200%;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), rgba(125, 211, 252, 0.2), rgba(255, 255, 255, 0.1), transparent);
+            transform: skewX(-25deg);
+            z-index: 1;
+            animation: burst-stream 8s ease-in-out infinite;
+        }
+        @keyframes dragonShimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes burst-stream { 0% { left: -150%; } 50% { left: 150%; } 100% { left: 150%; } }
+        @media (max-width: 768px) { .banner-title { font-size: 2.5rem; } .banner-subtitle { font-size: 1rem; } }
+        
+        .combo-step {
+            position: relative;
+            padding-left: 40px;
+        }
+        .combo-step::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 8px;
+            bottom: -8px;
+            width: 2px;
+            background-color: #38bdf8;
+        }
+        .combo-step:last-child::before {
+            display: none;
+        }
+        .combo-number {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: #38bdf8;
+            color: #0c1524;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 0 10px #38bdf8;
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(12, 21, 36, 0.95);
+            border: 1px solid #38bdf8;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+            word-wrap: break-word;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #38bdf8;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+    <!-- BANNER -->
+    <header class="mb-12">
+        <div class="blue-eyes-banner">
+            <canvas id="light-particles-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="banner-title">THE AZURE ENGINE OF DESTRUCTION</h1>
+                <p class="banner-subtitle">A Strategic Deep Dive into the Modern Blue-Eyes Archetype</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- EXECUTIVE SUMMARY -->
+    <section class="mb-12">
+        <div class="card p-6">
+            <p class="text-sky-200 text-lg leading-relaxed">
+                The modern "Blue-Eyes" archetype is a complex, resource-driven engine that channels the spirit of its legendary dragon not just as a mighty attacker, but as a catalyst for a web of powerful support cards. The strategy's primary objective is to seize control of the board through a storm of high-ATK monsters, targeted removal, and potent negation effects. This is all made possible by a core of Main Deck cards designed to search, summon, and endlessly recur its key pieces, transforming the graveyard from a place of defeat into an engine of overwhelming advantage.
+            </p>
+        </div>
+    </section>
+
+    <!-- CORE ENGINE -->
+    <section class="mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 text-center heading-underline">Pillars of the Blue-Eyes Strategy</h2>
+        
+        <!-- The Legendary Dragons -->
+        <h3 class="text-2xl font-bold text-accent mb-6">The Legendary Dragons: The Heart of the Deck</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="card p-4 flex gap-4">
+                <div class="card-image-container" data-card-name="Blue-Eyes White Dragon"></div>
+                <div>
+                    <h4 class="font-bold text-lg text-white">Blue-Eyes White Dragon</h4>
+                    <p class="text-sm text-sky-300">The central resource. Its presence in hand, Deck, or GY is the prerequisite for the archetype's most powerful effects, making it an essential enabler rather than a primary attacker.</p>
+                </div>
+            </div>
+            <div class="card p-4 flex gap-4">
+                <div class="card-image-container" data-card-name="Blue-Eyes Alternative White Dragon"></div>
+                <div>
+                    <h4 class="font-bold text-lg text-white">Blue-Eyes Alternative White Dragon</h4>
+                    <p class="text-sm text-sky-300">The primary free extender. Special Summoned by revealing a BEWD, it provides a 3000 ATK body and crucial monster removal without a Normal Summon.</p>
+                </div>
+            </div>
+            <div class="card p-4 flex gap-4">
+                <div class="card-image-container" data-card-name="Blue-Eyes Jet Dragon"></div>
+                <div>
+                    <h4 class="font-bold text-lg text-white">Blue-Eyes Jet Dragon</h4>
+                    <p class="text-sm text-sky-300">The ultimate protector. It shields your field from destruction and resurrects itself from the GY, forming a resilient defensive loop that is difficult to break.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Eyes of Blue Conduits -->
+        <h3 class="text-2xl font-bold text-accent mb-6">The Eyes of Blue Conduits: Starters and Extenders</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
+            <div class="card p-4 flex gap-4">
+                <div class="card-image-container" data-card-name="Sage with Eyes of Blue"></div>
+                <div>
+                    <h4 class="font-bold text-lg text-white">Sage with Eyes of Blue</h4>
+                    <p class="text-sm text-sky-300">The premier one-card starter. It searches for key Level 1 Tuners and can tribute itself to summon a "Blue-Eyes" monster from the deck, initiating combos.</p>
+                </div>
+            </div>
+            <div class="card p-4 flex gap-4">
+                <div class="card-image-container" data-card-name="The White Stone of Ancients"></div>
+                <div>
+                    <h4 class="font-bold text-lg text-white">The White Stone of Ancients</h4>
+                    <p class="text-sm text-sky-300">The engine's main resource generator. When sent to the GY, it summons a "Blue-Eyes" from the Deck in the End Phase, guaranteeing follow-up plays.</p>
+                </div>
+            </div>
+             <div class="card p-4 flex gap-4">
+                <div class="card-image-container" data-card-name="The White Stone of Legend"></div>
+                <div>
+                    <h4 class="font-bold text-lg text-white">The White Stone of Legend</h4>
+                    <p class="text-sm text-sky-300">Provides direct and immediate card advantage. When sent to the GY, it adds one "Blue-Eyes White Dragon" from the Deck to the hand.</p>
+                </div>
+            </div>
+            <div class="card p-4 flex gap-4">
+                <div class="card-image-container" data-card-name="Dictator of D."></div>
+                <div>
+                    <h4 class="font-bold text-lg text-white">Dictator of D.</h4>
+                    <p class="text-sm text-sky-300">A powerful starter that mitigates "bricking". It sends BEWD from the Deck to GY to summon itself and can revive another "Blue-Eyes" from the GY.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Arcane Arsenal -->
+        <h3 class="text-2xl font-bold text-accent mb-6">The Arcane Arsenal: Key Spells & Traps</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card p-4">
+                <h4 class="font-bold text-lg text-white mb-2">The Melody of Awakening Dragon</h4>
+                <p class="text-sm text-sky-300">The primary search Spell. Discard one card to add two high-ATK Dragons to your hand, perfectly setting up your core combos and loading the GY.</p>
+            </div>
+            <div class="card p-4">
+                <h4 class="font-bold text-lg text-white mb-2">True Light</h4>
+                <p class="text-sm text-sky-300">A high-impact Continuous Trap that revives BEWD from the GY or sets a "Blue-Eyes" Spell/Trap from the Deck. A double-edged sword, as its destruction wipes your board.</p>
+            </div>
+            <div class="card p-4">
+                <h4 class="font-bold text-lg text-white mb-2">Wishes for Eyes of Blue</h4>
+                <p class="text-sm text-sky-300">A massive consistency boost. Searches a Level 1 Tuner and a "Blue-Eyes" Spell/Trap. Its GY effect is the key to summoning Blue-Eyes Tyrant Dragon.</p>
+            </div>
+             <div class="card p-4">
+                <h4 class="font-bold text-lg text-white mb-2">Mausoleum of White</h4>
+                <p class="text-sm text-sky-300">This Field Spell provides an additional Normal Summon for a Level 1 Tuner and can send a BEWD from Deck to GY, extending combos and setting up resources.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXTRA DECK -->
+    <section class="mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 text-center heading-underline">The Command Center: Mastering the Extra Deck</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Synchro/Link -->
+            <div>
+                <h3 class="text-2xl font-bold text-accent mb-6">Control & Consistency Monsters</h3>
+                <div class="space-y-6">
+                    <div class="card p-4 flex gap-4">
+                        <div class="card-image-container" data-card-name="Spirit with Eyes of Blue"></div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Spirit with Eyes of Blue (Link-1)</h4>
+                            <p class="text-sm text-sky-300">The new cornerstone. It transforms any low-level starter into a search for <span class="text-accent">Mausoleum of White</span> and a revive for a mighty "Blue-Eyes" monster from the GY.</p>
+                        </div>
+                    </div>
+                    <div class="card p-4 flex gap-4">
+                        <div class="card-image-container" data-card-name="Blue-Eyes Spirit Dragon"></div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Blue-Eyes Spirit Dragon (Synchro)</h4>
+                            <p class="text-sm text-sky-300">The primary piece of interaction. It provides GY negation, acts as a floodgate against mass summons, and can "tag out" into other powerful Synchro monsters.</p>
+                        </div>
+                    </div>
+                    <div class="card p-4 flex gap-4">
+                        <div class="card-image-container" data-card-name="Azure-Eyes Silver Dragon"></div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Tag-Out Target: Azure-Eyes Silver Dragon</h4>
+                            <p class="text-sm text-sky-300">The main defensive option. Protects your Dragons from being targeted or destroyed for a turn and revives a Normal Monster in the next Standby Phase.</p>
+                        </div>
+                    </div>
+                     <div class="card p-4 flex gap-4">
+                        <div class="card-image-container" data-card-name="Hieratic Seal of the Heavenly Spheres"></div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Hieratic Seal of the Heavenly Spheres (Link-2)</h4>
+                            <p class="text-sm text-sky-300">A key piece of non-destruction removal. Tributes a monster to bounce an opponent's card, then summons a Dragon from the Deck to replace itself.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Fusion/Xyz -->
+            <div>
+                <h3 class="text-2xl font-bold text-accent mb-6">Board Breakers & Game Finishers</h3>
+                <div class="space-y-6">
+                    <div class="card p-4 flex gap-4">
+                        <div class="card-image-container" data-card-name="Blue-Eyes Tyrant Dragon"></div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Blue-Eyes Tyrant Dragon (Fusion)</h4>
+                            <p class="text-sm text-sky-300">A devastating board breaker. Immune to Traps and can attack all opposing monsters once each. Summoned efficiently via the GY effect of <span class="text-accent">Wishes for Eyes of Blue</span>.</p>
+                        </div>
+                    </div>
+                    <div class="card p-4 flex gap-4">
+                        <div class="card-image-container" data-card-name="Number 38: Hope Harbinger Dragon Titanic Galaxy"></div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Rank 8 Xyz Toolbox</h4>
+                            <p class="text-sm text-sky-300">The deck's ability to easily field multiple Level 8s gives access to powerful problem-solvers like <span class="text-accent">Number 38</span> for Spell negation or <span class="text-accent">Dingirsu</span> for non-targeting removal.</p>
+                        </div>
+                    </div>
+                    <div class="card p-4 flex gap-4">
+                        <div class="card-image-container" data-card-name="Neo Blue-Eyes Ultimate Dragon"></div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Neo Blue-Eyes Ultimate Dragon (Fusion)</h4>
+                            <p class="text-sm text-sky-300">While a powerful OTK tool, its main modern role is to be sent to the GY to enable Tyrant Dragon's summon and provide targeting protection for your other "Blue-Eyes" monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CORE COMBOS -->
+    <section class="mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 text-center heading-underline">Blueprint for Victory: Core Combos</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-accent mb-6">Optimal Two-Card Combo</h3>
+                <p class="text-sky-300 mb-6">This sequence with <span class="text-accent">Sage with Eyes of Blue</span> and any discard fodder establishes a multi-interruption board.</p>
+                <div class="space-y-4">
+                    <div class="combo-step"><span class="combo-number">1</span>Normal Summon <span class="text-accent">Sage</span>, add <span class="text-accent">Maiden with Eyes of Blue</span>.</div>
+                    <div class="combo-step"><span class="combo-number">2</span>Link Summon <span class="text-accent">Spirit with Eyes of Blue</span> using Sage, then add <span class="text-accent">Mausoleum of White</span>.</div>
+                    <div class="combo-step"><span class="combo-number">3</span>Activate Mausoleum, send <span class="text-accent">BEWD</span> from Deck to GY.</div>
+                    <div class="combo-step"><span class="combo-number">4</span>Discard Maiden to place <span class="text-accent">True Light</span> from Deck.</div>
+                    <div class="combo-step"><span class="combo-number">5</span>Tribute Spirit to revive <span class="text-accent">BEWD</span>. Maiden triggers, reviving itself.</div>
+                    <div class="combo-step"><span class="combo-number">6</span>Synchro Summon <span class="text-accent">Blue-Eyes Spirit Dragon</span>.</div>
+                    <div class="combo-step"><span class="combo-number">7</span>Use True Light to set <span class="text-accent">Wishes for Eyes of Blue</span>. Activate it to search another Sage and <span class="text-accent">Roar of the Blue-Eyed Dragons</span>.</div>
+                    <div class="combo-step"><span class="combo-number">8</span>Use Mausoleum's extra Normal Summon for the second Sage, searching <span class="text-accent">Effect Veiler</span>.</div>
+                    <div class="combo-step"><span class="combo-number">9</span>Activate Roar to summon <span class="text-accent">Blue-Eyes Jet Dragon</span> from Deck.</div>
+                    <div class="combo-step"><span class="combo-number">10</span>Link Summon <span class="text-accent">Hieratic Seal</span> using Sage and Jet Dragon.</div>
+                </div>
+                <div class="mt-6 p-4 bg-gray-900/50 rounded-lg border border-sky-500">
+                    <h4 class="font-bold text-lg text-white">Resulting End Board:</h4>
+                    <p class="text-sky-300 text-sm">A devastating field with a GY negate (<span class="text-accent">Spirit Dragon</span>), a non-destruction bounce (<span class="text-accent">Hieratic Seal</span>), recurring board protection (<span class="text-accent">Jet Dragon</span> in GY), recursion (<span class="text-accent">True Light</span>), and a monster negate in hand (<span class="text-accent">Effect Veiler</span>).</p>
+                </div>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-accent mb-6">Going Second: Board Breaking</h3>
+                <p class="text-sky-300 mb-6">When facing an established field, summon <span class="text-accent">Blue-Eyes Tyrant Dragon</span> to unleash destruction.</p>
+                 <div class="space-y-4">
+                    <div class="combo-step"><span class="combo-number">1</span>Establish a <span class="text-accent">Blue-Eyes White Dragon</span> on the field (e.g., via <span class="text-accent">Dictator of D.</span>).</div>
+                    <div class="combo-step"><span class="combo-number">2</span>Ensure <span class="text-accent">Wishes for Eyes of Blue</span> is in your Graveyard.</div>
+                    <div class="combo-step"><span class="combo-number">3</span>Activate the GY effect of <span class="text-accent">Wishes</span>, banishing it to equip <span class="text-accent">Neo Blue-Eyes Ultimate Dragon</span> from your Extra Deck to your BEWD.</div>
+                    <div class="combo-step"><span class="combo-number">4</span>Tribute the equipped BEWD to Special Summon <span class="text-accent">Blue-Eyes Tyrant Dragon</span> from your Extra Deck.</div>
+                </div>
+                 <div class="mt-6 p-4 bg-gray-900/50 rounded-lg border border-sky-500">
+                    <h4 class="font-bold text-lg text-white">Result:</h4>
+                    <p class="text-sky-300 text-sm"><span class="text-accent">Tyrant Dragon</span> can now attack all of your opponent's monsters, clearing their board while being immune to their Traps. This also places <span class="text-accent">Neo Blue-Eyes Ultimate</span> in the GY, providing targeting protection for your other monsters.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WEAKNESSES AND SYNERGIES -->
+    <section class="mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 text-center heading-underline">Strategic Analysis</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-red-400 mb-4"><i class="fas fa-exclamation-triangle mr-2"></i>Strategic Weaknesses & Choke Points</h3>
+                <ul class="list-disc list-inside space-y-2 text-sky-200">
+                    <li><strong class="text-red-300">Hand Trap Vulnerability:</strong> <span class="text-accent">Ash Blossom</span> on key searchers or <span class="text-accent">Infinite Impermanence</span> on <span class="text-accent">Sage</span> can be devastating.</li>
+                    <li><strong class="text-red-300">Graveyard Disruption:</strong> Cards like <span class="text-accent">Called by the Grave</span> or opposing <span class="text-accent">Bystials</span> can banish crucial resources like <span class="text-accent">The White Stone of Ancients</span>.</li>
+                    <li><strong class="text-red-300">Inherent Inconsistency:</strong> Drawing multiple copies of the vanilla <span class="text-accent">Blue-Eyes White Dragon</span> without a starter can lead to unplayable "brick" hands.</li>
+                </ul>
+            </div>
+            <div class="card p-6">
+                 <h3 class="text-2xl font-bold text-green-400 mb-4"><i class="fas fa-link mr-2"></i>External Synergies</h3>
+                 <ul class="list-disc list-inside space-y-2 text-sky-200">
+                    <li><strong class="text-green-300">The Bystial Alliance:</strong> A natural partnership. Bystials provide free extenders for your plays and act as hand traps against LIGHT/DARK strategies, patching a key weakness.</li>
+                    <li><strong class="text-green-300">The Primite Power-Up:</strong> Shifts the strategy towards a more methodical, control-oriented game, out-resourcing the opponent over several turns with recursive threats and powerful traps.</li>
+                 </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- BANLIST STATUS -->
+    <section class="mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 text-center heading-underline">Current TCG Banlist Status</h2>
+        <div id="banlist-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center p-6 card">Loading banlist information...</div>
+        </div>
+        <div id="banlist-analysis" class="mt-6"></div>
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- CANVAS ANIMATION ---
+    const canvas = document.getElementById('light-particles-canvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const setCanvasSize = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        };
+        class DragonParticle {
+            constructor() { this.x = Math.random() * canvas.width; this.y = canvas.height + Math.random() * 50; this.speedY = -(Math.random() * 1.5 + 0.5); this.speedX = (Math.random() - 0.5) * 0.5; this.size = Math.random() * 2.5 + 1; this.opacity = Math.random() * 0.5 + 0.2; this.hue = 200 + Math.random() * 40; }
+            update() { this.y += this.speedY; this.x += this.speedX; if (this.y < -10) { this.y = canvas.height + 10; this.x = Math.random() * canvas.width; } if (this.x < 0 || this.x > canvas.width) { this.speedX *= -1; } }
+            draw() { ctx.globalAlpha = this.opacity; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = `hsla(${this.hue}, 100%, 80%, ${this.opacity})`; ctx.shadowColor = `hsl(${this.hue}, 100%, 70%)`; ctx.shadowBlur = 8; ctx.fill(); }
+        }
+        function initParticles() {
+            particles = [];
+            const particleCount = Math.min((canvas.width * canvas.height) / 8000, 70);
+            for (let i = 0; i < particleCount; i++) particles.push(new DragonParticle());
+        }
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+        setCanvasSize(); initParticles(); animateParticles();
+        window.addEventListener('resize', () => { setCanvasSize(); initParticles(); });
+    }
+
+    // --- CARD POPUP AND IMAGE FETCHER ---
+
+    const cardDataCache = {};
+    const popup = document.getElementById('card-popup');
+    let activePopup = null;
+    let lastShown = 0;
+    let currentCard = null;
+
+    const cardContainers = document.querySelectorAll('.card-image-container');
+
+    async function fetchAndProcessCardData(cardName, container) {
+        container.addEventListener('click', (event) => {
+            event.stopPropagation();
+            showPopup(event, cardName);
+        });
+
+        const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+        try {
+            if (cardDataCache[cardName]) {
+                displayCardImage(cardDataCache[cardName], container);
+                return;
+            }
+            
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const data = await response.json();
+            const cardInfo = data?.data?.[0];
+            
+            if (cardInfo) {
+                cardDataCache[cardName] = cardInfo;
+                displayCardImage(cardInfo, container);
+            } else {
+                throw new Error("Card data not found in API response.");
+            }
+        } catch (error) {
+            console.error(`Failed to fetch data for "${cardName}":`, error);
+            container.innerHTML = `<div class="card-placeholder-text">${cardName}</div>`;
+        }
+    }
+
+    function displayCardImage(cardInfo, container) {
+         const imageUrl = cardInfo.card_images?.[0]?.image_url;
+         if (imageUrl) {
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = cardInfo.name;
+            img.className = 'card-image';
+            container.innerHTML = '';
+            container.appendChild(img);
+        } else {
+             container.innerHTML = `<div class="card-placeholder-text">${cardInfo.name}</div>`;
+        }
+    }
+    
+    function showPopup(event, cardName) {
+        if (currentCard === cardName) {
+            hidePopup();
+            return;
+        }
+        hidePopup(); // Ensure any existing popup is hidden first
+        if (!popup) return;
+        const cardInfo = cardDataCache[cardName];
+        if (!cardInfo) return;
+
+        let stats = '';
+        let atkDef = [];
+        if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+        if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+        if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+        if(atkDef.length > 0) {
+            stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+        }
+        
+        const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+        popup.innerHTML = `
+            <div>
+                <h3>${cardInfo.name}</h3>
+                <p class="text-xs text-sky-300">${cardType}</p>
+                <div class="w-full h-px bg-sky-700 my-2"></div>
+                <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                ${stats}
+            </div>
+        `;
+        
+        movePopup(event);
+        popup.style.display = 'block';
+        setTimeout(() => { popup.style.opacity = 1; }, 10);
+        activePopup = popup;
+        lastShown = Date.now();
+        currentCard = cardName;
+    }
+
+    function hidePopup() {
+        if (Date.now() - lastShown < 100) return; // Ignore hide calls immediately after showing
+        if (activePopup) {
+            activePopup.style.opacity = 0;
+            setTimeout(() => { 
+                if (activePopup) activePopup.style.display = 'none'; 
+            }, 200);
+            activePopup = null;
+            currentCard = null;
+        }
+    }
+
+    function movePopup(event) {
+        if (!popup) return;
+        const popupWidth = popup.offsetWidth;
+        const popupHeight = popup.offsetHeight;
+        const cushion = 20;
+
+        let x = event.clientX + cushion;
+        let y = event.clientY + cushion;
+
+        if (x + popupWidth > window.innerWidth) {
+            x = event.clientX - popupWidth - cushion;
+        }
+        if (y + popupHeight > window.innerHeight) {
+            y = event.clientY - popupHeight - cushion;
+        }
+
+        popup.style.left = `${x}px`;
+        popup.style.top = `${y}px`;
+    }
+
+    // Global click listener to close the popup
+    document.addEventListener('click', hidePopup);
+
+    cardContainers.forEach(container => {
+        const cardName = container.dataset.cardName;
+        if (cardName) fetchAndProcessCardData(cardName, container);
+    });
+
+    // --- BANLIST FETCHER ---
+    const fetchBanlist = async () => {
+        const container = document.getElementById('banlist-container');
+        const analysisContainer = document.getElementById('banlist-analysis');
+        try {
+            const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
+            if (!response.ok) throw new Error('Failed to fetch banlist');
+            const data = await response.json();
+
+            const relevantCards = [
+                "Bystial Magnamhut", "Bystial Druiswurm", "The Bystial Lubellion", 
+                "Called by the Grave", "Branded Fusion", "Crossout Designator"
+            ];
+            
+            const banlistStatus = { forbidden: [], limited: [], semiLimited: [] };
+
+            data.data.forEach(card => {
+                if (relevantCards.includes(card.name)) {
+                    const status = card.banlist_info.ban_tcg.toLowerCase();
+                    if (status === 'banned') banlistStatus.forbidden.push(card.name);
+                    else if (status === 'limited') banlistStatus.limited.push(card.name);
+                    else if (status === 'semi-limited') banlistStatus.semiLimited.push(card.name);
+                }
+            });
+
+            const createBanlistSection = (title, cards, color) => {
+                let cardList = cards.length > 0 ? cards.map(c => `<li class="text-${color}-200">${c}</li>`).join('') : `<li class="text-${color}-200">None relevant</li>`;
+                return `
+                    <div class="bg-gradient-to-br from-${color}-900/30 to-${color}-800/20 border border-${color}-500/30 rounded-lg p-4 card">
+                        <h3 class="text-lg font-bold text-${color}-400 mb-3 flex items-center">
+                            <i class="fas ${title === 'Forbidden' ? 'fa-ban' : title === 'Limited' ? 'fa-exclamation-triangle' : 'fa-pause'} mr-2"></i>${title} (${cards.length})
+                        </h3>
+                        <ul class="space-y-1 text-sm">${cardList}</ul>
+                    </div>
+                `;
+            };
+
+            container.innerHTML = `
+                ${createBanlistSection('Forbidden', banlistStatus.forbidden, 'red')}
+                ${createBanlistSection('Limited', banlistStatus.limited, 'orange')}
+                ${createBanlistSection('Semi-Limited', banlistStatus.semiLimited, 'yellow')}
+            `;
+
+            analysisContainer.innerHTML = `
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4"><i class="fas fa-info-circle mr-2"></i>Banlist Impact Analysis</h3>
+                    <div class="text-sm text-sky-200 space-y-2">
+                        <p><strong>Moderate Impact on Hybrids:</strong> The limitations on key <span class="text-accent">Bystial</span> monsters reduce the consistency and disruptive power of the popular Blue-Eyes Bystial hybrid variant, forcing a greater reliance on the core engine.</p>
+                        <p><strong>Reduced Protection:</strong> With <span class="text-accent">Called by the Grave</span> and <span class="text-accent">Crossout Designator</span> Limited, the deck has fewer tools to protect its critical Normal Summon of <span class="text-accent">Sage with Eyes of Blue</span> from hand traps.</p>
+                        <p><strong>Core Archetype Intact:</strong> Crucially, all "Blue-Eyes" specific cards remain completely unrestricted. This preserves the archetype's primary strategies, ensuring the legend of the white dragon continues to be a formidable force on its own terms.</p>
+                    </div>
+                </div>
+            `;
+
+        } catch (error) {
+            container.innerHTML = `<div class="text-center p-6 card col-span-3 text-red-400">Failed to load banlist data.</div>`;
+            console.error('Banlist Fetch Error:', error);
+        }
+    };
+
+    fetchBanlist();
+});
+</script>
+
+</body>
+</html>

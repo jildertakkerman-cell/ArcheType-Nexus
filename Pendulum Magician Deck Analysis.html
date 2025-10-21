@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendulum Magician Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep purple-black */
+            color: #e0e7ff; /* Lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(26, 22, 51, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+            border: 1px solid #4a2c6b; /* Muted violet */
+            backdrop-filter: blur(5px);
+        }
+        .combo-step-card {
+            background-color: rgba(43, 34, 77, 0.7);
+            border: 1px solid #6c4b92;
+        }
+        .pro-con-card {
+            background-color: rgba(43, 34, 77, 0.7);
+            border: 1px solid #6c4b92;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2b224d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2b224d;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #d8b4fe; } /* Light purple for accents */
+        .link-accent {
+            color: #a78bfa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a78bfa;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .link-accent:hover {
+            color: #f5f3ff;
+            text-shadow: 0 0 5px #a78bfa;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        /* --- Pendulum Magician Animated Banner --- */
+        .banner-header {
+            position: relative;
+            height: 150px;
+            background: linear-gradient(45deg, #1e1b4b, #312e81);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a2c6b;
+        }
+
+        #magic-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(12, 10, 26, 0.6);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            font-family: 'Cinzel', serif;
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .banner-header h1 {
+            font-size: 2.8rem;
+        }
+        .banner-header p {
+            font-size: 1.1rem;
+            color: #c7d2fe;
+        }
+        .forbidden-card {
+            border-color: #991b1b;
+            background-color: rgba(127, 29, 29, 0.2);
+        }
+        .forbidden-text {
+            color: #fca5a5;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+<div class="container mx-auto">
+        <!-- Banner Section -->
+        <header class="banner-header text-center">
+            <canvas id="magic-banner"></canvas>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Pendulum Magician</h1>
+            <p class="text-lg md:text-xl">A Strategic Deep Dive into the Grand Conjuring</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Pendulum Magician</strong> archetype stands as an intricate combo-control strategy, celebrated for its unique "Destruction Economy." This potent system revolves around the deliberate destruction of its own cards to unleash <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Pendulum%20Magician&stype=2" target="_blank" class="link-accent">a cascade of powerful effects</a>, generating overwhelming card advantage. The core gameplay is a masterclass in resource management: setting Pendulum Scales, leveraging destruction to search for combo pieces, and culminating in an explosive Pendulum Summon to construct a formidable board of negations and disruptions.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Monsters -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">The Conclave of Casters</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Initiators & Extenders -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Initiators & Extenders</h3>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Performapal Skullcrobat Joker</h4>
+                            <p class="text-sm text-indigo-200">The premier Normal Summon and quintessential starter. It searches any "Magician," "Performapal," or "Odd-Eyes" monster, providing unmatched consistency to assemble your opening hand.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Wisdom-Eye Magician</h4>
+                            <p class="text-sm text-indigo-200">The essential scale-setter and primary catalyst. It destroys itself to place any "Magician" from the Deck into the Pendulum Zone, masterfully kickstarting the Destruction Economy.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Harmonizing Magician</h4>
+                            <p class="text-sm text-indigo-200">The most powerful main deck extender. When Pendulum Summoned from the hand, it summons another "Magician" directly from the Deck, enabling instant access to Synchro or Xyz plays.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Destruction Engine -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Destruction Engine</h3>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Double Iris Magician</h4>
+                            <p class="text-sm text-indigo-200">When destroyed, this magician searches for a powerful "Pendulumgraph" card, a critical step that unlocks the deck's most potent advantage and control engines.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Purple Poison Magician</h4>
+                            <p class="text-sm text-indigo-200">When destroyed, it targets and destroys one face-up card on the field, providing a searchable and repeatable form of removal that integrates seamlessly into your combos.</p>
+                        </div>
+                        <div class="combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Black Fang Magician</h4>
+                            <p class="text-sm text-indigo-200">When destroyed, it Special Summons a DARK Spellcaster from the Graveyard. This offers crucial recursion and combo extension, reviving key pieces for further plays.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">The Grand Performance</h2>
+             <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">The optimal strategy involves a calculated opening act: summoning a Link Monster *before* the main Pendulum Summon. This initial maneuver generates resources and opens monster zones, transforming the subsequent Pendulum Summon into a devastating mid-combo crescendo rather than a simple opening play.</p>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-2xl">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="joker-img-container" class="card-image-container card-placeholder">Performapal Skullcrobat Joker</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-indigo-900 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Opening Act</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Performapal Skullcrobat Joker</strong> to search a key "Magician" like <strong class="text-accent">Wisdom-Eye Magician</strong>. Utilize available extenders to establish two monsters on the field, preparing the stage for a Link Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-chevron-down text-4xl text-indigo-400"></i>
+                </div>
+                <div class="card p-6 combo-step-card w-full max-w-2xl">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="electrumite-img-container" class="card-image-container card-placeholder">Heavymetalfoes Electrumite</div>
+                        <div>
+                             <div class="flex items-center mb-2">
+                                <span class="bg-indigo-900 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Pre-Pendulum Link</h3>
+                            </div>
+                            <p class="text-indigo-200">Link Summon a key enabler such as <strong class="text-accent">Heavymetalfoes Electrumite</strong> (where legal) or <strong class="text-accent">Beyond the Pendulum</strong>. Activate its effect to destroy a scale (like Wisdom-Eye), triggering multiple effects to generate card advantage and set up your hand and Extra Deck for the next phase.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-chevron-down text-4xl text-indigo-400"></i>
+                </div>
+                <div class="card p-6 combo-step-card w-full max-w-2xl">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="harmonizing-img-container" class="card-image-container card-placeholder">Harmonizing Magician</div>
+                        <div>
+                             <div class="flex items-center mb-2">
+                                <span class="bg-indigo-900 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Crescendo</h3>
+                            </div>
+                            <p class="text-indigo-200">Unleash the Pendulum Summon, bringing forth <strong class="text-accent">Harmonizing Magician</strong> from your hand alongside other monsters from the hand and face-up Extra Deck. Harmonizing's effect will trigger, summoning another Magician from the deck and flooding the field with all the material needed for a truly unbreakable final board.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Incantation: A Theoretical End Board</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                A peak Pendulum Magician end board is not about a single boss monster, but a symphony of layered interruptions. The goal is to create a puzzle the opponent cannot solve. Note: Several iconic staples for this board are currently <strong class="forbidden-text">Forbidden</strong> in the TCG, making this a theoretical showcase of the deck's historical power.
+            </p>
+            <div class="space-y-8">
+                <!-- Tier 1: Core Negations & Disruptions -->
+                <div>
+                    <h3 class="text-2xl font-bold text-accent mb-4 border-b-2 border-indigo-800 pb-2">Core Negations & Disruptions</h3>
+                    <div class="space-y-4">
+                        <!-- Baronne -->
+                        <div class="card p-4 flex items-center gap-4 forbidden-card">
+                            <div id="baronne-img-container" class="w-24 flex-shrink-0 card-placeholder">Baronne de Fleur</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-lg text-white">Baronne de Fleur <span class="text-sm forbidden-text">(Forbidden)</span></h4>
+                                <p class="text-sm font-semibold text-accent">Omni-Negate</p>
+                                <p class="text-xs text-indigo-200 mt-1">Provides a powerful, once-per-turn omni-negate and targeted destruction, capable of stopping any key play.</p>
+                            </div>
+                        </div>
+                        <!-- Apollousa -->
+                        <div class="card p-4 flex items-center gap-4 forbidden-card">
+                            <div id="apollousa-img-container" class="w-24 flex-shrink-0 card-placeholder">Apollousa</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-lg text-white">Apollousa, Bow of the Goddess <span class="text-sm forbidden-text">(Forbidden)</span></h4>
+                                <p class="text-sm font-semibold text-accent">Multi-Monster Negate</p>
+                                <p class="text-xs text-indigo-200 mt-1">Offers multiple monster effect negations (typically 2-4), acting as a primary defense against combo-heavy decks.</p>
+                            </div>
+                        </div>
+                        <!-- Vortex Dragon -->
+                        <div class="card p-4 flex items-center gap-4">
+                            <div id="vortex-img-container" class="w-24 flex-shrink-0 card-placeholder">Odd-Eyes Vortex Dragon</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-lg text-white">Odd-Eyes Vortex Dragon</h4>
+                                <p class="text-sm font-semibold text-accent">Recurring Omni-Negate</p>
+                                <p class="text-xs text-indigo-200 mt-1">Negates Spells, Traps, or monster effects by shuffling a face-up Pendulum monster from the Extra Deck, recycling resources while disrupting.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tier 2: Floodgates & Follow-up -->
+                <div>
+                    <h3 class="text-2xl font-bold text-accent mb-4 border-b-2 border-indigo-800 pb-2">Floodgates & Follow-up Plays</h3>
+                    <div class="space-y-4">
+                        <!-- Abyss Dweller -->
+                        <div class="card p-4 flex items-center gap-4 forbidden-card">
+                            <div id="dweller-img-container" class="w-24 flex-shrink-0 card-placeholder">Abyss Dweller</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-lg text-white">Abyss Dweller <span class="text-sm forbidden-text">(Forbidden)</span></h4>
+                                <p class="text-sm font-semibold text-accent">Graveyard Floodgate</p>
+                                <p class="text-xs text-indigo-200 mt-1">Its Quick Effect prevents the opponent from activating any card effects in their GY for the turn, a crippling blow to many modern strategies.</p>
+                            </div>
+                        </div>
+                         <!-- Time Pendulumgraph -->
+                        <div class="card p-4 flex items-center gap-4">
+                            <div id="time-pendulumgraph-img-container" class="w-24 flex-shrink-0 card-placeholder">Time Pendulumgraph</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-lg text-white">Time Pendulumgraph</h4>
+                                <p class="text-sm font-semibold text-accent">Recurring Removal</p>
+                                <p class="text-xs text-indigo-200 mt-1">Provides recurring, non-targeting removal during the opponent's turn, dismantling their board piece-by-piece, especially when paired with Purple Poison Magician.</p>
+                            </div>
+                        </div>
+                        <!-- I:P Masquerena -->
+                        <div class="card p-4 flex items-center gap-4">
+                            <div id="ip-img-container" class="w-24 flex-shrink-0 card-placeholder">I:P Masquerena</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-lg text-white">I:P Masquerena</h4>
+                                <p class="text-sm font-semibold text-accent">Reactive Link Summon</p>
+                                <p class="text-xs text-indigo-200 mt-1">Enables a Link Summon during the opponent's turn, allowing you to react to their plays by summoning a disruptive Link monster like Knightmare Unicorn.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Banlist Impact -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div id="banlist-section" class="card p-6">
+                <!-- Banlist content will be dynamically generated by script -->
+            </div>
+        </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Magical Banner Animation ---
+    const canvas = document.getElementById('magic-banner');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        const setCanvasSize = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        };
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.speedY = Math.random() * 2 + 1;
+                this.size = Math.random() * 2 + 0.5;
+                this.opacity = Math.random() * 0.5 + 0.2;
+                this.color = `rgba(216, 180, 254, ${this.opacity})`; // Lavender color
+            }
+            update() {
+                this.y -= this.speedY;
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            particles = [];
+            const particleCount = (canvas.width * canvas.height) / 8000;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        setCanvasSize();
+        init();
+        animate();
+        window.addEventListener('resize', () => {
+            setCanvasSize();
+            init();
+        });
+    }
+    
+    // --- Card Image Fetching ---
+    async function fetchAndDisplayCardImage(cardName, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error('Network response was not ok.');
+            const data = await response.json();
+            const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+            if (imageUrl) {
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = cardName;
+                img.className = 'w-full h-auto rounded-lg shadow-md';
+                container.innerHTML = '';
+                container.appendChild(img);
+            } else {
+                console.warn(`Image not found for "${cardName}".`);
+            }
+        } catch (error) {
+            console.error(`Failed to fetch image for "${cardName}":`, error);
+        }
+    }
+
+    const cardsToLoad = {
+        'joker-img-container': 'Performapal Skullcrobat Joker',
+        'electrumite-img-container': 'Heavymetalfoes Electrumite',
+        'harmonizing-img-container': 'Harmonizing Magician',
+        'baronne-img-container': 'Baronne de Fleur',
+        'vortex-img-container': 'Odd-Eyes Vortex Dragon',
+        'apollousa-img-container': 'Apollousa, Bow of the Goddess',
+        'time-pendulumgraph-img-container': 'Time Pendulumgraph',
+        'dweller-img-container': 'Abyss Dweller',
+        'ip-img-container': 'I:P Masquerena',
+    };
+
+    for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+        fetchAndDisplayCardImage(cardName, containerId);
+    }
+    
+    // --- Banlist Logic ---
+    const banlistContainer = document.getElementById('banlist-section');
+    const keyCards = [
+        { name: "Heavymetalfoes Electrumite", role: "Once the core Link-2 starter, its absence forces more creative combo lines." },
+        { name: "Astrograph Sorcerer", role: "A primary engine for the 'Destruction Economy,' turning any destruction into a Special Summon and a search." },
+        { name: "Performapal Skullcrobat Joker", role: "The deck's premier Normal Summon and consistency tool." },
+        { name: "Harmonizing Magician", role: "The most powerful main deck extender, enabling easy Synchro and Xyz plays." },
+        { name: "Double Iris Magician", role: "Essential for searching the powerful 'Pendulumgraph' cards." },
+        { name: "Baronne de Fleur", role: "A generic Synchro boss that provides a powerful omni-negate, historically a key piece of the end board."},
+        { name: "Apollousa, Bow of the Goddess", role: "A generic Link boss for multiple monster negations, previously a staple of the deck's final board."},
+        { name: "Abyss Dweller", role: "A generic Xyz monster used to shut down opponent's Graveyard effects, crippling many popular strategies."}
+    ];
+
+    async function checkBanlist() {
+        try {
+            const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
+            const data = await response.json();
+            const banlist = data.data;
+
+            let limitedHTML = '<div><h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 per Deck)</h4><ul class="list-disc list-inside space-y-2 text-sm text-indigo-200">';
+            let forbiddenHTML = '<div><h4 class="text-lg font-bold text-red-400 mb-2">Forbidden Cards (0 per Deck)</h4><ul class="list-disc list-inside space-y-2 text-sm text-indigo-200">';
+            let unlimitedHTML = '<div><h4 class="text-lg font-bold text-green-400 mb-2">Unlimited Cards (3 per Deck)</h4><ul class="list-disc list-inside space-y-2 text-sm text-indigo-200">';
+
+            let hasLimited = false;
+            let hasForbidden = false;
+
+            for (const card of keyCards) {
+                const foundCard = banlist.find(bCard => bCard.name === card.name);
+                const status = foundCard?.banlist_info?.ban_tcg || 'Unlimited';
+
+                let itemHTML = `<li><strong class="text-accent">${card.name}:</strong> ${status}. ${card.role}</li>`;
+
+                if (status === 'Limited') {
+                    limitedHTML += itemHTML;
+                    hasLimited = true;
+                } else if (status === 'Forbidden') {
+                    forbiddenHTML += itemHTML;
+                    hasForbidden = true;
+                } else {
+                    unlimitedHTML += itemHTML;
+                }
+            }
+
+            limitedHTML += '</ul></div>';
+            forbiddenHTML += '</ul></div>';
+            unlimitedHTML += '</ul></div>';
+            
+            let finalHTML = `<p class="text-indigo-200 mb-4 text-center">The archetype's power is heavily influenced by the TCG Forbidden & Limited List, which moderates its most explosive enablers and generic boss monsters.</p>`;
+            finalHTML += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">`;
+            if(hasForbidden) finalHTML += forbiddenHTML;
+            if(hasLimited) finalHTML += limitedHTML;
+            finalHTML += unlimitedHTML;
+            finalHTML += `</div>`;
+            finalHTML += `<div class="mt-6 p-3 bg-indigo-900 bg-opacity-30 rounded border-l-4 border-indigo-500">
+                             <p class="text-sm text-indigo-200"><strong>Meta Implications:</strong> With its most powerful generic boss monsters and the crucial Link enabler <strong class="text-accent">Heavymetalfoes Electrumite</strong> forbidden, the deck must rely on in-archetype finishers and more skillful piloting. While still highly potent, its ceiling and consistency are intentionally checked by the banlist to promote a healthier meta.</p>
+                         </div>`;
+
+
+            banlistContainer.innerHTML = finalHTML;
+
+        } catch (error) {
+            console.error('Failed to fetch banlist data:', error);
+            banlistContainer.innerHTML = '<p class="text-red-400">Could not load banlist information. Please try again later.</p>';
+        }
+    }
+
+    checkBanlist();
+});
+</script>
+</body>
+</html>
+
+

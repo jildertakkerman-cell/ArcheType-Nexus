@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelles Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #120c0b; /* Dark, warm brown */
+            color: #f5eadd; /* Parchment/cream color */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        h1, h2, h3, h4, .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+        .card {
+            background-color: #2a1f1d; /* Darker brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a3b37; /* Muted brown border */
+        }
+        .combo-step-card {
+            background-color: #382c29;
+            border: 1px solid #5c4b47;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #382c29;
+            color: #f5eadd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .pro-icon { color: #a3e635; } /* Lime Green */
+        .con-icon { color: #f87171; } /* Soft Red */
+        .neutral-icon { color: #93c5fd; } /* Soft Blue */
+        .text-accent { color: #e11d48; } /* Rose Red */
+        .link-accent { color: #fbbf24; } /* Amber */
+        .link-accent:hover { color: #fde68a; }
+        .arrow-color { color: #e11d48; }
+        .heading-underline {
+            border-bottom: 2px solid #e11d48;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fbbf24;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fbbf24;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* Banner Styles */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #120c0b;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a3b37;
+        }
+        #steam-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            filter: blur(2px);
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(18, 12, 11, 0.4) 0%, rgba(18, 12, 11, 0.8) 80%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.9);
+        }
+        
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #4a044e 0%, #7e22ce 50%, #4a044e 100%);
+            color: white; border: 2px solid #a855f7; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.2);
+            transition: all 0.3s ease; text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.6), 0 0 30px rgba(168, 85, 247, 0.4);
+        }
+        .ygo-home-button i { font-size: 22px; text-shadow: 0 0 10px rgba(168, 85, 247, 0.8); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="steam-canvas"></canvas>
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-2">Nouvelles</h1>
+            <p class="text-lg md:text-xl text-rose-200 italic">A Culinary Masterclass in Dueling</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 heading-underline">An Archetype Overview</h2>
+                <p class="text-rose-100">
+                    The <strong class="text-accent font-bold">Nouvelles</strong> archetype presents a unique and flavorful approach to Ritual Summoning. Thematically centered around a demonic culinary competition, the deck seeks to dismantle an opponent's board by tributing monsters—including the opponent's own—to serve up its powerful boss monsters. Unlike typical combo decks, Nouvelles engages in a turn-by-turn resource exchange, leveraging its powerful removal and recursion to outlast the opposition through a unique mechanic of "Ritual Climbing".
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Menu: Core Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The Main Courses</h3>
+                    <p class="text-sm text-rose-200 mb-4">The Ritual Monster ladder, each a stepping stone to the next.</p>
+                    <div class="space-y-3">
+                        <p class="text-rose-100"><strong class="text-accent">Buerillabaisse:</strong> The starter, excavates for resources.</p>
+                        <p class="text-rose-100"><strong class="text-accent">Poeltis:</strong> Mid-tier climber that provides card draw.</p>
+                        <p class="text-rose-100"><strong class="text-accent">Balameuniere:</strong> A key searcher for any archetype card.</p>
+                        <p class="text-rose-100"><strong class="text-accent">Baelgrill:</strong> The boss monster, providing a devastating board wipe.</p>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The Kitchen Staff</h3>
+                    <p class="text-sm text-rose-200 mb-4">Essential support monsters that initiate plays.</p>
+                     <div class="space-y-3">
+                        <p class="text-rose-100"><strong class="text-accent">Poissonniere de Nouvelles:</strong> The premier one-card starter, searching your initial Ritual pieces.</p>
+                        <p class="text-rose-100"><strong class="text-accent">Chef de Nouvelles:</strong> A versatile Pendulum monster for searching and interruption.</p>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The Secret Recipes</h3>
+                    <p class="text-sm text-rose-200 mb-4">The Spells & Traps that make the magic happen.</p>
+                     <div class="space-y-3">
+                        <p class="text-rose-100"><strong class="text-accent">Recette de Poisson:</strong> The primary Ritual Spell that sets up your next play.</p>
+                        <p class="text-rose-100"><strong class="text-accent">"At Table" Field Spell:</strong> A resource loop engine for the grind game.</p>
+                        <p class="text-rose-100"><strong class="text-accent">Chef's Special Recipe:</strong> A searchable omni-negate Counter Trap.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The Concours de Cuisine (Culinary Confrontation) Opening</h2>
+            <p class="text-rose-100 mb-8 text-center max-w-2xl mx-auto">This powerful one-card combo establishes your board and readies your Ritual climbing engine.</p>
+            <div class="flex flex-col items-center gap-4">
+                <div class="card p-4 combo-step-card w-full max-w-2xl">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="concours-img-container" class="card-image-container card-placeholder">Concours de Cuisine (Culinary Confrontation)</div>
+                        <div>
+                            <p class="text-rose-100"><strong class="text-accent">1. Activate Concours de Cuisine (Culinary Confrontation):</strong> Special Summon <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=18745" target="_blank" class="lore-link">Poissonniere de Nouvelles</a> to your field and <strong class="text-accent">Patissciel Couverture</strong> to your opponent's field in Attack Position.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center my-2"><i class="fas fa-chevron-down text-2xl arrow-color"></i></div>
+                <div class="card p-4 combo-step-card w-full max-w-2xl">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="poissonniere-img-container" class="card-image-container card-placeholder">Poissonniere de Nouvelles</div>
+                        <div>
+                            <p class="text-rose-100"><strong class="text-accent">2. Search with Poissonniere:</strong> Use Poissonniere's effect to add <strong class="text-accent">Recette de Poisson (Fish Recipe)</strong> from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center my-2"><i class="fas fa-chevron-down text-2xl arrow-color"></i></div>
+                <div class="card p-4 combo-step-card w-full max-w-2xl">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="buerillabaisse-img-container" class="card-image-container card-placeholder">Buerillabaisse de Nouvelles</div>
+                        <div>
+                            <p class="text-rose-100"><strong class="text-accent">3. Ritual Summon:</strong> Activate the Recipe, Tributing Poissonniere to summon <strong class="text-accent">Buerillabaisse de Nouvelles</strong>. Its effect then lets you excavate to find another "Nouvelles" card.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Presentation: Ideal End Board</h2>
+            <div class="card p-6">
+                <p class="text-rose-100 text-center mb-6">The ideal Nouvelles end board is a multi-layered system of interaction, ready to dismantle the opponent's turn piece by piece.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="flex flex-col items-center">
+                        <div id="balameuniere-img-container" class="w-40 h-auto mb-2 card-placeholder">Balameuniere de Nouvelles</div>
+                        <h4 class="font-display text-lg text-center text-white">Proactive Removal</h4>
+                        <p class="text-sm text-center text-rose-200">Tributes an opponent's monster to summon Baelgrill.</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="baelgrill-img-container" class="w-40 h-auto mb-2 card-placeholder">Baelgrill de Nouvelles</div>
+                        <h4 class="font-display text-lg text-center text-white">Board Wipe</h4>
+                        <p class="text-sm text-center text-rose-200">Negates and tributes all opponent's monsters upon summon.</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="special-recipe-img-container" class="w-40 h-auto mb-2 card-placeholder">Chef's Special Recipe</div>
+                        <h4 class="font-display text-lg text-center text-white">Omni-Negate</h4>
+                        <p class="text-sm text-center text-rose-200">A searchable Counter Trap to stop any key effect.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Strengths -->
+                <div class="card p-6">
+                    <h3 class="font-display text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-3 text-rose-100">
+                        <li><span class="pro-icon"><i class="fas fa-magic"></i></span> <strong class="text-green-300">Potent Removal:</strong> The core mechanic of tributing an opponent's Attack Position monster is a powerful form of non-targeting, non-destruction removal that bypasses most forms of protection.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-300">Resource Recursion:</strong> The Field Spell, "Nouvelles Restaurant 'At Table'", creates a sustainable resource loop, allowing you to recycle key cards like "Chef's Special Recipe" for a strong grind game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-brain"></i></span> <strong class="text-green-300">High Skill Ceiling:</strong> The deck is non-linear with many decision paths, making it difficult for unprepared opponents to predict and counter your plays.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Resilient Board:</strong> An established board has multiple layers of interaction, including proactive monster removal and an omni-negate, making it tough to break.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6">
+                    <h3 class="font-display text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-3 text-rose-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Hand Trap Vulnerability:</strong> Highly susceptible to cards like "Droll & Lock Bird" or a well-timed "Ash Blossom & Joyous Spring" on a key searcher.</li>
+                        <li><span class="con-icon"><i class="fas fa-user-shield"></i></span> <strong class="text-red-300">Position Dependent:</strong> The core mechanic relies on the opponent having monsters in Attack Position. A savvy opponent playing entirely in defense can slow the deck down significantly.</li>
+                        <li><span class="con-icon"><i class="fas fa-random"></i></span> <strong class="text-red-300">Ritual Inconsistency:</strong> Like all Ritual decks, it can suffer from "bricky" hands by drawing the wrong ratio of monsters and spells.</li>
+                        <li><span class="con-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-red-300">Low Offensive Pressure:</strong> The archetype's monsters have relatively low ATK, meaning the deck often wins through control and attrition, giving opponents time to find an answer.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-rose-100 mb-4 text-center">The Nouvelles archetype and its core support cards are largely untouched by the TCG Forbidden & Limited list. However, some powerful generic support cards used in certain builds are affected.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 combo-step-card rounded-lg">
+                        <h4 class="font-display text-lg text-green-400 mb-2">Unrestricted</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-rose-100">
+                            <li>All "Nouvelles" Main Deck Monsters</li>
+                            <li>All "Nouvelles" Ritual Monsters</li>
+                             <li>All "Recipe" Spell/Trap Cards</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 combo-step-card rounded-lg">
+                        <h4 class="font-display text-lg text-amber-400 mb-2">Limited / Forbidden</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-rose-100">
+                            <li><strong class="text-amber-300">Herald of the Arc Light:</strong> Limited (1 per Deck)</li>
+                            <li><strong class="text-red-400">Baronne de Fleur:</strong> Forbidden</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-rose-200"><strong>Meta Implications:</strong> The core Nouvelles strategy is at full power. The limitation of generic Synchro targets like Herald and the banning of Baronne (based on provided list) primarily impacts the Diviner engine build, pushing the deck towards a purer, more archetype-focused strategy.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Steam/Ember Animation
+        const canvas = document.getElementById('steam-canvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            
+            const setCanvasSize = () => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            };
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + Math.random() * 50;
+                    this.vy = -(Math.random() * 1 + 0.5);
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.radius = Math.random() * 2 + 1;
+                    this.alpha = Math.random() * 0.5 + 0.2;
+                    this.color = `rgba(225, 29, 72, ${this.alpha})`; // Rose Red
+                }
+
+                update() {
+                    this.y += this.vy;
+                    this.x += this.vx;
+                    this.alpha -= 0.005;
+                    this.color = `rgba(225, 29, 72, ${this.alpha > 0 ? this.alpha : 0})`;
+                    if (this.y < -10 || this.alpha <= 0) {
+                        this.y = canvas.height + Math.random() * 20;
+                        this.x = Math.random() * canvas.width;
+                        this.alpha = Math.random() * 0.5 + 0.2;
+                    }
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+            }
+            
+            function initParticles() {
+                particles = [];
+                const particleCount = (canvas.width * canvas.height) / 8000;
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            setCanvasSize();
+            initParticles();
+            animate();
+            window.addEventListener('resize', () => {
+                setCanvasSize();
+                initParticles();
+            });
+        }
+        
+        // Card Image Fetching
+        async function fetchAndDisplayCardImage(cardName, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardName;
+                    img.className = 'w-full h-auto rounded-lg shadow-md';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            } catch (error) {
+                console.error(`Failed to fetch image for "${cardName}":`, error);
+                container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+            }
+        }
+        
+        const cardsToLoad = {
+            'concours-img-container': 'Concours de Cuisine (Culinary Confrontation)',
+            'poissonniere-img-container': 'Poissonniere de Nouvelles',
+            'buerillabaisse-img-container': 'Buerillabaisse de Nouvelles',
+            'balameuniere-img-container': 'Balameuniere de Nouvelles',
+            'baelgrill-img-container': 'Baelgrill de Nouvelles',
+            'special-recipe-img-container': "Chef's Special Recipe"
+        };
+        
+        for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+            fetchAndDisplayCardImage(cardName, containerId);
+        }
+    });
+</script>
+</body>
+</html>
+

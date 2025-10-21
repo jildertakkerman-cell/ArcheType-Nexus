@@ -1,0 +1,601 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deskbot Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light Gray background */
+            color: #1f2937; /* Dark Gray text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        .combo-step-card {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+        .pro-con-card {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #e5e7eb;
+            color: #4b5563;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+        }
+        .pro-icon { color: #10b981; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #3b82f6; }
+        .text-accent { color: #2563eb; } /* Vibrant Blue */
+        .arrow-color { color: #3b82f6; }
+        .heading-underline {
+            border-bottom: 3px solid #3b82f6;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #2563eb;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #2563eb;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #1d4ed8;
+        }
+
+        /* --- NEW DESKBOT ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #111827; /* Dark Gray */
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #374151;
+        }
+
+        #deskbot-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(17, 24, 39, 0.6) 0%, rgba(17, 24, 39, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0px 2px 10px rgba(0, 0, 0, 0.7);
+        }
+        
+        .banner-title {
+            font-family: 'Roboto Mono', monospace;
+            color: #e5e7eb;
+        }
+        .banner-subtitle {
+            color: #9ca3af;
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Banner Section -->
+        <header class="banner-header text-center">
+            <canvas id="deskbot-banner"></canvas>
+            <div class="banner-content">
+                <h1 class="banner-title text-3xl md:text-5xl font-extrabold mb-2">DESKBOT</h1>
+                <p class="banner-subtitle text-lg md:text-xl">Technical Dossier & Archetype Analysis</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-4">Executive Summary: The Kinetic Logic</h2>
+                <p class="text-gray-700">
+                    The Deskbot archetype is a distinctive EARTH Machine strategy known for its hyper-efficient engine. While all main deck monsters share low base stats, their power comes from generating overwhelming field presence and achieving astronomical attack multipliers. The deck's core dynamic is a strategic pivot between a swift One-Turn Kill (OTK) and establishing potent control locks. Mastery of the archetype requires a precise understanding of timing and sequence, as these tiny <a href="https://yugipedia.com/wiki/Deskbot" target="_blank" class="lore-link">office machines</a> translate minimal card investment into the critical mass needed for high-Level Synchro, Xyz, and Link plays.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Architecture -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Core Architecture: The Engine Nucleus</h2>
+            <p class="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+                Deskbots operate as modular components, with specific triggers and additive effects that compound their collective power. The engine nucleus consists of three key monsters.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Deskbot 003 -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Deskbot 003</h3>
+                    <p class="text-gray-600 mb-2"><strong>The Starter Nexus</strong></p>
+                    <p class="text-gray-700">The indispensable main deck starter. On Normal Summon, it Special Summons any Deskbot from the Deck, initiating the entire combo chain, and provides a powerful Quick Effect ATK boost.</p>
+                </div>
+                <!-- Deskbot 002 -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Deskbot 002</h3>
+                    <p class="text-gray-600 mb-2"><strong>The Search Engine</strong></p>
+                    <p class="text-gray-700">The primary source of card advantage. Upon Special Summon, it searches for any "Deskbot" card. It is the main target for the key spell, Machine Duplication.</p>
+                </div>
+                <!-- Deskbot 001 -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Deskbot 001</h3>
+                    <p class="text-gray-600 mb-2"><strong>The Recursive Tuner</strong></p>
+                    <p class="text-gray-700">A Level 1 Tuner that Special Summons itself from the Graveyard whenever two or more Machine monsters are Special Summoned at the same time, enabling recursive Synchro plays.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Core Combo: The 003 + Machine Duplication Sequence</h2>
+            <p class="text-gray-600 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the deck's most powerful opening, instantly achieving the critical mass required for Extra Deck execution.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="deskbot003-img" class="card-image-container flex-shrink-0 card-placeholder">Deskbot 003</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-white text-gray-800 ring-2 ring-gray-200 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Initial Summon</h3>
+                            </div>
+                            <p class="text-gray-700">Normal Summon <strong class="text-accent font-bold">Deskbot 003</strong>. Its mandatory effect triggers, allowing you to Special Summon <strong class="text-accent font-bold">Deskbot 002</strong> directly from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="deskbot002-img" class="card-image-container flex-shrink-0 card-placeholder">Deskbot 002</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-white text-gray-800 ring-2 ring-gray-200 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Search and Prepare</h3>
+                            </div>
+                            <p class="text-gray-700">The newly summoned <strong class="text-accent font-bold">Deskbot 002</strong> triggers, letting you search for a "Deskbot" card. This is where you would typically add a Pendulum scale or a combo piece to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="machine-dupe-img" class="card-image-container flex-shrink-0 card-placeholder">Machine Duplication</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-white text-gray-800 ring-2 ring-gray-200 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Swarm the Field</h3>
+                            </div>
+                            <p class="text-gray-700">Activate <strong class="text-accent font-bold">Machine Duplication</strong>, targeting your <strong class="text-accent font-bold">Deskbot 002</strong>. This Special Summons two more copies from the Deck, triggering their search effects and <strong class="text-accent font-bold">Deskbot 001</strong>'s revival from the Graveyard, resulting in a massive field presence.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Primary End Boards</h2>
+            <p class="text-gray-600 mb-8 text-center max-w-2xl mx-auto">The initial swarm of monsters can be converted into one of two powerful end states: a multi-negate control board or a single, colossal attacker for an OTK.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Control Lock -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">The Control Lock</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="infinity-img" class="card-image-container card-placeholder">Cyber Dragon Infinity</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong class="text-accent font-bold">Naturia Beast:</strong> Provides a powerful, repeatable Spell negate.</li>
+                        <li><strong class="text-accent font-bold">Cyber Dragon Infinity:</strong> Offers a monster negate and absorption effect.</li>
+                        <li>This board aims to shut down the opponent's plays entirely on Turn 1.</li>
+                    </ul>
+                </div>
+                <!-- The Nuclear OTK -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">The Nuclear OTK</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="deskbot009-img" class="card-image-container card-placeholder">Deskbot 009</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong class="text-accent font-bold">Deskbot 009:</strong> The ultimate OTK machine. Gains ATK equal to the combined ATK of all other Deskbots on the field.</li>
+                        <li><strong class="text-accent font-bold">Battle Protection:</strong> When it battles, the opponent cannot activate cards or effects, ensuring a safe attack.</li>
+                        <li>Can easily reach ATK values exceeding 12,000 for a guaranteed OTK.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section>
+            <h2 class="text-xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-600 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-600 font-bold">High Ceiling:</strong> Can produce imposing end boards or OTK from a one or two-card investment.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-600 font-bold">Explosive Swarming:</strong> The synergy between 003, 002, 001, and Machine Duplication creates unparalleled field presence.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-600 font-bold">Synergy with Support:</strong> Works extremely well with generic Machine support like the Machina and Infinitrack engines.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-600 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-600 font-bold">Normal Summon Reliant:</strong> The entire combo hinges on resolving the effect of <strong class="text-accent font-bold">Deskbot 003</strong>. A single hand trap can be devastating.</li>
+                        <li><span class="con-icon"><i class="fas fa-meteor"></i></span> <strong class="text-red-600 font-bold">Nibiru Vulnerability:</strong> The high number of summons required for combos makes the deck very susceptible to <strong class="text-accent font-bold">Nibiru, the Primal Being</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-600 font-bold">Choke Points:</strong> Key cards like Machine Duplication are obvious targets for negation, which can stop the combo cold.</li>
+                    </ul>
+                </div>
+                <!-- External Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Synergies & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent font-bold">Machina Engine:</strong> Cards like <strong class="text-accent font-bold">Urgent Schedule</strong> provide non-Normal Summon access to swarming, triggering Deskbot 001.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-train"></i></span> <strong class="text-accent font-bold">Infinitrack Engine:</strong> Complements Deskbots by providing easy access to high-Rank Machine Xyz monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-leaf"></i></span> <strong class="text-accent font-bold">Vernusylph Engine:</strong> The EARTH Fairy support allows for resource recycling and extra Special Summons from the hand or Graveyard.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DESKBOT BANNER ANIMATION ---
+            const canvas = document.getElementById('deskbot-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 1.5 + 1;
+                        this.speedX = (Math.random() * 1 - 0.5);
+                        this.speedY = (Math.random() * 1 - 0.5);
+                        this.color = `rgba(59, 130, 246, ${Math.random() * 0.5 + 0.2})`; // Blueish
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 9000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function handleParticles() {
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+                        for (let j = i; j < particles.length; j++) {
+                            const dx = particles[i].x - particles[j].x;
+                            const dy = particles[i].y - particles[j].y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance < 100) {
+                                ctx.beginPath();
+                                ctx.strokeStyle = `rgba(59, 130, 246, ${1 - distance / 100})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    handleParticles();
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- SCRIPT FOR FETCHING CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'deskbot003-img': 'Deskbot 003',
+                'deskbot002-img': 'Deskbot 002',
+                'machine-dupe-img': 'Machine Duplication',
+                'infinity-img': 'Cyber Dragon Infinity',
+                'deskbot009-img': 'Deskbot 009'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+
+    <!-- Banlist Status Section -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-bold text-accent mb-6 text-center">
+            <i class="fas fa-balance-scale mr-2"></i>Current Banlist Status
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Limited Cards -->
+            <div class="bg-gradient-to-br from-orange-100 to-orange-50 border border-orange-300 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-orange-700 mb-3 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Limited (1 copy)
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-orange-600"><strong>Called by the Grave</strong> - Graveyard protection</li>
+                    <li class="text-orange-600"><strong>Triple Tactics Talent</strong> - Disruption response</li>
+                </ul>
+            </div>
+
+            <!-- Semi-Limited Cards -->
+            <div class="bg-gradient-to-br from-yellow-100 to-yellow-50 border border-yellow-300 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-yellow-700 mb-3 flex items-center">
+                    <i class="fas fa-pause mr-2"></i>Semi-Limited (2 copies)
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-yellow-600">No directly relevant cards</li>
+                </ul>
+            </div>
+
+            <!-- Forbidden Cards -->
+            <div class="bg-gradient-to-br from-red-100 to-red-50 border border-red-300 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-red-700 mb-3 flex items-center">
+                    <i class="fas fa-ban mr-2"></i>Forbidden
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-red-600">No Deskbot cards banned</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-6 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-300 rounded-lg p-4">
+            <h3 class="text-lg font-bold text-blue-700 mb-3 flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>Banlist Impact Analysis
+            </h3>
+            <div class="text-sm text-blue-600 space-y-2">
+                <p><strong>Complete Freedom:</strong> All Deskbot monsters and Machine Duplication remain unrestricted, preserving the deck's explosive swarming potential.</p>
+                <p><strong>Combo Integrity:</strong> The critical 003 + Machine Duplication engine operates without limitations, maintaining consistent access to massive field presence.</p>
+                <p><strong>Extra Deck Access:</strong> Cyber Dragon Infinity and other Rank 5 Xyz options remain fully available for powerful end boards.</p>
+                <p><strong>Consistent Performance:</strong> The archetype benefits from unrestricted access to all core components, making it a reliable OTK strategy.</p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
+
+

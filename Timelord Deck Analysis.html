@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timelord Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep cosmic purple */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(26, 22, 51, 0.7); /* Darker purple/blue with transparency */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4c3d8e; /* Lighter purple border */
+            backdrop-filter: blur(5px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(30, 26, 60, 0.8);
+            border: 1px solid #a78bfa;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2457;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2457;
+            border: 1px dashed #a78bfa;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ffd700; } /* Gold for accents */
+        .arrow-color { color: #ffd700; }
+        .heading-underline {
+            border-bottom: 2px solid #ffd700;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ffd700;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffd700;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ffd700;
+        }
+
+        /* --- TIMELORD ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c0a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c3d8e;
+        }
+        #celestial-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 10, 26, 0.4) 0%, rgba(12, 10, 26, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        }
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+        }
+
+        /* Home Button Styling */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white; border: 2px solid #6366f1; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px; position: relative; z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        @keyframes ygoIconGlow {
+            from { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); }
+            to { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Banner Header -->
+        <header class="banner-header text-center">
+            <canvas id="celestial-canvas"></canvas>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">TIMELORD</h1>
+            <p class="text-lg md:text-xl text-yellow-200">Masters of Stall, Burn, and Inevitability</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Timelord</strong> archetype is a unique control strategy that operates on a completely different axis from most modern decks. Instead of building complex boards, Timelords deploy a single, powerful monster per turn that is immune to destruction and prevents the player from taking battle damage. Their goal is to systematically dismantle the opponent's board with disruptive effects that activate after battling, all while using burn damage to secure victory. The deck is fundamentally reactive, designed to punish over-extension and out-grind opponents through sheer resilience.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Timelord Arsenal -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Celestial Roster & Support</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-gavel text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Key Figures</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Time Maiden</h4>
+                            <p class="text-sm text-indigo-200">The heart of the machine. A one-card starter that searches any 0 ATK Timelord and enables Rank 10 plays from the Graveyard.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Metaion, the Timelord</h4>
+                            <p class="text-sm text-indigo-200">The premier board-clear for monsters, returning all other monsters on the field to the hand after battling.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Michion, the Timelord</h4>
+                            <p class="text-sm text-indigo-200">The great equalizer and core of the OTK strategy. Its effect halves the opponent's Life Points.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-infinity text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Path to Infinity</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="text-indigo-200 text-sm">The deck's primary lockdown is achieved through a chain of Continuous Traps that transform the temporary Timelords into permanent, untargetable threats. This sequence is the archetype's ultimate win condition.</p>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Empty Machine → Infinite Machine → Infinite Light</h4>
+                            <p class="text-sm text-indigo-200">This progression allows you to Special Summon Timelords from your hand and ultimately makes them permanent, untargetable, and indestructible threats on the field.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <p class="text-indigo-200 mt-4 text-center">The full power of the <a href="https://yugipedia.com/wiki/Timelord_(archetype)" target="_blank" class="lore-link">celestial roster of angels</a> lies in choosing the right tool for any situation.</p>
+        </section>
+
+        <!-- Core Combo Walkthrough -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Play: The Maiden's Call</h2>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="time-maiden-img" class="card-image-container flex-shrink-0 card-placeholder">Time Maiden</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon and Search</h3>
+                            </div>
+                            <p class="text-indigo-200">With no monsters on your field, Special Summon <strong class="text-accent">Time Maiden</strong> from your hand. Then, Tribute her to search for the perfect Timelord to counter your opponent's board, such as <strong class="text-accent">Kamion, the Timelord</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                </div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="kamion-img" class="card-image-container flex-shrink-0 card-placeholder">Kamion, the Timelord</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Disrupt and Prepare</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon the searched Timelord without Tributing. You now have a single, indestructible threat on the field, and <strong class="text-accent">Time Maiden</strong> is in the GY, ready to be banished on a future turn to summon another Timelord from the deck for an Xyz play.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Two End Boards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- OTK Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The "Train" OTK</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="liebe-img" class="card-image-container card-placeholder">Superdreadnought Rail Cannon Juggernaut Liebe</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Gustav Max:</strong> Use two Level 10 Timelords to Xyz Summon and inflict 2000 damage.</li>
+                        <li><strong class="text-accent">Juggernaut Liebe:</strong> Overlay into Liebe, boost its ATK to 6000, and attack for game.</li>
+                    </ul>
+                </div>
+                <!-- Lockdown Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Infinite Light Lockdown</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="infinite-light-img" class="card-image-container card-placeholder">Infinite Light</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Permanent Threats:</strong> Timelords no longer return to the Deck during the Standby Phase.</li>
+                        <li><strong class="text-accent">Full Protection:</strong> Your Timelords become untargetable and indestructible by card effects.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Competitive Analysis -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Inherent Resilience:</strong> Immunity to destruction by battle and card effects forces opponents to use non-standard removal.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Non-Targeting Removal:</strong> Many Timelords shuffle cards into the deck without targeting, bypassing common protection effects.</li>
+                         <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">Explosive OTK:</strong> The Rank 10 "Train" engine can end the game unexpectedly out of a seemingly passive board state.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Effect Negation:</strong> A negated Timelord becomes a 0 ATK monster that is easily destroyed by battle.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Battle Phase Dependency:</strong> The entire strategy crumbles if the Battle Phase is skipped or attacks are negated.</li>
+                        <li><span class="con-icon"><i class="fas fa-sign-out-alt"></i></span> <strong class="text-red-300">Non-Destruction Removal:</strong> Highly vulnerable to being banished, returned to the hand/deck, or Tributed by cards like Kaijus.</li>
+                    </ul>
+                </div>
+                <!-- Tech Choices -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-pastafarianism"></i></span> <strong class="text-accent">Kaiju Engine:</strong> The perfect partnership. Tribute an opponent's indestructible boss monster and attack the Kaiju with Raphion for massive burn damage.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-burn"></i></span> <strong class="text-accent">Generic Burn/Stall:</strong> Floodgates like <strong class="text-accent">There Can Be Only One</strong> and burn cards like <strong class="text-accent">Magic Cylinder</strong> supplement the core strategy.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Banlist Section -->
+        <section class="my-10 md:my-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The Timelord archetype and its core support cards are currently at full power in the TCG, with no cards on the Forbidden & Limited list. This allows the deck to operate with maximum consistency and access all its powerful stall and OTK strategies.
+                </p>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CELESTIAL CANVAS ANIMATION ---
+            const canvas = document.getElementById('celestial-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 70;
+                let rotation = 0;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.speedX = Math.random() * 1 - 0.5;
+                        this.speedY = Math.random() * 1 - 0.5;
+                        this.color = `rgba(255, 215, 0, ${Math.random() * 0.5 + 0.2})`;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.size > 0.1) this.size -= 0.01;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                }
+                
+                function handleParticles(){
+                    if (particles.length < numParticles) {
+                        particles.push(new Particle(canvas.width/2, canvas.height/2));
+                    }
+                    for(let i = 0; i < particles.length; i++){
+                        particles[i].update();
+                        particles[i].draw();
+                        if(particles[i].size <= 0.1){
+                            particles.splice(i, 1);
+                            i--;
+                        }
+                    }
+                }
+
+                function drawRings() {
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const maxRadius = Math.min(centerX, centerY) * 0.8;
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(rotation);
+
+                    const ringCount = 5;
+                    for (let i = 0; i < ringCount; i++) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(255, 215, 0, ${0.1 + (i*0.05)})`;
+                        ctx.lineWidth = 1;
+                        const radius = maxRadius * ((i + 1) / ringCount);
+                        ctx.arc(0, 0, radius, (Math.PI / 180) * (i*60), (Math.PI / 180) * (120 + i*60));
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    handleParticles();
+                    drawRings();
+                    rotation += 0.001;
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else { throw new Error("Image not found"); }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'time-maiden-img': 'Time Maiden',
+                'kamion-img': 'Kamion, the Timelord',
+                'liebe-img': 'Superdreadnought Rail Cannon Juggernaut Liebe',
+                'infinite-light-img': 'Infinite Light',
+            };
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

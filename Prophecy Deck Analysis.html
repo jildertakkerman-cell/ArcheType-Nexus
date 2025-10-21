@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prophecy Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep midnight blue */
+            color: #e0e7ff; /* Lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(18, 16, 38, 0.8); /* Translucent dark blue */
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            border: 1px solid #4a3d8f; /* Muted purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #1f1d3a;
+            border: 1px solid #5d50ad;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a265f;
+            color: #d1c4e9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 15px rgba(74, 61, 143, 0.5);
+        }
+        .text-accent { color: #facc15; } /* Gold accent */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fde047;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #fde047;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c0a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a3d8f;
+        }
+        #magic-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(12, 10, 26, 0.5) 0%, rgba(12, 10, 26, 0.9) 80%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+            font-family: 'Cinzel', serif;
+        }
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #2c2a4a 0%, #4a3d8f 50%, #2c2a4a 100%);
+            color: white;
+            border: 2px solid #a5b4fc;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(74, 61, 143, 0.4), 0 0 20px rgba(165, 180, 252, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(74, 61, 143, 0.6), 0 0 30px rgba(165, 180, 252, 0.4);
+            border-color: #facc15;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="magic-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Prophecy & Spellbook</h1>
+            <p class="text-lg md:text-xl text-yellow-200">Unsealing the Grimoire of a Control Archetype</p>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4" style="font-family: 'Cinzel', serif;">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Prophecy</strong> archetype, intrinsically linked with its <strong class="text-accent font-bold">Spellbook</strong> counterpart, is a control-oriented Spellcaster strategy. Its game plan is a testament to meticulous resource management, revolving around a recursive loop of searching, disruption, and card advantage. By mastering the interplay between the monster lineup and their arcane library, a duelist can methodically dismantle an opponent's board and outlast them in a prolonged war of attrition. The entire strategy is a carefully recorded <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=prophecy&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=2" target="_blank" class="lore-link">prophecy of victory</a>, written in the cards themselves.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center" style="font-family: 'Cinzel', serif;">The Wielders and Their Tomes</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Prophecy Monster Lineup</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Spellbook Magician of Prophecy</h4>
+                            <p class="text-sm text-indigo-200">"Blue Boy" is the primary one-card starter, searching any "Spellbook" Spell on summon to ignite the engine.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Justice of Prophecy</h4>
+                            <p class="text-sm text-indigo-200">A slower, high-advantage card that searches a high-level Spellcaster and a "Spellbook" Spell during the End Phase.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">High Priestess of Prophecy</h4>
+                            <p class="text-sm text-indigo-200">The quintessential boss monster, offering repeatable, targeted destruction by banishing Spellbooks from the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Spellbook Arsenal</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Spellbook of Secrets</h4>
+                            <p class="text-sm text-indigo-200">The premier searcher, capable of adding any "Spellbook" card from the Deck to the hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Spellbook of Fate</h4>
+                            <p class="text-sm text-indigo-200">A powerful Quick-Play Spell providing versatile, non-targeting removal and disruption.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Grand Spellbook Tower</h4>
+                            <p class="text-sm text-indigo-200">The engine of the grind game, recycling resources and providing a continuous stream of card advantage.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center" style="font-family: 'Cinzel', serif;">Core Combo: The "Blue Boy Loop" to "Fate Lock"</h2>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="blue-boy-img" class="card-image-container flex-shrink-0 card-placeholder">Spellbook Magician of Prophecy</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a265f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Search</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Spellbook Magician of Prophecy</strong>. Its effect activates, adding <strong class="text-accent">Spellbook of Secrets</strong> from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="secrets-img" class="card-image-container flex-shrink-0 card-placeholder">Spellbook of Secrets</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a265f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Double Search</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent">Secrets</strong> to search for <strong class="text-accent">Spellbook of the Master</strong>. Then, activate <strong class="text-accent">Master</strong>, copying <strong class="text-accent">Secrets</strong> in the GY to search for your key disruption piece, <strong class="text-accent">Spellbook of Fate</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="fate-img" class="card-image-container flex-shrink-0 card-placeholder">Spellbook of Fate</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a265f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Establish the Lock</h3>
+                            </div>
+                            <p class="text-indigo-200">Set <strong class="text-accent">Spellbook of Fate</strong>. With three Spellbooks now in the Graveyard, you have a live, non-targeting banish effect ready for your opponent's turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center" style="font-family: 'Cinzel', serif;">Typical End Board</h2>
+            <div class="card p-6 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div id="jowgen-img" class="card-image-container mx-auto card-placeholder">Jowgen the Spiritualist</div>
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-bold text-white mb-2">The "Jowgen" Floodgate Lock</h3>
+                    <p class="text-indigo-200 mb-4">Leveraging the immense search power of <strong class="text-accent">Spellbook of Judgment</strong> (where legal), the deck aims to end on a simple but devastating board. </p>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Jowgen the Spiritualist:</strong> A floodgate that prevents both players from Special Summoning.</li>
+                        <li><strong class="text-accent">Spellbook of Wisdom:</strong> In hand or set, ready to protect Jowgen from Spells/Traps.</li>
+                        <li><strong class="text-accent">Spellbook of Fate:</strong> Set and fueled by the Graveyard to banish any Normal Summoned threat.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center" style="font-family: 'Cinzel', serif;">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><i class="fas fa-check-circle text-green-400"></i> <strong class="text-green-300">Unmatched Consistency:</strong> Reciprocal search loops ensure reliable access to key cards.</li>
+                        <li><i class="fas fa-hourglass-half text-green-400"></i> <strong class="text-green-300">Superior Grind Game:</strong> The Grand Spellbook Tower provides relentless card advantage.</li>
+                        <li><i class="fas fa-wand-magic-sparkles text-green-400"></i> <strong class="text-green-300">High-Quality Disruption:</strong> Spellbook of Fate is a versatile answer to many modern threats.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><i class="fas fa-skull-crossbones text-red-400"></i> <strong class="text-red-300">Graveyard Dependency:</strong> Vulnerable to cards like Abyss Dweller or Dimensional Fissure.</li>
+                        <li><i class="fas fa-hand-paper text-red-400"></i> <strong class="text-red-300">Anti-Search Effects:</strong> Droll & Lock Bird or Mistake can halt the engine completely.</li>
+                        <li><i class="fas fa-anchor text-red-400"></i> <strong class="text-red-300">Fragile Normal Summon:</strong> The opening play is a critical choke point susceptible to hand traps.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">Hybrid Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                         <li><i class="fas fa-book-open text-blue-400"></i> <strong class="text-blue-300">Dogmatika:</strong> The Spellbook engine boosts consistency for this fellow Spellcaster strategy.</li>
+                         <li><i class="fas fa-magic text-blue-400"></i> <strong class="text-blue-300">Runick:</strong> Combines the floodgate potential of Jowgen with the recursive disruption of Runick spells.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline" style="font-family: 'Cinzel', serif;">TCG Banlist Impact</h2>
+            <div id="banlist-section" class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">MODERATE IMPACT:</strong> The archetype's power is kept in check by a key limitation.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-indigo-200 text-left">
+                            <li>Spellbook of Judgment (1 copy)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-indigo-200 text-left">
+                            <li>Spellbook Magician of Prophecy (3)</li>
+                            <li>Spellbook of Secrets (3)</li>
+                            <li>Spellbook of Fate (3)</li>
+                            <li>High Priestess of Prophecy (3)</li>
+                            <li>The Grand Spellbook Tower (3)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 rounded border-l-4 text-left bg-yellow-900 bg-opacity-30 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its most explosive playmaker, <strong>Spellbook of Judgment</strong>, limited to one copy, the archetype cannot consistently perform its strongest floodgate combos. The deck must rely more on its traditional control strategy, using its unrestricted searchers to build a resource loop and control the board with cards like Spellbook of Fate.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('magic-banner');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const particleCount = 70;
+
+            const setCanvasSize = () => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            };
+
+            class Particle {
+                constructor(x, y) {
+                    this.x = x || Math.random() * canvas.width;
+                    this.y = y || Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.radius = Math.random() * 1.5 + 0.5;
+                    this.color = `rgba(250, 204, 21, ${Math.random() * 0.5 + 0.3})`; // Gold
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+
+                // Connect particles
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i; j < particles.length; j++) {
+                        const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+                        if (dist < 100) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(165, 180, 252, ${1 - dist / 100})`; // Lavender lines
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+
+            setCanvasSize();
+            initParticles();
+            animate();
+            window.addEventListener('resize', () => {
+                setCanvasSize();
+                initParticles();
+            });
+            
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error('Network response was not ok.');
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        container.innerHTML = `<img src="${imageUrl}" alt="${cardName}" class="w-full h-auto rounded-lg shadow-md animate-fadeIn">`;
+                    } else {
+                         container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'blue-boy-img': 'Spellbook Magician of Prophecy',
+                'secrets-img': 'Spellbook of Secrets',
+                'fate-img': 'Spellbook of Fate',
+                'jowgen-img': 'Jowgen the Spiritualist'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

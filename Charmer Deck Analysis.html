@@ -1,0 +1,655 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charmer Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .title-font {
+            font-family: 'Cinzel', serif;
+        }
+
+        body {
+            font-family: 'Lora', serif;
+            background-color: #0d1120; /* Deep twilight blue */
+            color: #d1d1e0; /* Softer off-white */
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 20%, rgba(127, 90, 240, 0.08), transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(25, 130, 196, 0.08), transparent 40%);
+            z-index: -1;
+            animation: background-pan 45s infinite alternate ease-in-out;
+        }
+        
+        @keyframes background-pan {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.2); }
+        }
+
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(26, 26, 46, 0.7); /* Semi-transparent Deep Indigo */
+            border-radius: 0.5rem;
+            box-shadow: 0 0 20px rgba(127, 90, 240, 0.3), 0 0 5px rgba(127, 90, 240, 0.2) inset;
+            border: 1px solid rgba(127, 90, 240, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .combo-step-card {
+            background-color: rgba(42, 42, 62, 0.7); /* Lighter semi-transparent */
+            border: 1px solid rgba(157, 127, 226, 0.6);
+        }
+        .pro-con-card {
+            background-color: rgba(42, 42, 62, 0.7);
+            border: 1px solid rgba(157, 127, 226, 0.6);
+        }
+        .card-placeholder {
+            background-color: #2a2a3e;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2a3e;
+            cursor: pointer;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #7f5af0);
+        }
+        .pro-icon {
+            color: #34d399;
+        }
+        .con-icon {
+            color: #ef4444;
+        }
+        .neutral-icon {
+            color: #60a5fa;
+        }
+        .text-accent {
+            color: #a78bfa; /* Light Violet */
+        }
+        .arrow-color {
+            color: #9d7fe2;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #9d7fe2;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        a.lore-link {
+            color: #a78bfa;
+            text-decoration: none;
+            border-bottom: 1px dotted #a78bfa;
+            transition: color 0.3s;
+        }
+        a.lore-link:hover {
+            color: #e0e0e0;
+        }
+        
+        /* --- THEMATIC BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #7f5af0;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0,0,0,0.7);
+        }
+        
+        .attribute-orbs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        /* Attribute Colors & Positions */
+        .orb.fire { background: #ff595e; box-shadow: 0 0 15px #ff595e, 0 0 25px #ff595e; width: 12px; height: 12px; top: 20%; left: 15%; animation-duration: 12s; }
+        .orb.water { background: #1982c4; box-shadow: 0 0 15px #1982c4, 0 0 25px #1982c4; width: 15px; height: 15px; top: 50%; left: 8%; animation-duration: 18s; animation-delay: -3s;}
+        .orb.wind { background: #8ac926; box-shadow: 0 0 15px #8ac926, 0 0 25px #8ac926; width: 10px; height: 10px; top: 75%; left: 25%; animation-duration: 14s; animation-delay: -5s;}
+        .orb.earth { background: #ffca3a; box-shadow: 0 0 15px #ffca3a, 0 0 25px #ffca3a; width: 16px; height: 16px; top: 80%; left: 85%; animation-duration: 16s; animation-delay: -7s;}
+        .orb.light { background: #f0f0e6; box-shadow: 0 0 18px #f0f0e6, 0 0 28px #f0f0e6; width: 14px; height: 14px; top: 10%; left: 80%; animation-duration: 13s; animation-delay: -2s;}
+        .orb.dark { background: #6a4c93; box-shadow: 0 0 15px #6a4c93, 0 0 25px #6a4c93; width: 13px; height: 13px; top: 40%; left: 92%; animation-duration: 17s; animation-delay: -6s;}
+
+        @keyframes float {
+          0% { transform: translateY(0px) translateX(0px) scale(1); }
+          25% { transform: translateY(-20px) translateX(15px) scale(1.1); }
+          50% { transform: translateY(15px) translateX(-20px) scale(1); }
+          75% { transform: translateY(-15px) translateX(20px) scale(1.1); }
+          100% { transform: translateY(0px) translateX(0px) scale(1); }
+        }
+
+        .banner-header::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(127, 90, 240, 0.15) 0%, rgba(127, 90, 240, 0) 60%);
+            z-index: 0;
+            animation: pulse 8s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: translateX(-50%) scale(0.9); opacity: 0.7; }
+            50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+            100% { transform: translateX(-50%) scale(0.9); opacity: 0.7; }
+        }
+        
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        #card-popup {
+            background-color: #2a2a3e;
+            border-color: #7f5af0;
+            color: #d1d1e0;
+            font-family: 'Lora', serif;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+        #card-popup h3 {
+            color: #9d7fe2;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        #card-popup p {
+            margin-bottom: 0.5rem;
+        }
+        #card-popup-stats {
+            color: #9d7fe2;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+    <!-- Card Popup -->
+    <div id="card-popup" class="fixed z-50 bg-purple-900 border-2 border-purple-500 text-white p-4 rounded-lg shadow-lg max-w-xs max-h-96 overflow-y-auto opacity-0 transition-opacity duration-200 pointer-events-none"></div>
+
+<div class="container mx-auto">
+        <!-- New Thematic Banner Header -->
+        <header class="banner-header">
+            <div class="attribute-orbs">
+                <div class="orb fire"></div>
+                <div class="orb water"></div>
+                <div class="orb wind"></div>
+                <div class="orb earth"></div>
+                <div class="orb light"></div>
+                <div class="orb dark"></div>
+            </div>
+            <div class="banner-content">
+                <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline title-font">Charmer</h1>
+                <p class="text-lg md:text-xl text-purple-200">An Analysis of the Attribute-Based Control Engine</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 title-font">Executive Summary</h2>
+                <p class="text-gray-200">
+                    The <strong class="text-accent font-bold">Charmer</strong> archetype is a versatile Spellcaster strategy that revolves around controlling the duel through attribute manipulation. The deck's core mechanic is built upon a consistent stat line of 1500 DEF and 1850 ATK, which fuels its powerful search and draw effects. By leveraging their Link monsters to steal opponent's monsters from the Graveyard and their continuous spells to generate card advantage, Charmers can out-resource opponents and establish a resilient, recursive board state. This flexible engine continues the <a href="https://yugipedia.com/wiki/Charmer" target="_blank" rel="noopener noreferrer" class="lore-link">storied legacy</a> of these elemental masters and their familiars.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">Foundational Pacts: The Elemental Bond</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-scroll text-accent mr-2"></i>1500 DEF / 1850 ATK Axis</h3>
+                    <p class="text-gray-200">The entire archetype is built around these two specific stats. Monsters with 1500 DEF are your primary search and revival targets, while summoning a Spellcaster with 1850 ATK triggers your main draw engine.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-infinity text-accent mr-2"></i>Resource Loops</h3>
+                    <p class="text-gray-200">Charmers excel at turning your opponent's actions into your advantage. When their Link monsters are destroyed, they search for another monster, ensuring you always have follow-up plays.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">Core Incantation: The Path to Control</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">The primary combo starts with a single card, <strong class="text-accent font-bold">Spirit Charmers</strong>, to establish your core engine and set up disruption.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="spirit-charmers-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Spirit Charmers</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">The One-Card Starter</h3>
+                        </div>
+                        <p class="text-gray-200">Activate <strong class="text-accent font-bold">Spirit Charmers</strong>. Discard one card to search for <strong class="text-accent font-bold">Awakening of the Possessed</strong> and set <strong class="text-accent font-bold">Possessed Partnerships</strong> directly from your deck.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="awakening-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Awakening of the Possessed</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Establish the Engine</h3>
+                        </div>
+                        <p class="text-gray-200">Activate <strong class="text-accent font-bold">Awakening of the Possessed</strong>. This protects your monsters and allows you to draw a card whenever you summon a Spellcaster with 1850 ATK.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="link-charmer-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Charmer Link Monster</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Summon and Disrupt</h3>
+                        </div>
+                        <p class="text-gray-200">Normal Summon a monster, use it and an extender to Link Summon one of the <strong class="text-accent font-bold">Charmer Link Monsters</strong>. This triggers your draw effect and sets up your trap for disruption.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- End Board Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">The Final Ritual</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">A typical Charmer end board focuses on establishing multiple layers of protection and disruption, creating a difficult-to-break field that generates continuous advantage.</p>
+            <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                 <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
+                    <div id="endboard-charmer-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Charmer Link Monster</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Protected Link Monster</h3>
+                        <p class="text-gray-200">A Link-2 Charmer on the field, protected from destruction by <strong class="text-accent font-bold">Awakening of the Possessed</strong>, threatening to steal monsters from the opponent's GY.</p>
+                    </div>
+                </div>
+                <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
+                    <div id="partnerships-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Possessed Partnerships</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Live Disruption</h3>
+                        <p class="text-gray-200">A set <strong class="text-accent font-bold">Possessed Partnerships</strong> provides a powerful quick-effect to either revive a monster or destroy/steal an opponent's monster.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">Strategic Grimoire</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Consistency:</strong> Powerful one-card starters make the deck very reliable.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Strong Grind Game:</strong> The deck excels at recycling resources and can outlast many opponents.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">Flexible Engine:</strong> Easily integrates with other powerful Spellcaster or attribute-based engines.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Vulnerable Starter:</strong> The entire strategy can be stopped by negating <strong class="text-accent font-bold">Spirit Charmers</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Low Raw Power:</strong> Relies on control and advantage rather than overwhelming offensive power.</li>
+                         <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400 font-bold">Relies on Opponent's GY:</strong> The Link monsters' best effects require the opponent to have specific attributes in their Graveyard.</li>
+                    </ul>
+                </div>
+                <!-- Tech & Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech & Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="neutral-icon"><i class="fas fa-hat-wizard"></i></span> <strong class="text-accent font-bold">Magistus Engine:</strong> Provides explosive special summons and access to powerful Spellcaster boss monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-cross"></i></span> <strong class="text-accent font-bold">Dogmatika Engine:</strong> Leverages the 1500 DEF synergy to add powerful disruption and removal.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent font-bold">Generic Spellcaster Support:</strong> Cards like <strong class="text-accent font-bold">Selene, Queen of the Master Magicians</strong> and <strong class="text-accent font-bold">Accesscode Talker</strong> provide a powerful end-game.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">The Charmer's Arsenal</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">An overview of the essential cards that make up this versatile control strategy.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Spirit Charmers</h3>
+                    <p class="text-gray-200 mb-2"><strong>Quick-Play Spell</strong></p>
+                    <p class="text-gray-200">The deck's primary consistency tool. It searches your key engine pieces and sets up your main disruption trap.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Awakening of the Possessed</h3>
+                    <p class="text-gray-200 mb-2"><strong>Continuous Spell</strong></p>
+                    <p class="text-gray-200">The heart of the engine, providing protection for your monsters and a consistent source of card advantage.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Charmer Link Monsters</h3>
+                    <p class="text-gray-200 mb-2"><strong>Spellcaster/Link/Effect</strong></p>
+                    <p class="text-gray-200">These monsters steal attribute-specific monsters from your opponent's Graveyard and replace themselves when destroyed.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Possessed Partnerships</h3>
+                    <p class="text-gray-200 mb-2"><strong>Normal Trap</strong></p>
+                    <p class="text-gray-200">Your main form of disruption, offering revival, destruction, or the ability to temporarily steal an opponent's monster.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+            let lastShown = 0;
+            let currentCard = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (currentCard === cardName) {
+                    hidePopup();
+                    return;
+                }
+                hidePopup(); // Ensure any existing popup is hidden first
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-purple-300">${cardType}</p>
+                        <div class="w-full h-px bg-purple-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+                lastShown = Date.now();
+                currentCard = cardName;
+            }
+
+            function hidePopup() {
+                if (Date.now() - lastShown < 100) return; // Ignore hide calls immediately after showing
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                    currentCard = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            const imageContainers = {
+                'spirit-charmers-img-container': 'Spirit Charmers',
+                'awakening-img-container': 'Awakening of the Possessed',
+                'link-charmer-img-container': 'Hiita the Fire Charmer, Ablaze',
+                'endboard-charmer-img-container': 'Aussa the Earth Charmer, Immovable',
+                'partnerships-img-container': 'Possessed Partnerships'
+            };
+
+            for (const [containerId, cardName] of Object.entries(imageContainers)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+

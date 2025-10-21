@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocoon of Evolution Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0c140c; /* Deep forest green */
+            color: #f0f0e6; /* Off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(20, 30, 20, 0.7); /* Translucent darker green */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2a522a; /* Forest green border */
+            backdrop-filter: blur(8px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(25, 40, 25, 0.8);
+            border: 1px solid #3c7a3c;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #192819;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #192819;
+            border: 1px dashed #3c7a3c;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Amber/Gold */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- NEW ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c140c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #2a522a;
+        }
+
+        #spore-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 20, 12, 0.4) 0%, rgba(12, 20, 12, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cormorant Garamond', serif;
+             letter-spacing: 0.1em;
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white; border: 2px solid #6366f1; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px; position: relative; z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        @keyframes ygoIconGlow {
+            from { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); }
+            to { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="spore-canvas"></canvas>
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-2">Cocoon of Evolution</h1>
+            <p class="text-lg md:text-xl text-amber-200">A Strategic Metamorphosis</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-green-100">
+                    The <strong class="text-accent font-bold">"Cocoon of Evolution"</strong> strategy has undergone a radical transformation, evolving from a slow, nostalgic anime gimmick into a potent and flexible go-second engine. The modern deck discards its passive, turn-based origins in favor of an explosive two-card combo centered around <strong class="text-accent font-bold">Cocoon of Ultra Evolution</strong>. This new identity focuses on reactive, board-breaking plays that tribute an opponent's monster to summon powerful Insect boss monsters from the deck. Its modular nature allows it to function as a self-contained toolbox, making it a surprisingly effective and satisfying strategy in the modern TCG.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">A Tale of Two Cocoons</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-white mb-2">The Original Metamorphosis</h3>
+                    <p class="text-sm text-green-200">The classic strategy involved equipping <strong class="text-accent">Cocoon of Evolution</strong> to <strong class="text-accent">Petit Moth</strong> and waiting multiple turns to Tribute it for progressively stronger "Moth" monsters. This slow, passive mechanic is unplayable in the modern game due to its speed and vulnerability.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-white mb-2">The Modern Evolution</h3>
+                    <p class="text-sm text-green-200">The Quick-Play Spell <strong class="text-accent">Cocoon of Ultra Evolution</strong> completely redefines the deck. It shifts the focus to a "going-second" board-breaking strategy by tributing an opponent's monster (turned into an Insect) to summon a powerful boss monster directly from the Deck, ignoring its summoning conditions.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Core Engine -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Modern Metamorphosis Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Linchpin: Cocoon of Ultra Evolution</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="linchpin-cocoon-img-container" class="card-image-container card-placeholder">Cocoon of Ultra Evolution</div>
+                    </div>
+                    <p class="text-green-200 text-center">The heart of the deck. This Quick-Play Spell tributes an equipped Insect from either field to Special Summon any Insect from your Deck, ignoring summoning conditions. Its Graveyard effect recycles resources and provides a draw.</p>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Enabler: Parasite Paranoid</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="enabler-parasite-img-container" class="card-image-container card-placeholder">Parasite Paranoid</div>
+                    </div>
+                    <p class="text-green-200 text-center">This monster's Quick Effect allows it to equip itself from the hand to any monster on the field, turning it into an Insect. This perfectly sets up the condition for Cocoon of Ultra Evolution.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Combo: The Two-Card Board Break</h2>
+            <p class="text-green-200 mb-8 text-center max-w-2xl mx-auto">
+                With just two cards, this engine can dismantle an opponent's board and establish your own.
+                <a href="https://yugipedia.com/wiki/Cocoon_of_Ultra_Evolution" target="_blank" class="lore-link">Explore the full life cycle</a> of these cards to see their power.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="parasite-img-container" class="card-image-container flex-shrink-0 card-placeholder">Parasite Paranoid</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#192819] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Infest the Host</h3>
+                            </div>
+                            <p class="text-green-200">Activate <strong class="text-accent">Parasite Paranoid</strong>'s Quick Effect from your hand, targeting a key monster your opponent controls. It becomes an equipped Insect.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-4"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cocoon-img-container" class="card-image-container flex-shrink-0 card-placeholder">Cocoon of Ultra Evolution</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#192819] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Initiate Ultra Evolution</h3>
+                            </div>
+                            <p class="text-green-200">Activate <strong class="text-accent">Cocoon of Ultra Evolution</strong>. Tribute the opponent's monster now equipped with Parasite Paranoid.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-4"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="moth-img-container" class="card-image-container flex-shrink-0 card-placeholder">Perfectly Ultimate Great Moth</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#192819] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Emerge Victorious</h3>
+                            </div>
+                            <p class="text-green-200">Summon a powerful boss like <strong class="text-accent">Perfectly Ultimate Great Moth</strong> from the deck. Simultaneously, Parasite Paranoid's floating effect triggers, letting you summon another high-level Insect from your hand.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Evolved End Board: A Toolbox of Threats</h2>
+            <p class="text-green-200 mb-8 text-center max-w-2xl mx-auto">The goal isn't an unbreakable negate board, but a field of resilient and disruptive monsters that exhaust the opponent's resources.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Metamorphosed Insect Queen</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="queen-img-container" class="card-image-container card-placeholder">Metamorphosed Insect Queen</div>
+                    </div>
+                    <p class="text-green-200">The primary defensive piece, granting all your other Insects protection from targeting and destruction by card effects.</p>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Beargram, Shelled Emperor</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="beargram-img-container" class="card-image-container card-placeholder">Beargram, Shelled Emperor of the Forest Crown</div>
+                    </div>
+                    <p class="text-green-200">A devastating board wipe that can destroy all other non-Insect/Plant face-up monsters. It also protects your Spells/Traps from monster effect responses.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-green-100">
+                        <li><span class="pro-icon"><i class="fas fa-bomb"></i></span> <strong class="text-green-300">Potent Board-Breaking:</strong> Non-targeting, non-destruction removal is highly effective against modern boss monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">Explosive Potential:</strong> Generates a massive swing in advantage from just two cards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-green-300">Flexibility:</strong> The engine is compact and can be integrated into various Insect strategies (Beetrooper, Kaiju Control).</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-green-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Consistency:</strong> Relies on drawing the unsearchable <strong class="text-accent">Cocoon of Ultra Evolution</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Vulnerable to Disruption:</strong> Susceptible to hand traps like Ash Blossom and spell negation.</li>
+                        <li><span class="con-icon"><i class="fas fa-crosshairs"></i></span> <strong class="text-red-300">Predictable Choke Points:</strong> An experienced opponent can identify and disrupt the core combo.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- TCG Banlist Status Section -->
+        <section class="animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The Cocoon of Evolution engine and its key support cards are currently at full power in the TCG format.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Cocoon of Ultra Evolution (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Parasite Paranoid (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Resonance Insect (3 copies)</strong></li>
+                             <li><strong class="text-green-300">All "Moth" monsters</strong></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Relevant External Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Beetrooper" monsters are unrestricted.</li>
+                            <li>All "Kaiju" monsters are unrestricted.</li>
+                            <li><strong class="text-red-400">Apollousa, Bow of the Goddess (Forbidden)</strong> - A common generic boss monster that Insect decks could make is unavailable.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its entire core engine untouched by the banlist, the "Cocoon" strategy can be piloted at its maximum intended power. The deck has full access to its powerful board-breaking combo and resource-generating loops, making it a consistent and dangerous rogue strategy.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- SPORE/PARTICLE ANIMATION FOR BANNER ---
+            const canvas = document.getElementById('spore-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 70;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + 10;
+                        this.speedY = Math.random() * 2 + 0.5;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(250, 204, 21, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'parasite-img-container': 'Parasite Paranoid',
+                'cocoon-img-container': 'Cocoon of Ultra Evolution',
+                'moth-img-container': 'Perfectly Ultimate Great Moth',
+                'queen-img-container': 'Metamorphosed Insect Queen',
+                'beargram-img-container': 'Beargram, Shelled Emperor of the Forest Crown',
+                'linchpin-cocoon-img-container': 'Cocoon of Ultra Evolution',
+                'enabler-parasite-img-container': 'Parasite Paranoid'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

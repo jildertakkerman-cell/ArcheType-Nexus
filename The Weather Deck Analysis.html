@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Weather Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #e0f2fe; /* Light sky blue */
+            color: #075985; /* Deep blue text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #bfdbfe;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 150px; /* Smaller images for this theme */
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #f0f9ff;
+            color: #0c4a6e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 220px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 2px dashed #93c5fd;
+        }
+        .pro-icon { color: #22c55e; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #3b82f6; }
+        .text-accent { color: #f59e0b; } /* Sunny yellow/orange */
+        .text-accent-blue { color: #3b82f6; } /* Rain blue */
+        .text-accent-purple { color: #8b5cf6; } /* Thunder purple */
+        .arrow-color { color: #f59e0b; }
+        .heading-underline {
+            border-bottom: 2px solid #f59e0b;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #3b82f6;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #3b82f6;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #0ea5e9;
+            text-shadow: 0 0 5px #bae6fd;
+        }
+
+        /* --- THE WEATHER ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            height: 180px;
+            background: linear-gradient(to bottom, #7dd3fc, #e0f2fe);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #fff;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+            filter: blur(5px);
+            animation: moveClouds 20s linear infinite;
+        }
+        .cloud:before, .cloud:after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+        .cloud1 { width: 100px; height: 100px; top: -50px; left: 10%; animation-duration: 25s; }
+        .cloud2 { width: 120px; height: 120px; top: 0px; left: 50%; animation-duration: 30s; animation-delay: -5s; }
+        .cloud3 { width: 80px; height: 80px; top: 20px; left: 80%; animation-duration: 20s; animation-delay: -10s; }
+        
+        @keyframes moveClouds {
+            0% { transform: translateX(-150px); }
+            100% { transform: translateX(1200px); }
+        }
+
+        .banner-header h1 {
+            font-family: 'Merriweather', serif;
+            z-index: 2;
+            color: #082f49;
+        }
+        .banner-header p {
+            z-index: 2;
+            color: #075985;
+        }
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #a5f3fc 0%, #67e8f9 100%);
+            color: #083344;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.5);
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <div class="cloud cloud1"></div>
+            <div class="cloud cloud2"></div>
+            <div class="cloud cloud3"></div>
+            <h1 class="text-3xl md:text-5xl font-bold mb-2">The Weather</h1>
+            <p class="text-lg md:text-xl">A Strategic Analysis of a Control Archetype</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-sky-800 mb-4">The Art of Control</h2>
+                <p class="text-slate-700">
+                    "The Weather" is a unique control-oriented archetype comprised of Fairy-type "Painter" monsters and Continuous "Canvas" Spell and Trap cards. Its identity is built upon positional gameplay, resource recursion, and a remarkable resilience to common disruption. Unlike archetypes focused on overwhelming power, "The Weather" excels in a protracted grind game, methodically accruing advantage while systematically dismantling an opponent's strategy through its unique banish-for-cost mechanic.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Mechanic -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-sky-800 mb-6 text-center heading-underline">Painting the Field</h2>
+            <div class="card p-6">
+                <p class="text-slate-700 mb-4">
+                    The central gameplay loop is the interaction between "The Weather Painter" monsters and the "Canvas" cards in their columns. A Painter gains the Quick Effect of any Canvas in its column or adjacent columns. The activation cost is always the same: the monster must <strong class="text-accent-blue">banish itself</strong>.
+                </p>
+                <p class="text-slate-700">
+                    This "banish-for-cost" system is the source of the deck's profound resilience. The monster is removed from the field *before* the effect resolves, allowing it to dodge most forms of targeted negation (like <em class="font-semibold">Effect Veiler</em>) and board wipes (like <em class="font-semibold">Raigeki</em>). The banished Painters then return to the field during the next Standby Phase, ready to paint again.
+                </p>
+            </div>
+        </section>
+        
+        <!-- The Artist's Toolkit -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-sky-800 mb-8 text-center heading-underline">The Artist's Toolkit: Painters & Canvases</h2>
+            
+            <!-- Painters (Monsters) -->
+            <div class="mb-12">
+                <h3 class="text-2xl font-bold text-sky-800 mb-6 flex items-center gap-3"><i class="fas fa-palette"></i>The Painters (Monsters)</h3>
+                <div class="space-y-6">
+                    <!-- Snow -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-6">
+                        <div id="snow-img-container" class="card-image-container card-placeholder">The Weather Painter Snow</div>
+                        <div class="flex-1">
+                            <h4 class="text-xl font-bold text-green-600 mb-1">The Weather Painter Snow</h4>
+                            <p class="text-sm font-semibold text-slate-500 mb-2 flex items-center gap-2"><i class="fas fa-star text-yellow-500"></i> Primary Starter & Consistency Tool</p>
+                            <p class="text-slate-700">The most important monster in the archetype. Her on-summon effect places any "The Weather" Spell/Trap directly from the Deck, providing immediate access to your entire engine and setting up your first turn plays.</p>
+                        </div>
+                    </div>
+                    <!-- Thunder -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-6">
+                        <div id="thunder-img-container" class="card-image-container card-placeholder">The Weather Painter Thunder</div>
+                        <div class="flex-1">
+                            <h4 class="text-xl font-bold text-accent-purple mb-1">The Weather Painter Thunder</h4>
+                            <p class="text-sm font-semibold text-slate-500 mb-2 flex items-center gap-2"><i class="fas fa-wrench text-gray-500"></i> Secondary Starter & Utility</p>
+                            <p class="text-slate-700">Offers crucial flexibility by allowing you to swap a face-up Continuous Spell/Trap for a "The Weather" card from your deck. This is essential for replacing used Canvases or removing your own floodgates like Skill Drain.</p>
+                        </div>
+                    </div>
+                    <!-- Cloud -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-6">
+                        <div id="cloud-img-container" class="card-image-container card-placeholder">The Weather Painter Cloud</div>
+                        <div class="flex-1">
+                            <h4 class="text-xl font-bold text-cyan-600 mb-1">The Weather Painter Cloud</h4>
+                            <p class="text-sm font-semibold text-slate-500 mb-2 flex items-center gap-2"><i class="fas fa-sync-alt text-blue-500"></i> Resource Recovery</p>
+                            <p class="text-slate-700">The engine's primary recovery mechanism. When another "The Weather" card goes to the GY, he can place up to two "The Weather" Spells/Traps from your GY back onto the field, creating a powerful resource loop.</p>
+                        </div>
+                    </div>
+                     <!-- Sun -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-6">
+                        <div id="sun-img-container" class="card-image-container card-placeholder">The Weather Painter Sun</div>
+                         <div class="flex-1">
+                            <h4 class="text-xl font-bold text-red-500 mb-1">The Weather Painter Sun</h4>
+                            <p class="text-sm font-semibold text-slate-500 mb-2 flex items-center gap-2"><i class="fas fa-level-up-alt text-orange-500"></i> Extender & Recovery</p>
+                            <p class="text-slate-700">Recurs himself from the GY by sending a Continuous Spell/Trap from the field to the GY. This is essential for building board presence for Link Summons and for removing your own floodgates.</p>
+                        </div>
+                    </div>
+                     <!-- Aurora -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-6">
+                        <div id="aurora-img-container" class="card-image-container card-placeholder">The Weather Painter Aurora</div>
+                         <div class="flex-1">
+                            <h4 class="text-xl font-bold text-yellow-500 mb-1">The Weather Painter Aurora</h4>
+                            <p class="text-sm font-semibold text-slate-500 mb-2 flex items-center gap-2"><i class="fas fa-shield-halved text-gray-600"></i> Protection & Anchor</p>
+                            <p class="text-slate-700">The deck's defensive anchor. She provides crucial protection, making your "The Weather" Spells and Traps immune to targeting and destruction from your opponent's card effects, securing your entire engine.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvases & Support (Spells/Traps) -->
+            <div>
+                <h3 class="text-2xl font-bold text-sky-800 mb-6 flex items-center gap-3"><i class="fas fa-brush"></i> The Canvases & Support (Spells)</h3>
+                <div class="space-y-6">
+                    <!-- Snowy Canvas -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-6">
+                        <div id="snowy-canvas-img-container" class="card-image-container card-placeholder">The Weather Snowy Canvas</div>
+                        <div class="flex-1">
+                            <h4 class="text-xl font-bold text-sky-600 mb-1">The Weather Snowy Canvas</h4>
+                            <p class="text-sm font-semibold text-slate-500 mb-2 flex items-center gap-2"><i class="fas fa-search text-green-500"></i> Core Searcher</p>
+                            <p class="text-slate-700">The most important Canvas, granting a repeatable search for any "The Weather" card. Establishing this is top priority to ensure a constant flow of resources.</p>
+                        </div>
+                    </div>
+                     <!-- Thundery Canvas -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-6">
+                        <div id="thundery-canvas-img-container" class="card-image-container card-placeholder">The Weather Thundery Canvas</div>
+                        <div class="flex-1">
+                            <h4 class="text-xl font-bold text-purple-600 mb-1">The Weather Thundery Canvas</h4>
+                            <p class="text-sm font-semibold text-slate-500 mb-2 flex items-center gap-2"><i class="fas fa-bolt text-red-500"></i> Primary Disruption</p>
+                            <p class="text-slate-700">The main form of monster interaction. It provides a Quick Effect to banish a Painter to return an opponent's monster to the hand—a powerful form of non-destruction removal.</p>
+                        </div>
+                    </div>
+                    <!-- Forecast -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-6">
+                        <div id="forecast-img-container" class="card-image-container card-placeholder">The Weather Forecast</div>
+                        <div class="flex-1">
+                            <h4 class="text-xl font-bold text-indigo-500 mb-1">The Weather Forecast</h4>
+                            <p class="text-sm font-semibold text-slate-500 mb-2 flex items-center gap-2"><i class="fas fa-meteor text-orange-500"></i> Combo Enabler</p>
+                            <p class="text-slate-700">The lynchpin of the modern strategy. This Field Spell provides an extra Normal Summon, places a Canvas from deck, and most importantly, lets you use your Canvases as monsters for a Link Summon, enabling a Turn 1 Rainbow Lock.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-sky-800 mb-6 text-center heading-underline">The Ideal Snow Opening</h2>
+            <p class="text-slate-600 mb-8 text-center max-w-2xl mx-auto">This powerful opening uses "The Weather Forecast" to establish the deck's primary boss monster on the very first turn.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex items-center gap-4">
+                        <span class="bg-sky-100 text-sky-700 rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg flex-shrink-0">1</span>
+                        <p class="text-slate-700">Activate <strong class="text-accent-blue">The Weather Forecast</strong>. Use its effect to place <strong class="text-accent">The Weather Snowy Canvas</strong> from your Deck.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-2"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex items-center gap-4">
+                        <span class="bg-sky-100 text-sky-700 rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg flex-shrink-0">2</span>
+                        <p class="text-slate-700">Use Forecast's extra Normal Summon on <strong class="text-accent-blue">The Weather Painter Snow</strong>. Her effect activates, placing <strong class="text-accent-purple">The Weather Thundery Canvas</strong>.</p>
+                    </div>
+                </div>
+                 <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-2"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex items-center gap-4">
+                        <span class="bg-sky-100 text-sky-700 rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg flex-shrink-0">3</span>
+                        <p class="text-slate-700">Activate Forecast's final effect. Link Summon <strong class="text-accent">The Weather Painter Rainbow</strong> using Snow and your two Canvases as Link Material.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-sky-800 mb-6 text-center heading-underline">The Final Composition: Rainbow Lock</h2>
+            <div class="card p-8">
+                 <p class="text-slate-600 mb-6 text-center max-w-3xl mx-auto">
+                    The ultimate goal is to assemble the "Rainbow Lock." This board state consists of <strong class="text-accent">The Weather Painter Rainbow</strong> pointing to two or three "Weather Painter" monsters. Each of those Painters gains a powerful omni-negate effect, providing multiple interruptions per turn and creating a near-unbreakable field. Combined with Rainbow's own ability to negate a Special Summon, this lock suffocates the opponent's strategy and secures victory. You can learn more about the entire collection of <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=The%20Weather&stype=1" target="_blank" class="lore-link">The Weather cards</a> on the official database.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center max-w-3xl mx-auto">
+                    <div id="endboard-painter1" class="card-image-container mx-auto card-placeholder">Painter 1</div>
+                    <div id="rainbow-img-container" class="card-image-container mx-auto card-placeholder">The Weather Painter Rainbow</div>
+                    <div id="endboard-painter2" class="card-image-container mx-auto card-placeholder">Painter 2</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-sky-800 mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-600 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700">
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-700">High Resilience:</strong> Banish-for-cost mechanic dodges most common forms of interaction.</li>
+                        <li><span class="pro-icon"><i class="fas fa-infinity"></i></span> <strong class="text-green-700">Resource Recursion:</strong> Painters return for free, generating consistent advantage.</li>
+                        <li><span class="pro-icon"><i class="fas fa-lock"></i></span> <strong class="text-green-700">Floodgate Synergy:</strong> Functions exceptionally well under floodgates like <strong class="font-semibold">Skill Drain</strong> and <strong class="font-semibold">Rivalry of Warlords</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-600 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-700">Normal Summon Reliant:</strong> Can be slowed down significantly if the initial Normal Summon of Snow is negated.</li>
+                        <li><span class="con-icon"><i class="fas fa-unlink"></i></span> <strong class="text-red-700">Vulnerable Going Second:</strong> Struggles against established boards without specific board-breaker cards.</li>
+                         <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-700">Backrow Removal:</strong> Relies heavily on its Canvas cards, making it vulnerable to cards like <strong class="font-semibold">Harpie's Feather Duster</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Tech Choices -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-600 mb-4">Key Tech Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700">
+                        <li><span class="neutral-icon"><i class="fas fa-book"></i></span> <strong class="text-blue-700">Pot of Prosperity:</strong> Digs for key combo pieces like Forecast or Snow.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-pastafarianism"></i></span> <strong class="text-blue-700">Kaijus / Lava Golem:</strong> Essential for breaking boards when going second.</li>
+                         <li><span class="neutral-icon"><i class="fas fa-map-pin"></i></span> <strong class="text-blue-700">Piri Reis Map:</strong> A direct searcher for The Weather Painter Snow (0 ATK).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- TCG Banlist Status -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-sky-800 mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-700 mb-4 text-center">
+                    <strong class="text-green-600 font-bold">UNRESTRICTED STATUS:</strong> The Weather archetype operates at full, unrestricted power in the current TCG format.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-600 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
+                            <li>All "The Weather Painter" main deck monsters (3 copies each)</li>
+                            <li>All "The Weather Canvas" Spells & Traps</li>
+                            <li>The Weather Forecast</li>
+                            <li>The Weather Painter Rainbow & Moonbow</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-600 mb-2">Relevant Generic Hits</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
+                            <li>While the archetype is untouched, some generic staples it might use, like certain "Pot" cards, may be limited, affecting consistency builds.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-100 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-green-800"><strong>Meta Implications:</strong> With complete access to all its components, "The Weather" can execute its strategy at maximum potential. The freedom to run three copies of key starters like Snow and consistency boosters like Forecast makes the deck a highly viable and potent control strategy.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url_small;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.textContent = cardName; 
+                }
+            }
+
+            const cardsToLoad = {
+                'snow-img-container': 'The Weather Painter Snow',
+                'thunder-img-container': 'The Weather Painter Thunder',
+                'cloud-img-container': 'The Weather Painter Cloud',
+                'sun-img-container': 'The Weather Painter Sun',
+                'aurora-img-container': 'The Weather Painter Aurora',
+                'forecast-img-container': 'The Weather Forecast',
+                'snowy-canvas-img-container': 'The Weather Snowy Canvas',
+                'thundery-canvas-img-container': 'The Weather Thundery Canvas',
+                'rainbow-img-container': 'The Weather Painter Rainbow',
+                'endboard-painter1': 'The Weather Painter Snow',
+                'endboard-painter2': 'The Weather Painter Thunder',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

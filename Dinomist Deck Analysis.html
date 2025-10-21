@@ -1,0 +1,578 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dinomist Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1e293b; /* Slate 800 */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155; /* Slate 700 */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #334155; /* Slate 700 */
+            border: 1px solid #475569; /* Slate 600 */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1e293b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1e293b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #22d3ee; } /* Cyan 400 */
+        .arrow-color { color: #67e8f9; } /* Cyan 300 */
+        .heading-underline {
+            border-bottom: 2px solid #22d3ee;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #22d3ee;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #22d3ee;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0f172a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #334155;
+        }
+
+        #hydraulic-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+         .banner-header h1 {
+            font-family: 'Orbitron', sans-serif;
+         }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="hydraulic-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 tracking-wider">DINOMIST</h1>
+            <p class="text-lg md:text-xl text-cyan-200">A Technical Analysis of the Pendulum Machine Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-slate-300">
+                    The <strong class="text-accent font-bold">Dinomist</strong> archetype is a WATER Machine Pendulum strategy defined by its resilient mechanics and the potent Continuous Spell, <strong class="text-accent font-bold">Dinomist Charge</strong>. While formidable on its own, its true competitive power is unlocked when hybridized with the Dracoslayer engine, transforming its swarming capabilities into a complex control strategy. This hybrid approach leverages the archetype's consistent resource loop to build formidable endboards centered around powerful, generic boss monsters, embodying a strategy of <a href="https://yugipedia.com/wiki/Dinomist" target="_blank" class="lore-link">hydraulic surge and mechanical might</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Mechanics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-cogs text-3xl text-cyan-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The WATER Machine Engine</h3>
+                    </div>
+                    <p class="text-slate-300">All Dinomist monsters share the WATER Attribute and Machine Type. This grants access to two powerful negation packages: summoning <strong class="text-accent font-bold">Toadally Awesome</strong> via <strong class="text-red-400">Bahamut Shark</strong> <span class="text-red-400">(currently banned)</span> with Level 4s, and summoning <strong class="text-accent font-bold">Cyber Dragon Infinity</strong> via <strong class="text-accent font-bold">Cyber Dragon Nova</strong> with Level 5s.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-shield-alt text-3xl text-cyan-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Defensive Scaling (3 & 6)</h3>
+                    </div>
+                    <p class="text-slate-300">The Pendulum Scales offer non-chaining protection. Scale 6 monsters can negate an effect targeting another Dinomist card, while Scale 3 monsters can be destroyed to prevent another Dinomist card's destruction. This makes the deck highly resilient to common forms of removal.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Engine Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Core Engine: Search and Recursion</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">
+                The deck's consistency and longevity hinge on <strong class="text-accent font-bold">Dinomist Charge</strong>, which transforms a simple Pendulum strategy into an infinite resource loop.
+            </p>
+            <div class="card p-8 flex flex-col md:flex-row items-center gap-6">
+                <div id="charge-img-container" class="card-image-container flex-shrink-0 card-placeholder">Dinomist Charge</div>
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold text-accent mb-3">Dinomist Charge</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><strong class="text-cyan-200">Initial Search:</strong> Upon activation, it searches any "Dinomist" monster from the deck, ensuring you can complete your scales or find a combo piece.</li>
+                        <li><strong class="text-cyan-200">Resource Loop:</strong> Once per turn, when a Dinomist card is added from the field to your face-up Extra Deck (e.g., used as Link/Synchro material), you add it back to your hand. This completely mitigates the cost of Extra Deck summoning.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The BTP Conversion</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">This standard opening converts a few starting cards into massive card advantage and board presence, centered around Link Summoning <strong class="text-accent font-bold">Beyond the Pendulum</strong>.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex items-center mb-2">
+                        <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                        <h3 class="text-lg font-bold">Activate Charge & Set Scales</h3>
+                    </div>
+                    <p class="text-slate-300">Activate <strong class="text-accent font-bold">Dinomist Charge</strong> to search for a missing scale piece. Set a Scale 3 and a Scale 6 Dinomist monster in your Pendulum Zones.</p>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <i class="fas fa-arrow-down text-3xl arrow-color animate-fadeIn"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex items-center mb-2">
+                        <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                        <h3 class="text-lg font-bold">Pendulum & Link Summon</h3>
+                    </div>
+                    <p class="text-slate-300">Pendulum Summon two Dinomist monsters from your hand. Immediately use those two monsters to Link Summon <strong class="text-accent font-bold">Beyond the Pendulum</strong>.</p>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <i class="fas fa-arrow-down text-3xl arrow-color animate-fadeIn"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center gap-4">
+                     <div id="btp-img-container" class="card-image-container flex-shrink-0 card-placeholder">Beyond the Pendulum</div>
+                    <div class="flex-grow">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1e293b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Generate Advantage (+2)</h3>
+                        </div>
+                        <p class="text-slate-300">BTP's effect activates, destroying one of your scales to search a Pendulum monster (like <strong class="text-accent font-bold">Luster Pendulum</strong>). Then, <strong class="text-accent font-bold">Dinomist Charge</strong> triggers, returning the destroyed scale to your hand. This turns a single action into a net gain of two cards.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Optimal Endboard: A Wall of Disruption</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">A successful Turn 1 combo for the Dinomist/Dracoslayer hybrid aims to establish a multi-layered board of protection and negation, creating a formidable wall that is difficult for the opponent to dismantle.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Apollousa Card -->
+                <div class="card p-6 flex flex-col sm:flex-row items-start gap-4 h-full">
+                    <div id="apollousa-img-container" class="w-full sm:w-1/3 flex-shrink-0 h-64 sm:h-auto card-placeholder">Apollousa, Bow of the Goddess</div>
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold text-white mb-1">Apollousa, Bow of the Goddess</h4>
+                        <p class="text-cyan-300 font-semibold mb-3">Role: Multi-Monster Negation</p>
+                        <div class="bg-red-500 bg-opacity-20 border border-red-500 rounded-lg p-3 mb-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                                <h4 class="text-red-400 font-bold text-sm">Currently Banned in TCG</h4>
+                            </div>
+                            <p class="text-red-300 mt-1 text-sm">Apollousa is currently banned. Modern builds use Accesscode Talker or Knightmare Unicorn instead.</p>
+                        </div>
+                        <p class="text-slate-300 text-sm">Summoned with 2-4 materials, Apollousa is the primary defense against monster-heavy decks. It can negate multiple monster effects per turn, shutting down an opponent's main combo lines.</p>
+                    </div>
+                </div>
+
+                <!-- Cyber Dragon Infinity Card -->
+                <div class="card p-6 flex flex-col sm:flex-row items-start gap-4 h-full">
+                    <div id="infinity-img-container" class="w-full sm:w-1/3 flex-shrink-0 h-64 sm:h-auto card-placeholder">Cyber Dragon Infinity</div>
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold text-white mb-1">Cyber Dragon Infinity</h4>
+                        <p class="text-cyan-300 font-semibold mb-3">Role: Omni-Negate & Removal</p>
+                        <p class="text-slate-300 text-sm">Made with two Level 5 Dinomists, Infinity provides a versatile omni-negate by detaching a material. It can also absorb an opponent's Attack Position monster, offering both disruption and removal.</p>
+                    </div>
+                </div>
+
+                <!-- Toadally Awesome Card -->
+                <div class="card p-6 flex flex-col sm:flex-row items-start gap-4 h-full">
+                    <div id="toad-img-container" class="w-full sm:w-1/3 flex-shrink-0 h-64 sm:h-auto card-placeholder">Toadally Awesome</div>
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold text-white mb-1">Toadally Awesome</h4>
+                        <p class="text-cyan-300 font-semibold mb-3">Role: Omni-Negate & Resource Gain</p>
+                        <p class="text-slate-300 text-sm">Summoned via <strong class="text-red-400">Bahamut Shark</strong> <span class="text-red-400">(currently banned)</span>, this provides a second omni-negate. Crucially, it also sets the negated card to your field, stealing resources while disrupting the opponent. It can recycle itself or other WATER monsters from the GY.</p>
+                    </div>
+                </div>
+
+                <!-- Dinoster Power Card -->
+                <div class="card p-6 flex flex-col sm:flex-row items-start gap-4 h-full">
+                    <div id="dinoster-img-container" class="w-full sm:w-1/3 flex-shrink-0 h-64 sm:h-auto card-placeholder">Dinoster Power...</div>
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold text-white mb-1">Dinoster Power, the Mighty Dracoslayer</h4>
+                        <p class="text-cyan-300 font-semibold mb-3">Role: Systemic Protection</p>
+                        <p class="text-slate-300 text-sm">This Fusion monster is the board's insurance policy. It protects all your Pendulum Cards (including your scales and Dinomist Charge) from being destroyed by battle or card effects, safeguarding your entire engine from board wipes.</p>
+                    </div>
+                </div>
+
+                <!-- I:P Masquerena Card -->
+                <div class="card p-6 flex flex-col sm:flex-row items-start gap-4 h-full">
+                    <div id="ip-img-container" class="w-full sm:w-1/3 flex-shrink-0 h-64 sm:h-auto card-placeholder">I:P Masquerena</div>
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold text-white mb-1">I:P Masquerena</h4>
+                        <p class="text-cyan-300 font-semibold mb-3">Role: Opponent's Turn Disruption</p>
+                        <p class="text-slate-300 text-sm">I:P allows you to perform a Link Summon during your opponent's Main Phase. This provides reactive disruption by summoning a powerful Link monster like Knightmare Unicorn (for removal) or S:P Little Knight (for banishing).</p>
+                    </div>
+                </div>
+
+                <!-- Dinomist Charge Card -->
+                <div class="card p-6 flex flex-col sm:flex-row items-start gap-4 h-full">
+                    <div id="charge-endboard-img-container" class="w-full sm:w-1/3 flex-shrink-0 h-64 sm:h-auto card-placeholder">Dinomist Charge</div>
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold text-white mb-1">Dinomist Charge</h4>
+                        <p class="text-cyan-300 font-semibold mb-3">Role: Guaranteed Follow-up</p>
+                        <p class="text-slate-300 text-sm">Ending the turn with Charge face-up is critical. Its recursion effect ensures that even if your board is broken, you will have a full hand of Dinomist monsters to rebuild and launch a counter-attack on your next turn.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400">Resource Loop:</strong> <strong class="text-accent">Dinomist Charge</strong> provides unmatched resource recursion for a Pendulum deck.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400">High Resilience:</strong> In-built protection makes the core strategy difficult to disrupt with targeted effects.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Flexible Power:</strong> Easily pivots between Rank 4/5 Xyz toolboxes to adapt to the game state.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400">Charge Reliant:</strong> An early negation on <strong class="text-accent">Dinomist Charge</strong> can significantly slow the deck down.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Floodgate Vulnerability:</strong> Cards like <strong class="text-accent">Anti-Spell Fragrance</strong> are crippling.</li>
+                         <li><span class="con-icon"><i class="fas fa-meteor"></i></span> <strong class="text-red-400">Mass Removal:</strong> Non-targeting board wipes like <strong class="text-accent">Lightning Storm</strong> can be an issue without <strong class="text-accent">Dinoster Power</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Tech & Hybrids -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Engines & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Dracoslayer Engine:</strong> The premier hybrid option, providing extenders and access to powerful Synchro/Fusion/Xyz monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-vial"></i></span> <strong class="text-accent">Fusion Spells:</strong> Cards like <strong class="text-accent">Ready Fusion</strong> and <strong class="text-accent">Instant Fusion</strong> provide quick access to Xyz materials.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- HYDRAULIC BUBBLE ANIMATION ---
+            const canvas = document.getElementById('hydraulic-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let bubbles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Bubble {
+                    constructor() {
+                        this.radius = Math.random() * 3 + 1;
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + this.radius;
+                        this.speedY = Math.random() * 2 + 0.5;
+                        this.speedX = (Math.random() - 0.5) * 1.5;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+
+                        if (this.x - this.radius > canvas.width || this.x + this.radius < 0) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = canvas.height + this.radius;
+                        }
+                        
+                        if (this.y + this.radius < 0) {
+                           this.y = canvas.height + this.radius;
+                           this.x = Math.random() * canvas.width;
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(34, 211, 238, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    bubbles = [];
+                    const bubbleCount = (canvas.width * canvas.height) / 5000;
+                    for (let i = 0; i < bubbleCount; i++) {
+                        bubbles.push(new Bubble());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    bubbles.forEach(bubble => {
+                        bubble.update();
+                        bubble.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        container.innerHTML = '';
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-full object-cover rounded-lg shadow-md animate-fadeIn';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName.split(',')[0]}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'charge-img-container': 'Dinomist Charge',
+                'btp-img-container': 'Beyond the Pendulum',
+                'apollousa-img-container': 'Apollousa, Bow of the Goddess',
+                'infinity-img-container': 'Cyber Dragon Infinity',
+                'toad-img-container': 'Toadally Awesome',
+                'dinoster-img-container': 'Dinoster Power, the Mighty Dracoslayer',
+                'ip-img-container': 'I:P Masquerena',
+                'charge-endboard-img-container': 'Dinomist Charge'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

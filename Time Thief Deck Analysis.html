@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Thief Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #374151;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(31, 41, 55, 0.7);
+            border: 1px solid #4b5563;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1f2937;
+            color: #9ca3af;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px #111827;
+            border: 1px dashed #4b5563;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f59e0b; } /* Amber/Gold Accent */
+        .arrow-color { color: #f59e0b; }
+        .heading-underline {
+            border-bottom: 2px solid #f59e0b;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f59e0b;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f59e0b;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f59e0b;
+        }
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0b0f19;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #374151;
+        }
+        #time-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(11, 15, 25, 0.4) 0%, rgba(11, 15, 25, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(245, 158, 11, 0.7);
+        }
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Header -->
+        <header class="banner-header text-center">
+            <canvas id="time-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">TIME THIEF</h1>
+            <p class="text-lg md:text-xl text-amber-200">A Deep Dive into Temporal Larceny</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Time Thief</strong> archetype is a DARK, Rank 4 Xyz-focused control strategy. Its core mechanic involves stealing cards from the opponent's Deck and Graveyard to use as Xyz materials. The primary goal is to establish a disruptive board centered around <strong class="text-accent font-bold">Time Thief Redoer</strong> and <strong class="text-accent font-bold">Time Thief Perpetua</strong>. This duo creates a sustainable loop of advantage and disruption, systematically dismantling the opponent's game plan through resource denial rather than overwhelming force. While playable as a pure deck, its true strength is often realized as a compact and efficient engine in hybrid strategies.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Cards -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Crew: A Card Dossier</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main Deck Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-secret text-4xl text-amber-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Playmakers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Time Thief Regulator</h4>
+                            <p class="text-sm text-blue-200">The most important one-card starter. Tributes itself to summon two different "Time Thief" monsters from the deck, setting up the entire board.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Time Thief Winder</h4>
+                            <p class="text-sm text-blue-200">The primary searcher. On summon, it adds any "Time Thief" card from the deck to the hand, usually the crucial Counter Trap.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Time Thief Adjuster</h4>
+                            <p class="text-sm text-blue-200">The Graveyard setup tool. On summon, it sends a "Time Thief" card from the deck to the GY to enable recursion plays.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Extra Deck & Support -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-amber-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Masterminds & Gadgetry</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Time Thief Redoer</h4>
+                            <p class="text-sm text-blue-200">The boss monster. Steals from the opponent's deck and uses different materials to dodge effects, draw cards, or provide powerful removal.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Time Thief Perpetua</h4>
+                            <p class="text-sm text-blue-200">The engine runner. Attaches "Time Thief" cards from the deck to your Xyz monsters as a Quick Effect, enabling Redoer's best effects.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Time Thief Retrograde</h4>
+                            <p class="text-sm text-blue-200">The searchable Counter Trap. Negates a Spell/Trap and attaches it to your Time Thief Xyz monster as material.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Heist: Regulator's Gambit</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The deck's foundational combo starts with a single card, demonstrating how efficiently the <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Time+Thief&stype=1" class="lore-link" target="_blank">Time Thief crew</a> assembles to establish their board.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="regulator-img-container" class="card-image-container flex-shrink-0 card-placeholder">Time Thief Regulator</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#111827] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Plan</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon <strong class="text-accent">Regulator</strong> to an empty field. Tribute it to Special Summon <strong class="text-accent">Winder</strong> and <strong class="text-accent">Adjuster</strong> from your deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl my-4 arrow-color"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="redoer-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Time Thief Redoer</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#111827] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Assemble & Prepare</h3>
+                            </div>
+                            <p class="text-blue-200">Winder's effect searches <strong class="text-accent">Retrograde</strong>. Adjuster's effect sends <strong class="text-accent">Bezel Ship</strong> to the GY. Overlay Winder and Adjuster to Xyz Summon <strong class="text-accent">Time Thief Redoer</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl my-4 arrow-color"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="perpetua-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Time Thief Perpetua</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#111827] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Establish the Loop</h3>
+                            </div>
+                            <p class="text-blue-200">Use <strong class="text-accent">Bezel Ship's</strong> GY effect, detaching a material from Redoer to summon itself. Overlay Bezel Ship and the remaining material to Xyz Summon <strong class="text-accent">Time Thief Perpetua</strong>. Set Retrograde.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Optimal Endboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Redoer -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Time Thief Redoer</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="redoer-img-container" class="card-image-container card-placeholder">Time Thief Redoer</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Theft:</strong> Steals the top card of the opponent's deck each Standby Phase.</li>
+                        <li><strong class="text-accent">Evasion:</strong> (Quick Effect) Detach a monster to banish itself until the End Phase.</li>
+                        <li><strong class="text-accent">Removal:</strong> (Quick Effect) Detach a Trap to place an opponent's card on top of their deck.</li>
+                    </ul>
+                </div>
+                <!-- Perpetua -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Time Thief Perpetua</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="perpetua-img-container" class="card-image-container card-placeholder">Time Thief Perpetua</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Reload:</strong> (Quick Effect) Attaches a "Time Thief" card from your deck to another Xyz monster.</li>
+                        <li><strong class="text-accent">Recycle:</strong> Revives a "Time Thief" monster from your GY during the Standby Phase.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Resource Recursion:</strong> Excellent at grinding and maintaining board presence over multiple turns.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sitemap"></i></span> <strong class="text-green-300">Versatile Disruption:</strong> Redoer offers multiple forms of interaction (evasion, draw, non-destruction removal).</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Compact Engine:</strong> The core combo requires few main deck slots, making it ideal for hybrid builds.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Normal Summon Reliant:</strong> Very vulnerable to hand traps on Regulator's effect.</li>
+                        <li><span class="con-icon"><i class="fas fa-low-vision"></i></span> <strong class="text-red-300">Low Raw Power:</strong> Main deck monsters have low stats and struggle to clear established boards alone.</li>
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">Ash Blossom Vulnerability:</strong> Nearly every key card in the main combo can be negated by Ash Blossom.</li>
+                    </ul>
+                </div>
+                <!-- Hybrids/Tech -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergistic Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent">Phantom Knights/Raidraptor:</strong> The premier hybrid, using the DARK Level 4 synergy to build powerful boards with multiple negates.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent">PSY-Framegear Gamma:</strong> Protects the crucial Regulator play from hand traps.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-rocket"></i></span> <strong class="text-accent">Rokket Engine:</strong> Quick Launch provides a free Level 4 body to extend combos without using the Normal Summon.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status -->
+        <section class="animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">AT FULL POWER:</strong> The Time Thief archetype is currently completely unrestricted on the TCG banlist.
+                </p>
+                <div class="mt-4 p-4 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-400">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With access to all its in-archetype tools at three copies, the Time Thief engine can be played at maximum consistency. This makes it a reliable and potent core for both pure and hybrid strategies, able to execute its game plan without any restrictions on its key starters, extenders, or boss monsters.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- TIME THIEF CANVAS ANIMATION ---
+            const canvas = document.getElementById('time-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let rotation = 0;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                function drawClock() {
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const radius = Math.min(centerX, centerY) * 0.8;
+                    
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Gears
+                    drawGear(centerX, centerY, radius * 0.9, 24, rotation * 0.5, 'rgba(245, 158, 11, 0.1)');
+                    drawGear(centerX - radius * 0.5, centerY - radius * 0.3, radius * 0.4, 12, -rotation, 'rgba(245, 158, 11, 0.15)');
+                    drawGear(centerX + radius * 0.6, centerY + radius * 0.4, radius * 0.5, 18, rotation * 1.5, 'rgba(245, 158, 11, 0.12)');
+
+                    // Clock face
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                    ctx.strokeStyle = 'rgba(245, 158, 11, 0.2)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Clock hands
+                    const now = new Date();
+                    const seconds = now.getSeconds() + now.getMilliseconds() / 1000;
+                    const minutes = now.getMinutes() + seconds / 60;
+                    const hours = (now.getHours() % 12) + minutes / 60;
+                    
+                    drawHand(centerX, centerY, hours / 12 * 360, radius * 0.5, 4, 'rgba(245, 158, 11, 0.7)');
+                    drawHand(centerX, centerY, minutes / 60 * 360, radius * 0.8, 3, 'rgba(245, 158, 11, 0.7)');
+                    drawHand(centerX, centerY, seconds / 60 * 360, radius * 0.9, 1, '#f59e0b');
+                }
+
+                function drawHand(cx, cy, angle, length, width, color) {
+                    const rad = (angle - 90) * Math.PI / 180;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.lineTo(cx + Math.cos(rad) * length, cy + Math.sin(rad) * length);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = width;
+                    ctx.stroke();
+                }
+
+                function drawGear(cx, cy, radius, teeth, rot, color) {
+                    const step = (Math.PI * 2) / teeth;
+                    ctx.beginPath();
+                    for(let i = 0; i < teeth; i++) {
+                        const angle = i * step + rot;
+                        ctx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
+                        ctx.lineTo(cx + Math.cos(angle + step/3) * (radius * 1.1), cy + Math.sin(angle + step/3) * (radius * 1.1));
+                        ctx.lineTo(cx + Math.cos(angle + step*2/3) * (radius * 1.1), cy + Math.sin(angle + step*2/3) * (radius * 1.1));
+                        ctx.lineTo(cx + Math.cos(angle + step) * radius, cy + Math.sin(angle + step) * radius);
+                    }
+                    ctx.closePath();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+
+                function animate() {
+                    rotation += 0.001;
+                    drawClock();
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                animate();
+                window.addEventListener('resize', setCanvasSize);
+            }
+            
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'regulator-img-container': 'Time Thief Regulator',
+                'redoer-img-container-combo': 'Time Thief Redoer',
+                'perpetua-img-container-combo': 'Time Thief Perpetua',
+                'redoer-img-container': 'Time Thief Redoer',
+                'perpetua-img-container': 'Time Thief Perpetua',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

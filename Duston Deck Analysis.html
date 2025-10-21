@@ -1,0 +1,550 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duston Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #262626; /* Dark, dusty gray */
+            color: #e5e5e5; /* Off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #404040; /* Medium gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #525252;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #4a4a4a;
+            border: 1px solid #6b6b6b;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3b3b3b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b3b3b;
+        }
+        .pro-icon { color: #4ade80; } /* Bright Green */
+        .con-icon { color: #f87171; } /* Bright Red */
+        .neutral-icon { color: #60a5fa; } /* Bright Blue */
+        
+        .text-red-accent { color: #f87171; }
+        .text-green-accent { color: #4ade80; }
+        .text-blue-accent { color: #60a5fa; }
+        .text-yellow-accent { color: #facc15; }
+
+        .arrow-color { color: #a3a3a3; }
+        .heading-underline {
+            border-bottom: 2px solid #a3a3a3;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted;
+            transition: color 0.3s;
+            color: #facc15; /* Yellow for the link */
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- DUSTON SWARM BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #171717;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #dust-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(23, 23, 23, 0.7);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.9);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="dust-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Duston</h1>
+            <p class="text-lg md:text-xl text-gray-300">An Analysis of the Field-Clogging Fiends</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-200">
+                    The <strong class="font-bold text-yellow-300">Duston</strong> archetype is a strategic anomaly, built on the peculiar gimmick of swarming the field—not just your own, but forcibly summoning its members to the opponent's side. The goal is to clog their monster zones with weak, 0 ATK Fiends that carry crippling restrictions. However, this unique strategy was rendered obsolete by the introduction of Link Summoning, which turned the intended burden into free resources for the opponent. Paradoxically, the archetype has found new life not as a cohesive strategy, but through its most unassuming member, <a href="https://yugipedia.com/wiki/White_Duston" target="_blank" class="lore-link">the proudust of them all</a>, which has become a pivotal one-card starter for the meta-relevant "Fiendsmith" engine.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Duston Roster Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Duston Roster</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">
+                The archetype's roles are sharply divided between the engine that starts the play and the disruptive "payload" monsters.
+            </p>
+            <div class="space-y-8">
+                <!-- House & White Duston -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-6">
+                        <h3 class="text-xl font-bold text-white mb-2">The Linchpin: <span class="text-yellow-300">House Duston</span></h3>
+                        <p class="text-gray-200">The absolute heart of the archetype. When destroyed by an opponent's card, it allows you to Special Summon "Duston" monsters from your deck to anywhere on the field, enabling the core gimmick of swarming both boards.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-xl font-bold text-white mb-2">The Enabler: <span class="text-yellow-300">White Duston</span></h3>
+                        <p class="text-gray-200">A Normal Monster whose strength lies in what it lacks: the restrictive text of its brethren. As an unrestricted Level 1 LIGHT Fiend, it is the most valuable Duston for your own board and the key to the archetype's modern relevance.</p>
+                    </div>
+                </div>
+                <!-- The Nuisance Dustons -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Nuisance Payload</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="combo-step-card p-3 rounded-lg">
+                            <h4 class="font-bold text-red-accent">Red Duston</h4>
+                            <p class="text-sm text-gray-200">Inflicts 500 damage to its controller when destroyed.</p>
+                        </div>
+                        <div class="combo-step-card p-3 rounded-lg">
+                            <h4 class="font-bold text-green-accent">Green Duston</h4>
+                            <p class="text-sm text-gray-200">Bounces a Spell/Trap to its controller's hand when destroyed.</p>
+                        </div>
+                        <div class="combo-step-card p-3 rounded-lg">
+                            <h4 class="font-bold text-blue-accent">Blue Duston</h4>
+                            <p class="text-sm text-gray-200">Temporarily banishes a card from its controller's hand when destroyed.</p>
+                        </div>
+                        <div class="combo-step-card p-3 rounded-lg">
+                            <h4 class="font-bold text-yellow-accent">Yellow Duston</h4>
+                            <p class="text-sm text-gray-200">Shuffles a monster from GY to Deck when its controller's destroyed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Goblin King OTK</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">The deck's most direct win condition starts by baiting the opponent into destroying House Duston.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="house-duston-img" class="card-image-container flex-shrink-0 card-placeholder">House Duston</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#262626] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Trigger the Swarm</h3>
+                            </div>
+                            <p class="text-gray-200">Summon <strong class="text-yellow-300">House Duston</strong> and have it destroyed by an opponent's card. Its effect activates from the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="field-swarm-img" class="card-image-container flex-shrink-0 card-placeholder">Swarm the field with Dustons</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#262626] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Optimal Distribution</h3>
+                            </div>
+                            <p class="text-gray-200">Summon the four colored "Nuisance" Dustons to the opponent's field and four "Beneficial" Dustons (like <strong class="text-yellow-300">White Duston</strong>) to your own field.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="goblin-king-img" class="card-image-container flex-shrink-0 card-placeholder">Goblin King</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#262626] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon the King</h3>
+                            </div>
+                            <p class="text-gray-200">Summon <strong class="text-yellow-300">Goblin King</strong>. With 8 other Fiends on the field, its ATK becomes 8000. Attack a 0 ATK Duston on the opponent's field for game.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Two Divergent Endboards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Goblin King OTK -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Win Condition I: The OTK</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="goblin-king-endboard-img" class="card-image-container card-placeholder">Goblin King</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><strong class="text-yellow-300">Goal:</strong> Achieve a One-Turn Kill.</li>
+                        <li><strong class="text-yellow-300">Method:</strong> Use <strong class="text-yellow-300">House Duston</strong> to swarm both sides of the field with Fiends, then summon a massive <strong class="text-yellow-300">Goblin King</strong> to attack for 8000+ damage.</li>
+                    </ul>
+                </div>
+                <!-- Starduston Lockdown -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Win Condition II: The Lockdown</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="starduston-endboard-img" class="card-image-container card-placeholder">Starduston</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><strong class="text-yellow-300">Goal:</strong> Control the board and lock the opponent out of plays.</li>
+                        <li><strong class="text-yellow-300">Method:</strong> Summon <strong class="text-yellow-300">Starduston</strong> by sending your own Dustons to the GY. Its effect prevents the opponent from Special Summoning or activating Set Spell/Traps.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-none space-y-2 text-gray-200">
+                        <li class="flex items-start"><span class="pro-icon mr-2 mt-1"><i class="fas fa-check-circle"></i></span> <span><strong class="font-bold">Unexpected Angle:</strong> The core gimmick can catch unprepared opponents off-guard, especially non-Link decks.</span></li>
+                        <li class="flex items-start"><span class="pro-icon mr-2 mt-1"><i class="fas fa-bolt"></i></span> <span><strong class="font-bold">Explosive OTK:</strong> The Goblin King combo can end the game out of nowhere if the setup is successful.</span></li>
+                        <li class="flex items-start"><span class="pro-icon mr-2 mt-1"><i class="fas fa-cogs"></i></span> <span><strong class="font-bold">Potent Engine Piece:</strong> <strong class="text-yellow-300">White Duston</strong> is a top-tier starter for the Fiendsmith engine, giving the archetype modern relevance.</span></li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-none space-y-2 text-gray-200">
+                        <li class="flex items-start"><span class="con-icon mr-2 mt-1"><i class="fas fa-times-circle"></i></span> <span><strong class="font-bold">Link Summoning:</strong> The archetype's fatal flaw. Giving an opponent free monsters is a game-losing move in the modern era, as they become Link Materials.</span></li>
+                        <li class="flex items-start"><span class="con-icon mr-2 mt-1"><i class="fas fa-hand-paper"></i></span> <span><strong class="font-bold">Fragile Setup:</strong> The entire strategy hinges on the opponent destroying <strong class="text-yellow-300">House Duston</strong>. Non-destruction removal or simple negation stops the deck completely.</span></li>
+                        <li class="flex items-start"><span class="con-icon mr-2 mt-1"><i class="fas fa-balance-scale-left"></i></span> <span><strong class="font-bold">Mutually Exclusive:</strong> The OTK and Lockdown strategies conflict with each other, forcing the player to commit to one path early on.</span></li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergies & Engines</h3>
+                    <ul class="list-none space-y-2 text-gray-200">
+                        <li class="flex items-start"><span class="neutral-icon mr-2 mt-1"><i class="fas fa-puzzle-piece"></i></span> <span><strong class="text-yellow-300">Fiendsmith Engine:</strong> The premier way to play a "Duston" card competitively is to use <strong class="text-yellow-300">White Duston</strong> as a one-card starter for this powerful LIGHT Fiend engine.</span></li>
+                        <li class="flex items-start"><span class="neutral-icon mr-2 mt-1"><i class="fas fa-dna"></i></span> <span><strong class="text-yellow-300">Generic Fiend Support:</strong> Cards like <strong class="text-yellow-300">Goblin King</strong> and Level 1 extenders like <strong class="text-yellow-300">Stygian Security</strong> are crucial for the pure build's consistency.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DUSTON SWARM ANIMATION ---
+            const canvas = document.getElementById('dust-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const colors = ['#f87171', '#4ade80', '#60a5fa', '#facc15', '#e5e5e5'];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 3 + 1;
+                        this.speedX = (Math.random() * 1 - 0.5);
+                        this.speedY = (Math.random() * 1 - 0.5);
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.size > 0.1) this.size -= 0.02;
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+                    }
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD IMAGE FETCHING ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'house-duston-img': 'House Duston',
+                'goblin-king-img': 'Goblin King',
+                'goblin-king-endboard-img': 'Goblin King',
+                'starduston-endboard-img': 'Starduston',
+            };
+            
+            // Special placeholder for a concept, not a real card
+            const fieldSwarmContainer = document.getElementById('field-swarm-img');
+            if(fieldSwarmContainer) {
+                 fieldSwarmContainer.innerHTML = `<div class="card-placeholder animate-fadeIn">Swarm the field with Dustons</div>`;
+            }
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

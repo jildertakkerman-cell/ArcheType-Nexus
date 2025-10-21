@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPYRAL Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate Blue-Gray */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .card {
+            background-color: rgba(30, 41, 59, 0.5); /* Slate 800 with transparency */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155; /* Slate 700 */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(51, 65, 85, 0.5); /* Slate 600 with transparency */
+            border: 1px solid #475569;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1e293b; /* Slate 800 */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1e293b;
+            border: 1px dashed #475569;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #0ea5e9; } /* Sky Blue 500 */
+        .text-gold { color: #f59e0b; } /* Amber 500 */
+        .arrow-color { color: #0ea5e9; }
+        .lore-link {
+            color: #0ea5e9;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #0ea5e9;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #0ea5e9;
+        }
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0f172a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #334155;
+        }
+        #sonar-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(14, 165, 233, 0.7);
+        }
+
+        /* New Endboard Styles */
+        .endboard-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3rem;
+            padding: 2rem 1rem;
+        }
+
+        .endboard-card {
+            position: relative;
+            z-index: 10;
+            width: 240px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background-color: rgba(30, 41, 59, 0.8);
+            border: 1px solid #475569;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .endboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+        }
+        .endboard-image-container {
+            width: 150px;
+            height: 218px; /* Approximate card aspect ratio */
+            margin-bottom: 1rem;
+            background-color: #1e293b;
+            border-radius: 0.25rem;
+        }
+        .endboard-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #f59e0b;
+        }
+        .endboard-card p {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .connecting-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            display: none; /* Hidden on mobile */
+            pointer-events: none;
+        }
+         .connecting-lines line {
+            stroke: rgba(14, 165, 233, 0.3);
+            stroke-width: 2;
+            stroke-dasharray: 4 4;
+            animation: dash 1s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -8; }
+        }
+
+        @media (min-width: 1024px) {
+            .endboard-container {
+                display: block;
+                height: 400px;
+            }
+            .central-asset {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(1.1);
+                box-shadow: 0 0 25px rgba(14, 165, 233, 0.5);
+            }
+            .agent-left {
+                position: absolute;
+                top: 50%;
+                left: 5%;
+                transform: translateY(-50%);
+            }
+            .agent-right {
+                position: absolute;
+                top: 50%;
+                right: 5%;
+                transform: translateY(-50%);
+            }
+            .connecting-lines {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Banner Header -->
+        <header class="banner-header text-center">
+            <canvas id="sonar-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">S.P.Y.R.A.L.</h1>
+            <p class="text-lg md:text-xl text-sky-200">A Deep Dive into Espionage & Strategy</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Mission Briefing</h2>
+                <p class="text-slate-300">
+                    The <strong class="text-accent font-bold">SPYRAL</strong> archetype is a Link-centric combo deck renowned for its intricate, non-linear play sequences and its capacity to construct overwhelmingly powerful end boards. At its core, <a href="https://yugipedia.com/wiki/SPYRAL" target="_blank" class="lore-link">the deck's primary function</a> is a direct translation of its espionage theme into gameplay mechanics. The strategy revolves around a two-phase operational model: <strong class="text-gold">Information Gathering</strong> followed by <strong class="text-gold">Exploitation</strong>. By gaining perfect knowledge of the opponent's deck, SPYRAL transforms high-risk gambles into guaranteed outcomes, converting intelligence into tangible card advantage and board presence.
+                </p>
+            </div>
+        </section>
+
+        <!-- Key Personnel & Equipment -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center">Dossier: Key Personnel & Equipment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-secret text-4xl text-sky-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Field Agents</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">SPYRAL Super Agent</h4>
+                            <p class="text-sm text-slate-300">The primary starter. Special Summons itself by correctly guessing the opponent's top card—a guarantee with proper intel.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">SPYRAL Quik-Fix <span class="text-yellow-400">(Limited)</span></h4>
+                            <p class="text-sm text-slate-300">The heart of the engine. Its non-once-per-turn search effect enables explosive, looping combos.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">SPYRAL GEAR - Drone <span class="text-yellow-400">(Limited)</span></h4>
+                            <p class="text-sm text-slate-300">The intelligence operative. Stacks the opponent's top three cards to guarantee other SPYRAL effects.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">SPYRAL Double Helix</h4>
+                            <p class="text-sm text-slate-300">The field commander. This Link-2 monster summons any SPYRAL from the deck, igniting the main combo engine.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-sky-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Arsenal</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">SPYRAL Resort <span class="text-yellow-400">(Limited)</span></h4>
+                            <p class="text-sm text-slate-300">The safehouse. This Field Spell searches any SPYRAL monster and provides crucial targeting protection.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">SPYRAL Sleeper</h4>
+                            <p class="text-sm text-slate-300">The ultimate weapon and primary win condition. Offers recurring, non-targeting removal each turn.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">SPYRAL GEAR - Last Resort</h4>
+                            <p class="text-sm text-slate-300">The ultimate defense. Equips to Sleeper, making it indestructible and untargetable, turning its effect into a free removal tool.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">SPYRAL MISSION - Rescue</h4>
+                            <p class="text-sm text-slate-300">A versatile recursion tool. Its graveyard effect can Special Summon a SPYRAL monster, extending combos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Standard Combo Protocol</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">
+                This classic two-card combination demonstrates the core principles of information gathering and exploitation, starting with <strong class="text-accent">SPYRAL Resort</strong> and <strong class="text-accent">SPYRAL GEAR - Drone</strong>.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="resort-img-container" class="card-image-container flex-shrink-0 card-placeholder">SPYRAL Resort</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0f172a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Establish Safehouse & Intel</h3>
+                            </div>
+                            <p class="text-slate-300">Activate <strong class="text-accent">Resort</strong> to search for <strong class="text-accent">Super Agent</strong>. Normal Summon <strong class="text-accent">Drone</strong> to stack the opponent's top deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center my-2"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="helix-img-container" class="card-image-container flex-shrink-0 card-placeholder">SPYRAL Double Helix</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0f172a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Deploy Agent & Link Up</h3>
+                            </div>
+                            <p class="text-slate-300">Special Summon <strong class="text-accent">Super Agent</strong> using the intel from Drone. Link Summon <strong class="text-accent">SPYRAL Double Helix</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="w-full flex justify-center my-2"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="quik-fix-img-container" class="card-image-container flex-shrink-0 card-placeholder">SPYRAL Quik-Fix</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0f172a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Ignite the Engine</h3>
+                            </div>
+                            <p class="text-slate-300">Activate Double Helix's effect, using your intel to Special Summon <strong class="text-accent">Quik-Fix</strong> from the Deck, initiating the advantage loop.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Typical End Board Configuration</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">
+                A standard SPYRAL combo establishes multiple layers of interaction, creating a secure field that is difficult for an opponent to dismantle.
+            </p>
+            <div class="endboard-container card">
+                <svg class="connecting-lines" width="100%" height="100%">
+                    <line x1="18%" y1="50%" x2="43%" y2="50%" />
+                    <line x1="57%" y1="50%" x2="82%" y2="50%" />
+                </svg>
+
+                <div class="endboard-card support-agent agent-left">
+                    <div id="apollousa-img-container" class="endboard-image-container card-placeholder">Apollousa, Bow of the Goddess</div>
+                    <div class="card-info">
+                        <h4>Firewall: Apollousa</h4>
+                        <p><i class="fas fa-ban text-yellow-400"></i> 2-3 Monster Negates</p>
+                    </div>
+                </div>
+        
+                <div class="endboard-card central-asset">
+                    <div id="sleeper-img-container" class="endboard-image-container card-placeholder">SPYRAL Sleeper</div>
+                    <div class="card-info">
+                        <h4>Primary Asset: Sleeper</h4>
+                        <p><i class="fas fa-crosshairs text-red-400"></i> Recurring Removal x2</p>
+                    </div>
+                </div>
+
+                <div class="endboard-card support-agent agent-right">
+                    <div id="tri-gate-img-container" class="endboard-image-container card-placeholder">Tri-Gate Wizard</div>
+                    <div class="card-info">
+                        <h4>Firewall: Tri-Gate</h4>
+                        <p><i class="fas fa-shield-alt text-cyan-400"></i> Omni-Negate</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">TCG Banlist Assessment</h2>
+            <div class="card p-6">
+                <p class="text-slate-300 mb-4 text-center">
+                    The SPYRAL archetype has been heavily impacted by the TCG Forbidden & Limited List, curbing its historical dominance while still leaving its core strategy intact, albeit less consistent.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">FORBIDDEN</h4>
+                        <ul class="space-y-1 text-sm text-slate-300">
+                            <li>SPYRAL Master Plan</li>
+                        </ul>
+                    </div>
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">LIMITED (1 Per Deck)</h4>
+                        <ul class="space-y-1 text-sm text-slate-300">
+                            <li>SPYRAL Quik-Fix</li>
+                            <li>SPYRAL GEAR - Drone</li>
+                            <li>SPYRAL Resort</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-slate-300"><strong>Meta Implications:</strong> The loss of Master Plan removes a massive source of card advantage. With Quik-Fix, Drone, and Resort all at one, the deck is far less resilient to disruption and cannot generate the near-infinite resources it was once famous for. The core combo is still possible, but requires more specific hands and careful resource management.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- SONAR CANVAS ANIMATION ---
+            const canvas = document.getElementById('sonar-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let angle = 0;
+                
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                function drawSonar() {
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const radius = Math.min(centerX, centerY) * 0.8;
+                    
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Grid lines
+                    ctx.strokeStyle = 'rgba(14, 165, 233, 0.1)';
+                    ctx.lineWidth = 1;
+                    for(let i = 1; i <= 4; i++) {
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY, radius * (i / 4), 0, 2 * Math.PI);
+                        ctx.stroke();
+                    }
+                    
+                    // Sonar sweep
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.arc(centerX, centerY, radius, angle, angle + Math.PI / 4);
+                    ctx.closePath();
+                    
+                    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+                    gradient.addColorStop(0, 'rgba(14, 165, 233, 0.3)');
+                    gradient.addColorStop(1, 'rgba(14, 165, 233, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    
+                    angle += 0.01;
+                    requestAnimationFrame(drawSonar);
+                }
+                
+                setCanvasSize();
+                drawSonar();
+                window.addEventListener('resize', setCanvasSize);
+            }
+
+            // --- CARD IMAGE FETCHER ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-full object-cover rounded-sm shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.classList.remove('card-placeholder');
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                     container.innerHTML = cardName;
+                     container.classList.add('card-placeholder');
+                }
+            }
+
+            const cardsToLoad = {
+                'resort-img-container': 'SPYRAL Resort',
+                'helix-img-container': 'SPYRAL Double Helix',
+                'quik-fix-img-container': 'SPYRAL Quik-Fix',
+                'apollousa-img-container': 'Apollousa, Bow of the Goddess',
+                'sleeper-img-container': 'SPYRAL Sleeper',
+                'tri-gate-img-container': 'Tri-Gate Wizard',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

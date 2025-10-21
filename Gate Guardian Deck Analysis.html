@@ -1,0 +1,565 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gate Guardian Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0f1f; /* Deep Navy Blue */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #161d31; /* Dark Slate Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2b3554;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #1f2945;
+            border: 1px solid #3c4a75;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1f2945;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1f2945;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+
+        .text-sanga { color: #facc15; } /* Gold for Thunder */
+        .text-kazejin { color: #38bdf8; } /* Cyan for Wind */
+        .text-suijin { color: #a78bfa; } /* Purple for Water */
+        
+        .arrow-color { color: #a78bfa; }
+
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- GATE GUARDIAN BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            height: 140px;
+            background-color: #0a0f1f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #2b3554;
+        }
+
+        #elemental-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(10, 15, 31, 0.4) 0%, rgba(10, 15, 31, 0.8) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 1);
+        }
+        .banner-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.25rem;
+            letter-spacing: 0.1em;
+        }
+         @media (min-width: 768px) {
+            .banner-header h1 {
+                font-size: 3rem;
+            }
+            .banner-header {
+                 margin-bottom: 4rem;
+            }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="elemental-canvas"></canvas>
+            <h1 class="text-white mb-2">Gate Guardian</h1>
+            <p class="text-lg md:text-xl text-blue-300">Deconstructing the Labyrinth's Modern Defenses</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-sanga">Gate Guardian</strong> archetype has evolved from a nostalgic icon into a sophisticated, resource-intensive control deck. The modern strategy no longer focuses on the difficult summon of the original titan but instead treats its three components—<strong class="text-sanga">Sanga of the Thunder</strong>, <strong class="text-kazejin">Kazejin</strong>, and <strong class="text-suijin">Suijin</strong>—as fluid "pieces" to be manipulated. The core objective is to assemble these pieces from the Deck, Graveyard, or banished zone to summon a new suite of powerful Fusion Monsters, effectively deconstructing the ancient <a href="https://yugipedia.com/wiki/Labyrinth_Wall" target="_blank" class="lore-link">labyrinth's defenses</a> and rebuilding them into a wall of modern interruptions.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Labyrinth's Core & Arsenal Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Labyrinth's Core & Arsenal</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The deck's engine is driven by its ability to place the Guardian "pieces" into the Spell & Trap Zone, turning them into live resources for powerful Fusion Summons.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Starters and Enablers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-key text-4xl text-sanga mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Labyrinth Engine</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-sanga mb-1">Labyrinth Heavy Tank</h4>
+                            <p class="text-sm text-blue-200">The premier one-card starter. Pulls a Guardian piece directly from the Deck to the Spell & Trap Zone, kickstarting the entire strategy.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-sanga mb-1">Shadow Ghoul of the Labyrinth</h4>
+                            <p class="text-sm text-blue-200">Functions as a searcher for the Field Spell by discarding itself, ensuring consistent access to the core engine.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-sanga mb-1">Labyrinth Wall Shadow</h4>
+                            <p class="text-sm text-blue-200">The Field Spell and central hub. Places a Guardian piece from the deck and enables the powerful effects of other engine cards.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Boss Monsters (Payoffs) -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-alt text-4xl text-sanga mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Guardians Reborn</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-sanga mb-1">Gate Guardians Combined</h4>
+                            <p class="text-sm text-blue-200">The primary boss monster. Offers up to three targeting negations per turn and replaces itself if removed by an opponent.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-sanga mb-1">Gate Guardian of Wind and Water</h4>
+                            <p class="text-sm text-blue-200">A key control piece. Provides two potent Spell/Trap negates, forming a crucial part of the final end board.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-sanga mb-1">Dark Guardian</h4>
+                            <p class="text-sm text-blue-200">An alternative win condition. When summoned by "Dark Element," it becomes an unstoppable "Tower" unaffected by most monster and spell effects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Foundational Play</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how a single starter can generate significant board presence and advantage.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="heavy-tank-img" class="card-image-container flex-shrink-0 card-placeholder">Labyrinth Heavy Tank</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#161d31] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon the Tank</h3>
+                            </div>
+                            <p class="text-blue-200">Start by Normal Summoning <strong class="text-sanga">Labyrinth Heavy Tank</strong> after activating the Field Spell, <strong class="text-sanga">Labyrinth Wall Shadow</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sg-labyrinth-img" class="card-image-container flex-shrink-0 card-placeholder">Shadow Ghoul of the Labyrinth</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#161d31] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Assemble the Pieces</h3>
+                            </div>
+                            <p class="text-blue-200">Use the effects of <strong class="text-sanga">Labyrinth Wall Shadow</strong> and <strong class="text-sanga">Labyrinth Heavy Tank</strong> to place two different Guardian pieces (e.g., <strong class="text-sanga">Sanga</strong> and <strong class="text-kazejin">Kazejin</strong>) from your Deck into your Spell & Trap Zone.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="thunder-wind-img" class="card-image-container flex-shrink-0 card-placeholder">Gate Guardian of Thunder and Wind</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#161d31] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">First Fusion & Search</h3>
+                            </div>
+                            <p class="text-blue-200">Banish the two pieces to Special Summon <strong class="text-sanga">Gate Guardian of Thunder and Wind</strong>. Its effect activates, letting you search for a key Spell/Trap to extend your plays or set up interruptions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Optimal End Board</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">By integrating external engines like "Magicians' Souls," the deck can establish an incredibly oppressive board with multiple layers of negation.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Gate Guardians Combined -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Gate Guardians Combined</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="combined-img" class="card-image-container card-placeholder">Gate Guardians Combined</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-sanga">3x Targeting Negates:</strong> Provides broad protection for your entire board from monster effects, spells, or traps that target.</li>
+                    </ul>
+                </div>
+                <!-- Gate Guardian of Wind and Water -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Gate Guardian of Wind and Water</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="wind-water-img" class="card-image-container card-placeholder">Gate Guardian of Wind and Water</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-kazejin">2x Spell/Trap Negates:</strong> Shuts down your opponent's key spells and traps with two powerful on-field negations per turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Resilience:</strong> The deck has a robust resource loop, accessing pieces from almost anywhere.</li>
+                        <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-green-400">Layered Negation:</strong> The ideal end board presents a wall of varied interruptions that few decks can break.</li>
+                        <li><span class="pro-icon"><i class="fas fa-infinity"></i></span> <strong class="text-green-400">"Floating" Effects:</strong> Most boss monsters replace themselves, maintaining board presence even when broken.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Normal Summon Choke Point:</strong> Relies heavily on resolving Labyrinth Heavy Tank's effect without external engines.</li>
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-400">Vulnerable to Hand Traps:</strong> Susceptible to cards like Droll & Lock Bird and Dimension Shifter.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">GY & Banish Hate:</strong> Strategies that lock the Graveyard or prevent banishing can shut the deck down completely.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergistic Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-hat-wizard"></i></span> <strong class="text-suijin">Magicians' Souls:</strong> Provides a free Special Summon and draw power, turning Guardian pieces into new cards.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-meteor"></i></span> <strong class="text-sanga">Kashtira:</strong> Offers free Level 7 bodies and an alternative Normal Summon, solving the deck's main choke point.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-ankh"></i></span> <strong class="text-kazejin">Horus:</strong> Swarms the field with high-level monsters, using discard costs to set up the GY.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Elemental Particle Banner Animation ---
+            const canvas = document.getElementById('elemental-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const colors = ['#facc15', '#38bdf8', '#a78bfa']; // Gold, Cyan, Purple
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = (Math.random() * 1 - 0.5);
+                        this.speedY = (Math.random() * 1 - 0.5);
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.size > 0.1) this.size -= 0.02;
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach((p, index) => {
+                        p.update();
+                        p.draw();
+                        if (p.size <= 0.1) {
+                            particles.splice(index, 1);
+                            particles.push(new Particle());
+                        }
+                    });
+
+                    // Connect particles with lines
+                    for (let a = 0; a < particles.length; a++) {
+                        for (let b = a; b < particles.length; b++) {
+                            const dx = particles[a].x - particles[b].x;
+                            const dy = particles[a].y - particles[b].y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+
+                            if (distance < 100) {
+                                const opacity = 1 - (distance / 100);
+                                ctx.strokeStyle = `rgba(167, 139, 250, ${opacity})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[a].x, particles[a].y);
+                                ctx.lineTo(particles[b].x, particles[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- YGOProDeck Image Fetching ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'heavy-tank-img': 'Labyrinth Heavy Tank',
+                'sg-labyrinth-img': 'Shadow Ghoul of the Labyrinth',
+                'thunder-wind-img': 'Gate Guardian of Thunder and Wind',
+                'combined-img': 'Gate Guardians Combined',
+                'wind-water-img': 'Gate Guardian of Wind and Water'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

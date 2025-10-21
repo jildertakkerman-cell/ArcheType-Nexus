@@ -1,0 +1,577 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exosister Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light grey-blue background */
+            color: #1e293b; /* Dark Slate */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0; /* Light border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #f8fafc; /* Slightly off-white */
+            border: 1px solid #cbd5e1;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #e2e8f0;
+            color: #475569;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+        }
+        .pro-icon { color: #10b981; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #3b82f6; }
+        .text-accent { color: #ca8a04; } /* Gold */
+        .arrow-color { color: #d97706; } /* Amber */
+        .heading-underline {
+            border-bottom: 2px solid #ca8a04;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ca8a04;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ca8a04;
+            transition: color 0.3s, border-bottom 0.3s;
+        }
+        .lore-link:hover {
+            color: #1e293b;
+            border-bottom: 1px solid #1e293b;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #e2e8f0;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #d1d5db;
+        }
+
+        #light-particles-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(240,242,245,0.85) 70%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.7);
+        }
+        .banner-header h1 {
+            color: #1e293b;
+        }
+         .banner-header p {
+            color: #475569;
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="light-particles-banner"></canvas>
+            <h1 class="text-4xl md:text-5xl font-bold mb-2 heading-underline">Exosister</h1>
+            <p class="text-lg md:text-xl">A Strategic Analysis of the Holy Inquisition</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-4">Executive Doctrine</h2>
+                <p class="text-slate-600">
+                    The <strong class="text-accent font-bold">"Exosister"</strong> archetype operates on a foundational principle of control, designed to punish opponents for interacting with the Graveyard. This translates to a potent anti-meta strategy that disrupts an opponent's resource loop and converts that disruption into overwhelming board presence. This positions the archetype as a holy 
+                    <a href="https://yugipedia.com/wiki/Exosister" target="_blank" class="lore-link">inquisition that purges the unholy</a> 
+                    from the Graveyard, turning your opponent's core mechanic into their greatest weakness.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Sisterhood and Armory Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-6 text-center">The Sisterhood and Their Armory</h2>
+            <p class="text-slate-600 mb-8 text-center max-w-2xl mx-auto">
+                The deck's power is derived from its Level 4 Spellcasters and the powerful Spell/Trap cards that support their divine mission.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-friends text-4xl text-amber-500 mr-4"></i>
+                        <h3 class="text-2xl font-bold text-slate-800">The Main Deck Sisterhood</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Exosister Martha</h4>
+                            <p class="text-sm text-slate-600">The most powerful one-card starter. Special Summons herself and Elis from the Deck, enabling an immediate Rank 4 play and your primary combo line.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Exosister Elis</h4>
+                            <p class="text-sm text-slate-600">The primary extender. Can be Special Summoned from the hand if you control another "Exosister" monster, facilitating easy Xyz Summons.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Exosister Stella</h4>
+                            <p class="text-sm text-slate-600">A secondary extender that Special Summons another sister from your hand, turning a modest board into a formidable one.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-amber-500 mr-4"></i>
+                        <h3 class="text-2xl font-bold text-slate-800">The Divine Armory</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Exosister Pax</h4>
+                            <p class="text-sm text-slate-600">A versatile Quick-Play Spell that can search for any "Exosister" card, making it the ultimate consistency tool.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Exosister Vadis</h4>
+                             <p class="text-sm text-slate-600">A powerful Trap that summons two sisters directly from the Deck, perfect for chaining to an opponent's Graveyard effect to trigger two Xyz summons at once.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Exosister Returnia</h4>
+                            <p class="text-sm text-slate-600">The primary disruption Trap. It banishes a card on the field or in the GY, and can banish a second if you've Xyz Summoned that turn.</p>
+                       </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-6 text-center">Core Combo: The Path of Martha</h2>
+            <p class="text-slate-600 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how one card, <strong class="text-accent font-bold">Exosister Martha</strong>, can establish the deck's ultimate endboard.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="martha-img-container" class="card-image-container flex-shrink-0 card-placeholder">Exosister Martha</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-white text-slate-700 border border-slate-300 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-xl font-bold">Summon the Vanguard</h3>
+                            </div>
+                            <p class="text-slate-600">Activate <strong class="text-accent font-bold">Exosister Martha's</strong> effect from your hand, Special Summoning herself and one <strong class="text-accent font-bold">Exosister Elis</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-arrow-down text-3xl arrow-color"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="mikailis-img-container" class="card-image-container flex-shrink-0 card-placeholder">Exosister Mikailis</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-white text-slate-700 border border-slate-300 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-xl font-bold">First Xyz Summon</h3>
+                            </div>
+                            <p class="text-slate-600">Overlay Martha and Elis to Xyz Summon <strong class="text-accent font-bold">Exosister Mikailis</strong>. Use her effect to search for <strong class="text-accent font-bold">Exosister Returnia</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-arrow-down text-3xl arrow-color"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="kaspitell-img-container" class="card-image-container flex-shrink-0 card-placeholder">Exosister Kaspitell</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-white text-slate-700 border border-slate-300 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-xl font-bold">Extend and Assemble</h3>
+                            </div>
+                            <p class="text-slate-600">Using other extenders like <strong class="text-accent font-bold">Stella</strong> and <strong class="text-accent font-bold">Sophia</strong>, Xyz Summon a second Rank 4 like <strong class="text-accent font-bold">Exosister Kaspitell</strong>. You now have two Rank 4 Xyz monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-6 text-center">The Final Judgment: Standard Endboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Magnifica -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4 text-center">Exosisters Magnifica</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="magnifica-img-container" class="card-image-container card-placeholder">Exosisters Magnifica</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600">
+                        <li><strong class="text-accent font-bold">Non-Targeting Banish:</strong> A Quick Effect to banish one card your opponent controls.</li>
+                        <li><strong class="text-accent font-bold">Dodge & Recur:</strong> Can tag out into a Rank 4 from the materials attached to it, dodging effects and re-triggering their abilities.</li>
+                        <li><strong class="text-accent font-bold">Double Attacker:</strong> Can make a second attack during the Battle Phase, enabling OTKs.</li>
+                    </ul>
+                </div>
+                <!-- Returnia -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4 text-center">Set Exosister Returnia</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="returnia-img-container" class="card-image-container card-placeholder">Exosister Returnia</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600">
+                        <li><strong class="text-accent font-bold">Primary Banish:</strong> Banish one card the opponent controls or has in their Graveyard.</li>
+                        <li><strong class="text-accent font-bold">Devastating Follow-up:</strong> If you Xyz Summoned this turn (e.g., by using Magnifica's tag-out), you can banish a <strong class="text-accent">second</strong> card your opponent controls.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-6 text-center">Strategic Assessment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-600 mb-4">Strengths</h3>
+                    <ul class="list-none space-y-3 text-slate-600">
+                        <li class="flex items-start"><span class="pro-icon mr-3 mt-1"><i class="fas fa-check-circle"></i></span> <strong class="text-green-700 font-bold">Anti-Meta Power:</strong> Directly punishes the most common game mechanic (Graveyard interaction).</li>
+                        <li class="flex items-start"><span class="pro-icon mr-3 mt-1"><i class="fas fa-bolt"></i></span> <strong class="text-green-700 font-bold">Explosive Turns:</strong> Can generate multiple interruptions and board presence from a single card.</li>
+                        <li class="flex items-start"><span class="pro-icon mr-3 mt-1"><i class="fas fa-cogs"></i></span> <strong class="text-green-700 font-bold">Proactive & Reactive:</strong> Can build a strong board going first or break boards going second with its reactive summons.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-600 mb-4">Weaknesses</h3>
+                    <ul class="list-none space-y-3 text-slate-600">
+                        <li class="flex items-start"><span class="con-icon mr-3 mt-1"><i class="fas fa-times-circle"></i></span> <strong class="text-red-700 font-bold">Matchup Dependent:</strong> Struggles against decks that do not rely heavily on the Graveyard (e.g., Kashtira).</li>
+                        <li class="flex items-start"><span class="con-icon mr-3 mt-1"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-700 font-bold">Fragile Starters:</strong> The core combo is vulnerable to hand traps like Ash Blossom on Martha's effect.</li>
+                        <li class="flex items-start"><span class="con-icon mr-3 mt-1"><i class="fas fa-ban"></i></span> <strong class="text-red-700 font-bold">Lacks Omni-Negates:</strong> The standard board relies on targeted removal, which can be played around by certain strategies.</li>
+                    </ul>
+                </div>
+                <!-- External Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4">External Synergies</h3>
+                    <ul class="list-none space-y-4 text-slate-600">
+                        <li class="flex items-start">
+                            <span class="neutral-icon mr-3 mt-1 flex-shrink-0"><i class="fas fa-puzzle-piece"></i></span> 
+                            <div class="flex-1 min-w-0">
+                                <strong class="text-accent font-bold">Aratama/Sakitama:</strong> 
+                                <span class="break-words">A generic Spirit engine that provides a one-card Rank 4, which can search for Martha.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="neutral-icon mr-3 mt-1 flex-shrink-0"><i class="fas fa-random"></i></span> 
+                            <div class="flex-1 min-w-0">
+                                <strong class="text-accent font-bold">Dimension Shifter:</strong> 
+                                <span class="break-words">A devastating hand trap that cripples GY decks while having minimal impact on your own strategy.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="neutral-icon mr-3 mt-1 flex-shrink-0"><i class="fas fa-crosshairs"></i></span> 
+                            <div class="flex-1 min-w-0">
+                                <strong class="text-accent font-bold">Divine Arsenal AA-ZEUS:</strong> 
+                                <span class="break-words">Easily accessible after any Xyz monster battles, providing a powerful field wipe.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- LIGHT PARTICLES BANNER ANIMATION ---
+            const canvas = document.getElementById('light-particles-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                let particles = [];
+                const particleColors = ['rgba(251, 191, 36, 0.7)', 'rgba(255, 255, 255, 0.8)', 'rgba(234, 179, 8, 0.6)'];
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speedY = (Math.random() * 1) + 0.5;
+                        this.size = Math.random() * 2.5 + 1;
+                        this.color = particleColors[Math.floor(Math.random() * particleColors.length)];
+                    }
+
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD IMAGE FETCHING SCRIPT ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'martha-img-container': 'Exosister Martha',
+                'mikailis-img-container': 'Exosister Mikailis',
+                'kaspitell-img-container': 'Exosister Kaspitell',
+                'magnifica-img-container': 'Exosisters Magnifica',
+                'returnia-img-container': 'Exosister Returnia'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

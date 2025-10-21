@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knightmare Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0f; /* Near black with a hint of blue/purple */
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1024; /* Dark purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+            border: 1px solid #4a2c6d; /* Purple border */
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.3);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #231533;
+            border: 1px solid #5d3a8a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-placeholder {
+            background-color: #1a1024;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #5d3a8a;
+        }
+        .pro-icon { color: #22c55e; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #3b82f6; }
+        .text-accent { color: #e879f9; } /* Fuchsia/Pink for main accents */
+        .text-accent-secondary { color: #f97316; } /* Fiery orange for secondary accents */
+        .lore-link {
+            color: #e879f9;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #e879f9;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #e879f9;
+        }
+
+        /* --- Animated Glitch Banner --- */
+        .banner {
+            position: relative;
+            height: 140px;
+            background: #0a0a0f;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 1px solid #4a2c6d;
+        }
+        .banner-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: #fff;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #e879f9, 0 0 20px #e879f9;
+            animation: glitch 1.5s linear infinite;
+        }
+        .banner-subtitle {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            z-index: 2;
+        }
+        .glitch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0f;
+            opacity: 0.1;
+            z-index: 1;
+        }
+        @keyframes glitch {
+            2%, 64% { transform: translate(2px, 0) skew(0deg); }
+            4%, 60% { transform: translate(-2px, 0) skew(0deg); }
+            62% { transform: translate(0, 0) skew(5deg); }
+        }
+        .banner-title::before, .banner-title::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0f;
+        }
+        .banner-title::before {
+            left: 2px;
+            text-shadow: -2px 0 #f97316;
+            clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+            animation: glitch-anim 3s infinite linear alternate-reverse;
+        }
+        .banner-title::after {
+            left: -2px;
+            text-shadow: -2px 0 #4f46e5, 2px 2px #f97316;
+            clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+            animation: glitch-anim-2 2s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip-path: polygon(0 42%, 100% 42%, 100% 52%, 0 52%); }
+            100% { clip-path: polygon(0 2%, 100% 2%, 100% 92%, 0 92%); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip-path: polygon(0 70%, 100% 70%, 100% 75%, 0 75%); }
+            100% { clip-path: polygon(0 5%, 100% 5%, 100% 35%, 0 35%); }
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 120px; }
+            .banner-title { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="glitch-overlay"></div>
+                <div class="banner-content">
+                    <h1 class="banner-title" data-text="KNIGHTMARE">KNIGHTMARE</h1>
+                    <p class="banner-subtitle">Analysis of a Corrupted Link Engine</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p>
+                    The <strong class="text-accent font-bold">Knightmare</strong> archetype represents a paradigm shift in Yu-Gi-Oh!'s Link Era, introducing a generic, powerful, and splashable engine built around the "co-link" mechanic. These DARK Fiend monsters transformed the Extra Deck into a universal toolbox, offering on-demand removal and advantage generation. The core philosophy is the "Co-Link Economy": by discarding a card to activate a potent effect and then drawing a new card as a bonus for being co-linked, players could dismantle boards at no cost to hand advantage, a revolutionary concept that defined the competitive landscape.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Mechanic: The Co-Link Economy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">Linked vs. Co-Linked</h3>
+                    <p>A monster is "Linked" if a Link Arrow points to it. However, the far more powerful state is "Co-Linked," which occurs only when two Link Monsters' arrows point directly at each other. This mutual connection is the key that unlocks the secondary effects of all the main <a href="https://yugipedia.com/wiki/Knightmare_(archetype)" target="_blank" class="lore-link">Knightmare cards</a>.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">Advantage Through Cost</h3>
+                    <p>Each primary Knightmare Link monster has a powerful effect that requires a discard, but provides a draw-1 bonus if co-linked. This turns the discard into a cost that can be exploited by cards with Graveyard effects, transforming a 1-for-1 trade into a net positive in card advantage, all while gaining a significant on-field benefit.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Corrupted Roster Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Corrupted Roster: Key Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Link Toolbox -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-link text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Link Toolbox</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-secondary mb-1">Knightmare Phoenix</h4>
+                            <p class="text-sm">The default generic Spell/Trap removal from the Extra Deck. Its ease of summoning and valuable effect make it a timeless staple.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Knightmare Unicorn</h4>
+                            <p class="text-sm">The ultimate problem-solver. Shuffling a card into the deck is a powerful form of non-destruction removal that bypasses most forms of protection.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                                                        <h4 class="text-lg font-bold text-red-500 mb-1">Knightmare Goblin (Forbidden)</h4>
+                            <p class="text-sm">Offers targeted destruction of Special Summoned monsters and, more importantly, effect destruction protection for co-linked monsters.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Enablers & Bosses -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-skull-crossbones text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Enablers & Boss Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Knightmare Corruptor Iblee</h4>
+                            <p class="text-sm">A brilliant combo piece that turns into a floodgate for the opponent. After being used as Link Material, she revives on the opponent's field, locking them into Link Summons.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-red-500 mb-1">Knightmare Gryphon (Forbidden)</h4>
+                            <p class="text-sm">The ultimate lock piece. It prevents Special Summoned monsters from activating their effects unless they are linked, forming the capstone of the oppressive "Extra Link" board.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-red-500 mb-1">Knightmare Mermaid (Forbidden)</h4>
+                            <p class="text-sm">Formerly the engine's heart, she could summon any Knightmare from the deck, providing unparalleled consistency and bridging into other archetypes like Orcust.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Endboard: Building the Lock Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Endboard: Building the Lock</h2>
+            <p class="text-center mb-8 max-w-2xl mx-auto">The ultimate goal of the Knightmare engine in its prime was to construct an "Extra Link"—an unbreakable chain of co-linked monsters that locked the opponent out of their Extra Deck entirely.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Iblee Lock -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="iblee-img-container" class="card-image-container flex-shrink-0 card-placeholder">Knightmare Corruptor Iblee</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1024] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Iblee Lock</h3>
+                            </div>
+                            <p>Start your combo using Iblee as an extender. When you use her as Link Material, her effect triggers, and she is Special Summoned to your opponent's field. This locks them, preventing them from Special Summoning anything except Link Monsters, crippling many strategies.</p>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Arrow -->
+                <div class="w-full flex justify-center text-accent my-2">
+                    <i class="fas fa-arrow-down text-3xl"></i>
+                </div>
+                <!-- Extra Link -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="gryphon-img-container" class="card-image-container flex-shrink-0 card-placeholder">Knightmare Gryphon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1024] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Extra Link</h3>
+                            </div>
+                            <p>Continue your combo, swarming the field with monsters. The goal is to create a U-shaped chain of co-linked monsters that connects both Extra Monster Zones. This physically prevents the opponent from summoning from their Extra Deck. With <strong class="text-accent font-bold">Knightmare Gryphon</strong> as the final piece, you also negate the effects of their un-linked monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis & Legacy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><span class="pro-icon"><i class="fas fa-globe"></i></span> <strong class="text-green-400 font-bold">Generic & Splashable:</strong> Usable in nearly any deck that can make Link-2 monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">Resource Loop:</strong> The co-link mechanic created a self-sustaining advantage engine.</li>
+                        <li><span class="pro-icon"><i class="fas fa-tools"></i></span> <strong class="text-green-400 font-bold">Versatile Toolbox:</strong> Provided on-demand answers to nearly any type of threat on the board.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Centralizing Power:</strong> The engine was so powerful it warped metagames around itself, leading to key bans.</li>
+                        <li><span class="con-icon"><i class="fas fa-link-slash"></i></span> <strong class="text-red-400 font-bold">Fragile without Enablers:</strong> With Mermaid and Goblin banned, the full "Extra Link" combo is no longer feasible.</li>
+                    </ul>
+                </div>
+                <!-- Legacy -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Enduring Legacy</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><span class="neutral-icon"><i class="fas fa-chess-king"></i></span> <strong class="text-accent font-bold">Phoenix & Unicorn:</strong> These two remain as some of the best generic Link monsters ever printed, staples in modern Extra Decks.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-book-open"></i></span> <strong class="text-accent font-bold">Design Philosophy:</strong> The "Extra Deck as a toolbox" concept pioneered by Knightmares continues to influence modern card design.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">ARCHETYPE DISMANTLED:</strong> Multiple core Knightmare monsters are forbidden:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Knightmare Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Knightmare Mermaid (0 copies)</strong> - Starter Link-1</li>
+                            <li><strong class="text-red-400">Knightmare Goblin (0 copies)</strong> - Link-2 extender</li>
+                            <li><strong class="text-red-400">Knightmare Gryphon (0 copies)</strong> - Link-4 lockdown</li>
+                            <li>Co-Link archetype completely disabled</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-blue-400 mb-2">Remaining Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Knightmare Phoenix: Still legal</li>
+                            <li>Knightmare Cerberus: Still legal</li>
+                            <li>Knightmare Unicorn: Still legal</li>
+                            <li>Cannot form co-link structures</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Archetype Status:</strong> Knightmare as a pure strategy is no longer viable in competitive play. The remaining monsters serve only as generic Link monsters in other strategies, as the co-link mechanics and archetype synergy have been completely eliminated.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Function to create a placeholder if the API call fails
+        function createPlaceholder(cardName, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+        }
+
+        // Function to fetch and display card images from YGOPRODECK API
+        async function fetchCardImage(cardName, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const data = await response.json();
+                const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardName;
+                    img.className = 'w-full h-auto rounded-lg shadow-md';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                    throw new Error("Image URL not found.");
+                }
+            } catch (error) {
+                console.error(`Failed to fetch image for "${cardName}":`, error);
+                createPlaceholder(cardName, containerId);
+            }
+        }
+
+        // Load images for key cards
+        fetchCardImage('Knightmare Corruptor Iblee', 'iblee-img-container');
+        fetchCardImage('Knightmare Gryphon', 'gryphon-img-container');
+    });
+</script>
+</body>
+</html>

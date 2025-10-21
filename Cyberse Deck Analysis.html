@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberse Pile Strategy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d121c;
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #172a4d;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2b4984;
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(23, 42, 77, 0.8);
+            border: 1px solid #335ca3;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1a305f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a305f;
+            border: 1px dashed #3b82f6;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #60a5fa; }
+        .arrow-color { color: #60a5fa; }
+        .heading-underline {
+            border-bottom: 2px solid #60a5fa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+         .lore-link {
+            color: #60a5fa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #60a5fa;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #60a5fa;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d121c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #2b4984;
+        }
+
+        #matrix-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 18, 28, 0.4) 0%, rgba(13, 18, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(96, 165, 250, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', monospace;
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #335ca3;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #93c5fd; /* Light blue accent */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="matrix-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">CYBERSE PILE</h1>
+            <p class="text-lg md:text-xl text-blue-200">Deconstructing the Digital Nexus</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Cyberse Pile</strong> is not a traditional archetype but a sophisticated deck-building philosophy. It combines the most efficient components from various Cyberse archetypes like <strong class="text-accent">@Ignister</strong>, <strong class="text-accent">Mathmech</strong>, <strong class="text-accent">Firewall</strong>, and <strong class="text-accent">Code Talker</strong>. This "go-first" combo deck aims to build an overwhelming end board of interruptions through a high volume of special summons and non-linear play lines. Its resilience comes from redundant starters and extenders, allowing it to play through disruption and establish a dominant field.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Engines Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Cogs in the Digital Machine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                <!-- Mathmech Engine -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-calculator text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Mathmech Engine</h3>
+                    </div>
+                    <p class="text-blue-200">The primary catalyst, centered around <strong class="text-accent">Mathmech Circular</strong>. This one-card starter provides a body on the field, GY setup, and searches for the powerful trap card <strong class="text-accent">Mathmech Superfactorial</strong> for interruption.</p>
+                </div>
+                <!-- Firewall Engine -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-fire-wall text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Firewall Engine</h3>
+                    </div>
+                    <p class="text-blue-200">The resilient backbone. <strong class="text-accent">Firewall Defenser</strong> is another one-card starter that kickstarts a long chain of summons, often leading to the powerful boss monster <strong class="text-accent">Firewall Dragon Singularity</strong>.</p>
+                </div>
+                <!-- Code Talker Engine -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-code text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Code Talker Engine</h3>
+                    </div>
+                    <p class="text-blue-200">The link-climbing toolkit. Monsters like <strong class="text-accent">Micro Coder</strong> and the <strong class="text-accent">Splash Mage/Transcode Talker</strong> loop provide the necessary materials and searches to summon high-Link boss monsters.</p>
+                </div>
+                <!-- @Ignister & Generic Support -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-robot text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">@Ignister & Generic Support</h3>
+                    </div>
+                    <p class="text-blue-200">Key cards like <strong class="text-accent">Cynet Mining</strong> and <strong class="text-accent">Parallel eXceed</strong> provide universal searching and free extenders, ensuring the deck can consistently assemble its powerful <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=cyberse&stype=1" target="_blank" class="lore-link">legion of Cyberse monsters</a>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Combo Path Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Primary Combo Path: Mathmech Circular</h2>
+             <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">The deck's most common and efficient combo begins with a single card: Mathmech Circular. This sequence establishes a solid board with both interruption and resource generation.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="circular-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mathmech Circular</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#172a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate & Extend</h3>
+                            </div>
+                            <p class="text-blue-200">Special Summon <strong class="text-accent">Mathmech Circular</strong> by sending <strong class="text-accent">Mathmech Sigma</strong> from Deck to GY. Special Summon Sigma from GY to trigger Circular's effect, searching <strong class="text-accent">Mathmech Superfactorial</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="alembertian-img-container" class="card-image-container flex-shrink-0 card-placeholder">Primathmech Alembertian</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#172a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Xyz for More Resources</h3>
+                            </div>
+                            <p class="text-blue-200">Overlay Circular and Sigma to Xyz Summon <strong class="text-accent">Primathmech Alembertian</strong>. Detach both materials to search for <strong class="text-accent">Mathmech Diameter</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="heatsoul-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Decode Talker Heatsoul</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#172a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Link Climb to the End Board</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon Diameter to revive a Mathmech. Use the monsters to Link climb through <strong class="text-accent">Splash Mage</strong> and into <strong class="text-accent">Decode Talker Heatsoul</strong>, ending with Superfactorial set and Heatsoul on field.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Digital Fortress End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Firewall Dragon Singularity -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Firewall Dragon Singularity</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="singularity-img-container" class="card-image-container card-placeholder">Firewall Dragon Singularity</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Board Clearing:</strong> Bounces opponent's cards on field or in GY.</li>
+                        <li><strong class="text-accent">Non-Destruction Removal:</strong> Devastating against monsters immune to destruction.</li>
+                    </ul>
+                </div>
+                <!-- Decode Talker Heatsoul -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Decode Talker Heatsoul</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="heatsoul-img-container" class="card-image-container card-placeholder">Decode Talker Heatsoul</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Card Advantage:</strong> Draws a card during each player's turn.</li>
+                        <li><strong class="text-accent">Resource Generation:</strong> Digs for hand traps and follow-up plays.</li>
+                    </ul>
+                </div>
+                 <!-- Mathmech Superfactorial -->
+                <div class="card p-6 pro-con-card md:col-span-2">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Mathmech Superfactorial / Cynet Conflict</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="superfactorial-img-container" class="card-image-container card-placeholder">Mathmech Superfactorial</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Versatile Disruption:</strong> Superfactorial summons Primathmech Laplacian to remove a monster, a spell/trap, and a card from hand.</li>
+                         <li><strong class="text-accent">Omni-Negate:</strong> Cynet Conflict (from the Firewall line) can negate any Spell, Trap, or monster effect.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">Explosive Combos:</strong> Powerful one-card starters can generate a full board.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Resilience:</strong> High density of extenders allows it to play through disruption.</li>
+                        <li><span class="pro-icon"><i class="fas fa-crosshairs"></i></span> <strong class="text-green-300">Potent OTK:</strong> Can easily pivot to an offensive strategy with Accesscode Talker.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-dungeon"></i></span> <strong class="text-red-300">Graveyard Reliant:</strong> Vulnerable to cards that prevent graveyard access.</li>
+                        <li><span class="con-icon"><i class="fas fa-meteor"></i></span> <strong class="text-red-300">Mass Disruption:</strong> Susceptible to cards like Nibiru, the Primal Being and Dark Ruler No More.</li>
+                        <li><span class="con-icon"><i class="fas fa-lock"></i></span> <strong class="text-red-300">Identifiable Choke Points:</strong> Key combo pieces can be targeted by well-timed hand traps.</li>
+                    </ul>
+                </div>
+                 <!-- Banlist Impact -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">TCG Banlist Impact</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                         <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Mathmech Circular (Limited):</strong> The deck's primary starter is now at one, reducing consistency.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Splash Mage (Forbidden):</strong> The loss of this key Link-2 monster significantly hurts the deck's ability to easily climb into higher Link monsters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 mb-4 text-center">
+                    <strong class="text-red-400 font-bold">SIGNIFICANT IMPACT:</strong> The Cyberse Pile's consistency and combo potential have been directly curtailed by the TCG banlist, targeting key extenders and starters.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4 border-red-500/50">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden & Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li><strong class="text-red-400">Splash Mage (0 copies):</strong> Core link-climbing piece for recursion.</li>
+                            <li><strong class="text-yellow-400">Mathmech Circular (1 copy):</strong> The deck's premier one-card starter.</li>
+                            <li><strong class="text-yellow-400">Linkuriboh (1 copy):</strong> Important utility Link-1 monster.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4 border-green-500/50">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li>Firewall Defenser</li>
+                            <li>Cynet Mining</li>
+                            <li>Accesscode Talker & Transcode Talker</li>
+                            <li>Firewall Dragon Singularity</li>
+                            <li>All other key extenders</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-blue-200"><strong>Meta Implications:</strong> The prohibition of <strong class="text-accent">Splash Mage</strong> removes the most efficient recursion loop for link climbing, forcing the deck into less optimal combo lines. The limitation of <strong class="text-accent">Mathmech Circular</strong> heavily reduces the frequency of the deck's most explosive one-card combos, impacting overall consistency. While still powerful, the deck is more reliant on drawing multi-card combinations to build its end board.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- MATRIX ANIMATION ---
+            const canvas = document.getElementById('matrix-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = (canvas.offsetWidth * canvas.offsetHeight) / 9000;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 0.5 + 0.1;
+                        this.size = Math.random() * 1.5 + 0.5;
+                        this.color = `rgba(96, 165, 250, ${Math.random() * 0.5 + 0.2})`;
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    connect();
+                    requestAnimationFrame(animate);
+                }
+                
+                function connect() {
+                    let opacityValue = 1;
+                    for (let a = 0; a < particles.length; a++) {
+                        for (let b = a; b < particles.length; b++) {
+                            let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x)) +
+                                ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
+                            if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                                opacityValue = 1 - (distance / 20000);
+                                ctx.strokeStyle = `rgba(96, 165, 250, ${opacityValue})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[a].x, particles[a].y);
+                                ctx.lineTo(particles[b].x, particles[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-blue-300">${cardType}</p>
+                        <div class="w-full h-px bg-blue-700 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+            }
+
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            const cardsToLoad = {
+                'circular-img-container': 'Mathmech Circular',
+                'alembertian-img-container': 'Primathmech Alembertian',
+                'heatsoul-img-container-combo': 'Decode Talker Heatsoul',
+                'singularity-img-container': 'Firewall Dragon Singularity',
+                'heatsoul-img-container': 'Decode Talker Heatsoul',
+                'superfactorial-img-container': 'Mathmech Superfactorial'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndProcessCardData(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

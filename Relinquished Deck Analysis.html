@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relinquished Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f1e;
+            color: #e0e7ff;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1e1b4b; /* Deep Indigo */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4f46e5; /* Indigo border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #312e81; /* Darker Indigo */
+            border: 1px solid #6366f1;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #312e81;
+            color: #c7d2fe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #312e81;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a5b4fc; } /* Lavender */
+        .lore-link {
+            color: #c4b5fd;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c4b5fd;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #c4b5fd;
+        }
+        .arrow-color { color: #818cf8; }
+        .heading-underline {
+            border-bottom: 2px solid #818cf8;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        /* --- Relinquished Banner --- */
+        .banner {
+            position: relative;
+            height: 140px;
+            background-color: #0c0c14;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 2px solid #4f46e5;
+        }
+        #reliquished-vortex {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-content {
+            z-index: 2;
+            position: relative;
+            animation: fadeIn 1s ease-out 0.5s forwards;
+            opacity: 0;
+        }
+        .banner-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            color: #e0e7ff;
+            text-shadow: 0 0 10px rgba(165, 180, 252, 0.7), 0 0 20px rgba(129, 140, 248, 0.5);
+        }
+        .banner-subtitle {
+            font-size: 1.1rem;
+            color: #c7d2fe;
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 120px; }
+            .banner-title { font-size: 2.2rem; }
+            .banner-subtitle { font-size: 1rem; }
+        }
+        
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <canvas id="reliquished-vortex"></canvas>
+                <div class="banner-content">
+                    <h1 class="banner-title">Relinquished</h1>
+                    <p class="banner-subtitle">The Art of Absorption</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Relinquished</strong> archetype is a classic control strategy focused on a unique parasitic mechanic: absorbing an opponent's monsters and turning their power against them. This playstyle is executed through a small but potent lineup of <a href="https://ygoprodeck.com/archetype/relinquished-255" target="_blank" class="lore-link">strange and powerful entities</a>, primarily Ritual and Fusion monsters known as "Eyes Restrict". The deck excels at non-destructive removal, bypassing many forms of protection, and thrives in a "go-second" environment where it can dismantle established boards.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Cards -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Pantheon of Eyes: Core Monsters</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="card p-4">
+                    <h3 class="text-lg font-bold text-accent mb-2">Relinquished</h3>
+                    <p class="text-sm text-blue-200">The Ritual foundation. Absorbs one monster to steal its stats. While outdated as a boss, it is the essential search target for <strong class="text-accent">Pre-Preparation of Rites</strong>, making the entire engine consistent.</p>
+                </div>
+                <div class="card p-4">
+                    <h3 class="text-lg font-bold text-accent mb-2">Thousand-Eyes Restrict</h3>
+                    <p class="text-sm text-blue-200">The proactive board-breaker. After absorbing a monster, it prevents all other monsters from attacking or changing position. A prime target for <strong class="text-accent">Instant Fusion</strong>.</p>
+                </div>
+                <div class="card p-4">
+                    <h3 class="text-lg font-bold text-accent mb-2">Millennium-Eyes Restrict</h3>
+                    <p class="text-sm text-blue-200">The reactive disruption. A Quick Effect allows it to absorb an opponent's monster when they activate an effect, negating it and all other copies of that monster. The deck's primary interactive piece.</p>
+                </div>
+                <div class="card p-4">
+                    <h3 class="text-lg font-bold text-accent mb-2">Relinquished Anima</h3>
+                    <p class="text-sm text-blue-200">The Link-1 tool. Absorbs any monster it points to. Its main purpose is to enable the "Kaiju Slingshot" combo, turning a Kaiju given to the opponent into your own high-ATK monster.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The "Kaiju Slingshot"</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This go-second combo removes any problematic monster your opponent controls and establishes a powerful attacker in one fluid motion.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="kaiju-img-container" class="card-image-container card-placeholder">Gameciel, the Sea Turtle Kaiju</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Tribute & Summon</h3>
+                        </div>
+                        <p class="text-blue-200">Tribute your opponent's most threatening monster to Special Summon a <strong class="text-accent">Kaiju</strong> to their field in a zone your Extra Monster Zone will point to.</p>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-2"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="anima-img-container" class="card-image-container card-placeholder">Relinquished Anima</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Link Summon Anima</h3>
+                        </div>
+                        <p class="text-blue-200">Normal Summon any Level 1 monster (like <strong class="text-accent">Millennium-Eyes Illusionist</strong>) and Link Summon <strong class="text-accent">Relinquished Anima</strong>, ensuring it points to the Kaiju.</p>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-2"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="anima-equipped-img-container" class="card-image-container card-placeholder">Anima with Kaiju</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Absorb & Attack</h3>
+                        </div>
+                        <p class="text-blue-200">Activate <strong class="text-accent">Anima's</strong> effect to equip the Kaiju to itself. Anima now has the high ATK of the Kaiju, and you have removed a threat while building your own.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Optimal End Board Visualized</h2>
+             <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">A Relinquished end board is not about quantity, but quality. It establishes multiple layers of disruption across different zones to control the opponent's turn.</p>
+            <div class="card p-6 lg:p-8">
+                <div class="space-y-8">
+                    <!-- Field Zone -->
+                    <div class="flex items-start sm:items-center gap-4">
+                        <div class="w-16 h-16 bg-indigo-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-chess-board text-3xl text-accent"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">On the Field</h3>
+                            <p class="text-blue-200 text-sm">The primary on-field interaction.</p>
+                        </div>
+                    </div>
+                    <div class="pl-4 sm:pl-20">
+                         <div class="flex flex-col sm:flex-row items-center gap-4 p-4 combo-step-card rounded-lg">
+                            <div id="mer-img-container" class="w-28 flex-shrink-0 card-placeholder">Millennium-Eyes Restrict</div>
+                            <div>
+                                <h4 class="font-bold text-accent">Millennium-Eyes Restrict</h4>
+                                <p class="text-sm text-blue-200">Provides a Quick Effect monster negate and absorption. It's the central pillar of your control setup, ready to intercept the opponent's key starters.</p>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Hand Zone -->
+                    <div class="flex items-start sm:items-center gap-4">
+                         <div class="w-16 h-16 bg-indigo-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-hand-paper text-3xl text-accent"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">In Hand</h3>
+                            <p class="text-blue-200 text-sm">Reactive disruption from an unseen position.</p>
+                        </div>
+                    </div>
+                     <div class="pl-4 sm:pl-20">
+                         <div class="flex flex-col sm:flex-row items-center gap-4 p-4 combo-step-card rounded-lg">
+                            <div id="mei-img-container" class="w-28 flex-shrink-0 card-placeholder">Millennium-Eyes Illusionist</div>
+                            <div>
+                                <h4 class="font-bold text-accent">Millennium-Eyes Illusionist</h4>
+                                <p class="text-sm text-blue-200">A powerful hand-trap that equips another of the opponent's monsters to your "Eyes Restrict" monster, offering a second, unexpected interruption.</p>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Graveyard Zone -->
+                    <div class="flex items-start sm:items-center gap-4">
+                         <div class="w-16 h-16 bg-indigo-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-skull text-3xl text-accent"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">In the Graveyard</h3>
+                            <p class="text-blue-200 text-sm">Follow-up plays and resource extension.</p>
+                        </div>
+                    </div>
+                     <div class="pl-4 sm:pl-20">
+                         <div class="flex flex-col sm:flex-row items-center gap-4 p-4 combo-step-card rounded-lg">
+                            <div id="rf-img-container" class="w-28 flex-shrink-0 card-placeholder">Relinquished Fusion</div>
+                            <div>
+                                <h4 class="font-bold text-accent">Relinquished Fusion</h4>
+                                <p class="text-sm text-blue-200">The final layer of interaction. Its graveyard effect can be banished to provide a third monster absorption, completely disrupting the opponent's strategy.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 flex items-center"><i class="fas fa-thumbs-up mr-3"></i>Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-green-300">Unconventional Removal:</strong> Kaiju tributing and non-destructive absorption bypass most monster protection.</li>
+                        <li><strong class="text-green-300">Potent Disruption:</strong> Millennium-Eyes Restrict can shut down key monster effects and hand traps.</li>
+                        <li><strong class="text-green-300">Go-Second Power:</strong> Excels at breaking established boards rather than building its own.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center"><i class="fas fa-thumbs-down mr-3"></i>Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-red-300">Inconsistency:</strong> Relies on drawing specific starter cards or two-card combos to function.</li>
+                        <li><strong class="text-red-300">Weak Going First:</strong> Struggles to establish a meaningful board without external engines like Invoked.</li>
+                        <li><strong class="text-red-300">Backrow Vulnerability:</strong> Has few in-archetype answers to powerful Spells, Traps, and floodgates.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4 flex items-center"><i class="fas fa-cogs mr-3"></i>Tech & Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Kaiju Engine:</strong> Essential for consistent board-breaking and enabling Anima.</li>
+                        <li><strong class="text-accent">Pre-Preparation of Rites:</strong> The deck's best starter, providing a +1 in card advantage.</li>
+                        <li><strong class="text-accent">Super Polymerization:</strong> Another powerful, un-chainable removal tool against DARK-heavy metas.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status -->
+        <section class="animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 per Deck)</h4>
+                        <ul id="limited-list" class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                           <li>Instant Fusion</li>
+                           <!-- JS will populate this -->
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul id="unlimited-list" class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                           <li>All "Relinquished" and "Eyes Restrict" monsters</li>
+                           <li>All in-archetype support cards</li>
+                           <li>Pre-Preparation of Rites</li>
+                           <!-- JS will populate this -->
+                        </ul>
+                    </div>
+                </div>
+                 <div class="mt-4 p-3 bg-indigo-900 bg-opacity-40 rounded border-l-4 border-indigo-400">
+                    <p class="text-sm text-blue-200"><strong>Meta Implications:</strong> The archetype itself remains at full power. The limitation of <strong class="text-accent">Instant Fusion</strong> slightly reduces the deck's explosive opening potential but does not cripple its core strategy, which primarily relies on its Ritual and dedicated Fusion spells.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Relinquished Vortex Banner Animation ---
+            const canvas = document.getElementById('reliquished-vortex');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = Math.random() * 2 + 1;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 2 + 0.5;
+                        this.color = `rgba(165, 180, 252, ${Math.random() * 0.5 + 0.2})`;
+                    }
+
+                    update(centerX, centerY) {
+                        const dx = centerX - this.x;
+                        const dy = centerY - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 5) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.angle = Math.random() * Math.PI * 2;
+                        } else {
+                            this.angle += 0.05;
+                            this.x += Math.cos(this.angle) * this.speed * 0.2 + dx * 0.01;
+                            this.y += Math.sin(this.angle) * this.speed * 0.2 + dy * 0.01;
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+                    }
+                }
+
+                function animate() {
+                    ctx.fillStyle = 'rgba(12, 12, 20, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    particles.forEach(p => {
+                        p.update(centerX, centerY);
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- Card Image Fetching ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        container.textContent = cardName;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.textContent = cardName; // Fallback to text
+                }
+            }
+            
+            const cardsToLoad = {
+                'kaiju-img-container': 'Gameciel, the Sea Turtle Kaiju',
+                'anima-img-container': 'Relinquished Anima',
+                'anima-equipped-img-container': 'Relinquished Anima',
+                'mer-img-container': 'Millennium-Eyes Restrict',
+                'mei-img-container': 'Millennium-Eyes Illusionist',
+                'rf-img-container': 'Relinquished Fusion',
+            };
+
+            for (const [id, name] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(name, id);
+            }
+
+            // Note: Banlist section is manually populated based on the provided document and JSON for accuracy.
+        });
+    </script>
+</body>
+</html>
+

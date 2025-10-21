@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-Force Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1f; /* Deep midnight blue */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(23, 27, 53, 0.8); /* Translucent dark blue */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a3f7a; /* Muted indigo border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #1c214d;
+            border: 1px solid #4a4f94;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 15px rgba(130, 70, 229, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1c214d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1c214d;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a78bfa; } /* Bright Lavender */
+        .text-highlight { color: #38bdf8; } /* Bright Cyan */
+        .arrow-color { color: #a78bfa; }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #38bdf8;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #38bdf8;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- S-Force Themed Banner --- */
+        .banner {
+            position: relative;
+            height: 140px;
+            background-color: #0c0a1f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 1px solid #3a3f7a;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+        #grid-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-content {
+            z-index: 2;
+            position: relative;
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+        }
+        .banner-title {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 2.8rem;
+            color: #e0e7ff;
+            letter-spacing: 0.1em;
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #c7d2fe;
+        }
+        @media (max-width: 768px) {
+            .banner { height: 120px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+        
+        /* Home button from other pages */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* New Operative Card Styles */
+        .operative-card {
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .operative-card:hover, .operative-card.active {
+            background-color: rgba(56, 189, 248, 0.1);
+            transform: translateX(5px);
+            border-left-color: #38bdf8;
+        }
+
+        /* New Endboard Styles */
+        #endboard-visual .card-placeholder {
+            min-height: 0;
+            height: 100%;
+            font-size: 0.6rem;
+        }
+        #endboard-visual .card-image {
+            width: 100%;
+            height: auto;
+            object-fit: contain; /* Ensures aspect ratio is maintained */
+        }
+
+        .combo-step-card .card-placeholder {
+            min-height: 0; /* Override for combo section */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <canvas id="grid-canvas"></canvas>
+                <div class="banner-content">
+                    <h1 class="banner-title">S-Force</h1>
+                    <p class="banner-subtitle">Archetype Analysis: The Columnar Dragnet</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">S-Force (Security Force)</strong> archetype is a reactive control strategy centered around a unique column-based mechanic. Each S-Force monster projects a continuous debuff onto the opponent's monsters that share its column, creating an interactive "dragnet" across the field. The deck aims to build a wide board, stacking multiple disruptive effects to lockdown opponent's monsters and control the flow of the game. Its success hinges on a small core of key monsters that initiate its combos and maintain board presence.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Foundational Mechanics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-highlight mb-2">The Columnar Dragnet</h3>
+                    <p class="text-blue-200">The core identity of S-Force is its column gimmick. Each S-Force monster projects a continuous negative effect onto any opposing monster in the same column. This forces a cat-and-mouse game where the opponent must choose between summoning into a "captured" column and suffering debuffs, or using open columns, which the S-Force player can then "chase" into with their effects.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-highlight mb-2">Stacking the Debuffs</h3>
+                    <p class="text-blue-200">The dragnet's true power comes from layering multiple debuffs. An opposing monster is affected by <strong class="text-accent">every</strong> S-Force monster on the field, not just the one opposite it. A wider board directly translates to a more oppressive field, combining effects like ATK reduction, banishing on removal, and restricting Extra Deck summons.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The S-Force Roster (REDESIGNED) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The S-Force Roster: Key Operatives</h2>
+            <div class="card p-6 md:p-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                    <!-- Featured Card Display -->
+                    <div id="featured-operative-img" class="card-image-container mx-auto h-full w-full max-w-[200px] md:max-w-full card-placeholder flex items-center justify-center">
+                        S-Force Rappa Chiyomaru
+                    </div>
+        
+                    <!-- Operatives List -->
+                    <div class="md:col-span-2 space-y-4">
+                        <div class="operative-card p-4 rounded-lg cursor-pointer" data-card-name="S-Force Rappa Chiyomaru">
+                            <h3 class="text-lg font-bold text-accent flex items-center gap-2"><i class="fas fa-running fa-fw"></i> Primary Starter: Rappa Chiyomaru</h3>
+                            <p class="text-sm text-blue-200 pl-8">The undisputed heart of the archetype. Her Quick Effect is the deck's primary combo starter.</p>
+                        </div>
+                        <div class="operative-card p-4 rounded-lg cursor-pointer" data-card-name="S-Force Gravitino">
+                            <h3 class="text-lg font-bold text-accent flex items-center gap-2"><i class="fas fa-search fa-fw"></i> Primary Searcher: Gravitino</h3>
+                            <p class="text-sm text-blue-200 pl-8">On summon, it adds any "S-Force" card from Deck to hand, setting up further plays.</p>
+                        </div>
+                        <div class="operative-card p-4 rounded-lg cursor-pointer" data-card-name="S-Force Pla-Tina">
+                             <h3 class="text-lg font-bold text-accent flex items-center gap-2"><i class="fas fa-plus-circle fa-fw"></i> Primary Extender: Pla-Tina</h3>
+                            <p class="text-sm text-blue-200 pl-8">Crucially revives a banished "S-Force" monster, turning costs into board presence.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Standard Operating Procedure: Core Combo -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Standard Operating Procedure: Core Combo</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">The deck's most critical combo requires <strong class="text-accent">S-Force Rappa Chiyomaru</strong> and any other "S-Force" card in hand. This sequence is the foundation of the entire strategy.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="combo-chiyomaru-img" class="card-image-container flex-shrink-0 h-auto card-placeholder">
+                            Loading...
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0c0a1f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate Chiyomaru</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-highlight">Rappa Chiyomaru's</strong> Quick Effect, banishing another "S-Force" card from your hand (optimally <strong class="text-highlight">Gravitino</strong>).</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <i class="fas fa-arrow-down text-3xl arrow-color my-2"></i>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="combo-platina-img" class="card-image-container flex-shrink-0 h-auto card-placeholder">
+                            Loading...
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0c0a1f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon Pla-Tina & Revive</h3>
+                            </div>
+                            <p class="text-blue-200">Chiyomaru returns to hand, and you Special Summon <strong class="text-highlight">S-Force Pla-Tina</strong> from your Deck. Pla-Tina's effect then triggers, Special Summoning the "S-Force" monster you banished for Chiyomaru's cost.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <i class="fas fa-arrow-down text-3xl arrow-color my-2"></i>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="combo-chase-img" class="card-image-container flex-shrink-0 h-auto card-placeholder">
+                            Loading...
+                        </div>
+                        <div class="flex-grow">
+                             <div class="flex items-center mb-2">
+                                <span class="bg-[#0c0a1f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Search & Establish Control</h3>
+                            </div>
+                            <p class="text-blue-200">If you summoned <strong class="text-highlight">Gravitino</strong>, its effect triggers, allowing you to search for the powerful trap card <strong class="text-highlight">S-Force Chase</strong> to set for interruption.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board Analysis (REDESIGNED) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Optimal End Board & Interruptions</h2>
+            <div class="card p-6 md:p-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Field Visualization -->
+                    <div id="endboard-visual">
+                        <h3 class="font-bold text-xl text-highlight mb-4 text-center">Field State: Turn 1</h3>
+                        <div class="bg-black bg-opacity-30 p-4 rounded-lg border border-gray-700 space-y-4">
+                            <!-- Monster Zones -->
+                            <div>
+                                <p class="text-center text-xs text-gray-400 mb-2 font-mono tracking-widest">M A I N - M O N S T E R - Z O N E S</p>
+                                <div class="flex justify-around items-stretch gap-2">
+                                    <div class="w-1/5 bg-gray-900/50 rounded-md border-2 border-dashed border-gray-700 p-1">
+                                        <div id="endboard-platina" class="w-full h-full card-placeholder flex items-center justify-center">Pla-Tina</div>
+                                    </div>
+                                    <div class="w-1/5 bg-gray-900/50 rounded-md border-2 border-dashed border-gray-700 aspect-[59/86]"></div>
+                                    <div class="w-1/5 bg-gray-900/50 rounded-md border-2 border-dashed border-gray-700 aspect-[59/86]"></div>
+                                    <div class="w-1/5 bg-gray-900/50 rounded-md border-2 border-dashed border-gray-700 aspect-[59/86]"></div>
+                                    <div class="w-1/5 bg-gray-900/50 rounded-md border-2 border-dashed border-gray-700 p-1">
+                                        <div id="endboard-gravitino" class="w-full h-full card-placeholder flex items-center justify-center">Gravitino</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- S/T Zones -->
+                            <div>
+                                <p class="text-center text-xs text-gray-400 mb-2 font-mono tracking-widest">S P E L L / T R A P - Z O N E S</p>
+                                 <div class="flex justify-around items-stretch gap-2">
+                                    <div class="w-1/5 bg-gray-900/50 rounded-md border-2 border-dashed border-gray-700 aspect-[59/86]"></div>
+                                    <div class="w-1/5 bg-gray-900/50 rounded-md border-2 border-dashed border-gray-700 aspect-[59/86]"></div>
+                                    <div class="w-1/5 bg-gray-900/50 rounded-md border-2 border-dashed border-gray-700 p-1">
+                                        <div id="endboard-chase" class="w-full h-full card-placeholder flex items-center justify-center">
+                                            <span class="transform -rotate-90 whitespace-nowrap p-2">S-Force Chase</span>
+                                        </div>
+                                    </div>
+                                    <div class="w-1/5 bg-gray-900/50 rounded-md border-2 border-dashed border-gray-700 aspect-[59/86]"></div>
+                                    <div class="w-1/5 bg-gray-900/50 rounded-md border-2 border-dashed border-gray-700 aspect-[59/86]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Interruptions List -->
+                    <div>
+                        <h3 class="font-bold text-xl text-highlight mb-4 text-center">Available Interruptions</h3>
+                        <div class="space-y-4">
+                            <div class="combo-step-card p-4 rounded-lg flex items-start gap-4">
+                                <i class="fas fa-ban text-2xl text-accent mt-1 fa-fw"></i>
+                                <div>
+                                    <h4 class="font-bold text-white">Gravitino's Banish</h4>
+                                    <p class="text-sm text-blue-200">Any opposing monster in an S-Force column that leaves the field is banished instead of going to the GY.</p>
+                                </div>
+                            </div>
+                            <div class="combo-step-card p-4 rounded-lg flex items-start gap-4">
+                                <i class="fas fa-hand-point-left text-2xl text-accent mt-1 fa-fw"></i>
+                                <div>
+                                     <h4 class="font-bold text-white">S-Force Chase</h4>
+                                    <p class="text-sm text-blue-200">Powerful non-destruction removal that returns 2+ opposing cards to the hand during their turn.</p>
+                                </div>
+                            </div>
+                            <div class="combo-step-card p-4 rounded-lg flex items-start gap-4">
+                                <i class="fas fa-running text-2xl text-accent mt-1 fa-fw"></i>
+                                <div>
+                                    <h4 class="font-bold text-white">Chiyomaru's Chase (from hand)</h4>
+                                    <p class="text-sm text-blue-200">If the opponent summons to an open column, Chiyomaru can be summoned to "chase" it and apply a new debuff from the deck.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Joint Task Forces & Synergies -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Joint Task Forces: Synergies</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-highlight mb-2">Bystial & Chaos Engine</h3>
+                    <p class="text-blue-200">The Bystial engine perfectly fixes S-Force's resource economy. Cards like <strong class="text-accent">The Bystial Lubellion</strong> and <strong class="text-accent">Branded Regained</strong> turn the "-1" cost of S-Force effects into a card-drawing advantage engine, allowing the deck to sustain its board and out-grind opponents.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-highlight mb-2">Spright Engine</h3>
+                    <p class="text-blue-200">Since <strong class="text-accent">Rappa Chiyomaru</strong> is a Level 2 monster, the Spright engine provides incredible consistency and resilience. <strong class="text-accent">Spright Starter</strong> can summon Chiyomaru directly from the deck, while the (currently forbidden) <strong class="text-red-400">Spright Elf</strong> offered recovery from disruption. This synergy elevates the deck's power ceiling significantly.</p>
+                </div>
+                 <div class="card p-6 md:col-span-2">
+                    <h3 class="text-xl font-bold text-highlight mb-2">Other Strategic Alliances</h3>
+                    <p class="text-blue-200">The LIGHT and DARK attributes of S-Force monsters open up many possibilities. While Bystials fix the resource loop, other strategies involving rapid spell-based deployment, such as the mysterious <a href="#" class="lore-link" onclick="return false;">Runick</a> field operatives, could also create unique pressure from unexpected columns by utilizing the Extra Monster Zone.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-bolt fa-fw mr-2"></i></span> <strong class="text-green-400">Unique Removal:</strong> Non-destruction banishing and mass bouncing effects.</li>
+                        <li><span class="pro-icon"><i class="fas fa-atom fa-fw mr-2"></i></span> <strong class="text-green-400">Attribute Synergy:</strong> LIGHT/DARK typing enables powerful external engines.</li>
+                        <li><span class="pro-icon"><i class="fas fa-hourglass-half fa-fw mr-2"></i></span> <strong class="text-green-400">Turn Interaction:</strong> Key starter has a Quick Effect for reactive plays during the opponent's turn.</li>
+                    </ul>
+                </div>
+
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-compress-arrows-alt fa-fw mr-2"></i></span> <strong class="text-red-400">Centralization:</strong> Over-reliant on a single starter, creating a clear choke point.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-holding fa-fw mr-2"></i></span> <strong class="text-red-400">Card Disadvantage:</strong> The pure strategy struggles with resource management.</li>
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle fa-fw mr-2"></i></span> <strong class="text-red-400">Board Fragility:</strong> Lacks inherent protection and is vulnerable to board-wipes.</li>
+                    </ul>
+                </div>
+
+                <!-- Counter-Play -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-highlight mb-4">Counter-Play</h3>
+                     <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-hand-paper fa-fw mr-2"></i></span> <strong class="text-highlight">Hand Traps:</strong> Target <strong class="text-accent">Rappa Chiyomaru</strong> with Ash Blossom or Infinite Impermanence.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-bomb fa-fw mr-2"></i></span> <strong class="text-highlight">Board Breakers:</strong> Use cards like <strong class="text-accent">Raigeki</strong> or <strong class="text-accent">Lightning Storm</strong> to clear the board easily.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-columns fa-fw mr-2"></i></span> <strong class="text-highlight">Column Play:</strong> Summon key combo pieces into empty columns to avoid debuffs.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.7s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The core S-Force archetype remains fully available in the current TCG format, with no cards on the Forbidden & Limited list.
+                </p>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With full access to all its key starters and extenders, the pure S-Force strategy is completely intact. However, players should note that key synergistic cards from other engines, such as <strong class="text-red-400">Spright Elf</strong>, are forbidden, impacting the power level of hybrid builds.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // S-Force Themed Canvas Animation
+            const canvas = document.getElementById('grid-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let cols, rows;
+                const squareSize = 20;
+                const particles = [];
+                const maxParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                    cols = Math.floor(canvas.width / squareSize);
+                    rows = Math.floor(canvas.height / squareSize);
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedX = (Math.random() - 0.5) * 1.5;
+                        this.speedY = (Math.random() - 0.5) * 1.5;
+                        this.size = Math.random() * 2 + 1;
+                        this.color = `rgba(56, 189, 248, ${Math.random() * 0.5 + 0.3})`;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    for (let i = 0; i < maxParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function drawGrid() {
+                    ctx.strokeStyle = 'rgba(58, 63, 122, 0.2)'; // #3a3f7a with alpha
+                    ctx.lineWidth = 1;
+                    for (let i = 0; i <= cols; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(i * squareSize, 0);
+                        ctx.lineTo(i * squareSize, canvas.height);
+                        ctx.stroke();
+                    }
+                    for (let i = 0; i <= rows; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, i * squareSize);
+                        ctx.lineTo(canvas.width, i * squareSize);
+                        ctx.stroke();
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawGrid();
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    particles.length = 0;
+                    initParticles();
+                });
+            }
+
+            // Card Image Fetching
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url_small;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.textContent = cardName; // Keep placeholder text on error
+                }
+            }
+
+            // New Interactive Roster Logic
+            const operativeCards = document.querySelectorAll('.operative-card');
+            operativeCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    operativeCards.forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    const cardName = card.dataset.cardName;
+                    fetchAndDisplayCardImage(cardName, 'featured-operative-img');
+                });
+            });
+
+            // Set the initial active card and load its image
+            const initialActiveCard = document.querySelector('.operative-card[data-card-name="S-Force Rappa Chiyomaru"]');
+            if (initialActiveCard) {
+                initialActiveCard.classList.add('active');
+                fetchAndDisplayCardImage(initialActiveCard.dataset.cardName, 'featured-operative-img');
+            }
+
+
+            const cardsToLoad = {
+                'endboard-platina': 'S-Force Pla-Tina',
+                'endboard-gravitino': 'S-Force Gravitino',
+                'endboard-chase': 'S-Force Chase',
+                'combo-chiyomaru-img': 'S-Force Rappa Chiyomaru',
+                'combo-platina-img': 'S-Force Pla-Tina',
+                'combo-chase-img': 'S-Force Chase'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

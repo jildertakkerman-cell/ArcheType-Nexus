@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaylantz Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1b26; /* Dark slate blue */
+            color: #e0e7ff;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(30, 32, 48, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a4e69;
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(42, 45, 66, 0.8);
+            border: 1px solid #6b7280;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2d42;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2d42;
+            border: 1px dashed #6b7280;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent-fire { color: #f87171; } /* Fiery Red for accents */
+        .text-accent-water { color: #60a5fa; } /* Cool Blue for accents */
+        .arrow-color { color: #9370db; } /* Medium Purple */
+        .heading-underline {
+            border-bottom: 2px solid #9370db;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #9370db;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #9370db;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #9370db;
+        }
+
+        /* --- VAYLANTZ BATTLEFIELD BANNER --- */
+        .banner-header {
+            position: relative;
+            height: 160px;
+            background-color: #1a1b26;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a4e69;
+        }
+
+        #battlefield-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 27, 38, 0.4) 0%, rgba(26, 27, 38, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(147, 112, 219, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', monospace;
+        }
+
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="battlefield-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">VAYLANTZ</h1>
+            <p class="text-lg md:text-xl text-purple-200">Deconstructing the Tactical Board Game</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent-fire font-bold">Vaylantz</strong> archetype is a unique Pendulum-based strategy that simulates a tabletop war game within Yu-Gi-Oh!. Its gameplay revolves around the precise <strong class="text-accent-water font-bold">vertical</strong> and <strong class="text-accent-fire font-bold">horizontal movement</strong> of its monsters across the field. By strategically shifting their positions, Vaylantz monsters trigger powerful effects to swarm the board, generate advantage, and disrupt the opponent. This transforms the duel into a complex puzzle of positioning and sequencing, rewarding pilots who can master its intricate, tactical mechanics.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Vaylantz Doctrine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-water mb-2">Vertical Movement</h3>
+                    <p class="text-indigo-200">This is the primary deployment method. Each Main Deck Vaylantz monster can Special Summon itself from the Pendulum Zone to the Main Monster Zone in the same column, establishing your initial board presence without a traditional Pendulum Summon.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-fire mb-2">Horizontal Movement</h3>
+                    <p class="text-indigo-200">The catalyst for the deck's most powerful abilities. When a Vaylantz monster is moved to an adjacent Monster Zone by a card effect, its potent "trigger" effect activates, leading to searches, summons, and disruption.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Cards Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Vaylantz Armory</h2>
+             <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                Success on the battlefield requires familiarity with your key units. The <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Vaylantz&stype=1" target="_blank" class="lore-link">Vaylantz forces</a> are comprised of starters, movers, and powerful bosses that work in concert.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Starters & Enablers -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Command Center</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-water mb-1">Shinonome the Vaylantz Priestess</h4>
+                            <p class="text-sm text-indigo-200">The one-card starter. Searches a Vaylantz Spell on summon and a Vaylantz monster on move.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-fire mb-1">Vaylantz Wakening - Solo Activation</h4>
+                            <p class="text-sm text-indigo-200">The deck's premier consistency tool. Places any Vaylantz monster from Deck to the Pendulum Zone, bypassing Ash Blossom.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Movers & Bosses -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Tactical & Heavy Units</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-fire mb-1">Nazuki the Vaylantz Ninja</h4>
+                            <p class="text-sm text-indigo-200">A primary "mover" that initiates horizontal movement to trigger your other monsters' effects.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-water mb-1">Arktos XII - Chronochasm Vaylantz</h4>
+                            <p class="text-sm text-indigo-200">The main interactive boss. Swaps monster positions and destroys a card whenever a monster moves.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Combo Sequence</h2>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="shinonome-img-container" class="card-image-container flex-shrink-0 card-placeholder">Shinonome the Vaylantz Priestess</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1b26] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Deploy & Search</h3>
+                            </div>
+                            <p class="text-indigo-200">Place and Special Summon <strong class="text-accent-water">Shinonome</strong>. Her effect searches <strong class="text-accent-fire">Vaylantz Wakening - Solo Activation</strong>. Use it to place <strong class="text-accent-fire">Nazuki</strong> in the Pendulum Zone.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-4"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="nazuki-img-container" class="card-image-container flex-shrink-0 card-placeholder">Nazuki the Vaylantz Ninja</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1b26] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Initiate Movement</h3>
+                            </div>
+                            <p class="text-indigo-200">Special Summon <strong class="text-accent-fire">Nazuki</strong>. Use Nazuki's effect to move <strong class="text-accent-water">Shinonome</strong>, triggering Shinonome's effect to search for another Vaylantz monster, extending your plays.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-4"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="beyond-pendulum-img-container" class="card-image-container flex-shrink-0 card-placeholder">Beyond the Pendulum</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1b26] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Establish Scales</h3>
+                            </div>
+                            <p class="text-indigo-200">Use both monsters to Link Summon <strong class="text-purple-300">Beyond the Pendulum</strong>. Its effect searches for a high Pendulum Scale, setting up a larger Pendulum Summon to bring back your resources from the Extra Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Typical Endboard Configuration</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Arktos XII -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Arktos XII - Chronochasm Vaylantz</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="arktos-img-container" class="card-image-container card-placeholder">Arktos XII - Chronochasm Vaylantz</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-water">Position Swap:</strong> Quick Effect to move monsters around the field for disruption.</li>
+                        <li><strong class="text-accent-fire">Destruction:</strong> Destroys a card on the field whenever any monster moves.</li>
+                    </ul>
+                </div>
+                <!-- Mamonaka -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Mamonaka the Vaylantz United</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="mamonaka-img-container" class="card-image-container card-placeholder">Mamonaka the Vaylantz United</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-fire">Monster Removal:</strong> Pushes an opponent's Effect Monster into their Spell/Trap Zone.</li>
+                        <li><strong class="text-accent-water">Column Push:</strong> Can also target and move your own monsters to trigger their effects.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-brain"></i></span> <strong class="text-green-300">High Skill Ceiling:</strong> A master pilot can navigate complex game states that opponents cannot predict.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bomb"></i></span> <strong class="text-green-300">Go-Second Power:</strong> Excellent at breaking boards by running cards like Lava Golem and Kaijus, which it can then weaponize.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Engine Versatility:</strong> The lack of a required Normal Summon allows for powerful external engine integration.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-anchor"></i></span> <strong class="text-red-300">Centralized Starter:</strong> Over-reliant on Shinonome; a single negate can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Hand Trap Vulnerability:</strong> Highly susceptible to Droll & Lock Bird and Nibiru.</li>
+                        <li><span class="con-icon"><i class="fas fa-clock"></i></span> <strong class="text-red-300">Time Consuming:</strong> Long and complex combos make losing to the in-game timer a real threat.</li>
+                    </ul>
+                </div>
+                <!-- TCG Status -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">TCG Format Note</h3>
+                     <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-check"></i></span> <strong class="text-green-300">Fully Unrestricted:</strong> All in-archetype Vaylantz cards are currently at 3 copies per deck.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-times"></i></span> <strong class="text-red-300">Key Enabler Banned:</strong> The deck cannot use <strong class="text-red-300">Heavymetalfoes Electrumite</strong>, a major consistency hit compared to other formats.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The Vaylantz archetype is largely untouched by the banlist, but is significantly impacted by a key generic forbidden card:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Heavymetalfoes Electrumite (0 copies)</strong> - A critical generic Pendulum support card.</li>
+                            <li>Its absence lowers the consistency and recovery of all Pendulum strategies, including Vaylantz.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Vaylantz" Main Deck monsters (3 copies each)</li>
+                            <li>All "Vaylantz" Extra Deck monsters (3 copies each)</li>
+                            <li>All "Vaylantz" Spell/Trap support cards</li>
+                            <li>The core engine remains at full power.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-indigo-900 bg-opacity-30 rounded border-l-4 border-indigo-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the Vaylantz engine itself is at full strength, the prohibition of <strong class="text-accent-fire">Heavymetalfoes Electrumite</strong> in the TCG makes the deck less resilient and consistent than its OCG or Master Duel counterparts. Players must rely on other generic cards like <strong class="text-purple-300">Beyond the Pendulum</strong> or external engines to compensate for this loss.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // VAYLANTZ BATTLEFIELD ANIMATION
+            const canvas = document.getElementById('battlefield-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let grid_size = 30;
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                function createParticles() {
+                    particles = [];
+                    for (let x = 0; x < canvas.width; x += grid_size) {
+                        for (let y = 0; y < canvas.height; y += grid_size) {
+                            particles.push({
+                                x: x,
+                                y: y,
+                                base_x: x,
+                                base_y: y,
+                                density: (Math.random() * 30) + 1,
+                                color: Math.random() > 0.5 ? '#f87171' : '#60a5fa' // Fire and Water colors
+                            });
+                        }
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        let distance = Math.sqrt(((p.base_x - mouse.x) ** 2) + ((p.base_y - mouse.y) ** 2));
+                        let forceDirectionX = (p.base_x - mouse.x) / distance;
+                        let forceDirectionY = (p.base_y - mouse.y) / distance;
+                        let maxDistance = 100;
+                        let force = (maxDistance - distance) / maxDistance;
+
+                        if (distance < maxDistance) {
+                            p.x -= forceDirectionX * force * p.density * 0.1;
+                            p.y -= forceDirectionY * force * p.density * 0.1;
+                        } else {
+                            if (p.x !== p.base_x) {
+                                let dx = p.x - p.base_x;
+                                p.x -= dx / 10;
+                            }
+                             if (p.y !== p.base_y) {
+                                let dy = p.y - p.base_y;
+                                p.y -= dy / 10;
+                            }
+                        }
+
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.fill();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                let mouse = { x: undefined, y: undefined };
+                canvas.addEventListener('mousemove', (event) => {
+                    const rect = canvas.getBoundingClientRect();
+                    mouse.x = event.clientX - rect.left;
+                    mouse.y = event.clientY - rect.top;
+                });
+                 canvas.addEventListener('mouseleave', () => {
+                    mouse.x = undefined;
+                    mouse.y = undefined;
+                });
+
+
+                setCanvasSize();
+                createParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    createParticles();
+                });
+            }
+
+            // CARD IMAGE FETCHER
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'shinonome-img-container': 'Shinonome the Vaylantz Priestess',
+                'nazuki-img-container': 'Nazuki the Vaylantz Ninja',
+                'beyond-pendulum-img-container': 'Beyond the Pendulum',
+                'arktos-img-container': 'Arktos XII - Chronochasm Vaylantz',
+                'mamonaka-img-container': 'Mamonaka the Vaylantz United',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

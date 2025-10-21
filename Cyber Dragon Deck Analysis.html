@@ -1,0 +1,643 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Dragon Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712; /* Very dark blue/black */
+            background-image: 
+                linear-gradient(rgba(3, 7, 18, 0.95), rgba(3, 7, 18, 0.95)),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%230ea5e9' fill-opacity='0.05'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(17, 24, 39, 0.7); /* semi-transparent dark slate */
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 1rem;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+            border: 1px solid rgba(14, 165, 233, 0.4); /* Lighter cyan border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(30, 41, 59, 0.7); /* slightly lighter semi-transparent */
+            border: 1px solid rgba(14, 165, 233, 0.3);
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: rgba(17, 24, 39, 0.8);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px #22d3ee;
+            border: 1px solid rgba(34, 211, 238, 0.3);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent {
+            color: #22d3ee; /* Electric Cyan */
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+        }
+        .arrow-color {
+            color: #22d3ee;
+        }
+        .text-blue-200 strong {
+            color: #22d3ee;
+            font-weight: 600;
+        }
+        /* --- New Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            height: 120px;
+            background-color: #0c1424;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid rgba(14, 165, 233, 0.4);
+        }
+
+        #circuit-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(12, 20, 36, 0.4) 0%, rgba(12, 20, 36, 0.8) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px #0ea5e9, 0 0 20px #0ea5e9;
+        }
+        .banner-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+        }
+        .banner-header p {
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .banner-header { height: 100px; }
+            .banner-header h1 { font-size: 2rem; }
+            .banner-header p { font-size: 0.875rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="circuit-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Cyber Dragon</h1>
+            <p class="text-lg md:text-xl text-cyan-200">A Tactical Analysis of the Mechanical Vanguard</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Cyber Dragon</strong> archetype is a high-consistency, aggressive combo deck focused on generating Level 5 Machine monsters. Its strategy revolves around rapid Xyz Summons and devastating <a href="https://yugioh.fandom.com/wiki/Cyber_Dragon_(archetype)" target="_blank" class="text-accent font-bold underline hover:text-white transition-colors">contact fusion mechanics</a> to clear boards. Renowned for its formidable One-Turn Kill (OTK) potential, the deck's primary weakness is its limited Turn 1 defensive presence, a flaw often addressed through strategic hybridization with compatible external engines.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Foundational Mechanics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">Nomenclatural Alignment</h3>
+                    <p class="text-blue-200">A core mechanic is the renaming clause on support monsters like <strong>Cyber Dragon Core</strong> and <strong>Herz</strong>. Their names become "Cyber Dragon" on the field or in the GY, allowing them to serve as material for powerful Extra Deck monsters that require the specific name.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">Contact Fusion</h3>
+                    <p class="text-blue-200">The archetype excels at "Contact Fusion," using monsters from either side of the field as Fusion Material without a spell. This allows for powerful, non-destruction removal of an opponent's key monsters, turning their board into a resource.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Core Infrastructure Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Core Infrastructure: Key Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main Deck Engine -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-cyan-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Main Deck Engine</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Cyber Dragon Core</h4>
+                            <p class="text-sm text-blue-200">The deck's most crucial 1-card starter. On Normal Summon, it searches any "Cyber" Spell/Trap, typically <strong>Cyber Emergency</strong>.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Cyber Dragon Herz</h4>
+                            <p class="text-sm text-blue-200">The primary resource recycler. When sent to the GY, it adds another "Cyber Dragon" from the Deck or GY to hand.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Galaxy Soldier</h4>
+                            <p class="text-sm text-blue-200">A vital non-archetypal extender that Special Summons itself by discarding a LIGHT monster, providing a Level 5 body for Xyz plays.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Extra Deck Arsenal -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bolt text-4xl text-cyan-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Extra Deck Arsenal</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Cyber Dragon Infinity</h4>
+                            <p class="text-sm text-blue-200">The deck's premier defensive monster. It provides an omni-negate and can absorb an opponent's attack position monster.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Chimeratech Rampage Dragon</h4>
+                            <p class="text-sm text-blue-200">The primary OTK enabler. It can attack multiple times and destroy Spell/Traps upon being summoned.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Cyber Dragon Sieger</h4>
+                            <p class="text-sm text-blue-200">A Link-2 monster that acts as a crucial damage multiplier, boosting another Machine's ATK by 2100.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: 1-Card to Infinity</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This sequence shows how a single <strong>Cyber Dragon Core</strong> establishes the deck's main defensive monster before the 6th summon, playing around Nibiru.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="core-img-container" class="card-image-container card-placeholder">Cyber Dragon Core</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a2b4c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Initiate & Search</h3>
+                        </div>
+                        <p class="text-blue-200">Normal Summon <strong>Cyber Dragon Core</strong> (1st Summon). Use its effect to search <strong>Cyber Emergency</strong>, then use that to search <strong>Cyber Dragon Herz</strong>.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div class="card-image-container flex items-center justify-center text-gray-400">
+                        <i class="fas fa-sync-alt text-6xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a2b4c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Generate Materials</h3>
+                        </div>
+                        <p class="text-blue-200">Link Summon <strong>Salamangreat Almiraj</strong> using Core (2nd Summon). Banish Core from GY to summon the original <strong>Cyber Dragon</strong> (3rd Summon). Special Summon Herz and use its effect to become Level 5.</p>
+                    </div>
+                </div>
+                 <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="nova-img-container" class="card-image-container card-placeholder">Cyber Dragon Nova</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a2b4c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Xyz Summon & Rank-Up</h3>
+                        </div>
+                        <p class="text-blue-200">Use the two Level 5 monsters to Xyz Summon <strong>Cyber Dragon Nova</strong> (4th Summon). Immediately use Nova to Xyz Summon <strong>Cyber Dragon Infinity</strong> (5th Summon). The omni-negate is now online.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Typical Endboards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Go First Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Defensive Stance (Go First)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="infinity-img-container-end" class="card-image-container card-placeholder">Cyber Dragon Infinity</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong>Cyber Dragon Infinity:</strong> Provides a crucial omni-negate to disrupt the opponent's turn.</li>
+                        <li><strong>Therion "King" Regulus:</strong> Often included to add a second monster negate, creating a more resilient board.</li>
+                    </ul>
+                </div>
+                <!-- Go Second Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Annihilation Mode (Go Second)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="rampage-img-container-end" class="card-image-container card-placeholder">Chimeratech Rampage Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong>Chimeratech Rampage Dragon:</strong> The primary goal for clearing the board and inflicting massive damage.</li>
+                        <li><strong>Cyber Dragon Sieger:</strong> On field to boost Rampage Dragon into OTK range.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Consistency:</strong> Multiple searchers and one-card starters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bomb"></i></span> <strong class="text-green-400">Board-Breaking:</strong> Contact Fusions provide unparalleled removal.</li>
+                        <li><span class="pro-icon"><i class="fas fa-tachometer-alt"></i></span> <strong class="text-green-400">OTK Potential:</strong> Can end games quickly with Rampage + Sieger.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400">Choke Points:</strong> Vulnerable to hand traps on key summons like Core.</li>
+                        <li><span class="con-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-red-400">Fragile Turn 1:</strong> A single negate from Infinity can be insufficient.</li>
+                        <li><span class="con-icon"><i class="fas fa-stream"></i></span> <strong class="text-red-400">Linearity:</strong> The core combo path is predictable and easy to disrupt.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-robot"></i></span> <strong class="text-accent">Therion "King" Regulus:</strong> Adds a second, resource-neutral monster negate.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent">Drytron Engine:</strong> A powerful hybrid that creates multi-negate boards.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Animated Banner Script ---
+            const canvas = document.getElementById('circuit-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let animationFrameId;
+                let particles = [];
+
+                const setup = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.reset();
+                    }
+
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        const angle = Math.random() * Math.PI * 2;
+                        const speed = Math.random() * 2 + 1;
+                        this.vx = Math.cos(angle) * speed;
+                        this.vy = Math.sin(angle) * speed;
+                        this.life = Math.random() * 100 + 50;
+                        this.maxLife = this.life;
+                        this.history = [];
+                        this.size = Math.random() * 2 + 1;
+                    }
+
+                    update() {
+                        this.life--;
+                        if (this.life <= 0) {
+                            this.reset();
+                        }
+
+                        this.history.push({x: this.x, y: this.y});
+                        if (this.history.length > 20) {
+                            this.history.shift();
+                        }
+
+                        this.x += this.vx;
+                        this.y += this.vy;
+
+                        if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) {
+                           this.reset();
+                        }
+                    }
+
+                    draw() {
+                        if(!this.history[0]) return;
+                        // Draw the trail
+                        ctx.beginPath();
+                        ctx.moveTo(this.history[0].x, this.history[0].y);
+                        for (let i = 1; i < this.history.length; i++) {
+                            ctx.lineTo(this.history[i].x, this.history[i].y);
+                        }
+                        const trailOpacity = (this.life / this.maxLife) * 0.5;
+                        ctx.strokeStyle = `rgba(34, 211, 238, ${trailOpacity})`;
+                        ctx.lineWidth = this.size;
+                        ctx.stroke();
+
+                        // Draw the head
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        const headOpacity = (this.life / this.maxLife) * 0.8 + 0.2;
+                        ctx.fillStyle = `rgba(165, 243, 252, ${headOpacity})`; // Lighter cyan for the head
+                        ctx.shadowColor = '#22d3ee';
+                        ctx.shadowBlur = 10;
+                        ctx.fill();
+                        ctx.shadowBlur = 0; // Reset blur for next elements
+                    }
+                }
+
+                const init = () => {
+                    particles = [];
+                    const numberOfParticles = Math.floor((canvas.width * canvas.height) / 5000);
+                    for (let i = 0; i < numberOfParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                };
+
+                const animate = () => {
+                    // Use a semi-transparent fill to create a fading effect
+                    ctx.fillStyle = 'rgba(3, 7, 18, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    particles.forEach(p => p.update());
+                    particles.forEach(p => p.draw());
+
+                    animationFrameId = requestAnimationFrame(animate);
+                };
+
+                setup();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    cancelAnimationFrame(animationFrameId);
+                    setup();
+                    init();
+                    animate();
+                });
+            }
+
+            // --- Card Image Fetch Script ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                const placeholder = container.innerHTML;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = placeholder; // Keep placeholder on error
+                }
+            }
+            
+            fetchAndDisplayCardImage('Cyber Dragon Core', 'core-img-container');
+            fetchAndDisplayCardImage('Cyber Dragon Nova', 'nova-img-container');
+            fetchAndDisplayCardImage('Cyber Dragon Infinity', 'infinity-img-container-end');
+            fetchAndDisplayCardImage('Chimeratech Rampage Dragon', 'rampage-img-container-end');
+        });
+    </script>
+
+    <!-- Banlist Status Section -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-bold text-accent mb-6 text-center">
+            <i class="fas fa-balance-scale mr-2"></i>Current Banlist Status
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Limited Cards -->
+            <div class="bg-gradient-to-br from-orange-900/30 to-orange-800/20 border border-orange-500/30 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-orange-400 mb-3 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Limited (1 copy)
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-orange-200"><strong>Called by the Grave</strong> - Protection for Core summon</li>
+                    <li class="text-orange-200"><strong>Triple Tactics Talent</strong> - Response to hand traps</li>
+                </ul>
+            </div>
+
+            <!-- Semi-Limited Cards -->
+            <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-800/20 border border-yellow-500/30 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-yellow-400 mb-3 flex items-center">
+                    <i class="fas fa-pause mr-2"></i>Semi-Limited (2 copies)
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-yellow-200">No directly relevant cards</li>
+                </ul>
+            </div>
+
+            <!-- Forbidden Cards -->
+            <div class="bg-gradient-to-br from-red-900/30 to-red-800/20 border border-red-500/30 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-red-400 mb-3 flex items-center">
+                    <i class="fas fa-ban mr-2"></i>Forbidden
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="text-red-200">No core archetype cards banned</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-6 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 border border-blue-500/30 rounded-lg p-4">
+            <h3 class="text-lg font-bold text-blue-400 mb-3 flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>Banlist Impact Analysis
+            </h3>
+            <div class="text-sm text-blue-200 space-y-2">
+                <p><strong>Minimal Impact:</strong> The Cyber Dragon archetype operates with complete freedom from banlist restrictions, maintaining full access to all core cards.</p>
+                <p><strong>Generic Limitations:</strong> Called by the Grave being Limited slightly reduces protection for the crucial Cyber Dragon Core normal summon, but multiple copies of Machine Duplication provide redundancy.</p>
+                <p><strong>Competitive Viability:</strong> The deck's OTK potential and consistency remain fully intact, making it a reliable choice for aggressive strategies.</p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
+
+
+

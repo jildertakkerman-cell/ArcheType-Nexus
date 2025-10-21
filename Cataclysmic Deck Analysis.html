@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cataclysmic Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0c10;
+            color: #e0e7ff; 
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%231f2937' fill-opacity='0.2'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(17, 24, 39, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(55, 65, 81, 0.5);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1f2937;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #4b5563;
+        }
+        .pro-icon { color: #4ade80; }
+        .con-icon { color: #f87171; }
+        .text-fire { color: #fb923c; }
+        .text-wind { color: #67e8f9; }
+        .text-earth { color: #a3e635; }
+        .text-water { color: #60a5fa; }
+        
+        .border-fire { border-color: #fb923c; }
+        .shadow-fire { box-shadow: 0 0 15px rgba(251, 146, 60, 0.5); }
+        .border-wind { border-color: #67e8f9; }
+        .shadow-wind { box-shadow: 0 0 15px rgba(103, 232, 249, 0.5); }
+        .border-earth { border-color: #a3e635; }
+        .shadow-earth { box-shadow: 0 0 15px rgba(163, 230, 53, 0.5); }
+        .border-water { border-color: #60a5fa; }
+        .shadow-water { box-shadow: 0 0 15px rgba(96, 165, 250, 0.5); }
+        
+        .heading-underline {
+            border-bottom: 2px solid #6b7280;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #c4b5fd;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c4b5fd;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #c4b5fd;
+        }
+
+        .banner-header {
+            position: relative;
+            min-height: 200px;
+            background-color: #111827;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #374151;
+        }
+        #elemental-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            opacity: 0.7;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(17, 24, 39, 0.2) 0%, rgba(17, 24, 39, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 20px rgba(0,0,0, 1);
+        }
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+     <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home text-2xl"></i>
+    </a>
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="elemental-canvas"></canvas>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2">CATACLYSMIC</h1>
+            <p class="text-lg md:text-xl text-slate-300">An Expert Analysis of the Attribute-Based Reactionaries</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-slate-300">
+                    The "Cataclysmic" series represents a unique collection of monsters in the Yu-Gi-Oh! TCG. While not a true archetype with dedicated support, they are a set of four powerful, high-Level monsters linked by a common theme and a reactive summoning mechanic. Their strategic identity is not to be a central engine, but rather potent, generic "tech" cards. They act as powerful punishers, turning an opponent's destructive actions into a sudden and often decisive shift in momentum by providing a strong body and a powerful follow-up effect. Check out the full <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Cataclysmic&stype=1" target="_blank" rel="noopener noreferrer" class="lore-link">list of cards here</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Shared Characteristics -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-3xl font-bold text-white mb-8 text-center heading-underline">Shared Characteristics & Core Identity</h2>
+            <div class="card p-6">
+                <p class="text-slate-300 mb-4">All four members are Level 8 Fairy-Type monsters with 2600 ATK and 200 DEF. This uniformity provides easy access to powerful Rank 8 Xyz Monsters. Their defining shared mechanic is a reactive hand-trap effect:</p>
+                <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700">
+                    <p class="font-mono text-center text-slate-300 text-lg">"If a face-up [Attribute] monster(s) you control is destroyed by battle or an opponent's card effect: You can Special Summon this card from your hand..."</p>
+                </div>
+                <p class="text-slate-300 mt-4">This trigger establishes them as defensive, recovery-focused tools. They wait for an opponent to commit to destruction, then capitalize on that moment to create resilience. Upon summon, each provides a formidable 2600 ATK body and a unique, powerful secondary effect.</p>
+            </div>
+        </section>
+
+        <!-- The Cataclysmic Monsters Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-3xl font-bold text-white mb-8 text-center heading-underline">The Four Harbingers of Calamity</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Sunburner -->
+                <div class="card p-6 flex flex-col items-center border-2 border-fire shadow-fire">
+                    <h3 class="text-2xl font-bold text-fire mb-4 text-center">Cataclysmic Scorching Sunburner</h3>
+                    <div id="sunburner-img-container" class="card-image-container mb-4 card-placeholder"></div>
+                    <p class="text-center text-slate-300">The <b class="text-fire">FIRE</b> member inflicts burn damage equal to half the ATK of one of the destroyed FIRE monsters. It's a game-finisher, adding offensive pressure to archetypes like <b class="text-fire">Fire Kings</b> that thrive on self-destruction.</p>
+                </div>
+                <!-- Coldo -->
+                <div class="card p-6 flex flex-col items-center border-2 border-wind shadow-wind">
+                    <h3 class="text-2xl font-bold text-wind mb-4 text-center">Cataclysmic Cryonic Coldo</h3>
+                    <div id="coldo-img-container" class="card-image-container mb-4 card-placeholder"></div>
+                    <p class="text-center text-slate-300">The <b class="text-wind">WIND</b> member spins a Spell/Trap on the field to the top of the Deck. This non-destructive removal is excellent for disrupting backrow and denying the opponent's next draw, synergistic with archetypes like <b class="text-wind">Dragunity</b> or <b class="text-wind">Mist Valley</b>.</p>
+                </div>
+                <!-- Calcifida -->
+                <div class="card p-6 flex flex-col items-center border-2 border-earth shadow-earth">
+                    <h3 class="text-2xl font-bold text-earth mb-4 text-center">Cataclysmic Crusted Calcifida</h3>
+                    <div id="calcifida-img-container" class="card-image-container mb-4 card-placeholder"></div>
+                    <p class="text-center text-slate-300">The <b class="text-earth">EARTH</b> member acts as a <b class="text-earth">Foolish Burial</b>, sending any monster from Deck to GY. This is arguably the most powerful effect, enabling graveyard setup for decks like <b class="text-earth">Magnet Warriors</b> or <b class="text-earth">Triamids</b>.</p>
+                </div>
+                <!-- Chilblainia -->
+                <div class="card p-6 flex flex-col items-center border-2 border-water shadow-water">
+                    <h3 class="text-2xl font-bold text-water mb-4 text-center">Cataclysmic Circumpolar Chilblainia</h3>
+                    <div id="chilblainia-img-container" class="card-image-container mb-4 card-placeholder"></div>
+                    <p class="text-center text-slate-300">The <b class="text-water">WATER</b> member provides hand control by sending a random card from the opponent's hand to the GY. This punishes board wipes against swarm decks like <b class="text-water">Mermail/Atlantean</b> or <b class="text-water">Paleozoic Frog</b>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">The End Result: Rank 8 Powerhouses</h2>
+             <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">Because the Cataclysmic monsters are all Level 8, they can easily be used to Xyz Summon powerful Rank 8 monsters. If you can get another Level 8 on the field, their reactive nature turns a board break into a formidable new threat.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mx-auto max-w-5xl">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Number 38: Hope Harbinger Dragon Titanic Galaxy</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="hope-harbinger-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <p class="text-slate-300 text-center">A go-to Rank 8 for powerful Spell negation and attack redirection, protecting your board from common threats.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Dingirsu, the Orcust of the Evening Star</h3>
+                    <div class="flex justify-center mb-4">
+                         <div id="dingirsu-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <p class="text-slate-300 text-center">Offers versatile, non-targeting removal by sending a card your opponent controls to the GY, and provides protection for your own cards.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-8">
+                    <h3 class="text-2xl font-bold text-green-400 mb-4 flex items-center"><i class="fas fa-thumbs-up mr-3"></i>Strengths</h3>
+                    <ul class="list-disc list-inside space-y-3 text-slate-300">
+                        <li><strong class="text-green-300">Resilience:</strong> Provides excellent recovery against board wipes, turning disadvantage into advantage.</li>
+                        <li><strong class="text-green-300">Surprise Factor:</strong> As hand traps, they can catch opponents off guard and disrupt their battle plans.</li>
+                        <li><strong class="text-green-300">Generic Utility:</strong> Can be slotted into any deck that focuses on a single attribute, enhancing rogue strategies.</li>
+                         <li><strong class="text-green-300">Rank 8 Access:</strong> Easily enables some of the most powerful Xyz monsters in the game.</li>
+                    </ul>
+                </div>
+                <div class="card p-8">
+                    <h3 class="text-2xl font-bold text-red-400 mb-4 flex items-center"><i class="fas fa-thumbs-down mr-3"></i>Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-3 text-slate-300">
+                        <li><strong class="text-red-300">Reactive Nature:</strong> They are dead cards in your hand until one of your monsters is destroyed.</li>
+                        <li><strong class="text-red-300">Not Searchable:</strong> Lacking an archetype name, they cannot be easily searched, making them inconsistent.</li>
+                        <li><strong class="text-red-300">Vulnerable to Banishment:</strong> Effects that banish monsters instead of destroying them completely bypass their summoning condition.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="my-10 md:my-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The Cataclysmic series itself has no members on the Forbidden & Limited list, allowing them to be played at full power.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card p-4 bg-gray-800/50 border-gray-600">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Series Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Cataclysmic Scorching Sunburner (3 copies)</li>
+                            <li>Cataclysmic Cryonic Coldo (3 copies)</li>
+                            <li>Cataclysmic Crusted Calcifida (3 copies)</li>
+                            <li>Cataclysmic Circumpolar Chilblainia (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div class="card p-4 bg-gray-800/50 border-gray-600">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Notable External Restrictions</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                             <li><strong class="text-yellow-300">Limited Staples:</strong> Key generic spells that might support these strategies often find themselves on the limited list.</li>
+                            <li><strong class="text-red-400">Forbidden Bosses:</strong> Some powerful generic boss monsters that could be summoned in these decks (e.g., Baronne de Fleur, Toadally Awesome) are forbidden, limiting potential end boards.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The Cataclysmic monsters are fully available as flexible tech choices. Their power is not derived from being part of an overwhelming engine, but from their reactive utility. Their unrestricted status ensures they remain a creative deck-building option for attribute-focused strategies without warping the meta themselves.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('elemental-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const colors = ['#f97316', '#67e8f9', '#a3e635', '#60a5fa'];
+                let mouse = { x: null, y: null, radius: 100 };
+
+                window.addEventListener('mousemove', event => {
+                    mouse.x = event.x;
+                    mouse.y = event.y;
+                });
+                window.addEventListener('mouseout', () => {
+                    mouse.x = null;
+                    mouse.y = null;
+                });
+
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.baseX = this.x;
+                        this.baseY = this.y;
+                        this.density = (Math.random() * 30) + 1;
+                        this.radius = Math.random() * 2 + 1;
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                    }
+                    update() {
+                       let dx = mouse.x - this.x;
+                       let dy = mouse.y - this.y;
+                       let distance = Math.sqrt(dx*dx + dy*dy);
+                       let forceDirectionX = dx / distance;
+                       let forceDirectionY = dy / distance;
+                       let maxDistance = mouse.radius;
+                       let force = (maxDistance - distance) / maxDistance;
+                       let directionX = forceDirectionX * force * this.density;
+                       let directionY = forceDirectionY * force * this.density;
+
+                       if(distance < mouse.radius){
+                           this.x -= directionX;
+                           this.y -= directionY;
+                       } else {
+                           if(this.x !== this.baseX){
+                               let dx = this.x - this.baseX;
+                               this.x -= dx/10;
+                           }
+                            if(this.y !== this.baseY){
+                               let dy = this.y - this.baseY;
+                               this.y -= dy/10;
+                           }
+                       }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    const numParticles = (canvas.width * canvas.height) / 5000;
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                // Clear the placeholder text before fetching
+                container.textContent = '';
+                container.classList.remove('card-placeholder');
+                
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.appendChild(img);
+                    } else { throw new Error("Image not found."); }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.classList.add('card-placeholder');
+                    container.textContent = cardName;
+                }
+            }
+
+            const cardsToLoad = {
+                'sunburner-img-container': 'Cataclysmic Scorching Sunburner',
+                'coldo-img-container': 'Cataclysmic Cryonic Coldo',
+                'calcifida-img-container': 'Cataclysmic Crusted Calcifida',
+                'chilblainia-img-container': 'Cataclysmic Circumpolar Chilblainia',
+                'hope-harbinger-img-container': 'Number 38: Hope Harbinger Dragon Titanic Galaxy',
+                'dingirsu-img-container': 'Dingirsu, the Orcust of the Evening Star'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

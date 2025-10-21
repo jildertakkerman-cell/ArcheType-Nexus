@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koala Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a2a22; /* Dark Eucalyptus Green */
+            color: #e8f5e9; /* Light, soft green */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2e4638; /* Muted Forest Green */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a6b55; /* Lighter Green Border */
+        }
+        .combo-step-card {
+            background-color: #3c5a48;
+            border: 1px solid #5d8a6f;
+        }
+        .pro-con-card {
+            background-color: #3c5a48;
+            border: 1px solid #5d8a6f;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #2e4638;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2e4638;
+        }
+        .pro-icon { color: #81c784; } /* Lighter Green */
+        .con-icon { color: #e57373; } /* Soft Red */
+        .neutral-icon { color: #90a4ae; } /* Blue Grey */
+        .text-accent { color: #a5d6a7; } /* Pale Green */
+        .arrow-color { color: #81c784; }
+        .heading-underline {
+            border-bottom: 2px solid #a5d6a7;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #a5d6a7;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a5d6a7;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a2a22;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #leaf-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(26, 42, 34, 0.8), rgba(26, 42, 34, 0.4));
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="leaf-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Koala</h1>
+            <p class="text-lg md:text-xl text-green-200">Eucalyptus & Annihilation: A Beast Deck Deep Dive</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-green-100">
+                    The "Koala" strategy is a journey back to an earlier era of deck-building, where theme was valued over rigid archetypal mechanics. "Koala" is not a formal archetype with internal support; rather, it's a thematic collection of Beast-Type monsters. A functional Koala deck is an act of creative construction, relying on the vast library of generic Beast support to function. The primary goal is to overwhelm the opponent with a swarm of monsters to Fusion Summon its iconic boss, <strong class="text-accent font-bold">Master of Oz</strong>, or build a powerful board of generic Extra Deck monsters for a swift OTK. It's a classic "glass cannon" strategy—immensely powerful when its combos resolve, but fragile and lacking modern defensive tools.
+                     This analysis focuses on building a functional and explosive deck around these <a href="https://yugipedia.com/wiki/Koala" target="_blank" class="lore-link">classic marsupial monsters</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Core Marsupials & The True Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Koala Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-paw text-4xl text-green-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Core Marsupials</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Big Koala & Des Kangaroo</h4>
+                            <p class="text-sm text-green-100">The essential, named materials for the deck's ultimate boss monster, <strong class="text-accent font-bold">Master of Oz</strong>. Their primary purpose is to be used for its Fusion Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Sea Koala & Tree Otter</h4>
+                            <p class="text-sm text-green-100">A pair of Level 2 Beasts that serve as materials for <strong class="text-accent font-bold">Koalo-Koala</strong>. More importantly, they are prime targets for the deck's best starters, enabling explosive Xyz and Link plays.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Des Koala</h4>
+                            <p class="text-sm text-green-100">A Level 3 Flip monster whose main utility comes from being a target for <strong class="text-accent font-bold">Rescue Cat</strong>, providing another name for Extra Deck summons.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Generic Beast Support -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-green-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The True Engine: Generic Support</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Rescue Cat</h4>
+                            <p class="text-sm text-green-100">The single most important card. A one-card starter that summons two Level 3 or lower Beasts from the deck, setting up immediate Link or Xyz plays.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Obedience Schooled <span class="text-yellow-400 font-bold">(Limited)</span></h4>
+                             <p class="text-sm text-green-100">The deck's most powerful spell. Summons three Level 2 or lower Beasts from the deck, leading to an instant +2 in card advantage and a formidable board. <span class="text-yellow-400 font-bold">Note: This card is Limited to 1 copy per deck in the current TCG format.</span></p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Ayers Rock Sunrise</h4>
+                             <p class="text-sm text-green-100">The primary revival spell. It brings back a Beast from the GY and debuffs all opposing monsters, paving the way for an OTK.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Obedience Schooled Swarm</h2>
+            <p class="text-green-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough shows how one spell, <strong class="text-accent font-bold">Obedience Schooled</strong> <span class="text-yellow-400 font-bold">(Limited)</span>, can generate a powerful and resilient board state from an empty field.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="obedience-img-container" class="card-image-container flex-shrink-0 card-placeholder">Obedience Schooled</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e4638] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate Power Spell</h3>
+                            </div>
+                            <p class="text-green-100">With no monsters on your field, activate <strong class="text-accent font-bold">Obedience Schooled</strong> <span class="text-yellow-400 font-bold">(Limited)</span> to Special Summon three Level 2 or lower Beast monsters with different names from your deck (e.g., <strong class="text-accent font-bold">Sea Koala, Tree Otter, Kalantosa</strong>).</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sandayu-img-container" class="card-image-container flex-shrink-0 card-placeholder">Number 64: Ronin Raccoon Sandayu</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e4638] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Xyz Summon</h3>
+                            </div>
+                            <p class="text-green-100">Use two of the summoned Level 2 monsters to Xyz Summon <strong class="text-accent font-bold">Number 64: Ronin Raccoon Sandayu</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="token-img-container" class="card-image-container flex-shrink-0 card-placeholder">Kagemusha Raccoon Token</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e4638] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Generate a Powerful Token</h3>
+                            </div>
+                            <p class="text-green-100">Activate <strong class="text-accent font-bold">Sandayu's</strong> effect by detaching a material. This summons a "Kagemusha Raccoon Token" whose ATK becomes equal to the highest ATK monster on the field, turning your opponent's strength against them.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final Endboard: A Tale of Two Bosses</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Master of Oz -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Classic Behemoth: Master of Oz</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="master-of-oz-img-container" class="card-image-container card-placeholder">Master of Oz</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-green-100">
+                        <li><strong class="text-accent font-bold">Colossal Power:</strong> Arrives on the field with a massive 4200 ATK, one of the highest base stats for a Fusion monster in the game.</li>
+                        <li><strong class="text-accent font-bold">OTK Enabler:</strong> Can be boosted by cards like <strong class="text-accent font-bold">Tree Otter</strong> to easily surpass the 8000 LP threshold in a single attack.</li>
+                    </ul>
+                </div>
+                <!-- Sandayu -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Modern Powerhouse: Ronin Raccoon Sandayu</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="sandayu-endboard-img-container" class="card-image-container card-placeholder">Number 64: Ronin Raccoon Sandayu</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-green-100">
+                        <li><strong class="text-accent font-bold">Problem Solver:</strong> Creates a token that copies the ATK of the strongest monster on the field, providing an out to massive enemy threats.</li>
+                        <li><strong class="text-accent font-bold">Built-in Protection:</strong> Cannot be destroyed by battle or card effects as long as another Beast-Type monster is on the field, giving the deck rare resilience.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-300 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-green-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300 font-bold">Explosive Potential:</strong> Can generate overwhelming board presence and OTK threats from a single starter card.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300 font-bold">High OTK Capability:</strong> Multiple avenues to inflict over 8000 damage in a single Battle Phase.</li>
+                        <li><span class="pro-icon"><i class="fas fa-project-diagram"></i></span> <strong class="text-green-300 font-bold">Strong Typing Synergy:</strong> Fully maximizes the power of generic Beast support cards, making its engine highly efficient.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-300 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-green-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300 font-bold">Extreme Fragility:</strong> A single hand trap on a key starter like <strong class="text-accent font-bold">Rescue Cat</strong> or <strong class="text-accent font-bold">Obedience Schooled</strong> <span class="text-yellow-400 font-bold">(Limited)</span> can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300 font-bold">Lack of Interaction:</strong> Produces almost no disruption on the opponent's turn, making its boards passive and easy to dismantle if the OTK fails.</li>
+                         <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300 font-bold">Reliance on Normal Summon:</strong> Many combos begin with a Normal Summon, making it vulnerable to common summon/effect negation.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-green-100 mb-4 text-center">
+                    <strong class="text-accent font-bold">Critical Notice:</strong> While most Beast-Type monsters are unrestricted, the deck's most important engine card faces significant limitations:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-green-100">
+                            <li>All Koala monsters (3 copies each)</li>
+                            <li>Rescue Cat (3 copies)</li>
+                            <li>Ayers Rock Sunrise (3 copies)</li>
+                            <li>Most Beast-Type support cards</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Critical Restriction</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-green-100">
+                            <li><strong>Obedience Schooled:</strong> <span class="text-yellow-400 font-bold">Limited (1 copy)</span></li>
+                            <li>This severely impacts deck consistency</li>
+                            <li>Forces reliance on alternative starters</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-orange-900 bg-opacity-30 rounded border-l-4 border-orange-400">
+                    <p class="text-sm text-green-100"><strong>Competitive Impact:</strong> The limitation of Obedience Schooled to 1 copy severely hurts the deck's viability, as it was the most reliable and powerful starter. Modern Koala builds must rely more heavily on Rescue Cat and Beast support, making them less consistent but still capable of explosive turns.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- EUCALYPTUS LEAF FALLING ANIMATION ---
+            const canvas = document.getElementById('leaf-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let leaves = [];
+                const leafColors = ['#607d8b', '#78909c', '#546e7a']; // Shades of eucalyptus green/grey
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Leaf {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height - canvas.height;
+                        this.speed = Math.random() * 2 + 1;
+                        this.size = Math.random() * 8 + 4;
+                        this.color = leafColors[Math.floor(Math.random() * leafColors.length)];
+                        this.rotation = Math.random() * 360;
+                        this.spin = (Math.random() - 0.5) * 0.1;
+                    }
+
+                    update() {
+                        this.y += this.speed;
+                        this.x += Math.sin(this.y * 0.05) * 0.5; // Gentle sway
+                        this.rotation += this.spin;
+                        if (this.y > canvas.height) {
+                            this.y = -this.size;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.rotation);
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        // Simple oval leaf shape
+                        ctx.ellipse(0, 0, this.size / 2, this.size, 0, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+
+                function init() {
+                    leaves = [];
+                    const leafCount = Math.floor((canvas.width * canvas.height) / 10000);
+                    for (let i = 0; i < leafCount; i++) {
+                        leaves.push(new Leaf());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    leaves.forEach(leaf => {
+                        leaf.update();
+                        leaf.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+
+            // --- SCRIPT FOR CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'obedience-img-container': 'Obedience Schooled',
+                'sandayu-img-container': 'Number 64: Ronin Raccoon Sandayu',
+                'master-of-oz-img-container': 'Master of Oz',
+                'sandayu-endboard-img-container': 'Number 64: Ronin Raccoon Sandayu'
+            };
+            
+            // Special case for token placeholder
+            const tokenContainer = document.getElementById('token-img-container');
+            if(tokenContainer){
+                const imageUrl = 'https://ms.yugipedia.com//d/d9/KagemushaRaccoonToken-MADU-EN-VG-artwork.png';
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = 'Kagemusha Raccoon Token';
+                img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                tokenContainer.innerHTML = '';
+                tokenContainer.appendChild(img);
+                img.onerror = () => {
+                    tokenContainer.innerHTML = `<div class="card-placeholder animate-fadeIn">Kagemusha Raccoon Token</div>`;
+                };
+            }
+
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+

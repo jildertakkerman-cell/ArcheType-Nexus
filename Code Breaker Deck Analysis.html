@@ -1,0 +1,622 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codebreaker Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0F0A; /* Dark green-black */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #101a10; /* Darker green */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 255, 127, 0.1);
+            border: 1px solid #00ff80;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #1a2a1a;
+            border: 1px solid #00cc66;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #101a10;
+            color: #00ff80;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #00ff80;
+            cursor: pointer;
+        }
+        .text-accent {
+            color: #00ff80; /* Bright green */
+        }
+        .lore-link {
+            color: #00ffff; /* Cyan for contrast */
+            text-decoration: underline;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        .lore-link:hover {
+            color: #ffffff;
+        }
+
+        /* --- New Codebreaker Animated Banner Styles --- */
+        .banner {
+            position: relative;
+            height: 120px;
+            background: #0A0F0A;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #00ff80;
+            box-shadow: 0 0 20px rgba(0, 255, 127, 0.2);
+        }
+        .banner-content {
+            z-index: 2;
+        }
+        .banner-title {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 2.5rem;
+            color: #00ff80;
+            text-shadow: 0 0 10px #00ff80;
+            position: relative;
+        }
+        .banner-title::before, .banner-title::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .banner-title::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00ff;
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+        .banner-title::after {
+            left: -2px;
+            text-shadow: -2px 0 #00ffff, 2px 2px #ff00ff;
+            animation: glitch-anim-2 2s infinite linear alternate-reverse;
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #c7d2fe;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(15% 0 86% 0); }
+            20% { clip-path: inset(48% 0 24% 0); }
+            40% { clip-path: inset(6% 0 15% 0); }
+            60% { clip-path: inset(89% 0 5% 0); }
+            80% { clip-path: inset(45% 0 51% 0); }
+            100% { clip-path: inset(12% 0 63% 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(79% 0 1% 0); }
+            20% { clip-path: inset(21% 0 35% 0); }
+            40% { clip-path: inset(93% 0 2% 0); }
+            60% { clip-path: inset(5% 0 57% 0); }
+            80% { clip-path: inset(62% 0 22% 0); }
+            100% { clip-path: inset(29% 0 70% 0); }
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        /* --- POPUP STYLES --- */
+        #card-popup {
+            background-color: #101a10;
+            color: #dbeafe;
+            border-color: #00ff80;
+            font-family: 'Inter', sans-serif;
+        }
+        #card-popup h3 {
+            color: #00ff80;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        #card-popup p {
+            margin: 0;
+        }
+        #card-popup-stats {
+            color: #4ade80;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="banner-content">
+                    <h1 class="banner-title" data-text="CODEBREAKER">CODEBREAKER</h1>
+                    <p class="banner-subtitle">A Deep Dive Analysis of the Link Engine</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Codebreaker</strong> archetype is not a self-contained deck, but a compact and highly volatile engine optimized for aggressive Link Summoning. Its identity is defined by its unique ability to <a href="https://yugioh.fandom.com/wiki/Codebreaker" target="_blank" class="lore-link">break the code</a> of resource management, converting two generic Effect Monsters into a massive influx of Link Materials. This unparalleled generation capability makes it a crucial technical component for combo decks that seek to establish complex Extra Link formations or turbo out high-Link Rating boss monsters.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Components Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Engine's Core Logic</h2>
+             <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The engine operates on the principle of the "co-link," a state where two Link Monsters point to each other. Understanding this mechanical necessity is paramount to executing the combo successfully.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Codebreaker Virus Swordsman</h3>
+                    <p class="text-blue-200 mb-2"><strong>Link-2 / DARK Warrior</strong></p>
+                    <p class="text-blue-200">The activation point. When co-linked, it Special Summons its partner, Zero Day, from the Deck, initiating the resource loop.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Codebreaker Virus Berserker</h3>
+                    <p class="text-blue-200 mb-2"><strong>Link-3 / DARK Warrior</strong></p>
+                    <p class="text-blue-200">The swarm mechanism. When co-linked, it revives both Swordsman and Zero Day, flooding the field with materials.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Codebreaker Zero Day</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 4 / DARK Warrior</strong></p>
+                    <p class="text-blue-200">The material anchor. A mandatory "brick" that serves as the essential search target and flexible Link Material.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Link-Climb Sequence</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the fundamental 2-monster combo that converts minimal investment into massive field presence.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="swordsman-img-container" class="card-image-container flex-shrink-0 card-placeholder">Codebreaker Virus Swordsman</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#101a10] text-accent border border-accent rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate Co-Link</h3>
+                            </div>
+                            <p class="text-blue-200">Using two Effect Monsters, establish a board where you can summon <strong class="text-accent font-bold">Codebreaker Virus Swordsman</strong> so it is co-linked. This triggers its effect, Special Summoning <strong class="text-accent font-bold">Codebreaker Zero Day</strong> from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-arrow-down text-accent text-3xl animate-fadeIn"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="berserker-img-container" class="card-image-container flex-shrink-0 card-placeholder">Codebreaker Virus Berserker</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#101a10] text-accent border border-accent rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon Berserker</h3>
+                            </div>
+                            <p class="text-blue-200">Use <strong class="text-accent font-bold">Swordsman</strong> and <strong class="text-accent font-bold">Zero Day</strong> to Link Summon <strong class="text-accent font-bold">Codebreaker Virus Berserker</strong>, again ensuring it is co-linked. This is the pivotal step.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-arrow-down text-accent text-3xl animate-fadeIn"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                         <div id="field-img-container" class="card-image-container flex-shrink-0 card-placeholder">[Resulting Field]</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#101a10] text-accent border border-accent rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Material Swarm</h3>
+                            </div>
+                            <p class="text-blue-200"><strong class="text-accent font-bold">Berserker's</strong> effect activates, reviving both <strong class="text-accent font-bold">Swordsman</strong> and <strong class="text-accent font-bold">Zero Day</strong> from the GY. You now control three monsters totaling 5+ Link Rating, ready for conversion.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">End Board Potential</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Firewall Dragon Darkfluid Turbo</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="darkfluid-img-container" class="card-image-container card-placeholder">Firewall Dragon Darkfluid</div>
+                    </div>
+                    <p class="text-blue-200">The materials generated by the Codebreaker engine are perfectly suited to summon <strong class="text-accent font-bold">Firewall Dragon Darkfluid</strong>. By integrating other Cyberse extenders to fill the GY with various Extra Deck monster types, Darkfluid can be summoned with up to four monster negates.</p>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">U-Link / Extra Link Lockdown</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="iblee-img-container" class="card-image-container card-placeholder">Knightmare Corruptor Iblee</div>
+                    </div>
+                    <p class="text-blue-200">A higher-ceiling strategy involves using the material surplus to establish an Extra Link. The final piece is summoning <strong class="text-accent font-bold">Knightmare Corruptor Iblee</strong> to the opponent's field, locking them out of Special Summons other than Link Monsters into zones you already control.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="text-green-400"><i class="fas fa-check-circle mr-2"></i></span><strong class="font-bold">High Ceiling:</strong> Unmatched potential for Link Material generation from a small investment.</li>
+                        <li><span class="text-green-400"><i class="fas fa-cogs mr-2"></i></span><strong class="font-bold">Generic Engine:</strong> Can be integrated into any deck capable of putting two Effect Monsters on the field.</li>
+                         <li><span class="text-green-400"><i class="fas fa-rocket mr-2"></i></span><strong class="font-bold">Explosive:</strong> Enables powerful end boards that can lock down opponents completely.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="text-red-400"><i class="fas fa-times-circle mr-2"></i></span><strong class="font-bold">Vulnerable to Hand Traps:</strong> Very susceptible to cards like Nibiru, Droll & Lock Bird, and Ash Blossom.</li>
+                        <li><span class="text-red-400"><i class="fas fa-map-marker-alt mr-2"></i></span><strong class="font-bold">Positional Dependence:</strong> Requires precise co-linking, making it prone to misplays under pressure.</li>
+                        <li><span class="text-red-400"><i class="fas fa-exclamation-triangle mr-2"></i></span><strong class="font-bold">Brick Risk:</strong> Drawing the mandatory main deck monster, Zero Day, can lead to suboptimal hands.</li>
+                    </ul>
+                </div>
+                <!-- Synergies & Tech -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="text-accent"><i class="fas fa-project-diagram mr-2"></i></span><strong class="font-bold">Code Talkers:</strong> A natural fit, providing materials for high-Link Code Talker monsters.</li>
+                        <li><span class="text-accent"><i class="fas fa-calculator mr-2"></i></span><strong class="font-bold">Mathmech:</strong> Provides a compact and consistent starter to generate the initial monsters for the engine.</li>
+                        <li><span class="text-accent"><i class="fas fa-link mr-2"></i></span><strong class="font-bold">Generic Cyberse:</strong> Supported by powerful searchers like Cynet Mining and extenders like Parallel eXceed.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            function createAndAppendPlaceholder(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder animate-fadeIn';
+                placeholder.textContent = cardName;
+                container.appendChild(placeholder);
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        throw new Error(`API returned status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        console.warn(`Image not found for "${cardName}". Using placeholder.`);
+                        createAndAppendPlaceholder(cardName, containerId);
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    createAndAppendPlaceholder(cardName, containerId);
+                }
+            }
+            
+            // --- EXISTING SCRIPT FOR CARD IMAGES ---
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let activePopup = null;
+            let lastShown = 0;
+            let currentCard = null;
+
+            async function fetchAndProcessCardData(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardName);
+                });
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    if (cardDataCache[cardName]) {
+                        displayCardImage(cardDataCache[cardName], container);
+                        return;
+                    }
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        displayCardImage(cardInfo, container);
+                    } else {
+                        throw new Error("Card data not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-auto rounded-lg shadow-md';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder">${cardInfo.name}</div>`;
+                }
+            }
+            
+            function showPopup(event, cardName) {
+                if (currentCard === cardName) {
+                    hidePopup();
+                    return;
+                }
+                hidePopup(); // Ensure any existing popup is hidden first
+                if (!popup) return;
+                const cardInfo = cardDataCache[cardName];
+                if (!cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if(atkDef.length > 0) {
+                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                }
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <div>
+                        <h3>${cardInfo.name}</h3>
+                        <p class="text-xs text-gray-300">${cardType}</p>
+                        <div class="w-full h-px bg-gray-600 my-2"></div>
+                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                        ${stats}
+                    </div>
+                `;
+                
+                movePopup(event);
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                activePopup = popup;
+                lastShown = Date.now();
+                currentCard = cardName;
+            }
+
+            function hidePopup() {
+                if (Date.now() - lastShown < 100) return; // Ignore hide calls immediately after showing
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => { 
+                        if (activePopup) activePopup.style.display = 'none'; 
+                    }, 200);
+                    activePopup = null;
+                    currentCard = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const popupWidth = popup.offsetWidth;
+                const popupHeight = popup.offsetHeight;
+                const cushion = 20;
+
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+
+                if (x + popupWidth > window.innerWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                }
+                if (y + popupHeight > window.innerHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                }
+
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            // Global click listener to close the popup
+            document.addEventListener('click', hidePopup);
+
+            fetchAndProcessCardData('Codebreaker Virus Swordsman', 'swordsman-img-container');
+            fetchAndProcessCardData('Codebreaker Virus Berserker', 'berserker-img-container');
+            fetchAndProcessCardData('Firewall Dragon Darkfluid', 'darkfluid-img-container');
+            fetchAndProcessCardData('Knightmare Corruptor Iblee', 'iblee-img-container');
+            
+            // Create a placeholder for the concept of the field state, as it's not a single card
+            createAndAppendPlaceholder('Berserker (L-3) + Swordsman (L-2) + Zero Day (L-4)', 'field-img-container');
+        });
+    </script>
+    <div id="card-popup" class="fixed z-50 bg-gray-800 text-white p-4 rounded-lg shadow-lg border-2 border-[#00ff80] max-w-xs max-h-96 overflow-y-auto pointer-events-none opacity-0 transition-opacity duration-200"></div>
+</body>
+</html>
+
+

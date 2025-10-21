@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tindangle Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep cosmic purple */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(26, 22, 51, 0.7); /* Darker purple/blue with transparency */
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            border: 1px solid #3d317a; 
+            backdrop-filter: blur(8px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(30, 26, 60, 0.8);
+            border: 1px solid #5a4b9a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2457;
+            color: #9385e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 15px #1a1633;
+            border: 1px dashed #5a4b9a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #2dd4bf; } /* Eldritch Cyan/Teal */
+        .arrow-color { color: #2dd4bf; }
+        .heading-underline {
+            border-bottom: 2px solid #2dd4bf;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #2dd4bf;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #2dd4bf;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #2dd4bf;
+        }
+
+        /* --- NEW TINDANGLE ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c0a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3d317a;
+        }
+
+        #angle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 10, 26, 0.4) 0%, rgba(12, 10, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(45, 212, 191, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Creepster', cursive;
+             letter-spacing: 0.1em;
+             font-size: 3.5rem;
+        }
+        
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="angle-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Tindangle</h1>
+            <p class="text-lg md:text-xl text-teal-200">The Geometry of Terror</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Tindangle</strong> archetype is a unique collection of DARK Fiend monsters defined by their FLIP effects and deep reliance on the Graveyard as a resource engine. Inspired by the eldritch "Hounds of Tindalos," their strategy is a patient grind game. The goal is to survive the early game by loading the Graveyard—a metaphorical "angle of time"—with key monsters. From this safe dimension, they <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=tindangle&stype=1" target="_blank" class="lore-link">emerge en masse</a>, typically on Turn 3, to unleash a decisive counter-attack and secure victory.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Tindangle Ensemble Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Tindangle Ensemble</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-ghost text-4xl text-teal-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Core Monsters & Enablers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tindangle Jhrelth</h4>
+                            <p class="text-sm text-indigo-200">The premier one-card starter. Discards a card to send any "Tindangle" card from Deck to GY and summons itself face-down.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tindangle Intruder</h4>
+                            <p class="text-sm text-indigo-200">A key searcher and GY enabler. Its FLIP effect searches any "Tindangle" card, and it revives itself from the GY.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tindangle Dholes</h4>
+                            <p class="text-sm text-indigo-200">A board extender from the GY. When sent from hand or Deck to GY, it revives another Tindangle face-down.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book-skull text-4xl text-teal-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Payoffs & Protection</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tindangle Delaunay</h4>
+                            <p class="text-sm text-indigo-200">The heart of the deck. Its GY effect banishes itself to Special Summon 3 different "Tindangle" monsters from the GY face-down.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tindangle Acute Cerberus</h4>
+                            <p class="text-sm text-indigo-200">The archetypal boss monster. A LINK-3 that gains 3000 ATK, making it the primary in-archetype win condition.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Nagel's Protection</h4>
+                            <p class="text-sm text-indigo-200">Protects your monsters from destruction and doubles battle damage, enabling powerful OTK strategies.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Jhrelth Ignition</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The deck's most common and powerful opening converts a single monster into a foundational board state, perfectly setting up the Graveyard for the deck's explosive follow-up plays.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="jhrelth-img-container" class="card-image-container flex-shrink-0 card-placeholder">Tindangle Jhrelth</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate & Mill</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent">Tindangle Jhrelth's</strong> effect from hand. Discard one card to send <strong class="text-accent">Tindangle Dholes</strong> from your Deck to the GY, and Special Summon Jhrelth face-down.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="dholes-img-container" class="card-image-container flex-shrink-0 card-placeholder">Tindangle Dholes</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">GY Trigger & Extension</h3>
+                            </div>
+                            <p class="text-indigo-200"><strong class="text-accent">Tindangle Dholes'</strong> effect triggers in the GY, allowing you to Special Summon another "Tindangle" (like <strong class="text-accent">Intruder</strong>) from your GY face-down.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="delaunay-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Tindangle Delaunay</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Link Summon & Setup</h3>
+                            </div>
+                            <p class="text-indigo-200">With two monsters, Link Summon <strong class="text-accent">Subterror Behemoth Fiendess</strong>. This loads the GY with names, setting up the game-winning GY effect of <strong class="text-accent">Tindangle Delaunay</strong> for the next turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Turn 3 Lethal Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Tindangle Acute Cerberus</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="cerberus-img-container" class="card-image-container card-placeholder">Tindangle Acute Cerberus</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Win Condition:</strong> A 4500+ ATK beater unaffected by battle, capable of closing out games with ease.</li>
+                        <li><strong class="text-accent">Board Presence:</strong> Can Special Summon a "Tindangle" from hand or GY when it destroys a monster.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Subterror Behemoth Fiendess</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="fiendess-img-container" class="card-image-container card-placeholder">Subterror Behemoth Fiendess</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">FLIP Enabler:</strong> Sends a FLIP monster from deck to GY to extend combos.</li>
+                        <li><strong class="text-accent">Disruption:</strong> Provides a negate by flipping one of your face-down monsters. A mandatory component for modern builds.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-300">Explosive Recursion:</strong> A resolved Delaunay is one of the most powerful recovery plays in the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-green-300">High OTK Potential:</strong> Can easily generate over 8000 damage with Acute Cerberus or generic Link monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Resilience to Wipes:</strong> Because the GY is the main resource, the deck can recover from board wipes like Raigeki.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-skull"></i></span> <strong class="text-red-300">Graveyard Hate:</strong> Extremely vulnerable to cards like Dimension Shifter, D.D. Crow, and Bystials.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Starter Negation:</strong> A single hand trap like Ash Blossom on Jhrelth can often end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-hourglass-half"></i></span> <strong class="text-red-300">Inherent Slowness:</strong> The FLIP mechanic is fundamentally slower than most modern strategies, requiring a turn of setup.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key External Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent">Subterror:</strong> Subterror Behemoth Fiendess is considered mandatory for enabling combos.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-theater-masks"></i></span> <strong class="text-accent">Shaddoll:</strong> Offers a potent going-second strategy with Shaddoll Fusion and disruption with El Shaddoll Winda.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-tools"></i></span> <strong class="text-accent">Fiendsmith:</strong> A modern engine providing negation and targeted GY setup that synergizes with DARK Fiends.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The Tindangle archetype remains fully available in the current TCG format, allowing it to operate at its full potential.
+                </p>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With no restrictions, Tindangle can utilize its complete arsenal of starters, extenders, and payoffs. This allows for maximum consistency in executing its GY-focused, "Turn 3 Lethal" strategy and full access to powerful external engines like Subterror and Shaddoll.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('angle-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let lines = [];
+                const numLines = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Line {
+                    constructor() {
+                        this.reset();
+                    }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 0.5 + 0.1;
+                        this.length = Math.random() * 40 + 20;
+                        this.life = Math.random() * 200 + 100;
+                        this.initialLife = this.life;
+                        this.color = `rgba(45, 212, 191, ${Math.random() * 0.3 + 0.1})`;
+                    }
+                    update() {
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed;
+                        this.angle += (Math.random() - 0.5) * 0.1; // Slightly change direction
+                        this.life--;
+                        if (this.life <= 0 || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.x - Math.cos(this.angle) * this.length, this.y - Math.sin(this.angle) * this.length);
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 1;
+                        ctx.globalAlpha = (this.life / this.initialLife) * 0.5;
+                        ctx.stroke();
+                    }
+                }
+
+                function initLines() {
+                    lines = [];
+                    for (let i = 0; i < numLines; i++) {
+                        lines.push(new Line());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+                    lines.forEach(line => {
+                        line.update();
+                        line.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initLines();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initLines();
+                });
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'jhrelth-img-container': 'Tindangle Jhrelth',
+                'dholes-img-container': 'Tindangle Dholes',
+                'delaunay-img-container-combo': 'Tindangle Delaunay',
+                'cerberus-img-container': 'Tindangle Acute Cerberus',
+                'fiendess-img-container': 'Subterror Behemoth Fiendess',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

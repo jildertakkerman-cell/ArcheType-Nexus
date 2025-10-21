@@ -1,0 +1,701 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Igknight Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%23ff4500' fill-opacity='0.05'%3E%3Crect x='0' y='0' width='100' height='100'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a0a0a;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #ff4500;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 69, 0, 0.3);
+        }
+        .combo-step-card {
+            background-color: #3d1010;
+            border: 1px solid #ff6347;
+        }
+        .pro-con-card {
+            background-color: #3d1010;
+            border: 1px solid #ff6347;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3d1010;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 10px #1a0000;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #ffA500; }
+        .text-accent { color: #ff6347; } /* Tomato Red */
+        .arrow-color { color: #ff4500; } /* OrangeRed */
+        .heading-font {
+            font-family: 'Roboto Slab', serif;
+        }
+        .heading-underline {
+            background: linear-gradient(to right, #ff6347, #ff4500, #ff6347);
+            background-size: 200% 3px;
+            background-repeat: no-repeat;
+            background-position: 0 100%;
+            animation: underline-expand 1.5s ease-out 0.2s forwards;
+            border-image: linear-gradient(to right, #ff6347, #ffA500, #ff6347) 1;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+        }
+        
+        @keyframes underline-expand {
+            from { background-size: 0% 3px; }
+            to { background-size: 100% 3px; }
+        }
+        .lore-link {
+            color: #ff6347;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff6347;
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #ffA500;
+            border-bottom-color: #ffA500;
+        }
+
+        /* --- Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: linear-gradient(135deg, #1a0000 0%, #4d0000 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 2px solid #ff4500;
+        }
+        #ember-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.9);
+        }
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* --- Modal Styles --- */
+        .modal-card {
+            background-color: #2a0a0a;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #ff4500;
+        }
+        .modal-card::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-card::-webkit-scrollbar-thumb {
+            background-color: #ff4500;
+            border-radius: 4px;
+        }
+        .modal-card::-webkit-scrollbar-track {
+            background-color: #1a0000;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="ember-canvas"></canvas>
+            <h1 class="heading-font text-4xl md:text-6xl font-extrabold text-white mb-2">Igknight</h1>
+            <p class="text-lg md:text-xl text-orange-200">Analysis of the Unrelenting Pendulum Armory</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-orange-100">
+                    The <strong class="text-accent font-bold">Igknight</strong> archetype is a unique FIRE Warrior-Type Pendulum strategy defined by its unparalleled consistency. Rather than relying on a variety of monster effects, the deck utilizes a core of functionally identical Normal Pendulum monsters. This design philosophy of engineered redundancy ensures the deck can almost always execute its primary game plan: using its shared Pendulum effect to destroy its own scales, load the Extra Deck, and search for any FIRE Warrior monster. This transforms the archetype from a standalone deck into a hyper-consistent engine, a delivery system for the powerful combo starters of other, more dominant strategies.
+                </p>
+            </div>
+        </section>
+
+        <!-- Detailed Analysis Button -->
+        <section class="text-center mt-10 md:mt-16 animate-fadeIn" style="animation-delay: 1s;">
+            <button id="show-details-btn" class="bg-orange-600 hover:bg-orange-700 text-white heading-font font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                <i class="fas fa-search-plus mr-2"></i> Show Detailed Analysis
+            </button>
+        </section>
+        
+
+        <!-- The Armory and Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Armory: Core Mechanics</h2>
+             <p class="text-orange-100 mb-8 text-center max-w-3xl mx-auto">
+                The strength of the Igknights lies not in individual prowess, but in the collective might of <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=igknight&stype=1" target="_blank" class="lore-link">a unified squadron of fiery warriors</a>. Their shared Pendulum Effect is the heart of the engine, a non-once-per-turn ability that fuels the entire strategy.
+            </p>
+            <div class="card p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-fire-alt text-4xl text-accent mr-4"></i>
+                    <h3 class="heading-font text-xl font-bold text-white">The Unifying Pendulum Effect</h3>
+                </div>
+                <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                     <p class="text-orange-100 italic">"If you have an 'Igknight' card in your other Pendulum Zone: You can destroy both cards in your Pendulum Zones, and if you do, add 1 FIRE Warrior-Type monster from your Deck or Graveyard to your hand."</p>
+                </div>
+                <p class="text-orange-100 mt-4">
+                    This effect is the engine's core loop. By destroying the two Igknight scales, they are sent face-up to the Extra Deck, ready to be Pendulum Summoned later. Simultaneously, the deck is thinned by searching for a critical combo piece. Crucially, the search is not limited to "Igknight" cards, allowing the deck to fetch powerful starters from other archetypes like <strong class="text-accent font-bold">Sublimation Knight</strong> or <strong class="text-accent font-bold">Infernoble Knight - Renaud</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Forging the Combo: The Two-Card Path to Isolde</h2>
+            <p class="text-orange-100 mb-8 text-center max-w-2xl mx-auto">The modern Igknight strategy begins with one goal: transforming any two Igknight cards into one of the game's most powerful Link-2 monsters.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="igknight-scales-container" class="card-image-container flex-shrink-0 card-placeholder">Igknight Scales (Any 2)</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a0a0a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold heading-font">Establish & Detonate</h3>
+                            </div>
+                            <p class="text-orange-100">Place any two Igknight monsters in your Pendulum Zones. Activate their shared effect to destroy both, sending them to the Extra Deck, and search for <strong class="text-accent font-bold">Sublimation Knight</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <i class="fas fa-chevron-down text-4xl arrow-color my-2"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sublimation-knight-container" class="card-image-container flex-shrink-0 card-placeholder">Sublimation Knight</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a0a0a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold heading-font">Summon & Extend</h3>
+                            </div>
+                            <p class="text-orange-100">Normal Summon <strong class="text-accent font-bold">Sublimation Knight</strong> and use its effect to equip <strong class="text-accent font-bold">Squeaknight</strong> from the deck. Then, use Squeaknight's effect to Special Summon itself.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <i class="fas fa-chevron-down text-4xl arrow-color my-2"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="isolde-container" class="card-image-container flex-shrink-0 card-placeholder">Isolde, Two Tales of the Noble Knights</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a0a0a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold heading-font">Summon the Commander</h3>
+                            </div>
+                            <div class="bg-red-500 bg-opacity-20 border border-red-500 rounded-lg p-3 mb-3">
+                                <div class="flex items-center">
+                                    <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                                    <h4 class="text-red-400 font-bold text-sm">Currently Banned in TCG</h4>
+                                </div>
+                                <p class="text-red-300 mt-1 text-sm">Isolde is currently banned. Modern builds use alternative Link-2 monsters like Dharc the Dark Charmer or Phoenix Enforcer.</p>
+                            </div>
+                            <p class="text-orange-100">Link Summon <strong class="text-accent font-bold">Isolde, Two Tales of the Noble Knights</strong> using your two Warriors. Her effects are the gateway to the deck's powerful, multi-negate endboards.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Modern Endboard: A Fortress of Negation</h2>
+            <div class="bg-red-900 border border-red-600 p-4 rounded-lg mb-6">
+                <p class="text-red-200 font-bold text-center"><i class="fas fa-exclamation-triangle mr-2"></i>Note: Some cards shown below are currently banned in TCG play. Modern builds have adapted with alternative boss monsters.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <div class="card p-6 pro-con-card">
+                    <div class="bg-red-900 border border-red-600 p-2 rounded mb-3">
+                        <p class="text-red-200 text-sm font-bold text-center"><i class="fas fa-ban mr-1"></i>BANNED IN TCG</p>
+                    </div>
+                    <h3 class="heading-font text-xl font-bold text-white mb-4 text-center">Apollousa, Bow of the Goddess</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="apollousa-container" class="card-image-container card-placeholder">Apollousa, Bow of the Goddess</div>
+                    </div>
+                    <p class="text-center text-orange-100">Previously provided multiple monster effect negations. Modern decks use alternatives like <strong class="text-accent">Accesscode Talker</strong> or <strong class="text-accent">Knightmare Unicorn</strong> for removal and disruption.</p>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <div class="bg-red-900 border border-red-600 p-2 rounded mb-3">
+                        <p class="text-red-200 text-sm font-bold text-center"><i class="fas fa-ban mr-1"></i>BANNED IN TCG</p>
+                    </div>
+                    <h3 class="heading-font text-xl font-bold text-white mb-4 text-center">Borreload Savage Dragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="borreload-container" class="card-image-container card-placeholder">Borreload Savage Dragon</div>
+                    </div>
+                    <p class="text-center text-orange-100">Previously provided powerful omni-negation. Modern decks use alternatives like <strong class="text-accent">Crystal Wing Synchro Dragon</strong> or <strong class="text-accent">Red-Eyes Flare Metal Dragon</strong> for disruption.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 heading-font">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">Extreme Consistency:</strong> Redundant main deck monsters make the opening combo almost guaranteed.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400">Powerful Engine:</strong> Serves as a searcher for any FIRE Warrior, enabling other powerful archetypes.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400">Resilience:</strong> Can often play through single-target disruption on its Pendulum search effect.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 heading-font">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400">Predictable Chokepoint:</strong> The entire strategy funnels into summoning <strong class="text-accent">Isolde</strong>, making her effects a prime target for negation.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Vulnerable to Floodgates:</strong> Cards like <strong class="text-accent">Anti-Spell Fragrance</strong> prevent the deck from functioning at all.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Susceptible to "Maxx C":</strong> The high number of special summons makes this hand trap devastating.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Current TCG Banlist Status -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <div class="card p-6">
+                <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-4 heading-underline">Current TCG Banlist Status</h2>
+                <div class="bg-gradient-to-r from-red-900/30 to-red-800/30 border-l-4 border-red-500 p-4 rounded-r-lg mb-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-skull-crossbones text-red-400 text-2xl"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-lg font-bold text-red-300">CRITICAL IMPACT</h3>
+                            <p class="text-red-100 text-sm">Primary combo line disabled, multiple boss monsters forbidden</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+                        <h4 class="text-red-400 font-bold mb-2 flex items-center">
+                            <i class="fas fa-ban mr-2"></i>Forbidden
+                        </h4>
+                        <ul class="text-red-200 text-sm space-y-1">
+                            <li>• Isolde, Two Tales of the Noble Knights</li>
+                            <li>• Apollousa, Bow of the Goddess</li>
+                            <li>• Borreload Savage Dragon</li>
+                            <li>• Cyber-Stein</li>
+                            <li>• Supreme King Dragon Starving Venom</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
+                        <h4 class="text-green-400 font-bold mb-2 flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>Unrestricted
+                        </h4>
+                        <ul class="text-green-200 text-sm space-y-1">
+                            <li>• All Igknight monsters</li>
+                            <li>• Sublimation Knight</li>
+                            <li>• Lyrilusc - Independent Nightingale</li>
+                            <li>• Most engine pieces</li>
+                            <li>• Alternative Link-2 monsters</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-4">
+                    <h4 class="text-orange-300 font-bold mb-2">Impact Assessment</h4>
+                    <p class="text-orange-200 text-sm">
+                        The Igknight archetype has been severely crippled by current banlist restrictions. With <strong>Isolde, Two Tales of the Noble Knights</strong> 
+                        forbidden, the deck's primary combo line - the "Two-Card Path to Isolde" - is completely inoperable. The loss of <strong>Apollousa</strong> 
+                        and <strong>Borreload Savage Dragon</strong> removes the most powerful endboard threats, while <strong>Cyber-Stein</strong> being banned 
+                        eliminates the historical FTK strategy entirely. Modern builds must rely on alternative Link-2 monsters like <strong>Dharc the Dark Charmer</strong> 
+                        or <strong>Phoenix Enforcer</strong>, but these lack the game-ending power that made Igknights competitive. The archetype now functions primarily 
+                        as a consistency engine for other FIRE Warrior strategies rather than a standalone deck.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+    </div>
+
+    <!-- Detailed Analysis Modal -->
+    <div id="detailed-analysis-modal" class="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center p-4 z-50 hidden animate-fadeIn">
+        <div class="modal-card w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 md:p-8 relative">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl font-bold z-10">&times;</button>
+            <h2 class="heading-font text-3xl md:text-4xl font-bold text-white mb-6">In-Depth Strategic Analysis</h2>
+            
+            <!-- Synergies Section -->
+            <div class="mb-8">
+                <h3 class="heading-font text-2xl font-bold text-accent mb-4">Synergies and Hybrid Strategies</h3>
+                <div class="space-y-4 text-orange-100">
+                    <p><strong class="text-white">The Infernoble Alliance:</strong> Both archetypes are FIRE Warriors, making support universal. Igknights solve the primary weakness of Infernoble Knights: consistency. By searching any Infernoble starter on demand, the engine transforms a generic hand into the specific pieces needed for the powerful Infernoble combo lines.</p>
+                    <p><strong class="text-white">The Gearfried Engine:</strong> The Igknight engine provides virtually guaranteed access to <strong class="text-accent">Immortal Phoenix Gearfried (IPG)</strong> and its support package by searching <strong class="text-accent">Sublimation Knight</strong>, the core enabler for IPG.</p>
+                    <p><strong class="text-white">The Dracoslayer Symbiosis:</strong> A powerful feedback loop exists with <strong class="text-accent">Ignis Phoenix, the Dracoslayer</strong>. When destroyed by the Igknight Pendulum effect, its own effect triggers, Special Summoning another Igknight or Dracoslayer from the deck. This turns a standard search into a massive generation of card advantage.</p>
+                </div>
+            </div>
+
+            <!-- FTK Combo Section -->
+            <div class="mb-8">
+                <h3 class="heading-font text-2xl font-bold text-accent mb-4">The Ultimate Weapon: First-Turn Kill (FTK)</h3>
+                <div class="bg-red-900 border border-red-600 p-4 rounded-lg mb-4">
+                    <p class="text-red-200 font-bold"><i class="fas fa-ban mr-2"></i>TCG STATUS: This strategy is currently not viable in official TCG play as <strong class="text-red-300">Cyber-Stein is banned</strong> on the Forbidden & Limited List.</p>
+                </div>
+                <p class="text-orange-100 mb-4">With a hand of just three "Igknight" cards, the engine could historically facilitate a consistent FTK by abusing the effect of <strong class="text-accent">Cyber-Stein</strong>. This high-risk, high-reward strategy forgoes a defensive board to win the duel immediately, but is now relegated to casual/historical analysis due to the ban.</p>
+                <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 text-orange-100 space-y-2">
+                    <p><strong>1. Standard Opening:</strong> Make <strong class="text-accent">Isolde</strong> and Pendulum Summon back the Igknights.</p>
+                    <p><strong>2. Setup Cyber-Stein:</strong> Use Isolde and extenders like <strong class="text-accent">Armageddon Knight</strong> to send Cyber-Stein from the Deck to the Graveyard.</p>
+                    <p><strong>3. Revival and Type Change:</strong> Use a series of Extra Deck monsters (<strong class="text-accent">Dugares the Timeless</strong>, <strong class="text-accent">Reprodocus</strong>) to revive Cyber-Stein and change its type to Psychic.</p>
+                    <p><strong>4. Bypass the Cost:</strong> Equip <strong class="text-accent">Telekinetic Charging Cell</strong>, allowing you to pay 1000 LP instead of 5000 to activate Cyber-Stein's effect repeatedly.</p>
+                    <p><strong>5. The Kill:</strong> Summon multiple Fusion Monsters to inflict over 8000 points of effect damage, typically using <strong class="text-accent">Lyrilusc - Independent Nightingale</strong> and <strong class="text-red-400">Supreme King Dragon Starving Venom</strong> <span class="text-red-400">(currently banned)</span>.</p>
+                </div>
+            </div>
+
+            <!-- Counter-Strategy Section -->
+            <div>
+                <h3 class="heading-font text-2xl font-bold text-accent mb-4">Counter-Strategy Matrix</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-900">
+                            <tr>
+                                <th class="p-3 border border-gray-700">Counter Card</th>
+                                <th class="p-3 border border-gray-700">Type</th>
+                                <th class="p-3 border border-gray-700">Optimal Timing / Target</th>
+                                <th class="p-3 border border-gray-700">Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-orange-100">
+                            <tr class="bg-[#3d1010]"><td class="p-3 border border-gray-700">"Maxx C"</td><td class="p-3 border border-gray-700">Hand Trap</td><td class="p-3 border border-gray-700">Chain to any Special Summon.</td><td class="p-3 border border-gray-700 font-bold text-green-400">High</td></tr>
+                            <tr class="bg-[#2a0a0a]"><td class="p-3 border border-gray-700">Dimensional Shifter</td><td class="p-3 border border-gray-700">Hand Trap</td><td class="p-3 border border-gray-700">Activate in Standby/Draw Phase.</td><td class="p-3 border border-gray-700 font-bold text-green-400">High</td></tr>
+                            <tr class="bg-[#3d1010]"><td class="p-3 border border-gray-700">PSY-Framegear Gamma</td><td class="p-3 border border-gray-700">Hand Trap</td><td class="p-3 border border-gray-700">Chain to Isolde's first effect activation.</td><td class="p-3 border border-gray-700 font-bold text-green-400">High</td></tr>
+                            <tr class="bg-[#2a0a0a]"><td class="p-3 border border-gray-700">Anti-Spell Fragrance</td><td class="p-3 border border-gray-700">Floodgate</td><td class="p-3 border border-gray-700">Activate before opponent sets scales.</td><td class="p-3 border border-gray-700 font-bold text-green-400">High</td></tr>
+                             <tr class="bg-[#3d1010]"><td class="p-3 border border-gray-700">Effect Veiler / Impermanence</td><td class="p-3 border border-gray-700">Hand Trap</td><td class="p-3 border border-gray-700">Target Isolde upon her summon.</td><td class="p-3 border border-gray-700 font-bold text-yellow-400">Medium-High</td></tr>
+                            <tr class="bg-[#2a0a0a]"><td class="p-3 border border-gray-700">Ash Blossom & Joyous Spring</td><td class="p-3 border border-gray-700">Hand Trap</td><td class="p-3 border border-gray-700">Target Isolde's second effect. (Avoid Pendulum search)</td><td class="p-3 border border-gray-700 font-bold text-orange-400">Medium-Low</td></tr>
+                            <tr class="bg-[#3d1010]"><td class="p-3 border border-gray-700">Nibiru, the Primal Being</td><td class="p-3 border border-gray-700">Hand Trap</td><td class="p-3 border border-gray-700">Use after the 5th summon (beware of early negates).</td><td class="p-3 border border-gray-700 font-bold text-red-400">Low</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Ember Animation for Banner ---
+            const canvas = document.getElementById('ember-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let embers = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Ember {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.size = Math.random() * 3 + 1;
+                        this.speedY = Math.random() * 2 + 1;
+                        this.speedX = (Math.random() - 0.5) * 1.5;
+                        this.opacity = Math.random() * 0.5 + 0.5;
+                        this.color = `rgba(255, 100, 0, ${this.opacity})`;
+                    }
+
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function initEmbers() {
+                    embers = [];
+                    const emberCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < emberCount; i++) {
+                        embers.push(new Ember());
+                    }
+                }
+
+                function animateEmbers() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    embers.forEach(ember => {
+                        ember.update();
+                        ember.draw();
+                    });
+                    requestAnimationFrame(animateEmbers);
+                }
+
+                setCanvasSize();
+                initEmbers();
+                animateEmbers();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initEmbers();
+                });
+            }
+
+            // --- Card Image Fetching ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'igknight-scales-container': 'Igknight Templar', // Example Igknight
+                'sublimation-knight-container': 'Sublimation Knight',
+                'isolde-container': 'Isolde, Two Tales of the Noble Knights',
+                'apollousa-container': 'Apollousa, Bow of the Goddess',
+                'borreload-container': 'Borreload Savage Dragon'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+
+            // --- Modal Logic ---
+            const showDetailsBtn = document.getElementById('show-details-btn');
+            const modal = document.getElementById('detailed-analysis-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+
+            if (showDetailsBtn && modal && closeModalBtn) {
+                showDetailsBtn.addEventListener('click', () => {
+                    modal.classList.remove('hidden');
+                });
+
+                closeModalBtn.addEventListener('click', () => {
+                    modal.classList.add('hidden');
+                });
+
+                // Also close modal if clicking the background overlay
+                modal.addEventListener('click', (event) => {
+                    if (event.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+
+                // Close modal with the Escape key
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

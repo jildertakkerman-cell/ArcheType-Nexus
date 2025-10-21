@@ -1,0 +1,535 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravekeeper's Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0b1a; /* Deep midnight purple/blue */
+            color: #f3e8d7; /* Papyrus/sand color */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1931; /* Darker slate purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a4a6b;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #242247;
+            border: 1px solid #5c5c7d;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #242247;
+            color: #f3e8d7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #242247;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fde047; } /* Gold */
+        .arrow-color { color: #fde047; }
+        .heading-font {
+            font-family: 'Cinzel', serif;
+        }
+        .hint-link {
+            color: #fde047;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s, border-bottom 0.3s;
+        }
+        .hint-link:hover {
+            color: #fff;
+            border-bottom: 1px solid #fff;
+        }
+
+        /* --- New Animated Banner Styles --- */
+        .banner {
+            position: relative;
+            height: 140px;
+            background: #0c0b1a;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #4a4a6b;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+            margin-bottom: 2.5rem;
+        }
+        .banner-content {
+            z-index: 2;
+        }
+        #tomb-entrance {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 120px; }
+            .banner .heading-font { font-size: 2rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header>
+            <div class="banner">
+                <canvas id="tomb-entrance"></canvas>
+                <div class="banner-content">
+                    <h1 class="heading-font text-3xl md:text-5xl font-bold text-white mb-2" style="text-shadow: 0 0 10px #fde047, 0 0 20px #fde047;">Gravekeeper's</h1>
+                    <p class="text-lg text-yellow-100">The Necrovalley Doctrine: An Archetype Analysis</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="heading-font text-xl md:text-2xl font-bold text-white mb-4">Philosophy of the Pharaonic Guardians</h2>
+                <p class="text-lg">
+                    The <strong class="text-accent font-bold">Gravekeeper's</strong> archetype is a monumental pillar in Yu-Gi-Oh!'s history, a masterclass in the "stun" playstyle. Its philosophy is not one of explosive combos but of methodical resource denial. The strategy is to establish absolute control over the Graveyard with its legendary Field Spell, <strong class="text-accent font-bold">Necrovalley</strong>, disrupt the opponent's plays, and slowly dismantle their board. Each monster's true power is only unlocked within the sacred grounds of <a href="https://yugipedia.com/wiki/Gravekeeper%27s" target="_blank" class="hint-link">their pharaoh's tomb</a>, making the deck a cohesive and oppressive engine built to win a war of attrition.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-6 text-center">Core Doctrines</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="heading-font text-xl font-bold text-white mb-2">The "Stun" Doctrine</h3>
+                    <p>The deck aims to slow the duel's pace, simplifying the game state. By locking down the Graveyard and backed by powerful traps, it strangles the opponent's resources, methodically stripping them of options until victory is assured.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="heading-font text-xl font-bold text-white mb-2">The Necrovalley Imperative</h3>
+                    <p>No card is more integral to an archetype's identity. <strong class="text-accent font-bold">Necrovalley</strong> is the sun around which every other card orbits. It boosts the ATK/DEF of all Gravekeeper's monsters and, more importantly, shuts down the opponent's Graveyard, a vital resource in the modern game.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Roster Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-6 text-center">The Gravekeeper's Roster</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-ankh text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="heading-font text-xl font-bold text-white">Key Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gravekeeper's Commandant</h4>
+                            <p class="text-sm">The most reliable searcher for <strong class="text-accent font-bold">Necrovalley</strong>. Simply discard it to add the Field Spell from your deck to your hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gravekeeper's Spiritualist</h4>
+                            <p class="text-sm">The heart of the modern Fusion strategy. While <strong class="text-accent font-bold">Necrovalley</strong> is on the field, she can Fusion Summon the deck's main boss monster.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gravekeeper's Headman</h4>
+                            <p class="text-sm">A vital extender whose revival effect explicitly bypasses <strong class="text-accent font-bold">Necrovalley's</strong> restrictions, enabling powerful follow-up plays.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll-torah text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="heading-font text-xl font-bold text-white">Tools of the Tomb</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Necrovalley Throne</h4>
+                            <p class="text-sm">A flexible powerhouse that can either search for any <strong class="text-accent font-bold">Gravekeeper's</strong> monster or grant an additional Normal Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Royal Tribute</h4>
+                            <p class="text-sm">A devastating floodgate. If <strong class="text-accent font-bold">Necrovalley</strong> is active, both players must discard all monsters from their hands, often winning the game on turn one.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Imperial Tombs of Necrovalley</h4>
+                            <p class="text-sm">The archetype's personal omni-negate. This Counter Trap can negate any Spell, Trap, or monster effect, protecting your established lockdown.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: Path to the Supernaturalist</h2>
+            <p class="text-center max-w-2xl mx-auto mb-8">This two-card combo is the quintessential opening for modern Gravekeeper's, establishing the protected <strong class="text-accent font-bold">Necrovalley</strong> lock on the first turn.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="commandant-img-container" class="card-image-container card-placeholder">Gravekeeper's Commandant</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1931] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="heading-font text-lg font-bold">Establish the Valley</h3>
+                        </div>
+                        <p>Start with <strong class="text-accent font-bold">Gravekeeper's Commandant</strong> to search <strong class="text-accent font-bold">Necrovalley</strong>. Activate the Field Spell.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-chevron-down text-3xl arrow-color animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="spiritualist-img-container" class="card-image-container card-placeholder">Gravekeeper's Spiritualist</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1931] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="heading-font text-lg font-bold">Summon the Conductor</h3>
+                        </div>
+                        <p>Use <strong class="text-accent font-bold">Necrovalley Throne</strong> to search and Normal Summon <strong class="text-accent font-bold">Gravekeeper's Spiritualist</strong>.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-chevron-down text-3xl arrow-color animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="supernaturalist-img-container-combo" class="card-image-container card-placeholder">Gravekeeper's Supernaturalist</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1931] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="heading-font text-lg font-bold">Perform the Fusion</h3>
+                        </div>
+                        <p>Activate <strong class="text-accent font-bold">Spiritualist's</strong> effect, using herself and another Gravekeeper's monster in hand/field to Fusion Summon <strong class="text-accent font-bold">Gravekeeper's Supernaturalist</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-6 text-center">The Ideal End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="heading-font text-xl font-bold text-white mb-4 text-center">Gravekeeper's Supernaturalist</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="supernaturalist-img-container" class="card-image-container card-placeholder">Gravekeeper's Supernaturalist</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><strong class="text-accent font-bold">Absolute Protection:</strong> Makes itself and your Field Spell immune to destruction by card effects.</li>
+                        <li><strong class="text-accent font-bold">Resource Engine:</strong> Searches a "Gravekeeper's" monster or "Necrovalley" card every End Phase, ensuring you out-grind the opponent.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="heading-font text-xl font-bold text-white mb-4 text-center">Necrovalley</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="necrovalley-img-container" class="card-image-container card-placeholder">Necrovalley</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><strong class="text-accent font-bold">Graveyard Lockdown:</strong> Negates any effect that would move a card out of the GY.</li>
+                        <li><strong class="text-accent font-bold">Stat Boost:</strong> Gives all "Gravekeeper's" monsters a crucial 500 ATK/DEF boost.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="heading-font text-2xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="heading-font text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Anti-Meta Power:</strong> Devastating against any deck that relies on the Graveyard as a resource.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Resilient Lock:</strong> The Supernaturalist + Necrovalley board is very difficult for many decks to out.</li>
+                        <li><span class="pro-icon"><i class="fas fa-book"></i></span> <strong class="text-green-400 font-bold">High Consistency:</strong> Multiple ways to search for Necrovalley and core monsters.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="heading-font text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Necrovalley Dependency:</strong> The entire strategy crumbles if the Field Spell is removed by non-destruction means (e.g., banished).</li>
+                        <li><span class="con-icon"><i class="fas fa-arrow-down"></i></span> <strong class="text-red-400 font-bold">Poor "Go Second" Game:</strong> Lacks inherent board-breaking tools and can be overwhelmed by established boards.</li>
+                         <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Bypassed by Certain Decks:</strong> Struggles against strategies that do not rely on the Graveyard, such as Floowandereeze or Kashtira.</li>
+                    </ul>
+                </div>
+                <!-- Tech Choices -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="heading-font text-xl font-bold text-white mb-4">Tech & Engines</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent font-bold">Red-Eyes Dark Dragoon:</strong> The Red-Eyes Fusion engine provides an alternate, powerful win condition independent of the Necrovalley lock.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-draw-polygon"></i></span> <strong class="text-accent font-bold">Pot of Prosperity/Extravagance:</strong> Powerful draw spells that help find key combo pieces at the cost of the Extra Deck, which is often acceptable.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-skull"></i></span> <strong class="text-accent font-bold">Generic Floodgates:</strong> Cards like <strong class="text-accent font-bold">Rivalry of Warlords</strong> can supplement the Necrovalley lock for even greater control.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ANIMATED BANNER SCRIPT ---
+            const canvas = document.getElementById('tomb-entrance');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speed = Math.random() * 0.5 + 0.2;
+                        this.size = Math.random() * 1.5 + 0.5;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < 0) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.fillStyle = `rgba(253, 224, 71, ${this.opacity})`;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 10000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- SCRIPT TO FETCH CARD IMAGES ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'commandant-img-container': "Gravekeeper's Commandant",
+                'spiritualist-img-container': "Gravekeeper's Spiritualist",
+                'supernaturalist-img-container-combo': "Gravekeeper's Supernaturalist",
+                'supernaturalist-img-container': "Gravekeeper's Supernaturalist",
+                'necrovalley-img-container': "Necrovalley",
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

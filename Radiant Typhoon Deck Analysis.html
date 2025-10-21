@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radiant Typhoon Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d121c;
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1c2a4a; /* Deep blue-gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a5a8a; /* Muted blue border */
+        }
+        .combo-step-card {
+            background-color: #2c3a5a; 
+            border: 1px solid #4a6a9a;
+        }
+        .pro-con-card {
+            background-color: #2c3a5a;
+            border: 1px solid #4a6a9a;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1c2a4a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1c2a4a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #81e6d9; } /* Teal/Cyan for accents */
+        .arrow-color { color: #63b3ed; } /* Lighter blue for arrows */
+        .heading-underline {
+            border-bottom: 2px solid #81e6d9;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #81e6d9;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #81e6d9;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- Animated Typhoon Banner --- */
+        .banner {
+            position: relative;
+            height: 150px;
+            background: #0d121c;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #3a5a8a;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+        }
+        #typhoon-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-content {
+            z-index: 2;
+            position: relative;
+            animation: fadeIn 1.5s ease-out;
+        }
+        .banner-title {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 2.8rem;
+            color: #e0e7ff;
+            text-shadow: 0 0 10px rgba(129, 230, 217, 0.7), 0 0 20px rgba(99, 179, 237, 0.5);
+        }
+        .banner-subtitle {
+            font-size: 1.1rem;
+            color: #c7d2fe;
+        }
+        @media (max-width: 768px) {
+            .banner { height: 120px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.9rem; }
+        }
+
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%); color: white; border: 2px solid #6366f1; border-radius: 12px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2); transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2); border-color: #8b5cf6; }
+        .ygo-home-button i { font-size: 22px; position: relative; z-index: 2; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); animation: ygoIconGlow 2s ease-in-out infinite alternate; }
+        @keyframes ygoIconGlow { from { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); } to { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3); } }
+        @media (max-width: 768px) { .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; } .ygo-home-button i { font-size: 18px; } }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus"><i class="fas fa-home"></i></a>
+
+<div class="container mx-auto">
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <canvas id="typhoon-canvas"></canvas>
+                <div class="banner-content">
+                    <h1 class="banner-title">Radiant Typhoon</h1>
+                    <p class="banner-subtitle">Mastering the Eye of the Storm</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">"Radiant Typhoon"</strong> archetype is a WIND-attribute strategy focused on activating Quick-Play Spells, with a profound synergy around the iconic card <a href="https://db.ygoprodeck.com/api/v7/cardinfo.php?name=Mystical%20Space%20Typhoon" target="_blank" class="lore-link">"Mystical Space Typhoon"</a>. It functions as a highly consistent, resource-recursive engine capable of generating significant board presence and layered interruptions. Its design re-contextualizes a classic utility card into the central axis of a modern control and combo strategy.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Core Components</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Starters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4"><i class="fas fa-star text-3xl text-yellow-300 mr-3"></i><h3 class="text-xl font-bold text-white">The Starters</h3></div>
+                    <div class="space-y-3">
+                        <p><strong class="text-accent">Eldam:</strong> Searches a "Radiant Typhoon" monster or MST.</p>
+                        <p><strong class="text-accent">Swen:</strong> Searches a "Radiant Typhoon" Spell/Trap or MST.</p>
+                        <p><strong class="text-accent">Meghala:</strong> Swarms by summoning another from Deck on Quick-Play activation.</p>
+                    </div>
+                </div>
+                <!-- Extender -->
+                <div class="card p-6">
+                     <div class="flex items-center mb-4"><i class="fas fa-expand-arrows-alt text-3xl text-blue-300 mr-3"></i><h3 class="text-xl font-bold text-white">The Extender</h3></div>
+                    <p><strong class="text-accent">Krosea:</strong> Special Summons itself from hand when any Quick-Play Spell is activated, enabling plays that dodge Main Phase hand traps.</p>
+                </div>
+                <!-- Bosses -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4"><i class="fas fa-crown text-3xl text-red-400 mr-3"></i><h3 class="text-xl font-bold text-white">The Twin Tempests</h3></div>
+                     <div class="space-y-3">
+                        <p><strong class="text-accent">Fonix:</strong> Offensive boss that shuffles opponent's cards into the Deck.</p>
+                        <p><strong class="text-accent">Varuroon:</strong> Defensive boss that provides monster effect negation.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The Two-Card Opening</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the ideal opening with Krosea and any Quick-Play Spell, showcasing the deck's ability to build a board before the opponent's Main Phase.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center gap-4">
+                    <div id="krosea-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Radiant Typhoon Krosea</div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-[#1c2a4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span><h3 class="text-lg font-bold">Draw Phase Ambush</h3></div>
+                        <p class="text-blue-200">During your opponent's Draw Phase, activate a Quick-Play Spell. Chain Krosea's effect from your hand to Special Summon it, bypassing Main Phase hand traps.</p>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+                <!-- Step 2 -->
+                 <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center gap-4">
+                    <div id="varuroon-link-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Varuroon, the Sea Spirit</div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-[#1c2a4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span><h3 class="text-lg font-bold">Build the Nexus</h3></div>
+                        <p class="text-blue-200">Use Krosea to search Eldam, then Special Summon Eldam to search Swen. Link Summon <strong class="text-accent">Varuroon, the Sea Spirit</strong> using Eldam and Swen.</p>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+                <!-- Step 3 -->
+                 <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center gap-4">
+                    <div id="mandate-img-container" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Radiant Typhoon Mandate</div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-[#1c2a4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span><h3 class="text-lg font-bold">Establish Control</h3></div>
+                        <p class="text-blue-200">Use the Link monster's effect to search for MST. Activate MST, then chain the Link's other effect to place <strong class="text-accent">Radiant Typhoon Mandate</strong> face-up from your Deck. Mandate's effect will trigger, negating an opponent's card.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Optimal Endboard</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 text-center mb-4">A strong "Radiant Typhoon" endboard focuses on layered, diverse interruptions rather than a single omni-negate.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <i class="fas fa-link text-3xl text-blue-300 mb-2"></i>
+                        <h4 class="font-bold">Varuroon, the Sea Spirit</h4>
+                        <p class="text-sm">Nexus & Disruption</p>
+                    </div>
+                     <div class="combo-step-card p-4 rounded-lg">
+                        <i class="fas fa-shield-alt text-3xl text-teal-300 mb-2"></i>
+                        <h4 class="font-bold">Radiant Typhoon Mandate</h4>
+                        <p class="text-sm">Live Negation</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <i class="fas fa-bolt text-3xl text-yellow-300 mb-2"></i>
+                        <h4 class="font-bold">MST in Hand</h4>
+                        <p class="text-sm">Mandate Trigger</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <i class="fas fa-ghost text-3xl text-purple-300 mb-2"></i>
+                        <h4 class="font-bold">Varuroon in GY</h4>
+                        <p class="text-sm">Monster Negate</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Consistency:</strong> Redundant searchers ensure access to key combo pieces.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Recursive Power:</strong> Excellent grind game due to GY recursion effects.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400">Hybrid Potential:</strong> Engine is "Quick-Play Agnostic," making it a powerful hybrid component.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400">Graveyard Reliant:</strong> Highly vulnerable to floodgates like Dimension Shifter.</li>
+                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-400">WIND-Lock:</strong> Key effects lock you into WIND monsters, limiting Extra Deck options.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Spell/Trap Negation:</strong> Can be stopped by cards like Anti-Spell Fragrance.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Hybrid Builds</h3>
+                     <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-magic"></i></span> <strong class="text-accent">Runick:</strong> The premier variant, using Runick Quick-Plays as triggers.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-paw"></i></span> <strong class="text-accent">Tri-Brigade:</strong> Uses the archetype's typings to fuel Tri-Brigade plays.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-accent">Speedroid:</strong> A Synchro-focused build that embraces the WIND-lock.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The Radiant Typhoon archetype is at full power with no direct hits on the current banlist. All core monsters, spells, and traps are available at three copies, allowing the engine to operate with maximum consistency. This allows it to adapt to various metagames by changing its hybrid components.
+                </p>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('typhoon-canvas');
+            if(canvas) {
+                const ctx = canvas.getContext('2d');
+                let width, height, particles;
+
+                const resize = () => {
+                    width = canvas.width = canvas.offsetWidth;
+                    height = canvas.height = canvas.offsetHeight;
+                    particles = [];
+                    for(let i = 0; i < 150; i++) {
+                        particles.push(new Particle());
+                    }
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * width;
+                        this.y = Math.random() * height;
+                        this.vx = (Math.random() - 0.5) * 1.5;
+                        this.vy = (Math.random() - 0.5) * 1.5;
+                        this.radius = Math.random() * 2 + 0.5;
+                        this.color = `rgba(129, 230, 217, ${Math.random() * 0.5 + 0.2})`;
+                    }
+
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+
+                        if (this.x < 0 || this.x > width) this.vx *= -1;
+                        if (this.y < 0 || this.y > height) this.vy *= -1;
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                const animate = () => {
+                    ctx.clearRect(0, 0, width, height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    
+                    // Draw lines between close particles
+                    for(let i = 0; i < particles.length; i++) {
+                        for(let j = i; j < particles.length; j++) {
+                            const dx = particles[i].x - particles[j].x;
+                            const dy = particles[i].y - particles[j].y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+
+                            if(dist < 100) {
+                                ctx.beginPath();
+                                ctx.strokeStyle = `rgba(99, 179, 237, ${1 - dist / 100})`;
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+
+                    requestAnimationFrame(animate);
+                };
+
+                window.addEventListener('resize', resize);
+                resize();
+                animate();
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+            
+            fetchAndDisplayCardImage('Radiant Typhoon Krosea', 'krosea-img-container');
+            fetchAndDisplayCardImage('Radiant Typhoon Varuroon, the Sea Spirit', 'varuroon-link-img-container');
+            fetchAndDisplayCardImage('Radiant Typhoon Mandate', 'mandate-img-container');
+        });
+    </script>
+</body>
+</html>

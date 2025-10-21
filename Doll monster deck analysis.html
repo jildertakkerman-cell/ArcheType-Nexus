@@ -1,0 +1,511 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doll Monster Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #2d233f; /* Deep, muted purple */
+            color: #f5e9f7; /* Soft off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #4a3e5f; /* Dusty purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #6c5f82; /* Lighter purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #594a75; /* Slightly lighter purple */
+            border: 1px solid #7d6e99;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #4a3e5f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #4a3e5f;
+        }
+        .pro-icon { color: #a7f3d0; } /* Light mint green */
+        .con-icon { color: #fecaca; } /* Light red */
+        .neutral-icon { color: #bfdbfe; } /* Light blue */
+        .text-accent { color: #e6c0e9; } /* Soft pink/lavender */
+        .arrow-color { color: #d1a3d8; } /* Lavender */
+        .heading-underline {
+            border-bottom: 2px solid #d1a3d8;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #e6c0e9;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 2px dotted #e6c0e9;
+            transition: color 0.3s, border-bottom-color 0.3s;
+            cursor: pointer;
+        }
+        .lore-link:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        /* --- New Doll Monster Animated Banner Styles --- */
+        .banner {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(45deg, #2d233f, #4a3e5f);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #6c5f82;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: content-appear 1s ease-out 0.5s forwards;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Quicksand', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f5e9f7;
+            text-shadow: 0 0 8px rgba(230, 192, 233, 0.5), 0 0 15px rgba(209, 163, 216, 0.3);
+            letter-spacing: 0.1em;
+        }
+        .banner-subtitle {
+            font-family: 'Quicksand', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #e9d5ff;
+        }
+        .stitch {
+            position: absolute;
+            width: 2px;
+            height: 10px;
+            background-color: rgba(230, 192, 233, 0.4);
+            opacity: 0;
+            animation: float-stitch 15s infinite ease-in-out;
+        }
+        .stitch.s1 { top: 10%; left: 15%; animation-duration: 12s; animation-delay: 0s; transform: rotate(25deg); }
+        .stitch.s2 { top: 70%; left: 5%; animation-duration: 18s; animation-delay: 2s; transform: rotate(-15deg); }
+        .stitch.s3 { top: 25%; left: 40%; animation-duration: 10s; animation-delay: 1s; transform: rotate(45deg); height: 15px; }
+        .stitch.s4 { top: 80%; left: 55%; animation-duration: 14s; animation-delay: 4s; transform: rotate(-30deg); }
+        .stitch.s5 { top: 15%; left: 85%; animation-duration: 16s; animation-delay: 3s; transform: rotate(10deg); height: 12px; }
+        .stitch.s6 { top: 60%; left: 95%; animation-duration: 11s; animation-delay: 5s; transform: rotate(-50deg); }
+
+        @keyframes content-appear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes float-stitch {
+            0% { transform: translateY(20px) rotate(var(--initial-rotate, 0deg)); opacity: 0; }
+            10%, 90% { opacity: 1; }
+            100% { transform: translateY(-140px) rotate(calc(var(--initial-rotate, 0deg) + 720deg)); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="stitch s1" style="--initial-rotate: 25deg;"></div>
+                <div class="stitch s2" style="--initial-rotate: -15deg;"></div>
+                <div class="stitch s3" style="--initial-rotate: 45deg;"></div>
+                <div class="stitch s4" style="--initial-rotate: -30deg;"></div>
+                <div class="stitch s5" style="--initial-rotate: 10deg;"></div>
+                <div class="stitch s6" style="--initial-rotate: -50deg;"></div>
+                <div class="banner-content">
+                    <h1 class="banner-title">Doll Monster</h1>
+                    <p class="banner-subtitle">The Art of Fabrication: A Strategic Blueprint</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-200">
+                    The <strong class="text-accent font-bold">"Doll Monster"</strong> engine is a specialized strategy focused on the synergy between <strong class="text-accent font-bold">Box of Friends</strong> and <strong class="text-accent font-bold">Grandpa Demetto</strong>. It transforms often-overlooked Level 4 Normal Monsters with 0 ATK or DEF into highly efficient fuel for a versatile Rank 4 Xyz toolbox. This <a class="lore-link">stitched-together</a> strategy excels at creating stable resource loops and escalating threats, pivoting from utility plays into powerful Rank 8 Xyz boss monsters, all while protecting its fragile components with a layered defense system.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Cast of Creations: Core Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                <!-- The Controllers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-magic-wand-sparkles text-4xl text-purple-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Controllers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Princess Cologne</h4>
+                            <p class="text-sm text-purple-200">The central Rank 4 Xyz hub. She recycles <strong class="text-accent font-bold">Box of Friends</strong> and revives Normal Monsters, maintaining the field presence crucial for both offense and defense.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Grandpa Demetto</h4>
+                            <p class="text-sm text-purple-200">The key to the deck's power plays. He transforms Level 4 Normal Monsters from the GY into Level 8s, enabling access to the Rank 8 Xyz toolbox.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Engine -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-purple-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Engine & Fuel</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Doll Happiness</h4>
+                            <p class="text-sm text-purple-200">The 1-card starter. This Continuous Spell searches for either <strong class="text-accent font-bold">Grandpa Demetto</strong> or <strong class="text-accent font-bold">Box of Friends</strong> and provides a way to proactively destroy your cards to trigger their effects.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Box of Friends</h4>
+                            <p class="text-sm text-purple-200">The primary swarming tool. When this trap is destroyed, it summons two 0 ATK/DEF Normal Monsters from the deck, instantly setting up a Rank 4 Xyz play.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The 1.5-Card Rank 4 Sequence</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how <strong class="text-accent font-bold">Doll Happiness</strong> and a discard can generate immediate field presence.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="doll-happiness-img-container" class="card-image-container flex-shrink-0 card-placeholder">Doll Happiness</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#4a3e5f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Opening Act</h3>
+                            </div>
+                            <p class="text-purple-200">Activate <strong class="text-accent font-bold">Doll Happiness</strong> to search for <strong class="text-accent font-bold">Box of Friends</strong> from your deck. Set the trap card.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="box-of-friends-img-container" class="card-image-container flex-shrink-0 card-placeholder">Box of Friends</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#4a3e5f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Proactive Destruction</h3>
+                            </div>
+                            <p class="text-purple-200">Use the effect of <strong class="text-accent font-bold">Doll Happiness</strong> to destroy your set <strong class="text-accent font-bold">Box of Friends</strong>. This triggers its effect.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="princess-cologne-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Princess Cologne</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#4a3e5f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Swarm and Summon</h3>
+                            </div>
+                            <p class="text-purple-200"><strong class="text-accent font-bold">Box of Friends</strong> summons two Level 4 Normal Monsters from the deck. Use them to Xyz Summon <strong class="text-accent font-bold">Princess Cologne</strong>, which then retrieves <strong class="text-accent font-bold">Box of Friends</strong> from the GY to start the loop again.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final Performance: Endboards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Control Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Control Board (Rank 4)</h3>
+                    <!-- Banned Card Warning -->
+                    <div class="bg-red-500 bg-opacity-20 border border-red-500 rounded-lg p-3 mb-4">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-exclamation-triangle text-red-400 mr-2"></i>
+                            <h4 class="text-red-400 font-bold text-sm">Currently Banned in TCG</h4>
+                        </div>
+                        <p class="text-red-300 mb-1 text-sm">Abyss Dweller is currently banned. Use <strong class="text-accent">Bagooska</strong> or <strong class="text-accent">Tornado Dragon</strong> as alternatives.</p>
+                    </div>
+                    
+                    <div class="flex justify-center mb-4">
+                        <div id="abyss-dweller-img-container" class="card-image-container card-placeholder">Abyss Dweller</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><strong class="text-accent font-bold">Princess Cologne Lock:</strong> With <strong class="text-accent font-bold">Doll Happiness</strong> active, Cologne is protected from targeting, and your 0 ATK monsters are protected from attacks.</li>
+                                                <li><strong class="text-accent font-bold">Generic Disruption:</strong> Summon a utility Rank 4 like <strong class="text-accent font-bold">Abyss Dweller</strong> (<span class="text-red-300">currently banned</span>) to shut down opponent's Graveyard-reliant strategies.</li>
+                    </ul>
+                </div>
+                <!-- Power Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Power Play (Rank 8)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="zombiestein-img-container" class="card-image-container card-placeholder">Number 22: Zombiestein</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><strong class="text-accent font-bold">Grandpa Demetto Conversion:</strong> Use <strong class="text-accent font-bold">Grandpa Demetto</strong> to turn your GY Normal Monsters into two Level 8 materials on the field.</li>
+                        <li><strong class="text-accent font-bold">Boss Monster Threat:</strong> Summon a powerful Rank 8 like <strong class="text-accent font-bold">Number 22: Zombiestein</strong> for high ATK and negation, or other utility Rank 8s for removal and control.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Director's Cut: Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-300 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300 font-bold">Resource Loop:</strong> The engine excels at recycling its key pieces, providing sustained field presence.</li>
+                        <li><span class="pro-icon"><i class="fas fa-tools"></i></span> <strong class="text-green-300 font-bold">Toolbox Access:</strong> Can easily pivot between a wide range of generic Rank 4 and Rank 8 Xyz monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300 font-bold">Resilient Defense:</strong> The Cologne/Happiness lock creates a surprisingly sturdy defensive wall against targeting effects and attacks.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-300 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300 font-bold">Choke Points:</strong> Negating the initial <strong class="text-accent font-bold">Doll Happiness</strong> search can often end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300 font-bold">Graveyard Hate:</strong> The Rank 8 play is entirely dependent on having Normal Monsters in the GY, making it vulnerable to cards like <strong class="text-accent font-bold">D.D. Crow</strong>.</li>
+                         <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300 font-bold">Non-Targeting Removal:</strong> Board-wipes like <strong class="text-accent font-bold">Raigeki</strong> or <strong class="text-accent font-bold">Lightning Storm</strong> bypass the entire defensive setup.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="neutral-icon"><i class="fas fa-rabbit"></i></span> <strong class="text-accent font-bold">Rescue Rabbit:</strong> A powerful, non-archetypal 1-card starter that directly summons two Normal Monsters for an instant Rank 4.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-red-400 font-bold">King of the Feral Imps (currently banned):</strong> A generic Rank 4 that can search for extenders like <strong class="text-accent font-bold">Chamenleon</strong> to enable recursion.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-ship"></i></span> <strong class="text-accent font-bold">Suship Engine:</strong> Can be integrated to increase the density and power of Rank 4 plays, as Suship Normal Monsters are valid targets.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        throw new Error(`API returned status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found in API response.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                }
+            }
+
+            const cardsToLoad = {
+                'doll-happiness-img-container': 'Doll Happiness',
+                'box-of-friends-img-container': 'Box of Friends',
+                'princess-cologne-img-container-combo': 'Princess Cologne',
+                'abyss-dweller-img-container': 'Abyss Dweller',
+                'zombiestein-img-container': 'Number 22: Zombiestein'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

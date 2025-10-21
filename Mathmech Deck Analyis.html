@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathmech Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0E1A; /* Very dark blue */
+            color: #E0E7FF; /* Light lavender blue */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .font-mono {
+            font-family: 'Roboto Mono', monospace;
+        }
+        .card {
+            background-color: #161A29; /* Dark blue-gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2A3B6E; /* Muted blue border */
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 121, 0, 0.15);
+            border-color: #FF7900;
+        }
+        .combo-step-card {
+            background-color: #1F243A; /* Slightly lighter dark blue */
+            border: 1px solid #3D4A7F;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1F243A;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1F243A;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+
+        .text-accent { color: #FF7900; } /* Mathmech Orange */
+        .text-secondary { color: #00E5FF; } /* Mathmech Cyan */
+        .arrow-color { color: #FF7900; }
+        .lore-link {
+            color: #FF7900;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #FF7900;
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #00E5FF;
+            border-bottom-color: #00E5FF;
+        }
+
+        /* --- Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            height: 120px;
+            background-color: #0A0E1A;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #grid-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(10, 14, 26, 0.6) 0%, rgba(10, 14, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px rgba(255, 121, 0, 0.5), 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+        .banner-header h1 {
+            font-size: 2.5rem;
+        }
+        .banner-header p {
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .banner-header { height: 100px; }
+            .banner-header h1 { font-size: 2rem; }
+            .banner-header p { font-size: 0.875rem; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="grid-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-bold font-mono text-white mb-2">Mathmech</h1>
+            <p class="text-lg md:text-xl text-secondary">An Algorithmic Dissection of the Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The Mathmech archetype, a group of Cyberse-type monsters, operates with the precision of a 
+                    <a href="https://yugipedia.com/wiki/Mathmech" target="_blank" class="lore-link">finely tuned algorithm</a>. 
+                    Initially a strategy focused on Synchro and Xyz summoning, the archetype was fundamentally redefined by a single card: <strong class="text-accent font-bold">Mathmech Circular</strong>. This card transformed the deck into a dominant, hyper-consistent engine capable of generating overwhelming advantage from a single card, solidifying its place as a top-tier competitive strategy.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Mathematical Engine: Core Cards -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center font-mono">The Mathematical Engine</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                Each card serves a specific purpose within the deck's overarching calculation, acting as a starter, an extender, a searcher, or a payoff. The engine's efficiency lies in how seamlessly these roles transition from one card to the next.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main Deck Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-microchip text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Main Deck Operators</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-accent mb-1">Mathmech Circular</h4>
+                            <p class="text-sm text-blue-200">The undisputed centerpiece. A one-card starter that sends a Mathmech from Deck to GY as cost, Special Summons itself, and then searches a Mathmech Spell/Trap.</p>
+                        </div>
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-accent mb-1">Mathmech Sigma & Diameter</h4>
+                            <p class="text-sm text-blue-200">The core Level 4 Tuners. Sigma is a free extender from the GY for Turn 1, while Diameter is revived on the opponent's turn to grant a powerful omni-negate.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-code text-4xl text-secondary mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Game Plan Setters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-secondary mb-1">Mathmech Superfactorial</h4>
+                            <p class="text-sm text-blue-200">The keystone of control. A Trap that summons 3 Mathmechs from the GY to immediately Xyz Summon Primathmech Laplacian as an interruption.</p>
+                        </div>
+                        <div class="combo-step-card p-4 rounded-lg">
+                            <h4 class="text-lg font-bold text-secondary mb-1">Mathmech Equation</h4>
+                            <p class="text-sm text-blue-200">The primary recovery and extension tool, reviving a Mathmech from the GY and boosting its ATK.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center font-mono">Core Combo: One-Card Circular</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the standard "going first" play, generating a powerful set of interruptions for the opponent's turn from a single card.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="circular-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mathmech Circular</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#161A29] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold text-accent">Circular Ignition</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent font-bold">Circular</strong> in hand, sending <strong class="text-secondary font-bold">Sigma</strong> from Deck to GY as cost. Special Summon Circular.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2 animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="alembertian-img-container" class="card-image-container flex-shrink-0 card-placeholder">Primathmech Alembertian</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#161A29] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold text-accent">The Alembertian Nexus</h3>
+                            </div>
+                            <p class="text-blue-200"><strong class="text-secondary font-bold">Sigma</strong> revives itself. <strong class="text-accent font-bold">Circular</strong> searches <strong class="text-secondary font-bold">Superfactorial</strong>. Xyz Summon <strong class="text-accent font-bold">Alembertian</strong> and use its effect to search <strong class="text-secondary font-bold">Diameter</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color my-2 animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="superfactorial-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mathmech Superfactorial</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#161A29] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold text-accent">Set the Trap</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon <strong class="text-secondary font-bold">Diameter</strong>, revive a Mathmech. Set <strong class="text-secondary font-bold">Superfactorial</strong> and end the turn. The GY is now loaded with Circular, Sigma, and Diameter for the trap's activation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center font-mono">The Final Calculation: End Board</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">The strength of the Mathmech strategy is creating a "disruption battery" on Turn 1. The board appears passive until <strong class="text-accent">Superfactorial</strong> is activated on the opponent's turn, converting stored resources in the GY into overwhelming disruption.</p>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-4 text-center">The Superfactorial Payoff</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div id="laplacian-img-container" class="w-full max-w-xs mx-auto card-placeholder">Primathmech Laplacian</div>
+                    <div>
+                        <p class="text-blue-200 mb-4">Activating <strong class="text-secondary">Superfactorial</strong> summons <strong class="text-accent">Primathmech Laplacian</strong>, triggering a cascade of up to four powerful interruptions:</p>
+                        <ul class="list-disc list-inside space-y-2 text-blue-200">
+                            <li><strong class="text-accent">Hand Rip:</strong> Send 1 random card from the opponent's hand to the GY.</li>
+                            <li><strong class="text-accent">Monster Removal:</strong> Send 1 monster your opponent controls to the GY (does not target).</li>
+                            <li><strong class="text-accent">Spell/Trap Removal:</strong> Send 1 Spell/Trap your opponent controls to the GY (does not target).</li>
+                            <li><strong class="text-accent">Omni-Negate:</strong> Because <strong class="text-secondary">Diameter</strong> was used as material, Laplacian gains a one-time Quick Effect to negate any opponent's card or effect.</li>
+                        </ul>
+                    </div>
+                </div>
+                 <div class="mt-8">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Modern Additions</h3>
+                     <p class="text-blue-200 text-center mb-4">Competitive builds often extend the combo to include additional threats alongside the Superfactorial setup.</p>
+                     <div class="flex flex-col md:flex-row justify-center items-center gap-8">
+                         <div class="text-center">
+                            <div id="heatsoul-img-container" class="w-48 mx-auto mb-2 card-placeholder">Decode Talker Heatsoul</div>
+                             <p class="text-blue-200 font-semibold">Decode Talker Heatsoul for card advantage.</p>
+                         </div>
+                          <div class="text-center">
+                            <div id="terahertz-img-container" class="w-48 mx-auto mb-2 card-placeholder">Firewall Dragon Darkfluid - Neo Tempest Terahertz</div>
+                             <p class="text-blue-200 font-semibold">Terahertz for versatile GY-based negates.</p>
+                         </div>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center font-mono">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400">Hyper Consistency:</strong> Multiple one-card starters and extenders make the core combo incredibly reliable.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Explosive Power:</strong> Can pivot from a control setup to a game-ending OTK with Accesscode Talker.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400">Resilience:</strong> Circular's cost-based setup allows it to play through common hand traps like Ash Blossom.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Choke Points:</strong> Highly reliant on the initial summons resolving. Cards like Infinite Impermanence on Circular can be damaging.</li>
+                        <li><span class="con-icon"><i class="fas fa-globe"></i></span> <strong class="text-red-400">Board Breakers:</strong> Susceptible to non-targeting board wipes like Dark Ruler No More or Evenly Matched.</li>
+                         <li><span class="con-icon"><i class="fas fa-meteor"></i></span> <strong class="text-red-400">Nibiru Vulnerability:</strong> The combo summons many monsters, making it a prime target for Nibiru, the Primal Being.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-network-wired"></i></span> <strong class="text-secondary">Generic Cyberse Support:</strong> Seamlessly integrates with cards like Splash Mage, Transcode Talker, and Accesscode Talker for its OTK.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-secondary">Firewall Engine:</strong> Acts as a premier engine to summon powerful Firewall Link monsters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center font-mono">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The Mathmech archetype has been directly impacted by the TCG Forbidden & Limited List to curb its dominance.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4 bg-yellow-900/30 border-yellow-500">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Mathmech Circular (1 copy):</strong> The deck's primary one-card starter is now limited, significantly reducing its consistency.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4 bg-green-900/30 border-green-500">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All other "Mathmech" main deck monsters</li>
+                            <li>All "Mathmech" Extra Deck monsters</li>
+                            <li>All "Mathmech" Spell/Trap support</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the limitation of <strong class="text-accent">Mathmech Circular</strong> is a major blow to the deck's consistency, it does not eliminate the strategy. The deck must now rely on other starters and extenders to begin its plays, but the core combo and payoff remain just as powerful when they can be executed.</li>
+                </div>
+            </div>
+        </section>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- ANIMATED BANNER SCRIPT ---
+        const canvas = document.getElementById('grid-banner');
+        if(canvas) {
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let lines = [];
+            const lineColor = 'rgba(255, 121, 0, 0.2)';
+            const nodeColor = 'rgba(0, 229, 255, 0.4)';
+
+            function resize() {
+                width = canvas.width = canvas.offsetWidth;
+                height = canvas.height = canvas.offsetHeight;
+                lines = [];
+                for (let i = 0; i < 40; i++) {
+                    lines.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5
+                    });
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const p1 = lines[i];
+                    p1.x += p1.vx;
+                    p1.y += p1.vy;
+                    if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+                    if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(p1.x, p1.y, 2, 0, Math.PI * 2);
+                    ctx.fillStyle = nodeColor;
+                    ctx.fill();
+
+                    for (let j = i + 1; j < lines.length; j++) {
+                        const p2 = lines[j];
+                        const distance = Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+                        if (distance < 150) {
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.strokeStyle = lineColor;
+                            ctx.lineWidth = 1 - (distance / 150);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+            
+            window.addEventListener('resize', resize);
+            resize();
+            draw();
+        }
+
+        // --- CARD IMAGE FETCH SCRIPT ---
+        async function fetchAndDisplayCardImage(cardName, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const data = await response.json();
+                const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardName;
+                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                    throw new Error("Image URL not found.");
+                }
+            } catch (error) {
+                console.error(`Failed to fetch image for "${cardName}":`, error);
+                container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+            }
+        }
+
+        const cardsToLoad = {
+            'circular-img-container': 'Mathmech Circular',
+            'alembertian-img-container': 'Primathmech Alembertian',
+            'superfactorial-img-container': 'Mathmech Superfactorial',
+            'laplacian-img-container': 'Primathmech Laplacian',
+            'heatsoul-img-container': 'Decode Talker Heatsoul',
+            'terahertz-img-container': 'Firewall Dragon Darkfluid - Neo Tempest Terahertz'
+        };
+
+        for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+            fetchAndDisplayCardImage(cardName, containerId);
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,524 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackwing Archetype Breakdown</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark Slate Blue/Gray */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1f2937; /* Darker Gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4b5563; /* Gray border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #374151; /* Lighter Gray */
+            border: 1px solid #6b7280;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1f2937;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1f2937;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a78bfa; cursor: pointer; } /* Light Violet */
+        .arrow-color { color: #8b5cf6; } /* Violet */
+        .heading-underline {
+            border-bottom: 2px solid #8b5cf6;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        a {
+            color: #c4b5fd;
+            text-decoration: underline;
+            transition: color 0.3s;
+        }
+        a:hover {
+            color: #a78bfa;
+        }
+
+        /* --- NEW BLACKWING ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #111827;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            border: 1px solid #4b5563;
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.5);
+        }
+
+        #blackwing-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 2;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.9);
+        }
+        /* --- END OF BANNER STYLES --- */
+        
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(17, 24, 39, 0.95);
+            border: 1px solid #4b5563;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+            word-wrap: break-word;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center mb-10 md:mb-16">
+            <canvas id="blackwing-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Blackwing</h1>
+            <p class="text-lg md:text-xl text-blue-300">An In-Depth Analysis of the Synchro Swarm</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The modern <strong class="text-accent font-bold" data-cardname="Blackwing">Blackwing</strong> archetype operates as a high-speed, resource-recursive combo deck focused on Synchro Summoning powerful DARK Winged Beast monsters. The strategy aims to establish a resilient Turn 1 endboard with layers of protection, negation, and disruption, leveraging support from the <strong class="text-accent font-bold" data-cardname="Darkwing Blast">Darkwing Blast</strong> set. The deck functions like a complex system, where key starters trigger cascading searches and summons, all while navigating strict Extra Deck locks that demand precise sequencing. With <a href="#lore" class="font-bold">a legacy forged in the shadowed skies</a>, its success hinges on converting a one or two-card hand into overwhelming board presence.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Engine Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Search and Summon Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2" data-cardname="Blackwing - Simoon the Poison Wind">Simoon the Poison Wind</h3>
+                    <p class="text-blue-200">The premier single-card starter. By banishing another Blackwing from hand, Simoon places <strong class="text-accent font-bold" data-cardname="Black Whirlwind">Black Whirlwind</strong> directly from the Deck and Normal Summons itself, initiating the core search mechanic and locking you into DARK monsters from the Extra Deck.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2" data-cardname="Blackwing - Sudri the Phantom Glimmer">Sudri the Phantom Glimmer</h3>
+                    <p class="text-blue-200">A dual-function searcher and Synchro enabler. On Normal Summon, it searches any card that lists <strong class="text-accent font-bold" data-cardname="Black-Winged Dragon">Black-Winged Dragon</strong>, and can Tribute a monster to summon a Level 2 Tuner Token, imposing a Synchro-only lock.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2" data-cardname="Black Feather Whirlwind">Black Feather Whirlwind</h3>
+                    <p class="text-blue-200">The deck's essential recovery and protection engine. This Continuous Spell revives a Blackwing from the GY or banished zone whenever a DARK Synchro is summoned, fueling the Synchro ladder and protecting your monsters from destruction.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Simoon 1.5-Card Line</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how <strong class="text-accent font-bold" data-cardname="Blackwing - Simoon the Poison Wind">Simoon</strong> and one other Blackwing card can generate a formidable board.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="simoon-img-container" class="card-image-container flex-shrink-0 card-placeholder">Blackwing - Simoon the Poison Wind</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Ignite the Whirlwind</h3>
+                        </div>
+                        <p class="text-blue-200">Activate <strong class="text-accent font-bold" data-cardname="Blackwing - Simoon the Poison Wind">Simoon's</strong> effect from hand, banishing another Blackwing. Place <strong class="text-accent font-bold" data-cardname="Black Whirlwind">Black Whirlwind</strong> from your deck and immediately Normal Summon Simoon, triggering a search for <strong class="text-accent font-bold" data-cardname="Blackwing - Sudri the Phantom Glimmer">Sudri</strong>.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4 animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="sudri-img-container" class="card-image-container flex-shrink-0 card-placeholder">Blackwing - Sudri the Phantom Glimmer</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Search and Synthesize</h3>
+                        </div>
+                        <p class="text-blue-200">Normal Summon <strong class="text-accent font-bold" data-cardname="Blackwing - Sudri the Phantom Glimmer">Sudri</strong> to search for <strong class="text-accent font-bold" data-cardname="Black Feather Whirlwind">Black Feather Whirlwind</strong>. Then, Tribute Simoon to create a Level 2 Tuner Token. This locks you into Synchro Summons.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4 animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="bwad-img-container" class="card-image-container flex-shrink-0 card-placeholder">Black-Winged Assault Dragon</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Climb the Synchro Ladder</h3>
+                        </div>
+                        <p class="text-blue-200">Use Sudri and the Token to Synchro Summon your way up the ladder (e.g., into <strong class="text-accent font-bold" data-cardname="Blackwing - Nothung the Starlight">Nothung</strong>, then <strong class="text-accent font-bold" data-cardname="Blackwing - Boreastorm the Wicked Wind">Boreastorm</strong>). Use effects like <strong class="text-accent font-bold" data-cardname="Blackwing - Vata the Emblem of Wandering">Vata</strong> to summon <strong class="text-accent font-bold" data-cardname="Black-Winged Dragon">Black-Winged Dragon</strong>, ultimately building into your Level 10 boss monsters.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Typical Endboard and Disruptions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-2 text-center">Blackwing Full Armor Master</h3>
+                    <div id="fam-img-container" class="w-32 h-48 mx-auto my-4 card-placeholder">Blackwing Full Armor Master</div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong>Unaffected</strong> by other card effects.</li>
+                        <li>Places <strong>Wedge Counters</strong> on opponent's monsters that activate effects.</li>
+                        <li>Can take control of a monster with a Wedge Counter (once per turn).</li>
+                    </ul>
+                </div>
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-2 text-center">Black-Winged Assault Dragon</h3>
+                     <div id="bwad-2-img-container" class="w-32 h-48 mx-auto my-4 card-placeholder">Black-Winged Assault Dragon</div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li>Inflicts <strong>700 burn damage</strong> per opponent's monster effect.</li>
+                        <li>Gains <strong>Black Feather Counters</strong> from burn damage.</li>
+                        <li><strong>Quick Effect:</strong> Tribute itself with 4+ counters to destroy all cards on the field.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-2 text-center">Hot Red Dragon Archfiend Abyss</h3>
+                     <div id="hrdaa-img-container" class="w-32 h-48 mx-auto my-4 card-placeholder">Hot Red Dragon Archfiend Abyss</div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong>Quick Effect:</strong> Once per turn, negate the effects of one face-up card your opponent controls.</li>
+                        <li>Provides a crucial layer of universal negation.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Ceiling:</strong> Can produce multi-negate, resilient boards from just a few cards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Resource Recursion:</strong> <strong class="text-accent" data-cardname="Black Feather Whirlwind">Black Feather Whirlwind</strong> provides a constant loop of resources.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Explosive Turns:</strong> Capable of swarming the field for powerful Synchro and Link plays.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Hand Trap Vulnerability:</strong> Extremely susceptible to <strong class="text-accent" data-cardname="Ash Blossom & Joyous Spring">Ash Blossom</strong>, <strong class="text-accent" data-cardname="Droll & Lock Bird">Droll & Lock Bird</strong>, and <strong class="text-accent" data-cardname="Nibiru, the Primal Being">Nibiru</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-lock"></i></span> <strong class="text-red-400">Strict Locks:</strong> Combo lines impose rigid DARK-only or Synchro-only locks that can be difficult to navigate.</li>
+                        <li><span class="con-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-red-400">Fragile Choke Points:</strong> The initial Normal Summon is a critical point of failure if interrupted.</li>
+                    </ul>
+                </div>
+                <!-- Tech & Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech & Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent" data-cardname="Bystial">Bystial Engine:</strong> Provides free extenders and graveyard disruption that synergize with the DARK lock.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-search"></i></span> <strong class="text-accent" data-cardname="Small World">Small World:</strong> A crucial consistency tool to bridge into <strong class="text-accent" data-cardname="Blackwing - Simoon the Poison Wind">Simoon</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-accent">Defensive Staples:</strong> <strong class="text-accent" data-cardname="Called by the Grave">Called by the Grave</strong> and <strong class="text-accent" data-cardname="Triple Tactics Talent">Triple Tactics Talent</strong> are mandatory to protect combos.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">NO IMPACT:</strong> The Blackwing archetype is completely untouched by the current TCG banlist, allowing it to be played at maximum power.
+                </p>
+                <div class="card combo-step-card p-4">
+                    <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards (Full Power)</h4>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                        <li>All core starters and extenders (Simoon, Sudri, Vata) at 3 copies.</li>
+                        <li><strong class="text-green-300" data-cardname="Blackwing - Zephyros the Elite">Blackwing - Zephyros the Elite</strong> at 3 copies.</li>
+                        <li>All boss monsters (Full Armor Master, Assault Dragon) are unrestricted.</li>
+                    </ul>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
+                    <p class="text-sm text-blue-200"><strong>Meta Implications:</strong> With every core card, including the once-limited Zephyros the Elite, available at three copies, the deck's competitive viability is determined not by the banlist, but purely by its matchup spread and ability to play through hand traps.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- NEW BLACKWING BANNER ANIMATION SCRIPT ---
+            const canvas = document.getElementById('blackwing-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                let center = { x: 0, y: 0 };
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                    center.x = canvas.width / 4; // Vortex on the left
+                    center.y = canvas.height / 2;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.baseAngle = Math.random() * Math.PI * 2;
+                        this.angle = this.baseAngle;
+                        this.distance = Math.random() * Math.min(center.x, center.y) * 0.8;
+                        this.speed = (Math.random() * 0.02) + 0.01;
+                        this.color = `hsla(${270 + Math.random() * 30}, 100%, ${60 + Math.random() * 20}%, ${Math.random() * 0.5 + 0.3})`;
+                        this.pastPos = [];
+                    }
+
+                    update() {
+                        this.pastPos.push({x: this.x, y: this.y});
+                        if (this.pastPos.length > 5) this.pastPos.shift();
+
+                        this.angle += this.speed;
+                        this.x = center.x + Math.cos(this.angle) * this.distance;
+                        this.y = center.y + Math.sin(this.angle) * this.distance;
+                        
+                        this.distance += (Math.random() - 0.5) * 0.2;
+                        if (this.distance > Math.min(center.x, center.y) * 0.8) this.distance = Math.min(center.x, center.y) * 0.8;
+                        if (this.distance < Math.min(center.x, center.y) * 0.05) this.distance = Math.min(center.x, center.y) * 0.05;
+                    }
+
+                    draw() {
+                        if (this.pastPos.length > 1) {
+                            ctx.beginPath();
+                            ctx.moveTo(this.pastPos[0].x, this.pastPos[0].y);
+                            for (let i = 1; i < this.pastPos.length; i++) ctx.lineTo(this.pastPos[i].x, this.pastPos[i].y);
+                            ctx.strokeStyle = this.color;
+                            ctx.lineWidth = this.radius * 0.8;
+                            ctx.stroke();
+                        }
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 7000;
+                    for (let i = 0; i < particleCount; i++) particles.push(new Particle(center.x, center.y));
+                }
+
+                function animate() {
+                    ctx.fillStyle = 'rgba(17, 24, 39, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => { p.update(); p.draw(); });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => { setCanvasSize(); init(); });
+            }
+
+            // --- SCRIPT FOR CARD IMAGES AND POPUPS ---
+            const cardDataCache = {};
+            const popup = document.getElementById('card-popup');
+            let currentCardName = null;
+
+            async function fetchCardData(cardName) {
+                if (cardDataCache[cardName]) return cardDataCache[cardName];
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error`);
+                    const data = await response.json();
+                    const cardInfo = data?.data?.[0];
+                    if (cardInfo) {
+                        cardDataCache[cardName] = cardInfo;
+                        return cardInfo;
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    return null;
+                }
+            }
+
+            function displayCardImage(cardInfo, container) {
+                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
+                 if (imageUrl) {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = cardInfo.name;
+                    img.className = 'w-full h-full object-contain rounded-lg shadow-md';
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                } else {
+                     container.innerHTML = `<div class="card-placeholder animate-fadeIn w-full h-full flex items-center justify-center">${cardInfo.name}</div>`;
+                }
+            }
+            
+            async function showPopup(event, cardName) {
+                event.stopPropagation();
+                if (currentCardName === cardName) {
+                    hidePopup();
+                    return;
+                }
+                const cardInfo = await fetchCardData(cardName);
+                if (!popup || !cardInfo) return;
+
+                let stats = '';
+                let atkDef = [];
+                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                if (atkDef.length > 0) stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                
+                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+
+                popup.innerHTML = `
+                    <h3>${cardInfo.name}</h3>
+                    <p class="text-xs text-blue-300">${cardType}</p>
+                    <div class="w-full h-px bg-blue-700 my-2"></div>
+                    <p class="text-xs">${cardInfo.desc.replace(/\\r\\n/g, '<br>').replace(/\r\n/g, '<br>')}</p>
+                    ${stats}
+                `;
+                
+                popup.style.display = 'block';
+                setTimeout(() => { popup.style.opacity = 1; }, 10);
+                movePopup(event);
+                currentCardName = cardName;
+            }
+
+            function hidePopup() {
+                if (popup) {
+                    popup.style.opacity = 0;
+                    setTimeout(() => { if(popup) popup.style.display = 'none'; }, 200);
+                }
+                currentCardName = null;
+            }
+
+            function movePopup(event) {
+                if (!popup) return;
+                const cushion = 20;
+                let x = event.clientX + cushion;
+                let y = event.clientY + cushion;
+                if (x + popup.offsetWidth > window.innerWidth) x = event.clientX - popup.offsetWidth - cushion;
+                if (y + popup.offsetHeight > window.innerHeight) y = event.clientY - popup.offsetHeight - cushion;
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            }
+
+            document.addEventListener('click', hidePopup);
+            
+            const cardsToLoad = {
+                'simoon-img-container': 'Blackwing - Simoon the Poison Wind',
+                'sudri-img-container': 'Blackwing - Sudri the Phantom Glimmer',
+                'bwad-img-container': 'Black-Winged Assault Dragon',
+                'fam-img-container': 'Blackwing Full Armor Master',
+                'bwad-2-img-container': 'Black-Winged Assault Dragon',
+                'hrdaa-img-container': 'Hot Red Dragon Archfiend Abyss'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    fetchCardData(cardName).then(cardInfo => {
+                        if (cardInfo) displayCardImage(cardInfo, container);
+                    });
+                    container.addEventListener('click', (e) => showPopup(e, cardName));
+                }
+            }
+
+            document.querySelectorAll('[data-cardname]').forEach(element => {
+                element.addEventListener('click', (e) => showPopup(e, element.dataset.cardname));
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+

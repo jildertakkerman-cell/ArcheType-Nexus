@@ -1,0 +1,554 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cubic Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0514; /* Deep purple-black */
+            color: #f3e8ff; /* Light lavender text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a0a2a; /* Dark violet */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+            border: 1px solid #4a1a6a; /* Purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a1a4a; /* Slightly lighter violet */
+            border: 1px solid #6a3a9a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #2a1a4a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a1a4a;
+        }
+        .text-accent {
+            color: #d058c0; /* Bright magenta */
+        }
+        .arrow-color {
+            color: #a33a94; /* Darker magenta */
+        }
+        .pro-icon { color: #5eead4; }
+        .con-icon { color: #f7879a; }
+        .neutral-icon { color: #93c5fd; }
+
+        /* --- CUBIC ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            height: 120px;
+            background-color: #0d0514;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a1a6a;
+        }
+        #cubic-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(13, 5, 20, 0.4) 0%, rgba(13, 5, 20, 0.8) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.9);
+        }
+        .banner-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 0.1em;
+            color: #fff;
+        }
+        .banner-header p {
+            font-size: 1rem;
+            color: #f3e8ff;
+        }
+
+        @media (max-width: 768px) {
+            .banner-header { height: 100px; }
+            .banner-header h1 { font-size: 2rem; }
+            .banner-header p { font-size: 0.875rem; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="cubic-banner"></canvas>
+            <h1>Cubic</h1>
+            <p>A Technical Deep Dive into Archetypal Aggression</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-200">
+                    The <a href="https://www.yugioh-card.com/en/products/shp-movie-pack/" target="_blank" class="text-accent font-bold underline hover:text-purple-300">Cubic</a> archetype is a high-variance, aggressive strategy focused on achieving a One-Turn Kill (OTK). Its philosophy is ruthlessly linear: assemble a specific combination of cards to summon its singular boss monster, <strong class="text-accent font-bold">Crimson Nova the Dark Cubic Lord</strong>, and deliver overwhelming damage. The deck operates under a "Fragility Paradox"; while its damage potential is immense, it struggles to recover if the initial OTK is interrupted, dedicating all its resources to aggression and consistency over defensive plays.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Engine Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Cubic Engine: Search and Recursion</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">
+                The archetype's strength lies in a highly interconnected search and recursion engine centered on its key monster and graveyard-activated Spells/Traps.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-atom text-4xl text-purple-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Linchpin & The Protector</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Duza the Meteor Cubic Vessel</h4>
+                            <p class="text-sm text-purple-200">The absolute priority summon. On summon, it sends any "Cubic" card from the Deck to the GY, setting up the entire engine.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Vijam the Cubic Seed</h4>
+                            <p class="text-sm text-purple-200">The primary stall and disruption tool. It cannot be destroyed by battle and negates any monster it battles by placing a Cubic Counter on it.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book-dead text-4xl text-purple-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Graveyard Arsenal</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Cubic Karma (Spell)</h4>
+                            <p class="text-sm text-purple-200">Banishing this from the GY allows you to search for any "Cubic" monster, typically the boss monster <strong class="text-accent font-bold">Crimson Nova</strong>.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Cubic Wave (Quick-Play Spell)</h4>
+                            <p class="text-sm text-purple-200">The indispensable damage multiplier. It doubles a Cubic monster's ATK while halving an opponent's, ensuring the OTK.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Unification of the Cubic Lords (Trap)</h4>
+                            <p class="text-sm text-purple-200">Banishing this from the GY when a Cubic monster is destroyed lets you Special Summon any Cubic monster from the deck, ensuring field presence.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Crimson Nova Turbo OTK</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the deck's primary path to victory, starting with a single monster.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="duza-img-container" class="card-image-container flex-shrink-0 card-placeholder">Duza the Meteor Cubic Vessel</div>
+                        <div class="flex-grow">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon Duza & Mill Karma</h3>
+                            </div>
+                            <p class="text-purple-200">Normal Summon <strong class="text-accent font-bold">Duza the Meteor Cubic Vessel</strong>. Its mandatory effect activates, sending <strong class="text-accent font-bold">Cubic Karma</strong> from your Deck to the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="nova-img-container" class="card-image-container flex-shrink-0 card-placeholder">Crimson Nova the Dark Cubic Lord</div>
+                        <div class="flex-grow">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Search and Summon the Boss</h3>
+                            </div>
+                            <p class="text-purple-200">Activate <strong class="text-accent font-bold">Cubic Karma's</strong> GY effect, banishing it to search for <strong class="text-accent font-bold">Crimson Nova</strong>. Special Summon it by revealing 3 other Cubic cards.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="wave-img-container" class="card-image-container flex-shrink-0 card-placeholder">Cubic Wave</div>
+                        <div class="flex-grow">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a4a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Unleash the Wave for Game</h3>
+                            </div>
+                            <p class="text-purple-200">In the Battle Phase, activate <strong class="text-accent font-bold">Cubic Wave</strong> to double <strong class="text-accent font-bold">Crimson Nova's</strong> ATK to 6000, allowing it to attack twice for a total of 12,000 damage.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final Endboard</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">While designed as a "go-second" OTK deck, Cubics can establish a defensive presence or push for an even more dominant offensive board.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Standard OTK -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Standard OTK Board</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="crimson-nova-endboard-container" class="card-image-container card-placeholder">Crimson Nova the Dark Cubic Lord</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><strong class="text-purple-300 font-bold">Crimson Nova:</strong> An unaffected 3000 ATK body that attacks twice and inflicts 3000 burn damage in the End Phase.</li>
+                        <li><strong class="text-purple-300 font-bold">Unification in GY:</strong> Provides recursion if Crimson Nova is removed, allowing you to recover and try again.</li>
+                    </ul>
+                </div>
+                <!-- Fusion Finisher -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Fusion Finisher</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="trinity-endboard-container" class="card-image-container card-placeholder">Crimson Nova Trinity the Dark Cubic Lord</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><strong class="text-purple-300 font-bold">Crimson Nova Trinity:</strong> A 4000 ATK behemoth that attacks three times, inflicting massive damage and clearing multiple monsters.</li>
+                         <li><strong class="text-purple-300 font-bold">High Resource Cost:</strong> More difficult to summon but serves as the ultimate board-breaker and game-ender.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">Explosive OTK:</strong> Capable of dealing over 12,000 damage in a single turn.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400 font-bold">GY-Reliant:</strong> The engine is hard to stop once it gets going, as many effects activate from the graveyard.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Built-in Protection:</strong> Crimson Nova is unaffected by monster effects with 3000 or less original ATK.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Normal Summon Reliant:</strong> Very vulnerable to effects that negate the summon or effect of Duza.</li>
+                                                <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Graveyard Hate:</strong> Cards like Dimension Shifter or Abyss Dweller (<span class="text-red-300">currently banned</span>) can shut down the entire strategy.</li>
+                        <li><span class="con-icon"><i class="fas fa-chain-broken"></i></span> <strong class="text-red-400 font-bold">Fragile:</strong> If the OTK fails, the deck has very few resources to mount a defense or a second attempt.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Tech Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="neutral-icon"><i class="fas fa-magic"></i></span> <strong class="text-accent font-bold">Summoner Monk:</strong> Discards a spell to summon Duza directly from the deck, adding consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dungeon"></i></span> <strong class="text-accent font-bold">Foolish Burial Goods:</strong> Sends Cubic Spells/Traps directly to the GY to start your plays.</li>
+                         <li><span class="neutral-icon"><i class="fas fa-meteor"></i></span> <strong class="text-accent font-bold">Board Breakers:</strong> Cards like Raigeki, Lightning Storm, and Evenly Matched are crucial for clearing the way for the OTK.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CUBIC BANNER ANIMATION ---
+            const canvas = document.getElementById('cubic-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let cubes = [];
+                let rotation = 0;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Cube {
+                    constructor(x, y, z, size) {
+                        this.x = x; this.y = y; this.z = z;
+                        this.size = size;
+                    }
+                    project(angle) {
+                        const rotX = Math.cos(angle) * this.x - Math.sin(angle) * this.z;
+                        const rotZ = Math.sin(angle) * this.x + Math.cos(angle) * this.z;
+                        const scale = canvas.height / (canvas.height + rotZ + 200);
+                        return {
+                            x: rotX * scale + canvas.width / 2,
+                            y: this.y * scale + canvas.height / 2,
+                            size: this.size * scale
+                        };
+                    }
+                }
+
+                function initCubes() {
+                    cubes = [];
+                    for (let i = 0; i < 50; i++) {
+                        const x = (Math.random() - 0.5) * canvas.width;
+                        const y = (Math.random() - 0.5) * canvas.height;
+                        const z = (Math.random() - 0.5) * 500;
+                        const size = Math.random() * 20 + 5;
+                        cubes.push(new Cube(x, y, z, size));
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    rotation += 0.005;
+
+                    cubes.sort((a, b) => b.z - a.z); // Simple depth sorting
+
+                    cubes.forEach(cube => {
+                        const p = cube.project(rotation);
+                        const opacity = Math.max(0, 1 - (cube.z + 250) / 500);
+                        ctx.fillStyle = `rgba(208, 88, 192, ${opacity * 0.5})`;
+                        ctx.strokeStyle = `rgba(243, 232, 255, ${opacity * 0.7})`;
+                        ctx.lineWidth = 1;
+                        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+                        ctx.strokeRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+                    });
+
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                initCubes();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initCubes();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER ---
+            function createAndAppendPlaceholder(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder animate-fadeIn';
+                placeholder.textContent = cardName;
+                container.appendChild(placeholder);
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        console.warn(`Image not found for "${cardName}".`);
+                        createAndAppendPlaceholder(cardName, containerId);
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    createAndAppendPlaceholder(cardName, containerId);
+                }
+            }
+            
+            fetchAndDisplayCardImage('Duza the Meteor Cubic Vessel', 'duza-img-container');
+            fetchAndDisplayCardImage('Crimson Nova the Dark Cubic Lord', 'nova-img-container');
+            fetchAndDisplayCardImage('Cubic Wave', 'wave-img-container');
+            fetchAndDisplayCardImage('Crimson Nova the Dark Cubic Lord', 'crimson-nova-endboard-container');
+            fetchAndDisplayCardImage('Crimson Nova Trinity the Dark Cubic Lord', 'trinity-endboard-container');
+        });
+    </script>
+</body>
+</html>
+
+

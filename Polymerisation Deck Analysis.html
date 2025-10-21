@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymerization Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep violet-black */
+            color: #e0e7ff; /* Lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1533; /* Dark purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3c336b; /* Muted purple border */
+        }
+        .combo-step-card {
+            background-color: #231c47; /* Slightly lighter purple */
+            border: 1px solid #4a3e8a;
+        }
+        .pro-con-card {
+            background-color: #231c47;
+            border: 1px solid #4a3e8a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(139, 92, 246, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #231c47;
+            color: #a5b4fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f472b6; } /* Vibrant Pink */
+        .text-accent-secondary { color: #a78bfa; } /* Lighter Purple */
+        .arrow-color { color: #a78bfa; }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .hint-link {
+            color: #f472b6;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f472b6;
+            transition: color 0.3s ease;
+        }
+        .hint-link:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        /* --- Polymerization Animated Banner --- */
+        .banner-header {
+            position: relative;
+            height: 140px;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #poly-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(12, 10, 26, 0.4) 0%, rgba(12, 10, 26, 0.9) 80%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px rgba(244, 114, 182, 0.5), 0 0 20px rgba(0,0,0,0.7);
+        }
+
+        .banner-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white; border: 2px solid #6366f1; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i { font-size: 22px; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="poly-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Polymerization</h1>
+            <p class="text-lg md:text-xl text-purple-200">A Strategic Deep Dive into the Fusion Support Ecosystem</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-200">
+                    "Polymerization" itself is not an archetype but the central node of a vast and intricate support network. For over two decades, this iconic Normal Spell has evolved from a simple card into the linchpin of some of the game's most formidable strategies. This analysis dissects the ecosystem of cards designed to search, recycle, and enhance 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Polymerization&stype=1&ctype=2&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=2" target="_blank" class="hint-link">"Polymerization" and its related "Fusion" spells</a>, making them more consistent and powerful than ever.
+                </p>
+            </div>
+        </section>
+
+        <!-- Pillars of Fusion Strategy Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Three Pillars of Fusion Strategy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-secondary mb-2"><i class="fas fa-search mr-2"></i>Conduits</h3>
+                    <p class="text-purple-200">The searchers that provide direct access to "Polymerization" or other "Fusion" spells from the Deck, ensuring consistency.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-secondary mb-2"><i class="fas fa-cogs mr-2"></i>Accelerants</h3>
+                    <p class="text-purple-200">Synergistic packages or "engines" that generate card advantage and enable complex, multi-step plays.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-secondary mb-2"><i class="fas fa-trophy mr-2"></i>Payoffs</h3>
+                    <p class="text-purple-200">The powerful Fusion Monsters and established "end boards" that these conduits and accelerants work to create.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Premier Fusion Engines Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Premier Fusion Engines (Accelerants)</h2>
+            <div class="space-y-8">
+                <div class="card p-6">
+                    <h3 class="text-2xl font-bold text-accent mb-3">The Frightfur Engine</h3>
+                    <p class="text-purple-200 mb-4">Renowned for simplicity and raw card advantage. The core interaction between <strong class="text-accent-secondary">Frightfur Patchwork</strong> and <strong class="text-accent-secondary">Edge Imp Chain</strong> transforms discard costs into a +1 advantage, creating a resilient resource loop.</p>
+                    <div class="flex flex-wrap gap-4">
+                        <div id="patchwork-img-container" class="w-32 card-placeholder">Frightfur Patchwork</div>
+                        <div id="edge-imp-chain-img-container" class="w-32 card-placeholder">Edge Imp Chain</div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-2xl font-bold text-accent mb-3">The Predaplant Engine</h3>
+                    <p class="text-purple-200 mb-4">A one-card starter engine. <strong class="text-accent-secondary">Predaplant Ophrys Scorpio</strong> summons <strong class="text-accent-secondary">Predaplant Darlingtonia Cobra</strong> from the deck, which then searches for any "Polymerization" or "Fusion" spell, including the powerful board-breaker <strong class="text-accent-secondary">Super Polymerization</strong>.</p>
+                     <div class="flex flex-wrap gap-4">
+                        <div id="scorpio-img-container" class="w-32 card-placeholder">Predaplant Ophrys Scorpio</div>
+                        <div id="cobra-img-container" class="w-32 card-placeholder">Predaplant Darlingtonia Cobra</div>
+                    </div>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="text-2xl font-bold text-accent mb-3">The Branded Engine</h3>
+                    <p class="text-purple-200 mb-4">The apex of modern Fusion design. <strong class="text-accent-secondary">Branded Fusion</strong> uses monsters from the hand, field, or Deck as material. This transforms the Main Deck into a toolbox, simultaneously summoning a powerful boss monster while setting up the Graveyard with strategic resources.</p>
+                     <div class="flex flex-wrap gap-4">
+                        <div id="branded-fusion-img-container" class="w-32 card-placeholder">Branded Fusion</div>
+                        <div id="albaz-img-container" class="w-32 card-placeholder">Fallen of Albaz</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board Showcase Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Example End Boards (Payoffs)</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">The ultimate goal of any Fusion combo is to establish a powerful and disruptive end board. Here are some of the most common and impactful results.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Mirrorjade -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="mirrorjade-img-container" class="w-40 h-auto mb-4 card-placeholder">Mirrorjade the Iceblade Dragon</div>
+                    <h4 class="text-lg font-bold text-accent-secondary">Mirrorjade the Iceblade Dragon</h4>
+                    <p class="text-sm text-purple-200 mt-2">The heart of the Branded strategy. Provides a powerful, non-targeting banish as a Quick Effect and has a board-wiping effect if it leaves the field by an opponent's card.</p>
+                </div>
+                <!-- Guardian Chimera -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                     <div id="chimera-img-container" class="w-40 h-auto mb-4 card-placeholder">Guardian Chimera</div>
+                    <h4 class="text-lg font-bold text-accent-secondary">Guardian Chimera</h4>
+                    <p class="text-sm text-purple-200 mt-2">A devastating payoff that generates immense card advantage. When Fusion Summoned by a spell, it allows you to draw cards and destroy cards your opponent controls, often during their own turn.</p>
+                </div>
+                 <!-- Super Poly Targets -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                     <div id="garura-img-container" class="w-40 h-auto mb-4 card-placeholder">Garura, Wings of Resonant Life</div>
+                    <h4 class="text-lg font-bold text-accent-secondary">Super Poly Targets</h4>
+                    <p class="text-sm text-purple-200 mt-2">Cards like <strong class="text-accent">Garura</strong>, <strong class="text-accent">Mudragon of the Swamp</strong>, and <strong class="text-accent">Starving Venom Fusion Dragon</strong> are used with Super Polymerization to break opponent's boards by using their monsters as material.</p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4"><i class="fas fa-thumbs-up mr-2"></i>Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><strong class="text-green-300">Explosive Power:</strong> Capable of generating overwhelming advantage and creating nearly unbreakable boards from a single card.</li>
+                        <li><strong class="text-green-300">Versatility:</strong> Fusion engines are highly "splashable," meaning they can be integrated into many different archetypes to boost their power ceiling.</li>
+                        <li><strong class="text-green-300">Board Breaking:</strong> Cards like <strong class="text-accent-secondary">Super Polymerization</strong> are among the most powerful board-breaking tools in the game, as they are un-chainable.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4"><i class="fas fa-thumbs-down mr-2"></i>Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><strong class="text-red-300">Choke Points:</strong> Key starter cards like <strong class="text-accent-secondary">Branded Fusion</strong> are highly susceptible to hand traps like <strong class="text-accent-secondary">Ash Blossom & Joyous Spring</strong>.</li>
+                        <li><strong class="text-red-300">Resource Intensive:</strong> While engines mitigate this, a failed combo can leave the player with very few resources to recover.</li>
+                         <li><strong class="text-red-300">Locking Restrictions:</strong> Many powerful fusion spells, like <strong class="text-accent-secondary">Branded Fusion</strong> and <strong class="text-accent-secondary">Keeper of Dragon Magic</strong>, lock the player into only summoning Fusion monsters for the turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 per Deck)</h4>
+                        <ul class="list-disc list-inside text-sm text-purple-200">
+                            <li>None of the core engine pieces are currently Limited.</li>
+                        </ul>
+                    </div>
+                     <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-orange-400 mb-2">Semi-Limited (2 per Deck)</h4>
+                        <ul class="list-disc list-inside text-sm text-purple-200">
+                            <li><strong class="text-orange-300">Branded Fusion</strong> - Consistency of the strongest engine is slightly reduced.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden (0 per Deck)</h4>
+                        <ul class="list-disc list-inside text-sm text-purple-200">
+                             <li><strong class="text-red-400">Predaplant Verte Anaconda</strong> - Previously used to easily access any Fusion spell, its ban removes a major consistency tool for many Fusion strategies.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
+                    <p class="text-sm text-purple-200"><strong>Meta Implications:</strong> The Polymerization support system remains incredibly potent. The semi-limiting of <strong class="text-accent-secondary">Branded Fusion</strong> slightly curbs the dominance of the Branded engine but does not remove it from competitive play. The ban of <strong class="text-accent-secondary">Verte Anaconda</strong> was a significant hit, forcing decks to rely on their inherent searchers rather than a generic shortcut. Overall, Fusion-based strategies are still a top-tier threat.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- POLYMERIZATION CANVAS ANIMATION ---
+            const canvas = document.getElementById('poly-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = canvas.width / 2;
+                        this.y = canvas.height / 2;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.radius = Math.random() * 2 + 1;
+                        this.speed = Math.random() * 2 + 0.5;
+                        this.distance = Math.random() * 50 + 20;
+                        this.color = `hsl(${Math.random() * 60 + 260}, 100%, ${Math.random() * 40 + 50}%)`; // Purples and Pinks
+                    }
+
+                    update() {
+                        this.angle += this.speed / 100;
+                        this.distance += 0.2;
+                        this.x = canvas.width / 2 + Math.cos(this.angle) * this.distance;
+                        this.y = canvas.height / 2 + Math.sin(this.angle) * this.distance;
+
+                        if (this.distance > Math.min(canvas.width, canvas.height) / 2) {
+                             this.distance = Math.random() * 50 + 20;
+                             this.x = canvas.width / 2;
+                             this.y = canvas.height / 2;
+                             this.angle = Math.random() * Math.PI * 2;
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.fillStyle = 'rgba(12, 10, 26, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- Card Image Fetching ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                         throw new Error(`Image not found for "${cardName}"`);
+                    }
+                } catch (error) {
+                    console.error(error.message);
+                    container.textContent = cardName; // Keep placeholder text on error
+                }
+            }
+
+            const cardsToLoad = {
+                'patchwork-img-container': 'Frightfur Patchwork',
+                'edge-imp-chain-img-container': 'Edge Imp Chain',
+                'scorpio-img-container': 'Predaplant Ophrys Scorpio',
+                'cobra-img-container': 'Predaplant Darlingtonia Cobra',
+                'branded-fusion-img-container': 'Branded Fusion',
+                'albaz-img-container': 'Fallen of Albaz',
+                'mirrorjade-img-container': 'Mirrorjade the Iceblade Dragon',
+                'chimera-img-container': 'Guardian Chimera',
+                'garura-img-container': 'Garura, Wings of Resonant Life',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

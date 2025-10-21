@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>:P Series Engine Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a091f; /* Darker midnight blue */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(22, 19, 46, 0.7); /* Translucent darker purple/blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            border: 1px solid #523e9d; /* Lighter purple border */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(30, 26, 60, 0.8);
+            border: 1px solid #7b68ee;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 15px rgba(123, 104, 238, 0.5);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1e1a3c;
+            color: #a5b4fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #7b68ee;
+        }
+        .pro-icon { color: #4ade80; }
+        .con-icon { color: #f87171; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fb7185; } /* Rose Pink for accents */
+        .arrow-color { color: #fb7185; }
+        .heading-underline {
+            border-bottom: 2px solid #fb7185;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fb7185;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fb7185;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #fb7185;
+        }
+
+        /* --- Cybernetic Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a091f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #523e9d;
+        }
+
+        #cyber-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 9, 31, 0.4) 0%, rgba(10, 9, 31, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(251, 113, 133, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="cyber-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">:P SERIES</h1>
+            <p class="text-lg md:text-xl text-rose-200">A Metagame Analysis of a Link Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The informal ":P" series, consisting of <strong class="text-accent">I:P Masquerena</strong>, <strong class="text-accent">S:P Little Knight</strong>, and <strong class="text-accent">EM:P Meowmine</strong>, represents a cornerstone of modern deck building. This engine, linked by a shared naming convention and deep synergistic design, provides generic, powerful, and recursive interruptions. Its core function is to convert a minimal board presence into multiple layers of reactive disruption during the opponent's turn, making it one of the most efficient and widespread Extra Deck packages in the competitive Yu-Gi-Oh! TCG.
+                </p>
+            </div>
+        </section>
+
+        <!-- Component Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Deconstructing the Trio</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- I:P Masquerena -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="ip-img-container" class="card-image-container mb-4 card-placeholder">I:P Masquerena</div>
+                    <h3 class="text-xl font-bold text-white mb-2">I:P Masquerena</h3>
+                    <p class="text-sm text-indigo-200">The foundational piece. Her Quick Effect allows for a Link Summon during the opponent's turn, turning any Link monster with an on-summon effect into a powerful interruption.</p>
+                </div>
+                <!-- S:P Little Knight -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="sp-img-container" class="card-image-container mb-4 card-placeholder">S:P Little Knight</div>
+                    <h3 class="text-xl font-bold text-white mb-2">S:P Little Knight</h3>
+                    <p class="text-sm text-indigo-200">The apex of utility and Masquerena's prime target. Provides two powerful banishing effects: one for removal on summon, and a second to interrupt or dodge opposing effects.</p>
+                </div>
+                <!-- EM:P Meowmine -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="emp-img-container" class="card-image-container mb-4 card-placeholder">EM:P Meowmine</div>
+                    <h3 class="text-xl font-bold text-white mb-2">EM:P Meowmine</h3>
+                    <p class="text-sm text-indigo-200">The recursive extender. It acts as a free Special Summon to enable combos and provides a follow-up bounce effect that triggers when I:P or S:P are used.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Primary Sequence & End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Core Sequence: A Formidable End Board</h2>
+             <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                The engine's primary strength is its ability to establish a simple yet powerful end board. By ending their turn with <strong class="text-accent">I:P Masquerena</strong> and one other monster, a player threatens to unleash a devastating series of interruptions. This single play creates a chain of effects that can dismantle an opponent's turn, showcasing the 
+                <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&rp=10&mode=1&sort=1&keyword=I:P%20Masquerena&stype=1" target="_blank" class="lore-link">formidable combined potential of the entire :P series</a>.
+            </p>
+            <div class="card p-6">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="flex-1 space-y-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center"><span class="bg-rose-500 text-white rounded-full h-6 w-6 flex items-center justify-center text-sm font-bold mr-3">1</span>Opponent's Turn Activation</h3>
+                            <p class="text-indigo-200 pl-9">In response to an opponent's play, activate <strong class="text-accent">I:P Masquerena</strong>'s Quick Effect to Link Summon.</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center"><span class="bg-rose-500 text-white rounded-full h-6 w-6 flex items-center justify-center text-sm font-bold mr-3">2</span>Summon <strong class="text-accent">S:P Little Knight</strong></h3>
+                            <p class="text-indigo-200 pl-9">Using I:P and another monster, summon <strong class="text-accent">S:P Little Knight</strong>. I:P's effect grants it protection from destruction by card effects.</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center"><span class="bg-rose-500 text-white rounded-full h-6 w-6 flex items-center justify-center text-sm font-bold mr-3">3</span>Chain of Interruptions</h3>
+                            <p class="text-indigo-200 pl-9">S:P's on-summon effect banishes a card. If <strong class="text-accent">EM:P Meowmine</strong> is in the GY/hand, its effect also triggers to bounce a card. S:P then remains on field, threatening a second banish effect.</p>
+                        </div>
+                    </div>
+                    <div id="sequence-img-container" class="w-full md:w-1/3 card-placeholder">S:P Little Knight</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Generic & Flexible:</strong> Fits into any deck that can make Link-2s.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Resource Efficient:</strong> Generates multiple interruptions from a small investment.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Built-in Protection:</strong> I:P grants destruction immunity, while S:P can dodge targeted effects.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Effect Negation:</strong> Vulnerable to hand traps like <strong class="text-accent">Effect Veiler</strong> or <strong class="text-accent">Infinite Impermanence</strong> on I:P.</li>
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Timing Exploits:</strong> I:P can only be activated in the Main Phase, leaving it vulnerable to plays in other phases.</li>
+                        <li><span class="con-icon"><i class="fas fa-skull"></i></span> <strong class="text-red-300">Battle Removal:</strong> S:P Little Knight's low ATK makes it susceptible to being destroyed by battle.</li>
+                    </ul>
+                </div>
+                <!-- Archetype Integration -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Top Tier Integration</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent">Snake-Eye/Fire King:</strong> Effortlessly makes the engine as part of its main combo.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-bolt"></i></span> <strong class="text-accent">Live Twin/Spright:</strong> The ideal home for the full 3-card engine due to its focus on Link-2 monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-cogs"></i></span> <strong class="text-accent">Orcust:</strong> Provides flexible, non-DARK-locking interaction.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-indigo-100 mb-4 text-center">
+                    The core ":P" engine remains largely untouched, but some of its most powerful historic partners have been forbidden, altering its application in the metagame.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-center">
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited</h4>
+                        <ul class="text-sm text-indigo-200">
+                            <li>I:P Masquerena</li>
+                            <li>S:P Little Knight</li>
+                            <li>EM:P Meowmine</li>
+                        </ul>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited</h4>
+                        <ul class="text-sm text-indigo-200">
+                            <li>Knightmare Unicorn (Often Replaced by S:P)</li>
+                        </ul>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden</h4>
+                        <ul class="text-sm text-indigo-200">
+                            <li>Apollousa, Bow of the Goddess</li>
+                            <li>Spright Elf</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-6 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-400">
+                    <p class="text-sm text-indigo-200"><strong>Meta Implications:</strong> While the core I:P -> S:P play is at full strength, the banning of generic bosses like Apollousa and extenders like Spright Elf has narrowed the engine's highest-power end boards, making the choice of what to Link into more strategic. S:P Little Knight remains the default, most powerful option.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Cybernetic Banner Animation ---
+            const canvas = document.getElementById('cyber-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let points = [];
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Point {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.vx = (Math.random() - 0.5) * 0.5;
+                        this.vy = (Math.random() - 0.5) * 0.5;
+                        this.radius = Math.random() * 1.5 + 1;
+                    }
+                    move() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(251, 113, 133, 0.8)';
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    points = [];
+                    let pointCount = (canvas.width * canvas.height) / 10000;
+                    for (let i = 0; i < pointCount; i++) {
+                        points.push(new Point());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    points.forEach(p => p.move());
+
+                    for (let i = 0; i < points.length; i++) {
+                        for (let j = i + 1; j < points.length; j++) {
+                            const dist = Math.hypot(points[i].x - points[j].x, points[i].y - points[j].y);
+                            if (dist < 100) {
+                                ctx.beginPath();
+                                ctx.moveTo(points[i].x, points[i].y);
+                                ctx.lineTo(points[j].x, points[j].y);
+                                ctx.strokeStyle = `rgba(123, 104, 238, ${1 - dist / 100})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                     points.forEach(p => p.draw());
+
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- Card Image Fetcher ---
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        container.classList.remove('card-placeholder');
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'card-image';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        throw new Error("Image URL not found.");
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    container.textContent = cardName;
+                }
+            }
+
+            const cardsToLoad = {
+                'ip-img-container': 'I:P Masquerena',
+                'sp-img-container': 'S:P Little Knight',
+                'emp-img-container': 'EM:P Meowmine',
+                'sequence-img-container': 'S:P Little Knight',
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                fetchAndDisplayCardImage(cardName, containerId);
+            }
+        });
+    </script>
+</body>
+</html>

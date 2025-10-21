@@ -1,0 +1,551 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crystal Beast Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Dark Slate Blue */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(30, 41, 59, 0.7); /* Slate 800 with transparency */
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.5); /* Slate 600 */
+        }
+        .combo-step-card {
+            background-color: rgba(51, 65, 85, 0.7); /* Slate 700 */
+            border: 1px solid rgba(100, 116, 139, 0.5); /* Slate 500 */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1e293b; /* Slate 800 */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed rgba(100, 116, 139, 0.5);
+        }
+        .text-accent-cyan { color: #22d3ee; }
+        .text-accent-violet { color: #a78bfa; }
+        .text-accent-rose { color: #fb7185; }
+
+        /* --- Crystal Banner Styles --- */
+        .banner-header {
+            position: relative;
+            height: 150px;
+            background-color: #0f172a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+        }
+        #crystal-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .banner-header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            color: #f0f9ff; /* Light Sky Blue */
+            letter-spacing: 0.1em;
+        }
+        .banner-header p {
+            font-size: 1.1rem;
+            color: #cbd5e1; /* Slate 300 */
+        }
+        @media (max-width: 768px) {
+            .banner-header { height: 120px; }
+            .banner-header h1 { font-size: 2.2rem; }
+            .banner-header p { font-size: 0.9rem; }
+        }
+        /* Hint Link Style */
+        .hint-link {
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            background: linear-gradient(90deg, #a78bfa, #22d3ee, #fb7185, #a78bfa);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow-scroll 4s linear infinite;
+            border-bottom: 1px dashed #a78bfa;
+        }
+        @keyframes rainbow-scroll {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Banner Section -->
+        <header class="banner-header text-center">
+            <canvas id="crystal-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Crystal Beast</h1>
+            <p class="text-lg md:text-xl text-slate-300">Analysis of a Crystallized Legend</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-slate-300">
+                    The Crystal Beast archetype stands as one of the most unique in Yu-Gi-Oh!, defined by its special resource management system known as <a class="hint-link">Crystallization</a>. This mechanic allows its monsters to become Continuous Spells upon destruction, creating a recurring pool of resources in the Spell & Trap Zone. Modern support has shifted the deck from a fragile OTK strategy into a resilient midrange or combo-hybrid build, capable of generating impressive board presence while maintaining card advantage through a complex and highly synergistic search and retrieval engine.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Crystallization Core</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-gem mr-2 text-accent-cyan"></i>Monster to Spell</h3>
+                    <p class="text-slate-300">When any of the seven original Crystal Beast monsters are destroyed in the Monster Zone, they are placed face-up in the Spell & Trap Zone as Continuous Spells. These "Crystals" are the fuel for the archetype's most powerful effects, turning every destruction into a strategic advantage.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-exclamation-triangle mr-2 text-accent-rose"></i>S/T Zone Economy</h3>
+                    <p class="text-slate-300">A critical constraint of the deck is managing the five Spell & Trap Zones. An over-accumulation of "Crystals" can lead to a "backrow lock," preventing the activation of other crucial Spells and Traps. Balancing resources is key to success.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Cast and Crew Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Seven Gems & Their Support</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dragon text-4xl text-accent-violet mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-cyan mb-1">Crystal Beast Sapphire Pegasus</h4>
+                            <p class="text-sm text-slate-300">The primary starter. On summon, it places another Crystal Beast from your hand, Deck, or GY into your S/T Zone, immediately starting your resource loop.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-rose mb-1">Crystal Beast Ruby Carbuncle</h4>
+                            <p class="text-sm text-slate-300">The main extender for explosive plays. When Special Summoned, it summons all other Crystal Beasts from your S/T Zone, swarming the field for Link or Xyz summons.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-violet mb-1">Crystal Beast Rainbow Dragon</h4>
+                            <p class="text-sm text-slate-300">A modern utility piece. While a Crystal in the backrow, it can banish itself to summon a Level 4 or lower Crystal Beast from the deck and search an "Ultimate Crystal" monster.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book-sparkles text-4xl text-accent-cyan mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Essential Spells & Traps</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-cyan mb-1">Crystal Bond</h4>
+                            <p class="text-sm text-slate-300">A vital 1-card starter that searches a Crystal Beast monster and places another with a different name in your S/T Zone, generating instant advantage.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-violet mb-1">Rainbow Bridge of the Heart</h4>
+                            <p class="text-sm text-slate-300">The engine's accelerator. It provides an extra Normal Summon, searches "Crystal" Spells/Traps, and bounces an opponent's card when a Crystal is placed.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-rose mb-1">Crystal Conclave / Miracle</h4>
+                            <p class="text-sm text-slate-300">The deck's primary disruption package, providing recursion, non-targeting removal (Conclave), and a powerful omni-negate (Miracle).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Bond of Crystals</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how a single <strong class="text-accent-cyan">Crystal Bond</strong> can establish a robust control setup.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="bond-img-container" class="card-image-container flex-shrink-0 card-placeholder">Crystal Bond</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-slate-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate Crystal Bond</h3>
+                            </div>
+                            <p class="text-slate-300">Activate <strong class="text-accent-cyan">Crystal Bond</strong> to add <strong class="text-accent-cyan">Sapphire Pegasus</strong> to hand and place <strong class="text-accent-violet">Crystal Beast Rainbow Dragon</strong> in your S/T Zone.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-chevron-down text-4xl text-slate-600"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="pegasus-img-container" class="card-image-container flex-shrink-0 card-placeholder">Sapphire Pegasus</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-slate-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon Pegasus & Extend</h3>
+                            </div>
+                            <p class="text-slate-300">Normal Summon <strong class="text-accent-cyan">Sapphire Pegasus</strong> to place another Crystal (e.g., <strong class="text-accent-rose">Ruby Carbuncle</strong>) in the S/T Zone. This establishes multiple resources and can trigger other effects like <strong class="text-accent-violet">Rainbow Bridge of the Heart</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center my-2">
+                    <i class="fas fa-chevron-down text-4xl text-slate-600"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="heart-img-container" class="card-image-container flex-shrink-0 card-placeholder">Rainbow Bridge of the Heart</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-slate-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Generate Advantage</h3>
+                            </div>
+                            <p class="text-slate-300">Use <strong class="text-accent-violet">Rainbow Bridge of the Heart</strong> to destroy a Crystal Beast, search for disruption like <strong class="text-accent-rose">Crystal Miracle</strong>, and then bounce an opponent's card while returning the bridge to your hand for next turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final Spectrum: End Boards</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">Modern Crystal Beast decks aim for powerful, layered end boards that combine in-archetype disruption with potent generic Extra Deck monsters.</p>
+            <div class="card p-8">
+                 <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="overdrive-img-container" class="card-image-container card-placeholder">Ultimate Crystal Rainbow Dragon Overdrive</div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-white mb-4">The Overdrive Finish</h3>
+                        <p class="text-slate-300 mb-4">The ultimate goal is to summon <strong class="text-accent-violet">Ultimate Crystal Rainbow Dragon Overdrive</strong>. This boss monster possesses a devastating Quick Effect: by tributing itself, it can <strong class="text-accent-rose">shuffle all cards on the field into the Deck</strong>. This non-targeting, non-destruction removal is one of the most powerful board wipes in the game, capable of dismantling even the most established fields.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-sm">
+                            <div class="combo-step-card p-3 rounded-lg">
+                                <h4 class="font-bold text-white">Conclave Control Board</h4>
+                                <ul class="list-disc list-inside text-slate-300 mt-1">
+                                    <li><strong class="text-accent-cyan">Crystal Conclave</strong> bounce</li>
+                                    <li><strong class="text-accent-rose">Crystal Miracle</strong> negate</li>
+                                    <li>Rank 4 Xyz (e.g., Bagooska)</li>
+                                </ul>
+                            </div>
+                            <div class="combo-step-card p-3 rounded-lg">
+                                <h4 class="font-bold text-white">Hybrid Combo Board</h4>
+                                <ul class="list-disc list-inside text-slate-300 mt-1">
+                                    <li><strong class="text-accent-violet">UCRD Overdrive</strong> shuffle</li>
+                                    <li>Generic Link (S:P Little Knight)</li>
+                                    <li>Follow-up resources via engine</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Crystal Banner Animation ---
+            const canvas = document.getElementById('crystal-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let crystals = [];
+                const colors = ['#a78bfa', '#22d3ee', '#fb7185', '#fde047', '#4ade80'];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Crystal {
+                    constructor(x, y, size, color, speedX, speedY) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = size;
+                        this.color = color;
+                        this.speedX = speedX;
+                        this.speedY = speedY;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.spin = (Math.random() - 0.5) * 0.02;
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.angle);
+                        ctx.beginPath();
+                        ctx.moveTo(0, -this.size);
+                        for (let i = 1; i <= 6; i++) {
+                            const angle = i * Math.PI / 3;
+                            ctx.lineTo(this.size * Math.sin(angle), -this.size * Math.cos(angle));
+                        }
+                        ctx.closePath();
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        this.angle += this.spin;
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                        this.draw();
+                    }
+                }
+
+                function init() {
+                    crystals = [];
+                    let numberOfCrystals = Math.floor((canvas.width * canvas.height) / 15000);
+                    for (let i = 0; i < numberOfCrystals; i++) {
+                        const size = Math.random() * 20 + 10;
+                        const x = Math.random() * canvas.width;
+                        const y = Math.random() * canvas.height;
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        const speedX = (Math.random() - 0.5) * 0.5;
+                        const speedY = (Math.random() - 0.5) * 0.5;
+                        crystals.push(new Crystal(x, y, size, color, speedX, speedY));
+                    }
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for (let crystal of crystals) {
+                        crystal.update();
+                    }
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- Card Image Fetching ---
+            function createAndAppendPlaceholder(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder animate-fadeIn';
+                placeholder.textContent = cardName;
+                container.appendChild(placeholder);
+            }
+
+            async function fetchAndDisplayCardImage(cardName, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = cardName;
+                        img.className = 'w-full h-auto rounded-lg shadow-lg';
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    } else {
+                        createAndAppendPlaceholder(cardName, containerId);
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch image for "${cardName}":`, error);
+                    createAndAppendPlaceholder(cardName, containerId);
+                }
+            }
+            
+            fetchAndDisplayCardImage('Crystal Bond', 'bond-img-container');
+            fetchAndDisplayCardImage('Crystal Beast Sapphire Pegasus', 'pegasus-img-container');
+            fetchAndDisplayCardImage('Rainbow Bridge of the Heart', 'heart-img-container');
+            fetchAndDisplayCardImage('Ultimate Crystal Rainbow Dragon Overdrive', 'overdrive-img-container');
+        });
+    </script>
+</body>
+</html>
+
+
