@@ -48,6 +48,7 @@
             justify-content: center;
             align-items: center;
             text-align: center;
+            cursor: pointer;
             font-size: 0.75rem;
             line-height: 1rem;
             font-weight: bold;
@@ -126,6 +127,62 @@
             border-color: #8b5cf6;
         }
         .ygo-home-button i { font-size: 22px; position: relative; z-index: 2; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            background: linear-gradient(135deg, rgba(30, 28, 60, 0.9) 0%, #2e1065 100%);
+            border: 2px solid #8b5cf6;
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            color: #e0e7ff;
+            backdrop-filter: blur(5px);
+        }
+        #card-popup.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #card-popup img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        #card-popup h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        #card-popup .type {
+            font-size: 0.875rem;
+            color: #a78bfa;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        #card-popup .stats {
+            font-size: 0.75rem;
+            color: #c4b5fd;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        #card-popup p {
+            font-size: 0.875rem;
+            line-height: 1.4;
+            color: #e0e7ff;
+            word-wrap: break-word;
+        }
+
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -343,48 +400,131 @@
                 });
             }
 
-            // --- Card Image Fetching ---
-            async function fetchAndDisplayCardImage(cardName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
+            // --- Card Popup System ---
+            const cardDataCache = {};
+            let currentPopupCard = null;
+            let isPopupVisible = false;
 
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
-                
-                // Set placeholder first
-                container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
-
+            async function fetchCardData(cardName) {
+                if (cardDataCache[cardName]) {
+                    return cardDataCache[cardName];
+                }
                 try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API error`);
+                    const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`);
+                    if (!response.ok) throw new Error('API error');
                     const data = await response.json();
-                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-
-                    if (imageUrl) {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = cardName;
-                        img.className = 'w-full h-auto rounded-lg shadow-lg';
-                        img.style.opacity = 0;
-                        img.onload = () => {
-                            container.innerHTML = '';
-                            container.appendChild(img);
-                            img.style.transition = 'opacity 0.5s';
-                            setTimeout(() => img.style.opacity = 1, 50);
-                        };
-                    } else {
-                        throw new Error("Image not found");
-                    }
+                    const card = data.data[0];
+                    cardDataCache[cardName] = card;
+                    return card;
                 } catch (error) {
-                    console.error(`Failed to load image for ${cardName}:`, error);
-                    // Placeholder is already set, so no need to do anything else on error
+                    console.error(`Failed to fetch data for "${cardName}":`, error);
+                    return null;
                 }
             }
-            
-            fetchAndDisplayCardImage('Myutant ST-46', 'st46-img-container');
-            fetchAndDisplayCardImage('Myutant Beast', 'beast-img-container');
-            fetchAndDisplayCardImage('Myutant Cry', 'cry-img-container');
-            fetchAndDisplayCardImage('Myutant Synthesis', 'synthesis-img-container');
+
+            function showPopup(cardData, event) {
+                const popup = document.getElementById('card-popup');
+                if (!popup || !cardData) return;
+
+                const imageUrl = cardData.card_images?.[0]?.image_url;
+                const name = cardData.name || 'Unknown';
+                const type = cardData.type || '';
+                const desc = cardData.desc || '';
+                const atk = cardData.atk !== undefined ? cardData.atk : '';
+                const def = cardData.def !== undefined ? cardData.def : '';
+                const level = cardData.level ? `Level ${cardData.level}` : '';
+                const race = cardData.race || '';
+                const attribute = cardData.attribute || '';
+
+                let stats = '';
+                if (level) stats += level + ' ';
+                if (race) stats += race + ' ';
+                if (attribute) stats += attribute + ' ';
+                if (atk !== '') stats += `ATK/${atk} `;
+                if (def !== '') stats += `DEF/${def}`;
+
+                popup.innerHTML = `
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}
+                    <h3>${name}</h3>
+                    <p class="type">${type}</p>
+                    <p class="stats">${stats}</p>
+                    <p>${desc}</p>
+                `;
+
+                popup.classList.add('show');
+                isPopupVisible = true;
+                currentPopupCard = cardData;
+                movePopup(event);
+            }
+
+            function hidePopup() {
+                const popup = document.getElementById('card-popup');
+                if (popup) {
+                    popup.classList.remove('show');
+                    isPopupVisible = false;
+                    currentPopupCard = null;
+                }
+            }
+
+            function movePopup(event) {
+                if (!isPopupVisible) return;
+                const popup = document.getElementById('card-popup');
+                if (!popup) return;
+
+                const mouseX = event.clientX;
+                const mouseY = event.clientY;
+                const popupWidth = 300;
+                const popupHeight = 400;
+                const margin = 10;
+
+                let left = mouseX + margin;
+                let top = mouseY + margin;
+
+                if (left + popupWidth > window.innerWidth) {
+                    left = mouseX - popupWidth - margin;
+                }
+                if (top + popupHeight > window.innerHeight) {
+                    top = mouseY - popupHeight - margin;
+                }
+
+                popup.style.left = `${left}px`;
+                popup.style.top = `${top}px`;
+            }
+
+            document.addEventListener('mousemove', movePopup);
+            document.addEventListener('click', (event) => {
+                if (!event.target.closest('.card-placeholder')) {
+                    hidePopup();
+                }
+            });
+
+            const cardsToLoad = {
+                'st46-img-container': 'Myutant ST-46',
+                'beast-img-container': 'Myutant Beast',
+                'cry-img-container': 'Myutant Cry',
+                'synthesis-img-container': 'Myutant Synthesis'
+            };
+
+            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                    container.addEventListener('click', async (event) => {
+                        event.stopPropagation();
+                        if (isPopupVisible && currentPopupCard?.name === cardName) {
+                            hidePopup();
+                        } else {
+                            const cardData = await fetchCardData(cardName);
+                            showPopup(cardData, event);
+                        }
+                    });
+                }
+            }
         });
     </script>
+
+    <!-- Card Popup Container -->
+    <div id="card-popup"></div>
+
 </body>
 </html>
