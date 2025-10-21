@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -299,8 +299,8 @@
 
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', async () => {
             // --- STARFIELD CANVAS ANIMATION ---
             const canvas = document.getElementById('starfield-canvas');
             if(canvas) {
@@ -399,6 +399,8 @@
                  'First of the Dragons': 'first-of-dragons-img-container',
             };
 
+            await fetchBanlistAndCards();
+
             async function fetchBanlistAndCards() {
                 try {
                     const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
@@ -411,7 +413,7 @@
                     tcgBanlist.push(...internalBanlist.data);
                 }
                 
-                processCards();
+                await processCards();
             }
 
             function getBanStatus(cardName) {
@@ -440,59 +442,51 @@
                 }
 
                  for (const [cardName, containerId] of Object.entries(cardImageMapping)) {
-                    await fetchAndDisplayCardImage(cardName, containerId);
-                }
-            }
+                    const container = document.getElementById(containerId);
+                    if (!container) continue;
 
-            async function fetchAndDisplayCardImage(cardName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
+                    const status = getBanStatus(cardName);
 
-                const status = getBanStatus(cardName);
-
-                try {
-                    const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`);
-                    if (!response.ok) {
-                        throw new Error(`API returned status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-
-                    if (imageUrl) {
-                        container.innerHTML = ''; // Clear placeholder
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = cardName;
-                        img.className = 'w-full h-full object-cover rounded-lg shadow-md animate-fadeIn';
-                        
-                        if (status) {
-                             let statusText = status;
-                             let colorClass = '';
-                             switch(status.toLowerCase()) {
-                                case 'forbidden': colorClass = 'banlist-forbidden'; break;
-                                case 'limited': colorClass = 'banlist-limited'; break;
-                                case 'semi-limited': statusText = 'Semi-Limited'; colorClass = 'banlist-semi-limited'; break;
-                            }
-                            const tag = document.createElement('div');
-                            tag.className = `banlist-tag ${colorClass}`;
-                            tag.textContent = statusText;
-                            container.appendChild(tag);
+                    try {
+                        const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`);
+                        if (!response.ok) {
+                            throw new Error(`API returned status: ${response.status}`);
                         }
-                        
-                        container.appendChild(img);
-                    } else {
-                        throw new Error("Image not found.");
+                        const data = await response.json();
+                        const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
+
+                        if (imageUrl) {
+                            container.innerHTML = ''; // Clear placeholder
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.alt = cardName;
+                            img.className = 'w-full h-full object-cover rounded-lg shadow-md animate-fadeIn';
+                            
+                            if (status) {
+                                 let statusText = status;
+                                 let colorClass = '';
+                                 switch(status.toLowerCase()) {
+                                    case 'forbidden': colorClass = 'banlist-forbidden'; break;
+                                    case 'limited': colorClass = 'banlist-limited'; break;
+                                    case 'semi-limited': statusText = 'Semi-Limited'; colorClass = 'banlist-semi-limited'; break;
+                                    default: break;
+                                }
+                                const tag = document.createElement('div');
+                                tag.className = `banlist-tag ${colorClass}`;
+                                tag.textContent = statusText;
+                                container.appendChild(tag);
+                            }
+                            
+                            container.appendChild(img);
+                        } else {
+                            throw new Error("Image not found.");
+                        }
+                    } catch (error) {
+                        console.error(`Failed to fetch image for "${cardName}":`, error);
+                        container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
                     }
-                } catch (error) {
-                    console.error(`Failed to fetch image for "${cardName}":`, error);
-                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
-                }
-            }
-            
-            fetchBanlistAndCards();
-        });
+                }}
+            });
     </script>
 </body>
 </html>
-
-

@@ -339,52 +339,20 @@
                 });
             }
 
-            // --- CARD IMAGE FETCHER SCRIPT ---
-            async function fetchAndDisplayCardImage(cardName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
-
-                try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    const data = await response.json();
-                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-
-                    if (imageUrl) {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = cardName;
-                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
-                        container.innerHTML = '';
-                        container.appendChild(img);
-                    } else {
-                        throw new Error("Image URL not found.");
-                    }
-                } catch (error) {
-                    console.error(`Failed to fetch image for "${cardName}":`, error);
-                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
-                }
-            }
-
-            fetchAndDisplayCardImage('Evil HERO Malicious Bane', 'malicious-bane-img');
-            fetchAndDisplayCardImage('Evil HERO Infernal Gainer', 'infernal-gainer-img');
-            
             // --- BANLIST CHECKER ---
             async function checkBanlist() {
                 const banlistContainer = document.getElementById('banlist-status');
                 if (!banlistContainer) return;
-                
+
                 const cardsToCheck = ['Infernity Launcher', 'Evil HERO Adusted Gold', 'Xtra HERO Infernal Devicer', 'Dark Fusion'];
                 const banlistUrl = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg';
-                
+
                 let html = '';
-                
+
                 try {
                     const response = await fetch(banlistUrl);
                     const data = await response.json();
-                    
+
                     const banlistData = data.data.reduce((acc, card) => {
                         if(card.banlist_info && card.banlist_info.ban_tcg) {
                            acc[card.name] = card.banlist_info.ban_tcg;
@@ -400,7 +368,7 @@
                         } else if (status === 'Banned') {
                             statusColor = 'text-red-400';
                         }
-                        
+
                         html += `
                             <div class="card combo-step-card p-4">
                                 <h4 class="text-lg font-bold text-amber-100 mb-2">${cardName}</h4>
@@ -413,13 +381,20 @@
                     console.error("Failed to fetch banlist data:", error);
                     html = '<p class="text-red-400">Could not load banlist data. Please try again later.</p>';
                 }
-                
+
                 banlistContainer.innerHTML = html;
             }
 
             checkBanlist();
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'malicious-bane-img': 'Evil HERO Malicious Bane',
+                'infernal-gainer-img': 'Evil HERO Infernal Gainer'
+            });
         });
     </script>
 </body>
 </html>
+
 

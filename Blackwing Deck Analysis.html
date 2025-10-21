@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -328,7 +328,7 @@
 
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
             // --- NEW BLACKWING BANNER ANIMATION SCRIPT ---
             const canvas = document.getElementById('blackwing-banner');
             if (canvas) {
@@ -404,96 +404,6 @@
                 window.addEventListener('resize', () => { setCanvasSize(); init(); });
             }
 
-            // --- SCRIPT FOR CARD IMAGES AND POPUPS ---
-            const cardDataCache = {};
-            const popup = document.getElementById('card-popup');
-            let currentCardName = null;
-
-            async function fetchCardData(cardName) {
-                if (cardDataCache[cardName]) return cardDataCache[cardName];
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
-                try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API error`);
-                    const data = await response.json();
-                    const cardInfo = data?.data?.[0];
-                    if (cardInfo) {
-                        cardDataCache[cardName] = cardInfo;
-                        return cardInfo;
-                    }
-                } catch (error) {
-                    console.error(`Failed to fetch data for "${cardName}":`, error);
-                    return null;
-                }
-            }
-
-            function displayCardImage(cardInfo, container) {
-                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
-                 if (imageUrl) {
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.alt = cardInfo.name;
-                    img.className = 'w-full h-full object-contain rounded-lg shadow-md';
-                    container.innerHTML = '';
-                    container.appendChild(img);
-                } else {
-                     container.innerHTML = `<div class="card-placeholder animate-fadeIn w-full h-full flex items-center justify-center">${cardInfo.name}</div>`;
-                }
-            }
-            
-            async function showPopup(event, cardName) {
-                event.stopPropagation();
-                if (currentCardName === cardName) {
-                    hidePopup();
-                    return;
-                }
-                const cardInfo = await fetchCardData(cardName);
-                if (!popup || !cardInfo) return;
-
-                let stats = '';
-                let atkDef = [];
-                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
-                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
-                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
-                if (atkDef.length > 0) stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
-                
-                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
-
-                popup.innerHTML = `
-                    <h3>${cardInfo.name}</h3>
-                    <p class="text-xs text-blue-300">${cardType}</p>
-                    <div class="w-full h-px bg-blue-700 my-2"></div>
-                    <p class="text-xs">${cardInfo.desc.replace(/\\r\\n/g, '<br>').replace(/\r\n/g, '<br>')}</p>
-                    ${stats}
-                `;
-                
-                popup.style.display = 'block';
-                setTimeout(() => { popup.style.opacity = 1; }, 10);
-                movePopup(event);
-                currentCardName = cardName;
-            }
-
-            function hidePopup() {
-                if (popup) {
-                    popup.style.opacity = 0;
-                    setTimeout(() => { if(popup) popup.style.display = 'none'; }, 200);
-                }
-                currentCardName = null;
-            }
-
-            function movePopup(event) {
-                if (!popup) return;
-                const cushion = 20;
-                let x = event.clientX + cushion;
-                let y = event.clientY + cushion;
-                if (x + popup.offsetWidth > window.innerWidth) x = event.clientX - popup.offsetWidth - cushion;
-                if (y + popup.offsetHeight > window.innerHeight) y = event.clientY - popup.offsetHeight - cushion;
-                popup.style.left = `${x}px`;
-                popup.style.top = `${y}px`;
-            }
-
-            document.addEventListener('click', hidePopup);
-            
             CardLoader.loadCards({
                 'simoon-img-container': 'Blackwing - Simoon the Poison Wind',
                 'sudri-img-container': 'Blackwing - Sudri the Phantom Glimmer',
@@ -502,25 +412,13 @@
                 'bwad-2-img-container': 'Black-Winged Assault Dragon',
                 'hrdaa-img-container': 'Hot Red Dragon Archfiend Abyss'
             });
-
-            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
-                const container = document.getElementById(containerId);
-                if (container) {
-                    fetchCardData(cardName).then(cardInfo => {
-                        if (cardInfo) displayCardImage(cardInfo, container);
-                    });
-                    container.addEventListener('click', (e) => showPopup(e, cardName));
-                }
-            }
-
             document.querySelectorAll('[data-cardname]').forEach(element => {
-                element.addEventListener('click', (e) => showPopup(e, element.dataset.cardname));
+                element.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showPopup(e, element.dataset.cardname);
+                });
             });
         });
     </script>
 </body>
 </html>
-
-
-
-

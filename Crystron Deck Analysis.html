@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -328,7 +328,7 @@
                     <div class="space-y-4">
                         <div class="card combo-step-card p-4">
                             <h4 class="text-lg font-bold text-accent mb-1">Crystron Sulfefnir</h4>
-                            <p class="text-sm text-blue-200">The main playmaker. Summons itself by discarding a Crystron card, destroys a card, and floats into any Crystron from the Deck when destroyed�crucially, without imposing the Machine lock.</p>
+                            <p class="text-sm text-blue-200">The main playmaker. Summons itself by discarding a Crystron card, destroys a card, and floats into any Crystron from the Deck when destroyedï¿½crucially, without imposing the Machine lock.</p>
                         </div>
                         <div class="card combo-step-card p-4">
                             <h4 class="text-lg font-bold text-accent mb-1">Smiger & Thystvern</h4>
@@ -557,150 +557,86 @@
                 });
             }
 
-            // --- Card Image Fetching Script ---
-            const cardDataCache = {};
-            const popup = document.getElementById('card-popup');
-            let activePopup = null;
-            let lastShown = 0;
-            let currentCard = null;
+            CardLoader.loadCards({
+                'smiger-img-container': 'Crystron Smiger',
+                'sulfefnir-img-container': 'Crystron Sulfefnir',
+                'infinity-img-container': 'Cyber Dragon Infinity',
+                'endboard-infinity-img-container': 'Cyber Dragon Infinity',
+                'regulus-img-container': 'Therion "King" Regulus',
+                'dragster-img-container': 'F.A. Dawn Dragster'
+            });
 
-            async function fetchAndProcessCardData(cardName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                
-                container.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    showPopup(event, cardName);
-                });
+            // --- New Banner Animation ---
+            const bannerCanvas = document.getElementById('crystron-banner-canvas');
+            const bannerCtx = bannerCanvas.getContext('2d');
+            let particlesArray;
 
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+            function setCanvasSize() {
+                const banner = document.querySelector('.banner');
+                if (banner) {
+                    bannerCanvas.width = banner.clientWidth;
+                    bannerCanvas.height = banner.clientHeight;
+                }
+            }
 
-                try {
-                    if (cardDataCache[cardName]) {
-                        displayCardImage(cardDataCache[cardName], container);
-                        return;
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * bannerCanvas.width;
+                    this.y = Math.random() * bannerCanvas.height + bannerCanvas.height;
+                    this.size = Math.random() * 1.5 + 1;
+                    this.speedY = Math.random() * 0.5 + 0.25;
+                    this.speedX = (Math.random() * 0.5 - 0.25);
+                    this.opacity = Math.random() * 0.5 + 0.3;
+                }
+                update() {
+                    this.y -= this.speedY;
+                    this.x += this.speedX;
+                    if (this.y < 0) {
+                        this.y = bannerCanvas.height;
+                        this.x = Math.random() * bannerCanvas.width;
                     }
-                    
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    const data = await response.json();
-                    const cardInfo = data?.data?.[0];
-                    
-                    if (cardInfo) {
-                        cardDataCache[cardName] = cardInfo;
-                        displayCardImage(cardInfo, container);
-                    } else {
-                        throw new Error("Card data not found in API response.");
-                    }
-                } catch (error) {
-                    console.error(`Failed to fetch data for "${cardName}":`, error);
-                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+                }
+                draw() {
+                    bannerCtx.fillStyle = `rgba(255, 215, 0, ${this.opacity})`;
+                    bannerCtx.beginPath();
+                    bannerCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    bannerCtx.fill();
                 }
             }
 
-            function displayCardImage(cardInfo, container) {
-                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
-                 if (imageUrl) {
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.alt = cardInfo.name;
-                    img.className = 'w-full h-auto rounded-lg shadow-md transition-opacity duration-500 opacity-0';
-                    img.onload = () => {
-                        img.classList.remove('opacity-0');
-                    };
-                    container.innerHTML = '';
-                    container.appendChild(img);
-                } else {
-                     container.innerHTML = `<div class="card-placeholder">${cardInfo.name}</div>`;
-                }
-            }
-            
-            function showPopup(event, cardName) {
-                if (currentCard === cardName) {
-                    hidePopup();
-                    return;
-                }
-                hidePopup(); // Ensure any existing popup is hidden first
-                if (!popup) return;
-                const cardInfo = cardDataCache[cardName];
-                if (!cardInfo) return;
-
-                let stats = '';
-                let atkDef = [];
-                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
-                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
-                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
-                if(atkDef.length > 0) {
-                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
-                }
-                
-                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
-
-                popup.innerHTML = `
-                    <div>
-                        <h3>${cardInfo.name}</h3>
-                        <p class="text-xs text-gray-300">${cardType}</p>
-                        <div class="w-full h-px bg-gray-600 my-2"></div>
-                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
-                        ${stats}
-                    </div>
-                `;
-                
-                movePopup(event);
-                popup.style.display = 'block';
-                setTimeout(() => { popup.style.opacity = 1; }, 10);
-                activePopup = popup;
-                lastShown = Date.now();
-                currentCard = cardName;
-            }
-
-            function hidePopup() {
-                if (Date.now() - lastShown < 100) return; // Ignore hide calls immediately after showing
-                if (activePopup) {
-                    activePopup.style.opacity = 0;
-                    setTimeout(() => { 
-                        if (activePopup) activePopup.style.display = 'none'; 
-                    }, 200);
-                    activePopup = null;
-                    currentCard = null;
+            function init() {
+                particlesArray = [];
+                let numberOfParticles = (bannerCanvas.width * bannerCanvas.height) / 9000;
+                for (let i = 0; i < numberOfParticles; i++) {
+                    particlesArray.push(new Particle());
                 }
             }
 
-            function movePopup(event) {
-                if (!popup) return;
-                const popupWidth = popup.offsetWidth;
-                const popupHeight = popup.offsetHeight;
-                const cushion = 20;
-
-                let x = event.clientX + cushion;
-                let y = event.clientY + cushion;
-
-                if (x + popupWidth > window.innerWidth) {
-                    x = event.clientX - popupWidth - cushion;
+            function animate() {
+                bannerCtx.clearRect(0, 0, bannerCanvas.width, bannerCanvas.height);
+                for (let i = 0; i < particlesArray.length; i++) {
+                    particlesArray[i].update();
+                    particlesArray[i].draw();
                 }
-                if (y + popupHeight > window.innerHeight) {
-                    y = event.clientY - popupHeight - cushion;
-                }
-
-                popup.style.left = `${x}px`;
-                popup.style.top = `${y}px`;
+                requestAnimationFrame(animate);
             }
 
-            // Global click listener to close the popup
-            document.addEventListener('click', hidePopup);
+            setCanvasSize();
+            init();
+            animate();
 
-            // Cards to fetch
-            fetchAndProcessCardData('Crystron Smiger', 'smiger-img-container');
-            fetchAndProcessCardData('Crystron Sulfefnir', 'sulfefnir-img-container');
-            fetchAndProcessCardData('Cyber Dragon Infinity', 'infinity-img-container');
-            fetchAndProcessCardData('Cyber Dragon Infinity', 'endboard-infinity-img-container');
-            fetchAndProcessCardData('Therion "King" Regulus', 'regulus-img-container');
-            fetchAndProcessCardData('F.A. Dawn Dragster', 'dragster-img-container');
+            window.addEventListener('resize', () => {
+                setCanvasSize();
+                init();
+            });
+        });
+    </script>
         });
     </script>
     <div id="card-popup" class="fixed z-50 bg-gray-800 text-white p-4 rounded-lg shadow-lg border-2 border-[#334155] max-w-xs max-h-96 overflow-y-auto pointer-events-none opacity-0 transition-opacity duration-200"></div>
 </body>
 </html>
+
 
 
 

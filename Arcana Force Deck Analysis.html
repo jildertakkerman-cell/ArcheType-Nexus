@@ -426,7 +426,7 @@
                     canvas.width = canvas.offsetWidth;
                     canvas.height = canvas.offsetHeight;
                 };
-                
+
                 class Particle {
                     constructor() {
                         this.x = Math.random() * canvas.width;
@@ -489,22 +489,22 @@
                         shapes.push(new Shape());
                     }
                 }
-                
+
                 let frameCount = 0;
                 function animate() {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
+
                     particles.forEach(p => { p.update(); p.draw(); });
                     shapes.forEach(s => { s.update(); s.draw(); });
-                    
+
                     if (frameCount % 60 === 0 && Math.random() < 0.5) { // Flash effect
                         ctx.fillStyle = `rgba(253, 224, 71, 0.1)`;
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
                     }
-                    
+
                     shapes = shapes.filter(s => s.life < s.maxLife);
                     if (shapes.length < 5) shapes.push(new Shape());
-                    
+
                     frameCount++;
                     animationFrameId = requestAnimationFrame(animate);
                 }
@@ -520,73 +520,53 @@
                 window.addEventListener('resize', startAnimation);
             }
 
-            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
-
+            // --- CARD POPUP FUNCTIONALITY ---
             const cardDataCache = {};
             const popup = document.getElementById('card-popup');
             let activePopup = null;
 
-            async function fetchAndProcessCardData(cardName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+            async function fetchCardData(cardName) {
+                if (cardDataCache[cardName]) return cardDataCache[cardName];
 
+                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
                 try {
-                    if (cardDataCache[cardName]) {
-                        displayCardImage(cardDataCache[cardName], container);
-                        return;
-                    }
-                    
                     const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error(`API error: ${response.status}`);
                     const data = await response.json();
                     const cardInfo = data?.data?.[0];
-                    
+
                     if (cardInfo) {
                         cardDataCache[cardName] = cardInfo;
-                        displayCardImage(cardInfo, container);
+                        return cardInfo;
                     } else {
                         throw new Error("Card data not found in API response.");
                     }
                 } catch (error) {
                     console.error(`Failed to fetch data for "${cardName}":`, error);
-                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                    throw error;
                 }
             }
 
             function displayCardImage(cardInfo, container) {
-                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
-                 if (imageUrl) {
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.alt = cardInfo.name;
-                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
-                    img.addEventListener('click', (event) => {
-                        event.stopPropagation();
-                        showPopup(event, cardInfo.name);
-                    });
-                    container.innerHTML = '';
-                    container.appendChild(img);
-                } else {
-                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
-                }
+                const img = document.createElement('img');
+                img.src = cardInfo.card_images[0].image_url;
+                img.alt = cardInfo.name;
+                img.className = 'card-image';
+                img.addEventListener('click', (event) => showPopup(event, cardInfo));
+                container.innerHTML = '';
+                container.appendChild(img);
             }
-            
-            function showPopup(event, cardName) {
-                if (!popup) return;
-                const cardInfo = cardDataCache[cardName];
-                if (!cardInfo) return;
+
+            function showPopup(event, cardInfo) {
+                if (activePopup) hidePopup();
 
                 let stats = '';
-                let atkDef = [];
-                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
-                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
-                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
-                if(atkDef.length > 0) {
-                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
+                if (cardInfo.type.includes('Monster')) {
+                    stats = `<div class="w-full h-px bg-blue-700 my-2"></div>
+                        <p class="text-xs text-green-300">ATK: ${cardInfo.atk || 'N/A'} / DEF: ${cardInfo.def || 'N/A'}</p>
+                        <p class="text-xs text-yellow-300">Level: ${cardInfo.level || 'N/A'}</p>`;
                 }
-                
+
                 const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
 
                 popup.innerHTML = `
@@ -598,28 +578,17 @@
                         ${stats}
                     </div>
                 `;
-                
+
                 movePopup(event);
                 popup.style.display = 'block';
                 setTimeout(() => { popup.style.opacity = 1; }, 10);
                 activePopup = popup;
             }
 
-            function hidePopup() {
-                if (activePopup) {
-                    activePopup.style.opacity = 0;
-                    setTimeout(() => { 
-                        if (activePopup) activePopup.style.display = 'none'; 
-                    }, 200);
-                    activePopup = null;
-                }
-            }
-
             function movePopup(event) {
-                if (!popup) return;
-                const popupWidth = popup.offsetWidth;
-                const popupHeight = popup.offsetHeight;
-                const cushion = 20;
+                const popupWidth = 320;
+                const popupHeight = 200;
+                const cushion = 10;
 
                 let x = event.clientX + cushion;
                 let y = event.clientY + cushion;
@@ -627,6 +596,7 @@
                 if (x + popupWidth > window.innerWidth) {
                     x = event.clientX - popupWidth - cushion;
                 }
+
                 if (y + popupHeight > window.innerHeight) {
                     y = event.clientY - popupHeight - cushion;
                 }
@@ -635,21 +605,31 @@
                 popup.style.top = `${y}px`;
             }
 
+            function hidePopup() {
+                if (activePopup) {
+                    activePopup.style.opacity = 0;
+                    setTimeout(() => {
+                        activePopup.style.display = 'none';
+                        activePopup = null;
+                    }, 200);
+                }
+            }
+
             // Global click listener to close the popup
             document.addEventListener('click', hidePopup);
 
-            async function fetchAndDisplayCardImage(cardName, containerId) {
-                fetchAndProcessCardData(cardName, containerId);
-            }
-
-            fetchAndDisplayCardImage('Light Barrier', 'light-barrier-img-container');
-            fetchAndDisplayCardImage('Arcana Force XIV - Temperance', 'temperance-img-container');
-            fetchAndDisplayCardImage('Arcana Force XXI - The World', 'the-world-img-container');
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'light-barrier-img-container': 'Light Barrier',
+                'temperance-img-container': 'Arcana Force XIV - Temperance',
+                'the-world-img-container': 'Arcana Force XXI - The World'
+            });
         });
     </script>
     <div id="card-popup" class="fixed z-50 bg-gray-900 border-2 border-[#fde047] text-white p-4 rounded-lg shadow-lg max-w-xs opacity-0 transition-opacity duration-200 pointer-events-none"></div>
 </body>
 </html>
+
 
 
 

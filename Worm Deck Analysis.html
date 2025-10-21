@@ -323,7 +323,7 @@
             if(canvas){
                 const ctx = canvas.getContext('2d');
                 let particles = [];
-                
+
                 const setCanvasSize = () => {
                     canvas.width = canvas.offsetWidth;
                     canvas.height = canvas.offsetHeight;
@@ -386,7 +386,7 @@
 
                     requestAnimationFrame(animate);
                 }
-                
+
                 setCanvasSize();
                 initParticles();
                 animate();
@@ -396,31 +396,6 @@
                 });
             }
 
-            async function fetchAndDisplayCardImage(cardName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
-                try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    const data = await response.json();
-                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-                    if (imageUrl) {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = cardName;
-                        img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
-                        container.innerHTML = '';
-                        container.appendChild(img);
-                    } else {
-                        throw new Error("Image URL not found.");
-                    }
-                } catch (error) {
-                    console.error(`Failed to fetch image for "${cardName}":`, error);
-                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
-                }
-            }
-            
             async function checkBanlist() {
                 const cardsToCheck = [
                     "Worm Xex", "Worm Yagan", "Worm Cartaros", "Worm King", "W Nebula Meteorite", "King of the Feral Imps", "Honest"
@@ -433,7 +408,7 @@
                     const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
                     if (!response.ok) throw new Error('Failed to fetch banlist');
                     const data = await response.json();
-                    
+
                     const banlistData = data.data;
                     let limitedCards = [];
 
@@ -446,10 +421,10 @@
 
                     if (limitedCards.length > 0) {
                          banlistStatusEl.innerHTML = `<strong class="text-yellow-400 font-bold">SOME RESTRICTIONS:</strong> Certain synergistic cards are on the F&L list:`;
-                        
+
                         let forbiddenHtml = '';
                         let limitedHtml = '';
-                        
+
                         limitedCards.forEach(card => {
                             if (card.status === 'Forbidden') {
                                 if (!forbiddenHtml) forbiddenHtml += `<div class="card combo-step-card p-4"><h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4><ul class="list-disc list-inside space-y-1 text-sm text-gray-300">`;
@@ -462,7 +437,7 @@
 
                         if (forbiddenHtml) banlistDetailsEl.innerHTML += forbiddenHtml + '</ul></div>';
                         if (limitedHtml) banlistDetailsEl.innerHTML += limitedHtml + '</ul></div>';
-                        
+
                         metaImplicationsEl.className = 'mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500';
                         metaImplicationsEl.innerHTML = `<p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core "Worm" engine is untouched, the limitation of key generic support like "King of the Feral Imps" slightly impacts the deck's consistency and power ceiling, requiring players to find alternative ways to access their starters.</p>`;
 
@@ -494,15 +469,19 @@
                 }
             }
 
-
-            fetchAndDisplayCardImage('Worm Xex', 'xex-yagan-img-container');
-            fetchAndDisplayCardImage('W Nebula Meteorite', 'meteorite-img-container');
-            fetchAndDisplayCardImage('Worm King', 'king-img-container-combo');
-            fetchAndDisplayCardImage('Worm King', 'king-img-container');
-            fetchAndDisplayCardImage('Worm Zero', 'zero-img-container');
             checkBanlist();
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'xex-yagan-img-container': 'Worm Xex',
+                'meteorite-img-container': 'W Nebula Meteorite',
+                'king-img-container-combo': 'Worm King',
+                'king-img-container': 'Worm King',
+                'zero-img-container': 'Worm Zero'
+            });
         });
     </script>
 </body>
 </html>
+
 

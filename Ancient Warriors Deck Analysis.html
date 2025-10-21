@@ -527,181 +527,135 @@
                 });
             }
 
+            // --- CARD LOADING ---
+            // Load single cards
+            CardLoader.loadCards({
+                'three-visits-img-container': 'Ancient Warriors Saga - Three Visits',
+                'guan-yun-img-container': 'Ancient Warriors - Loyal Guan Yun',
+                'ddl-img-container': 'Ancient Warriors Oath - Double Dragon Lords'
+            });
 
-            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+            // Load multiple cards for endboard container
+            loadMultipleCardsForEndboard();
+        });
 
-            const cardDataCache = {};
-            const popup = document.getElementById('card-popup');
-            let activePopup = null;
+        // Custom function to load multiple cards in the endboard container
+        async function loadMultipleCardsForEndboard() {
+            const container = document.getElementById('endboard-img-container');
+            if (!container) return;
 
-            async function fetchAndProcessCardData(cardName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
+            const cardNames = ['Ancient Warriors Oath - Double Dragon Lords', 'Apollousa, Bow of the Goddess'];
+            container.innerHTML = '';
 
+            const imageWrapper = document.createElement('div');
+            imageWrapper.className = 'flex gap-1 w-full h-full';
+
+            for (const cardName of cardNames) {
                 try {
-                    if (cardDataCache[cardName]) {
-                        displayCardImage(cardDataCache[cardName], container);
-                        return;
-                    }
+                    // Use CardLoader's fetchCardData function by calling loadCard for each
+                    await CardLoader.loadCard(cardName, `temp-${cardName.replace(/[^a-zA-Z0-9]/g, '-')}`);
                     
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    const data = await response.json();
-                    const cardInfo = data?.data?.[0];
-                    
+                    // Get the cached card data
+                    const cardInfo = CardLoader.getCachedCard(cardName);
                     if (cardInfo) {
-                        cardDataCache[cardName] = cardInfo;
-                        displayCardImage(cardInfo, container);
-                    } else {
-                        throw new Error("Card data not found in API response.");
+                        const img = document.createElement('img');
+                        img.src = cardInfo.hosted_image_url;
+                        img.alt = cardName;
+                        img.className = 'w-1/2 h-auto rounded-lg shadow-md';
+                        
+                        // Add click listener that mimics CardLoader's popup system
+                        img.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            showCardPopup(event, cardName);
+                        });
+                        
+                        // Handle image load errors
+                        img.onerror = function() {
+                            console.error(`Image not found: ${cardName} (ID: ${cardInfo.id})`);
+                            const placeholder = document.createElement('div');
+                            placeholder.className = 'card-placeholder';
+                            placeholder.textContent = cardName;
+                            imageWrapper.appendChild(placeholder);
+                        };
+                        
+                        imageWrapper.appendChild(img);
                     }
                 } catch (error) {
-                    console.error(`Failed to fetch data for "${cardName}":`, error);
-                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
+                    console.error(`Error loading card ${cardName}:`, error);
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'card-placeholder';
+                    placeholder.textContent = cardName;
+                    imageWrapper.appendChild(placeholder);
                 }
             }
 
-            function displayCardImage(cardInfo, container) {
-                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
-                 if (imageUrl) {
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.alt = cardInfo.name;
-                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
-                    img.addEventListener('click', (event) => {
-                        event.stopPropagation();
-                        showPopup(event, cardInfo.name);
-                    });
-                    container.innerHTML = '';
-                    container.appendChild(img);
-                } else {
-                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
-                }
+            container.appendChild(imageWrapper);
+        }
+
+        // Custom popup function that mimics CardLoader's showPopup
+        function showCardPopup(event, cardName) {
+            const popup = document.getElementById('card-popup');
+            if (!popup) return;
+            
+            const cardInfo = CardLoader.getCachedCard(cardName);
+            if (!cardInfo) return;
+
+            // Build stats string
+            let stats = '';
+            let atkDef = [];
+            if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+            if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+            if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+            if (atkDef.length > 0) {
+                stats = `<p class="mt-2 text-red-400 font-bold">${atkDef.join(' ')}</p>`;
             }
             
-            function showPopup(event, cardName) {
-                if (!popup) return;
-                const cardInfo = cardDataCache[cardName];
-                if (!cardInfo) return;
+            const cardType = cardInfo.type.includes('Monster') 
+                ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` 
+                : `[${cardInfo.race} Card]`;
 
-                let stats = '';
-                let atkDef = [];
-                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
-                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
-                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
-                if(atkDef.length > 0) {
-                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
-                }
-                
-                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
+            popup.innerHTML = `
+                <div>
+                    <h3 class="text-red-400 font-bold text-lg mb-2">${cardInfo.name}</h3>
+                    <p class="text-xs text-red-300">${cardType}</p>
+                    <div class="w-full h-px bg-red-700 my-2"></div>
+                    <p class="text-xs text-white">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                    ${stats}
+                </div>
+            `;
+            
+            movePopup(event);
+            popup.style.display = 'block';
+            setTimeout(() => { popup.style.opacity = 1; }, 10);
+        }
 
-                popup.innerHTML = `
-                    <div>
-                        <h3>${cardInfo.name}</h3>
-                        <p class="text-xs text-blue-300">${cardType}</p>
-                        <div class="w-full h-px bg-blue-700 my-2"></div>
-                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
-                        ${stats}
-                    </div>
-                `;
-                
-                movePopup(event);
-                popup.style.display = 'block';
-                setTimeout(() => { popup.style.opacity = 1; }, 10);
-                activePopup = popup;
+        // Helper function to position popup (copied from CardLoader)
+        function movePopup(event) {
+            const popup = document.getElementById('card-popup');
+            if (!popup) return;
+            
+            const popupWidth = popup.offsetWidth;
+            const popupHeight = popup.offsetHeight;
+            const cushion = 20;
+
+            let x = event.clientX + cushion;
+            let y = event.clientY + cushion;
+
+            if (x + popupWidth > window.innerWidth) {
+                x = event.clientX - popupWidth - cushion;
+            }
+            if (y + popupHeight > window.innerHeight) {
+                y = event.clientY - popupHeight - cushion;
             }
 
-            function hidePopup() {
-                if (activePopup) {
-                    activePopup.style.opacity = 0;
-                    setTimeout(() => { 
-                        if (activePopup) activePopup.style.display = 'none'; 
-                    }, 200);
-                    activePopup = null;
-                }
-            }
-
-            function movePopup(event) {
-                if (!popup) return;
-                const popupWidth = popup.offsetWidth;
-                const popupHeight = popup.offsetHeight;
-                const cushion = 20;
-
-                let x = event.clientX + cushion;
-                let y = event.clientY + cushion;
-
-                if (x + popupWidth > window.innerWidth) {
-                    x = event.clientX - popupWidth - cushion;
-                }
-                if (y + popupHeight > window.innerHeight) {
-                    y = event.clientY - popupHeight - cushion;
-                }
-
-                popup.style.left = `${x}px`;
-                popup.style.top = `${y}px`;
-            }
-
-            // Global click listener to close the popup
-            document.addEventListener('click', hidePopup);
-
-            async function fetchAndDisplayCardImage(cardName, containerId) {
-                fetchAndProcessCardData(cardName, containerId);
-            }
-
-            async function fetchAndDisplayMultipleCardImages(cardNames, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                container.innerHTML = '';
-                const placeholder = document.createElement('div');
-                placeholder.className = 'card-placeholder animate-fadeIn';
-                placeholder.textContent = `Loading: ${cardNames.join(' & ')}...`;
-                container.appendChild(placeholder);
-                const imageWrapper = document.createElement('div');
-                imageWrapper.className = 'flex gap-1 w-full h-full';
-                for (const cardName of cardNames) {
-                    try {
-                        const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
-                        const response = await fetch(apiUrl);
-                         if (!response.ok) throw new Error(`API call failed for ${cardName}: ${response.status}`);
-                        const data = await response.json();
-                        if (data.error) throw new Error(data.error.message);
-                        
-                        if (data && data.data) {
-                            const cardInfo = data.data[0];
-                            const imageUrl = cardInfo.card_images[0].image_url;
-                            const imgElement = document.createElement('img');
-                            imgElement.src = imageUrl;
-                            imgElement.alt = cardName;
-                            imgElement.className = 'w-1/2 h-auto rounded-md shadow-lg animate-fadeIn';
-                            imgElement.addEventListener('click', (event) => {
-                                event.stopPropagation();
-                                if (!cardDataCache[cardName]) cardDataCache[cardName] = cardInfo;
-                                showPopup(event, cardName);
-                            });
-                            imageWrapper.appendChild(imgElement);
-                        } else {
-                             console.error(`No data returned for ${cardName}:`, data);
-                        }
-                    } catch (error) {
-                        console.error(`Error fetching image for ${cardName}:`, error);
-                    }
-                }
-                container.innerHTML = '';
-                container.appendChild(imageWrapper);
-            }
-
-            fetchAndDisplayCardImage('Ancient Warriors Saga - Three Visits', 'three-visits-img-container');
-            // Corrected card name
-            fetchAndDisplayCardImage('Ancient Warriors - Loyal Guan Yun', 'guan-yun-img-container');
-            fetchAndDisplayCardImage('Ancient Warriors Oath - Double Dragon Lords', 'ddl-img-container');
-            fetchAndDisplayMultipleCardImages(['Ancient Warriors Oath - Double Dragon Lords', 'Apollousa, Bow of the Goddess'], 'endboard-img-container');
-        });
+            popup.style.left = `${x}px`;
+            popup.style.top = `${y}px`;
+        }
     </script>
     <div id="card-popup" class="fixed z-50 bg-gray-900 border-2 border-[#cd7f32] text-white p-4 rounded-lg shadow-lg max-w-xs opacity-0 transition-opacity duration-200 pointer-events-none"></div>
 </body>
 </html>
+
 
 
 

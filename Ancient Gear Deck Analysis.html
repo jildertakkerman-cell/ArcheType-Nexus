@@ -417,7 +417,7 @@
         </section>
     </div>
 
-    <script>
+        <script>
         document.addEventListener('DOMContentLoaded', () => {
              // --- ANCIENT GEAR "CLOCKWORK ENGINE" ANIMATION ---
             const canvas = document.getElementById('gear-banner');
@@ -452,51 +452,46 @@
                         ctx.translate(this.x, this.y);
                         ctx.rotate(this.angle);
 
+                        // Draw gear body
                         ctx.beginPath();
-                        for (let i = 0; i < this.teeth; i++) {
-                            const angle = (i / this.teeth) * Math.PI * 2;
-                            const x1 = Math.cos(angle) * (this.radius - toothSize / 2);
-                            const y1 = Math.sin(angle) * (this.radius - toothSize / 2);
-                            const x2 = Math.cos(angle) * (this.radius + toothSize / 2);
-                            const y2 = Math.sin(angle) * (this.radius + toothSize / 2);
-                            
-                            const nextAngle = ((i + 0.5) / this.teeth) * Math.PI * 2;
-                             const x3 = Math.cos(nextAngle) * (this.radius + toothSize / 2);
-                            const y3 = Math.sin(nextAngle) * (this.radius + toothSize / 2);
-
-
-                            ctx.moveTo(x1, y1);
-                            ctx.lineTo(x2, y2);
-                            ctx.lineTo(x3, y3);
-                        }
-                        ctx.closePath();
-                        
+                        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
                         ctx.fillStyle = this.color;
                         ctx.fill();
 
-                        // Inner circle
+                        // Draw teeth
+                        for (let i = 0; i < this.teeth; i++) {
+                            const angle = (i / this.teeth) * Math.PI * 2;
+                            const x = Math.cos(angle) * (this.radius + toothSize);
+                            const y = Math.sin(angle) * (this.radius + toothSize);
+
+                            ctx.beginPath();
+                            ctx.arc(x, y, toothSize, 0, Math.PI * 2);
+                            ctx.fillStyle = '#2d1b0f';
+                            ctx.fill();
+                        }
+
+                        // Draw center hub
                         ctx.beginPath();
-                        ctx.arc(0, 0, this.radius * 0.5, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(43, 31, 21, 0.8)`; // Center color
+                        ctx.arc(0, 0, this.radius * 0.3, 0, Math.PI * 2);
+                        ctx.fillStyle = '#1a0f08';
                         ctx.fill();
-                        
+
                         ctx.restore();
                     }
                 }
 
                 function init() {
                     gears = [];
-                    // Increased opacity in gear colors
-                    const gearColors = ['rgba(200, 156, 109, 0.4)', 'rgba(124, 98, 72, 0.4)', 'rgba(92, 60, 44, 0.4)'];
-                    const gearCount = Math.floor((canvas.width * canvas.height) / 20000);
-                    
+                    const gearCount = Math.min(8, Math.floor(canvas.width / 100));
+
                     for (let i = 0; i < gearCount; i++) {
-                        const radius = Math.random() * 40 + 20;
-                        const x = Math.random() * canvas.width;
-                        const y = Math.random() * canvas.height;
-                        const teeth = Math.floor(radius / 3);
-                        const speed = (Math.random() - 0.5) * 0.01;
-                        const color = gearColors[Math.floor(Math.random() * gearColors.length)];
+                        const x = (canvas.width / (gearCount + 1)) * (i + 1);
+                        const y = canvas.height / 2 + (Math.random() - 0.5) * 100;
+                        const radius = 20 + Math.random() * 30;
+                        const teeth = Math.floor(radius / 5);
+                        const speed = (Math.random() - 0.5) * 0.02;
+                        const color = ['#c89c6d', '#a67c52', '#8b6238'][Math.floor(Math.random() * 3)];
+
                         gears.push(new Gear(x, y, radius, teeth, speed, color));
                     }
                 }
@@ -509,7 +504,7 @@
                     });
                     animationFrameId = requestAnimationFrame(animate);
                 }
-                
+
                 function startAnimation() {
                     if (animationFrameId) {
                         cancelAnimationFrame(animationFrameId);
@@ -523,137 +518,24 @@
                 window.addEventListener('resize', startAnimation);
             }
 
-            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
-
-            const cardDataCache = {};
-            const popup = document.getElementById('card-popup');
-            let activePopup = null;
-
-            async function fetchAndProcessCardData(cardName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
-
-                try {
-                    if (cardDataCache[cardName]) {
-                        displayCardImage(cardDataCache[cardName], container);
-                        return;
-                    }
-                    
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    const data = await response.json();
-                    const cardInfo = data?.data?.[0];
-                    
-                    if (cardInfo) {
-                        cardDataCache[cardName] = cardInfo;
-                        displayCardImage(cardInfo, container);
-                    } else {
-                        throw new Error("Card data not found in API response.");
-                    }
-                } catch (error) {
-                    console.error(`Failed to fetch data for "${cardName}":`, error);
-                    container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
-                }
-            }
-
-            function displayCardImage(cardInfo, container) {
-                 const imageUrl = cardInfo.card_images?.[0]?.image_url;
-                 if (imageUrl) {
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.alt = cardInfo.name;
-                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
-                    img.addEventListener('click', (event) => {
-                        event.stopPropagation();
-                        showPopup(event, cardInfo.name);
-                    });
-                    container.innerHTML = '';
-                    container.appendChild(img);
-                } else {
-                     container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardInfo.name}</div>`;
-                }
-            }
-            
-            function showPopup(event, cardName) {
-                if (!popup) return;
-                const cardInfo = cardDataCache[cardName];
-                if (!cardInfo) return;
-
-                let stats = '';
-                let atkDef = [];
-                if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
-                if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
-                if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
-                if(atkDef.length > 0) {
-                    stats = `<p id="card-popup-stats" class="mt-2">${atkDef.join(' ')}</p>`;
-                }
-                
-                const cardType = cardInfo.type.includes('Monster') ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` : `[${cardInfo.race} Card]`;
-
-                popup.innerHTML = `
-                    <div>
-                        <h3>${cardInfo.name}</h3>
-                        <p class="text-xs text-blue-300">${cardType}</p>
-                        <div class="w-full h-px bg-blue-700 my-2"></div>
-                        <p class="text-xs">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
-                        ${stats}
-                    </div>
-                `;
-                
-                movePopup(event);
-                popup.style.display = 'block';
-                setTimeout(() => { popup.style.opacity = 1; }, 10);
-                activePopup = popup;
-            }
-
-            function hidePopup() {
-                if (activePopup) {
-                    activePopup.style.opacity = 0;
-                    setTimeout(() => { 
-                        if (activePopup) activePopup.style.display = 'none'; 
-                    }, 200);
-                    activePopup = null;
-                }
-            }
-
-            function movePopup(event) {
-                if (!popup) return;
-                const popupWidth = popup.offsetWidth;
-                const popupHeight = popup.offsetHeight;
-                const cushion = 20;
-
-                let x = event.clientX + cushion;
-                let y = event.clientY + cushion;
-
-                if (x + popupWidth > window.innerWidth) {
-                    x = event.clientX - popupWidth - cushion;
-                }
-                if (y + popupHeight > window.innerHeight) {
-                    y = event.clientY - popupHeight - cushion;
-                }
-
-                popup.style.left = `${x}px`;
-                popup.style.top = `${y}px`;
-            }
-
-            // Global click listener to close the popup
-            document.addEventListener('click', hidePopup);
-
-            async function fetchAndDisplayCardImage(cardName, containerId) {
-                fetchAndProcessCardData(cardName, containerId);
-            }
-
-            fetchAndDisplayCardImage('Ancient Gear Wyvern', 'wyvern-img-container');
-            fetchAndDisplayCardImage('Ancient Gear Ballista', 'ballista-img-container');
-            fetchAndDisplayCardImage('Ancient Gear Golem', 'golem-img-container');
-            fetchAndDisplayCardImage('Chaos Ancient Gear Giant', 'chaos-giant-img-container');
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'wyvern-img-container': 'Ancient Gear Wyvern',
+                'ballista-img-container': 'Ancient Gear Ballista',
+                'golem-img-container': 'Ancient Gear Golem',
+                'chaos-giant-img-container': 'Chaos Ancient Gear Giant'
+            });
         });
     </script>
     <div id="card-popup" class="fixed z-50 bg-gray-900 border-2 border-[#c89c6d] text-white p-4 rounded-lg shadow-lg max-w-xs opacity-0 transition-opacity duration-200 pointer-events-none"></div>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
