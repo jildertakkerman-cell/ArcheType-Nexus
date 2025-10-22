@@ -6,6 +6,7 @@
  * Handles fetching card data from API and displaying images from Google Cloud Storage
  */
 const CardLoader = (function() {
+    console.log('[CardLoader] IIFE started');
     // Configuration
     const CONFIG = {
         IMAGE_BASE_URL: 'https://storage.googleapis.com/yugioh-card-images-archetype-nexus/cards',
@@ -59,6 +60,7 @@ const CardLoader = (function() {
      * @param {string} containerId - The ID of the container element
      */
     async function loadCard(cardName, containerId) {
+    console.log('[CardLoader] loadCard called for:', cardName, 'container:', containerId);
         const container = document.getElementById(containerId);
         if (!container) {
             console.warn(`Container not found: ${containerId}`);
@@ -101,6 +103,7 @@ const CardLoader = (function() {
      * Example: { 'container-1': 'Blue-Eyes White Dragon', 'container-2': 'Dark Magician' }
      */
     async function loadCards(cardMap) {
+    console.log('[CardLoader] loadCards called with:', cardMap);
         const promises = Object.entries(cardMap).map(([containerId, cardName]) => 
             loadCard(cardName, containerId)
         );
@@ -113,8 +116,8 @@ const CardLoader = (function() {
      * @returns {Promise<Object>} Card data object
      */
     async function fetchCardData(cardName) {
-        const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}`;
-        log("PRODECKAPI-URL", str(apiUrl))
+    const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}`;
+    console.log("[CardLoader] fetchCardData called for:", cardName, "URL:", apiUrl);
         const response = await fetch(apiUrl);
         
         if (!response.ok) {
@@ -303,6 +306,7 @@ const CardLoader = (function() {
     }
 
     // Public API
+    console.log('[CardLoader] IIFE about to return public API');
     return {
         init,
         loadCard,
