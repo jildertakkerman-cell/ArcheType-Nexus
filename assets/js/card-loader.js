@@ -10,7 +10,7 @@ const CardLoader = (function() {
     const CONFIG = {
         IMAGE_BASE_URL: 'https://storage.googleapis.com/yugioh-card-images-archetype-nexus/cards',
         API_URL: 'https://db.ygoprodeck.com/api/v7/cardinfo.php',
-        IMAGE_EXTENSIONS: ['.jpg', '.png'], // Try these in order
+        IMAGE_EXTENSIONS: ['.png', '.jpg'], // Try these in order
     };
 
     // Internal state
@@ -114,6 +114,7 @@ const CardLoader = (function() {
      */
     async function fetchCardData(cardName) {
         const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}`;
+        log("PRODECKAPI-URL", str(apiUrl))
         const response = await fetch(apiUrl);
         
         if (!response.ok) {
