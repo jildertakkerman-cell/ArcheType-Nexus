@@ -42,7 +42,7 @@ $homeButtonCSS = @"
 
 $homeButtonHTML = @"
     <!-- Home Button -->
-    <a href="index-refactored.html" class="home-button" title="Return to Home">
+    <a href="index.html" class="home-button" title="Return to Home">
         <i class="fas fa-home"></i>
     </a>
 

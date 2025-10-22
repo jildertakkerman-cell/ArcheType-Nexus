@@ -205,7 +205,7 @@
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <a href="index-refactored.html" class="ygo-home-button" title="Return to Archetype Nexus">
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
         <i class="fas fa-home"></i>
     </a>
 
@@ -428,145 +428,6 @@
                 });
             }
 
-            
-                const container = document.getElementById(containerId);
-                if (!container) return;
-
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
-
-                try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    const data = await response.json();
-                    const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-
-                    if (imageUrl) {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = cardName;
-                        img.className = 'w-full h-auto rounded-lg shadow-md';
-                        container.innerHTML = '';
-                        container.appendChild(img);
-                    } else {
-                        throw new Error("Image URL not found.");
-                    }
-                } catch (error) {
-                    console.error(`Failed to fetch image for "${cardName}":`, error);
-                    container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
-                }
-            }
-
-            const cardDataCache = {};
-            let currentPopupCard = null;
-            let popupVisible = false;
-
-            async function fetchCardData(cardName) {
-                if (cardDataCache[cardName]) {
-                    return cardDataCache[cardName];
-                }
-
-                const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
-
-                try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    const data = await response.json();
-                    const card = data?.data?.[0];
-                    if (card) {
-                        cardDataCache[cardName] = card;
-                        return card;
-                    }
-                } catch (error) {
-                    console.error(`Failed to fetch data for "${cardName}":`, error);
-                }
-                return null;
-            }
-
-            
-                if (popupVisible && currentPopupCard === cardName) {
-                    hidePopup();
-                    return;
-                }
-
-                fetchCardData(cardName).then(card => {
-                    if (!card) return;
-
-                    const popup = document.getElementById('card-popup');
-                    const imageUrl = card.card_images?.[0]?.image_url;
-
-                    let stats = '';
-                    let atkDef = [];
-                    if (card.atk !== undefined) atkDef.push(`ATK/${card.atk}`);
-                    if (card.def !== undefined) atkDef.push(`DEF/${card.def}`);
-                    if (card.linkval) atkDef.push(`LINK-${card.linkval}`);
-                    if(atkDef.length > 0) {
-                        stats = `<p class="stats">${atkDef.join(' ')}</p>`;
-                    }
-                    
-                    const cardType = card.type.includes('Monster') ? `[${card.race} / ${card.type.replace(' Monster', '')}]` : `[${card.race} Card]`;
-
-                    popup.innerHTML = `
-                        ${imageUrl ? `<img src="${imageUrl}" alt="${cardName}">` : ''}
-                        <h3>${card.name}</h3>
-                        <p class="type">${cardType}</p>
-                        <p>${card.desc.replace(/\r\n/g, '<br>')}</p>
-                        ${stats}
-                    `;
-
-                    popup.classList.add('show');
-                    popupVisible = true;
-                    currentPopupCard = cardName;
-                    movePopup(event);
-                });
-            }
-
-            
-                const popup = document.getElementById('card-popup');
-                popup.classList.remove('show');
-                popupVisible = false;
-                currentPopupCard = null;
-            }
-
-            function movePopup(event) {
-                if (!popupVisible) return;
-
-                const popup = document.getElementById('card-popup');
-                const popupWidth = 400;
-                const popupHeight = 600;
-                const cushion = 20;
-
-                let x = event.clientX + cushion;
-                let y = event.clientY + cushion;
-
-                if (x + popupWidth > window.innerWidth) {
-                    x = event.clientX - popupWidth - cushion;
-                }
-
-                if (y + popupHeight > window.innerHeight) {
-                    y = event.clientY - popupHeight - cushion;
-                }
-
-                popup.style.left = `${x}px`;
-                popup.style.top = `${y}px`;
-            }
-
-            document.addEventListener('click', (event) => {
-                const popup = document.getElementById('card-popup');
-                if (!popup.contains(event.target) && !event.target.closest('.card-placeholder')) {
-                    setTimeout(() => {
-                        if (!popup.contains(document.elementFromPoint(event.clientX, event.clientY))) {
-                            hidePopup();
-                        }
-                    }, 100);
-                }
-            });
-
-            document.addEventListener('mousemove', (event) => {
-                if (popupVisible) {
-                    movePopup(event);
-                }
-            });
-
             CardLoader.loadCards({
                 'ostinato-img-container': 'Ostinato',
                 'bacha-img-container-combo': 'Bacha the Melodious Maestra',
@@ -575,17 +436,6 @@
                 'schuberta-img-container': 'Schuberta the Melodious Maestra',
                 'aria-img-container': 'Aria the Melodious Diva',
             });
-
-            for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
-                fetchAndDisplayCardImage(cardName, containerId);
-                const container = document.getElementById(containerId);
-                if (container) {
-                    container.addEventListener('click', (event) => {
-                        event.stopPropagation();
-                        showPopup(cardName, event);
-                    });
-                }
-            }
         });
     </script>
     <div id="card-popup" class="popup"></div>

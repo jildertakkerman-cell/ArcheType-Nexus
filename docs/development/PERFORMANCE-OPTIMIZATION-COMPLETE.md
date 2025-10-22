@@ -50,7 +50,7 @@ Stage 2: Full data (662KB) - Complete SVG icons loaded in background
 ## 📁 Files Created/Updated
 
 ### New Optimized Files
-- `index-refactored.html` - **Ultra-fast optimized version**
+- `index.html` - **Ultra-fast optimized version**
 - `assets/js/main-ultra-optimized.js` - Progressive loading logic
 - `assets/js/archetypes-light.js` - Lightweight data (28KB)
 - `performance-comparison.html` - Side-by-side comparison
@@ -62,7 +62,7 @@ Stage 2: Full data (662KB) - Complete SVG icons loaded in background
 ## 🧪 Test Your Improvements
 
 ### Option 1: Quick Test
-1. Open `index-refactored.html` - **Lightning fast!** ⚡
+1. Open `index.html` - **Lightning fast!** ⚡
 2. Notice instant loading with placeholder icons
 3. Watch full icons appear seamlessly in background
 
@@ -117,7 +117,7 @@ Stage 2: Full data (662KB) - Complete SVG icons loaded in background
 ## 🔧 Technical Architecture
 
 ```
-┌─ index-refactored.html (Ultra-Optimized)
+┌─ index.html (Ultra-Optimized)
 ├─ assets/js/archetypes-light.js (28KB - Fast initial load)
 ├─ assets/js/archetypes-data.js (662KB - Background load)
 ├─ assets/js/main-ultra-optimized.js (Progressive loader)
@@ -136,4 +136,4 @@ Your Yu-Gi-Oh! Archetype Nexus now loads **6x faster** while maintaining all fun
 The optimization maintains your beautiful design and complete dataset while dramatically improving performance. Your users will love the snappy, responsive experience! 🃏✨
 
 ## 🎮 Ready to Use
-Your optimized `index-refactored.html` is ready! The performance improvements are dramatic and immediately noticeable. Enjoy your lightning-fast Yu-Gi-Oh! archetype database! ⚡
+Your optimized `index.html` is ready! The performance improvements are dramatic and immediately noticeable. Enjoy your lightning-fast Yu-Gi-Oh! archetype database! ⚡

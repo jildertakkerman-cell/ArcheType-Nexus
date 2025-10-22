@@ -14,7 +14,7 @@ This directory contains development, testing, and archival files used during the
 
 ### `archive/` - Historical Versions
 - **`index-original.html`** - The original 9,491-line monolithic HTML file (archived for reference)
-- **`index-refactored.html`** - The refactored version before final optimizations (archived)
+- **`index.html`** - The refactored version before final optimizations (archived)
 
 ## Usage
 

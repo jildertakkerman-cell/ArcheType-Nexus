@@ -7,7 +7,7 @@ Your `index.html` file was nearly 9,500 lines long, which made it difficult to m
 
 ```
 Hobby/
-├── index-refactored.html          # Clean HTML structure (replaces index.html)
+├── index.html          # Clean HTML structure (replaces index.html)
 ├── assets/
 │   ├── css/
 │   │   └── styles.css             # All CSS styles
@@ -50,13 +50,13 @@ The current `archetypes-data.js` contains only 5 sample archetypes. To complete 
 3. Add all archetypes to `archetypes-data.js`
 
 ### Step 2: Test the New Structure
-1. Open `index-refactored.html` in your browser
+1. Open `index.html` in your browser
 2. Verify all functionality works (search, sorting, navigation)
 3. Check that all icons display correctly
 
 ### Step 3: Deploy the Changes
 1. Backup your original `index.html`
-2. Rename `index-refactored.html` to `index.html`
+2. Rename `index.html` to `index.html`
 3. Ensure the `assets/` folder is properly deployed
 
 ## Code Quality Improvements

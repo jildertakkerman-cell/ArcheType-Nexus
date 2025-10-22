@@ -34,7 +34,7 @@ Instead of the problematic two-stage loading, the new approach:
 ## 🧪 How to Test the Fix
 
 ### Option 1: Main Page
-- Open `index-refactored.html`
+- Open `index.html`
 - Verify each archetype shows its proper icon (not just letters)
 - Check that icons match the archetype names
 
@@ -64,7 +64,7 @@ Instead of the problematic two-stage loading, the new approach:
 ## 📁 Files Updated
 
 ### Main Files:
-- `index-refactored.html` - Updated to use reliable optimized script
+- `index.html` - Updated to use reliable optimized script
 - `assets/js/main-reliable-optimized.js` - **NEW** - Proper icon handling
 - `assets/css/styles.css` - Enhanced loading states
 
@@ -84,7 +84,7 @@ The new approach provides:
 
 ## ✅ Ready to Use!
 
-Your `index-refactored.html` now correctly displays:
+Your `index.html` now correctly displays:
 - All 130 archetypes with their proper icons
 - Fast loading with pagination
 - Smooth scrolling and lazy loading

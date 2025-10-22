@@ -13,7 +13,7 @@ Successfully refactored your massive **9,491-line** `index.html` file into a cle
 ### Refactored Structure
 ```
 Hobby/
-├── index-refactored.html      (Clean 45-line HTML structure)
+├── index.html      (Clean 45-line HTML structure)
 ├── assets/
 │   ├── css/
 │   │   └── styles.css         (All CSS styles - 400+ lines)
@@ -52,7 +52,7 @@ Hobby/
 ## 🔧 How to Use
 
 ### Option 1: Use Refactored Version
-1. Open `index-refactored.html` in your browser
+1. Open `index.html` in your browser
 2. All 130 archetypes will load from the modular files
 3. Full functionality preserved with cleaner code
 
@@ -69,7 +69,7 @@ Run `test-refactor.html` to verify:
 
 ## 📁 File Details
 
-### `index-refactored.html` (45 lines)
+### `index.html` (45 lines)
 - Clean HTML structure
 - External CSS and JS references
 - Preserved all functionality
@@ -105,7 +105,7 @@ Run `test-refactor.html` to verify:
 
 ## 🚀 Next Steps
 1. **Test the refactored version** to ensure everything works
-2. **Update bookmarks** to point to `index-refactored.html`
+2. **Update bookmarks** to point to `index.html`
 3. **Consider version control** for the new modular structure
 4. **Future maintenance** will be much easier with separated files
 

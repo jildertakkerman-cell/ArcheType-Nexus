@@ -1,10 +1,10 @@
 # JavaScript Files Archive
 
 ## Overview
-This archive contains JavaScript files that are not currently used by `index-refactored.html` but were part of the project's development history.
+This archive contains JavaScript files that are not currently used by `index.html` but were part of the project's development history.
 
 ## Currently Used File
-- **`main-reliable-optimized.js`** - The only JavaScript file currently referenced by `index-refactored.html`
+- **`main-reliable-optimized.js`** - The only JavaScript file currently referenced by `index.html`
 
 ## Archived Files
 
@@ -67,4 +67,4 @@ main-ultra-optimized.js     - [Ultra optimization]
 
 ---
 *Archive created: October 3, 2025*  
-*Files moved based on analysis of index-refactored.html dependencies*
+*Files moved based on analysis of index.html dependencies*
