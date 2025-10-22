@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Saga of Gagagigo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in 'assets/js/' relative to this file -->
+    <!-- The user's other files link it this way, so I will maintain consistency -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1a1c; /* Dark Teal */
+            color: #e0f2f1; /* Light Cyan */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a2b2f; /* Darker Teal/Slate */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3d6a7a; /* Muted Teal Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #20363d; /* Slightly Lighter Teal */
+            border: 1px solid #4a7c8c;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #20363d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #20363d;
+            border: 1px dashed #4a7c8c;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #4dd0e1; } /* Bright Cyan */
+        .arrow-color { color: #4dd0e1; }
+        .heading-underline {
+            border-bottom: 2px solid #4dd0e1;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #4dd0e1;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #4dd0e1;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #4dd0e1;
+        }
+
+        /* --- NEW GAGAGIGO ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d1a1c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3d6a7a;
+        }
+
+        #water-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 26, 28, 0.4) 0%, rgba(13, 26, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(77, 208, 225, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif; /* Thematic font for "Saga" */
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 26, 28, 0.95); /* Dark Teal Popup */
+            border: 1px solid #4dd0e1; /* Cyan Border */
+            border-radius: 0.75rem;
+            color: #e0f2f1;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #4dd0e1;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #4dd0e1;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <!-- Assuming index.html is the main page -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="water-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Saga of Gagagigo</h1>
+            <p class="text-lg md:text-xl text-cyan-200">A Chronicle of Lore and Gameplay</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-cyan-100">
+                    In the vast universe of Yu-Gi-Oh!, few characters claim a narrative as extensive as that of Gagagigo, a reptilian warrior whose life story unfolds across dozens of card artworks. Unlike explicitly documented sagas, Gagagigo's chronicle is a masterpiece of environmental storytelling. Mechanically, the <a href="https://yugipedia.com/wiki/Gigo" target="_blank" class="lore-link">"Gigo" lineage</a> is not a self-contained archetype but finds its true strength as a vital component within the <strong class="text-accent font-bold">"Charmer"</strong> and <strong class="text-accent font-bold">"Familiar-Possessed"</strong> strategy. This analysis explores the duality of Gagagigo: a celebrated character of lore and a powerful supporting engine in a modern, synergistic deck.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Gigo Lineage Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Gigo Lineage</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-3xl mx-auto">
+                The core of the "Gigo" series is a direct line of Normal Monsters, each representing a more powerful stage of his life. This progression reflects an older design philosophy of linear power scaling, where each new form is simply a larger body with higher stats.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Gigobyte -->
+                <div class="card p-4 flex flex-col items-center">
+                    <h3 class="text-lg font-bold text-accent mb-2">Gigobyte</h3>
+                    <div id="gigobyte-img-container" class="card-image-container card-placeholder">Gigobyte</div>
+                    <p class="text-sm text-cyan-100 mt-3 text-center">The humble beginning. A Level 1 Normal Monster whose flavor text foreshadows his entire journey.</p>
+                </div>
+                <!-- Gagagigo -->
+                <div class="card p-4 flex flex-col items-center">
+                    <h3 class="text-lg font-bold text-accent mb-2">Gagagigo</h3>
+                    <div id="gagagigo-img-container" class="card-image-container card-placeholder">Gagagigo</div>
+                    <p class="text-sm text-cyan-100 mt-3 text-center">The adult form. An 1850 ATK beatstick, representing his maturity and discovery of justice alongside Eria.</p>
+                </div>
+                <!-- Giga Gagagigo -->
+                <div class="card p-4 flex flex-col items-center">
+                    <h3 class="text-lg font-bold text-accent mb-2">Giga Gagagigo</h3>
+                    <div id="giga-gagagigo-img-container" class="card-image-container card-placeholder">Giga Gagagigo</div>
+                    <p class="text-sm text-cyan-100 mt-3 text-center">The cybernetic form. After reconstruction by Kozaky, he gained 2450 ATK but lost his heart to corruption.</p>
+                </div>
+                <!-- Gogiga Gagagigo -->
+                <div class="card p-4 flex flex-col items-center">
+                    <h3 class="text-lg font-bold text-accent mb-2">Gogiga Gagagigo</h3>
+                    <div id="gogiga-gagagigo-img-container" class="card-image-container card-placeholder">Gogiga Gagagigo</div>
+                    <p class="text-sm text-cyan-100 mt-3 text-center">The monstrous form. A 2950 ATK beast consumed by rage, representing the peak of his fall from grace.</p>
+                </div>
+                <!-- Jigabyte -->
+                <div class="card p-4 flex flex-col items-center">
+                    <h3 class="text-lg font-bold text-accent mb-2">Jigabyte</h3>
+                    <div id="jigabyte-img-container" class="card-image-container card-placeholder">Jigabyte</div>
+                    <p class="text-sm text-cyan-100 mt-3 text-center">The adolescent Effect Monster. A key combo extender for Spellcaster decks, nodding to his time as Eria's familiar.</p>
+                </div>
+                <!-- Gagagigo the Risen -->
+                <div class="card p-4 flex flex-col items-center">
+                    <h3 class="text-lg font-bold text-accent mb-2">Gagagigo the Risen</h3>
+                    <div id="gagagigo-risen-img-container" class="card-image-container card-placeholder">Gagagigo the Risen</div>
+                    <p class="text-sm text-cyan-100 mt-3 text-center">The redeemed hero. A Rank 4 Xyz monster that, while mechanically inefficient, represents his spiritual redemption.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Charmer Alliance Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Charmer Alliance</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-3xl mx-auto">
+                Gigo's true strength is unlocked by his "Charmer" and "Possessed" allies. This engine provides the consistency, disruption, and draw power that the "Gigo" cards lack on their own.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-friends text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Familiars & Masters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Eria the Water Charmer</h4>
+                            <p class="text-sm text-cyan-100">Gagagigo's original partner. A Level 3 Flip monster whose 1500 DEF is a key number for support cards.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Familiar-Possessed - Eria</h4>
+                            <p class="text-sm text-cyan-100">The "adult" version of Eria. Her 1850 ATK is the trigger for the deck's primary draw engine.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Awakening of the Possessed - Gagigobyte</h4>
+                            <p class="text-sm text-cyan-100">The deck's payoff. A modern boss monster that disrupts the opponent's hand and searches "Possessed" backrow.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-magic text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Core Engine</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Spirit Charmers</h4>
+                            <p class="text-sm text-cyan-100">The primary starter. Sets any "Possessed" Spell/Trap from the deck and adds a Charmer monster.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Awakening of the Possessed</h4>
+                            <p class="text-sm text-cyan-100">The heart of the deck. Provides protection, an ATK boost, and a draw 1 every time an 1850 ATK monster is summoned.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Possessed Partnerships</h4>
+                            <p class="text-sm text-cyan-100">The main disruption. A Normal Trap that summons from GY and destroys a face-up card on the field.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The Jigabyte Extender</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-2xl mx-auto">
+                This combo demonstrates how Jigabyte and "Awakening of the Possessed - Gagigobyte" function as the deck's explosive playmakers, turning a simple two-card hand into significant board presence and disruption.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="eria-charmer-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Eria the Water Charmer</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2b2f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Establish Spellcaster</h3>
+                            </div>
+                            <p class="text-cyan-100">Normal Summon any Spellcaster monster, such as <strong class="text-accent">Eria the Water Charmer</strong>. This enables your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="jigabyte-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Jigabyte</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2b2f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Special Summon Jigabyte</h3>
+                            </div>
+                            <p class="text-cyan-100">Activate <strong class="text-accent">Jigabyte's</strong> effect from your hand to Special Summon it for free, providing a WATER body and a second Attribute.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="awakening-gagigobyte-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Awakening of the Possessed - Gagigobyte</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2b2f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon the Payoff</h3>
+                            </div>
+                            <p class="text-cyan-100">Activate <strong class="text-accent">Awakening of the Possessed - Gagigobyte</strong> from your Deck, sending Eria and Jigabyte to the GY to Special Summon it. This triggers its effect to disrupt the opponent's hand and, when used as Link Material, searches <strong class="text-accent">Possessed Partnerships</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ideal Endboard</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-3xl mx-auto">
+                The Charmer/Possessed strategy does not build an unbreakable wall of negates. Instead, its ideal endboard is a dynamic, resource-generating machine designed to control the pace of the game and win a war of attrition.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Engine: Draw & Protect</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="awakening-possessed-endboard-img" class="card-image-container card-placeholder">Awakening of the Possessed</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><strong class="text-accent">The Centerpiece:</strong> Provides 300 ATK per Attribute, effect destruction protection, and the all-important draw 1.</li>
+                        <li><strong class="text-accent">Multi-Attribute Monsters:</strong> Control 2-3 different Attributes (e.g., Eria, Hiita) to maximize the ATK boost and enable backrow.</li>
+                    </ul>
+                </div>
+                <!-- The Disruption -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Disruption: Interact & Recur</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="possessed-partnerships-endboard-img" class="card-image-container card-placeholder">Possessed Partnerships</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><strong class="text-accent">Set Trap:</strong> <strong class="text-accent">Possessed Partnerships</strong> is the primary interruption, ready to summon and destroy a card on the opponent's turn.</li>
+                        <li><strong class="text-accent">Recursion:</strong> <strong class="text-accent">Unpossessed</strong> (not shown) provides another layer of protection, replacing monsters destroyed by battle or effect.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Resilient Engine:</strong> The deck can generate impressive card advantage over time with its core "Awakening" spell.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Strong Recursion:</strong> "Possessed Partnerships" and "Unpossessed" make the board difficult to clear permanently.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">Explosive Turns:</strong> Can pivot from a control setup to an aggressive OTK by stacking ATK boosts from "Awakening".</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Normal Summon Reliant:</strong> Many combos rely on a single Spellcaster Normal Summon, making it vulnerable to hand traps.</li>
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Lacks In-Archetype Negation:</strong> The deck's main interaction is destruction, forcing it to rely on external engines for negates.</li>
+                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-300">Backrow Vulnerability:</strong> Heavily reliant on its Continuous Spells/Traps, making it weak to mass backrow removal.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech Choices</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent">Dogmatika Engine:</strong> "Ecclesia" and "Nadir Servant" fit perfectly, providing powerful disruption and synergy.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-moon"></i></span> <strong class="text-accent">Magistus Engine:</strong> "Artemis" and "Zoroa" provide excellent Spellcaster-based extension and Link climbing.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dungeon"></i></span> <strong class="text-accent">Secret Village of the Spellcasters:</strong> A devastating floodgate that the deck can easily maintain.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The "Gigo" and "Charmer" archetypes, along with their key support engines, are at full power in the current TCG format.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Core "Gigo" & "Charmer" Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Jigabyte (3 copies)</strong> - Key extender</li>
+                            <li>Awakening of the Possessed - Gagigobyte (3)</li>
+                            <li>Spirit Charmers (3 copies) - Primary starter</li>
+                            <li>Awakening of the Possessed (3 copies)</li>
+                            <li>Possessed Partnerships (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Key Tech Engines</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Dogmatika Ecclesia, the Virtuous (3 copies)</li>
+                            <li>Nadir Servant (3 copies)</li>
+                            <li>Dogmatika Punishment (3 copies)</li>
+                            <li>Selene, Queen of the Master Magicians (3)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With no restrictions on its core engine or most powerful tech choices, the Gigo/Charmer strategy can be played at its absolute full potential, giving it a strong rogue standing.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- SCRIPT SECTION -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GAGAGIGO WATER RIPPLE ANIMATION ---
+            const canvas = document.getElementById('water-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let width, height, halfWidth, halfHeight, rippleAmplitude, rippleWavelength, rippleSpeed, time;
+
+                function setup() {
+                    width = canvas.width = canvas.offsetWidth;
+                    height = canvas.height = canvas.offsetHeight;
+                    halfWidth = width / 2;
+                    halfHeight = height / 2;
+                    rippleAmplitude = 5; // Amplitude of the ripple
+                    rippleWavelength = 50; // Wavelength of the ripple
+                    rippleSpeed = 0.05; // Speed of the ripple
+                    time = 0;
+                    draw();
+                }
+
+                function draw() {
+                    ctx.clearRect(0, 0, width, height);
+                    ctx.fillStyle = 'rgba(13, 26, 28, 0.1)'; // Faint background fill
+                    ctx.fillRect(0, 0, width, height);
+                    
+                    const lines = 30; // Number of ripple lines
+                    
+                    for (let i = 0; i < lines; i++) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(77, 208, 225, ${0.1 + (i / lines) * 0.2})`; // Cyan color with varying opacity
+                        ctx.lineWidth = 1;
+                        
+                        let yOffset = Math.sin(time + i * 0.5) * rippleAmplitude;
+                        
+                        for (let x = -width; x < width; x += 10) {
+                            let y = Math.sin((x + time * 100) / rippleWavelength + i * 0.1) * rippleAmplitude * (i / lines) + halfHeight + yOffset;
+                            
+                            // Distort based on distance from center (simple radial effect)
+                            let dist = Math.sqrt(Math.pow(x - halfWidth + width / 2, 2) + Math.pow(y - halfHeight, 2));
+                            let distortion = Math.sin(dist / rippleWavelength - time) * rippleAmplitude;
+                            
+                            y += distortion * (i / lines);
+
+                            if (x === -width) {
+                                ctx.moveTo(x + width / 2, y);
+                            } else {
+                                ctx.lineTo(x + width / 2, y);
+                            }
+                        }
+                        ctx.stroke();
+                    }
+                    
+                    time += rippleSpeed;
+                    requestAnimationFrame(draw);
+                }
+
+                window.addEventListener('resize', setup);
+                setup();
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            // Assumes CardLoader is loaded from assets/js/card-loader.js
+            CardLoader.loadCards({
+                // Gigo Lineage
+                'gigobyte-img-container': 'Gigobyte',
+                'jigabyte-img-container': 'Jigabyte',
+                'gagagigo-img-container': 'Gagagigo',
+                'giga-gagagigo-img-container': 'Giga Gagagigo',
+                'gogiga-gagagigo-img-container': 'Gogiga Gagagigo',
+                'gagagigo-risen-img-container': 'Gagagigo the Risen',
+                
+                // Charmer Alliance
+                'eria-charmer-img-container': 'Eria the Water Charmer',
+                'familiar-possessed-eria-img-container': 'Familiar-Possessed - Eria',
+                'awakening-gagigobyte-img-container': 'Awakening of the Possessed - Gagigobyte',
+                'spirit-charmers-img-container': 'Spirit Charmers',
+                'awakening-possessed-img-container': 'Awakening of the Possessed',
+                'possessed-partnerships-img-container': 'Possessed Partnerships',
+
+                // Combo Section
+                'eria-charmer-combo-img': 'Eria the Water Charmer',
+                'jigabyte-combo-img': 'Jigabyte',
+                'awakening-gagigobyte-combo-img': 'Awakening of the Possessed - Gagigobyte',
+
+                // Endboard Section
+                'awakening-possessed-endboard-img': 'Awakening of the Possessed',
+                'possessed-partnerships-endboard-img': 'Possessed Partnerships'
+            });
+        });
+    </script>
+</body>
+</html>

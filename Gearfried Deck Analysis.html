@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gearfried Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in assets/js/ as per other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Thematic font for titles -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1c120d; /* Dark Brown/Red */
+            color: #fef3f2; /* Light Red/White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2d1e1a; /* Darker Red/Brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #7f2a1d; /* Dark Red Border */
+        }
+        .combo-step-card {
+            background-color: #4b2a2a; /* Lighter Red/Brown */
+            border: 1px solid #a13d3d;
+        }
+        .pro-con-card {
+            background-color: #4b2a2a;
+            border: 1px solid #a13d3d;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Added from other files */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #4b2a2a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #4b2a2a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f6ad55; } /* Gold/Orange */
+        .text-accent-red { color: #e53e3e; } /* Bright Red */
+        .arrow-color { color: #f6ad55; }
+        .heading-underline {
+            border-bottom: 2px solid #f6ad55;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f6ad55; /* Gold/Orange accent */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f6ad55;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW FORGE/EMBER BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            height: 140px; /* Increased height for effect */
+            background: linear-gradient(135deg, #1c120d 0%, #4b2a2a 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #7f2a1d;
+        }
+
+        #ember-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; 
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(28, 18, 13, 0.65);
+            z-index: 2; /* Overlay */
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3; /* Text on top */
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .banner-header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            color: #f6ad55; /* Gold */
+        }
+        .banner-header p {
+            font-size: 1rem;
+            color: #fef3f2;
+        }
+
+        @media (max-width: 768px) {
+            .banner-header {
+                height: 120px;
+            }
+            .banner-header h1 {
+                font-size: 2rem;
+            }
+            .banner-header p {
+                font-size: 0.875rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(28, 18, 13, 0.95); /* Thematic background */
+            border: 1px solid #f6ad55; /* Gold border */
+            border-radius: 0.75rem;
+            color: #fef3f2;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #f6ad55; /* Gold */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #f6ad55;
+            font-weight: bold;
+        }
+        /* New style for smaller banlist placeholders */
+        .banlist-card-placeholder {
+            min-height: 220px; /* Reduced from 250px */
+            max-width: 160px; /* Making it a bit smaller */
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="ember-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-2">Gearfried</h1>
+            <p class="text-lg md:text-xl">The Unchained Knight: A Strategic Deep Dive</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: The Forged Warrior</h2>
+                <p class="text-red-100">
+                    The "Gearfried" series is a unique case study, representing an evolving concept—<a href="https://yugipedia.com/wiki/Gearfried" target="_blank" class="lore-link">a warrior's legend retold</a> and mechanically reinterpreted over two decades. This series is not a self-contained army but a modular engine centered on the complex manipulation of Equip Spells. 
+                </p>
+                <p class="text-red-100 mt-2">
+                    Its journey begins with <strong class="text-accent-red font-bold">Gearfried the Iron Knight</strong>, a monster defined by his inability to be equipped. This concept is inverted with each incarnation, culminating in the modern boss monster, <strong class="text-accent-red font-bold">Immortal Phoenix Gearfried</strong>, who treats Equip Spells not as a restriction, but as a vital and recyclable resource for summoning, removal, and negation.
+                </p>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">CRITICAL TCG BANLIST IMPACT</h2>
+            
+            <!-- New Redesigned Alert Box -->
+            <div class="card p-6 md:p-8 border-4 border-red-700 bg-red-900 bg-opacity-40 shadow-2xl">
+                <div class="flex flex-col md:flex-row items-center text-center md:text-left">
+                    <i class="fas fa-gavel text-6xl md:text-8xl text-red-400 mb-4 md:mb-0 md:mr-8"></i>
+                    <div>
+                        <h3 class="text-3xl font-bold text-red-300 font-['Cinzel',_serif] mb-2">STRATEGY ALERT: HISTORICAL ANALYSIS ONLY</h3>
+                        <p class="text-red-100 text-lg mb-4">
+                            The "Infernoble Gearfried" combo strategy described in this document is **no longer legal** for TCG play. Its core engine is non-functional due to key cards being <strong class="text-accent-red font-bold">FORBIDDEN</strong>.
+                        </p>
+                        <p class="text-red-200">
+                            This analysis is preserved as a historical record of the deck's power. Do not attempt to build this specific combo variant for a TCG tournament.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-red-600 my-6"></div>
+
+                <h4 class="text-2xl font-bold text-white text-center mb-6">The Forbidden Lynchpins</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Isolde -->
+                    <div class="card combo-step-card p-4 border-red-400 flex flex-col items-center">
+                        <h4 class="text-lg font-bold text-red-300 mb-2 text-center">Isolde, Two Tales of the Noble Knights</h4>
+                        <div id="isolde-banned-img" class="w-full card-image-container card-placeholder banlist-card-placeholder mb-3">Isolde, Two Tales of the Noble Knights</div>
+                        <p class="text-sm text-red-100 text-center"><strong class="text-red-300 text-base">STATUS: FORBIDDEN</strong><br>The deck's primary 1-card starter and combo engine. Its ban removes the deck's central pillar.</p>
+                    </div>
+                    <!-- Baronne -->
+                    <div class="card combo-step-card p-4 border-red-400 flex flex-col items-center">
+                        <h4 class="text-lg font-bold text-red-300 mb-2 text-center">Baronne de Fleur</h4>
+                        <div id="baronne-banned-img" class="w-full card-image-container card-placeholder banlist-card-placeholder mb-3">Baronne de Fleur</div>
+                        <p class="text-sm text-red-100 text-center"><strong class="text-red-300 text-base">STATUS: FORBIDDEN</strong><br>The premier generic omni-negate payoff for the deck's Synchro plays.</p>
+                    </div>
+                    <!-- Apollousa -->
+                    <div class="card combo-step-card p-4 border-red-400 flex flex-col items-center">
+                        <h4 class="text-lg font-bold text-red-300 mb-2 text-center">Apollousa, Bow of the Goddess</h4>
+                        <div id="apollousa-banned-img" class="w-full card-image-container card-placeholder banlist-card-placeholder mb-3">Apollousa, Bow of the Goddess</div>
+                        <p class="text-sm text-red-100 text-center"><strong class="text-red-300 text-base">STATUS: FORBIDDEN</strong><br>The main Link-climbing payoff for multi-monster-negation boards.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 1: The Armory - Card-by-Card Analysis -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Armory: A Card-by-Card Analysis</h2>
+            
+            <!-- Core Knights -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Gearfried the Iron Knight -->
+                <div class="card p-6">
+                    <div class="flex flex-col items-center">
+                        <div id="gearfried-iron-img" class="card-image-container card-placeholder mb-4">Gearfried the Iron Knight</div>
+                        <h3 class="text-xl font-bold text-accent mb-2 text-center">Gearfried the Iron Knight</h3>
+                        <p class="text-red-100 text-sm text-center">The progenitor. His effect to destroy any Equip Card equipped to him forms the basis of the archetype's theme and historical FTK combos (e.g., with the banned <strong class="text-accent-red">Butterfly Dagger - Elma</strong>).</p>
+                    </div>
+                </div>
+                <!-- Gearfried the Swordmaster -->
+                <div class="card p-6">
+                    <div class="flex flex-col items-center">
+                        <div id="gearfried-swordmaster-img" class="card-image-container card-placeholder mb-4">Gearfried the Swordmaster</div>
+                        <h3 class="text-xl font-bold text-accent mb-2 text-center">Gearfried the Swordmaster</h3>
+                        <p class="text-red-100 text-sm text-center">The first evolution. Summoned by <strong class="text-accent-red">Release Restraint</strong>, he inverts the original's effect, using the act of being equipped to destroy an opponent's monster.</p>
+                    </div>
+                </div>
+                <!-- Immortal Phoenix Gearfried -->
+                <div class="card p-6">
+                    <div class="flex flex-col items-center">
+                        <div id="ipg-img" class="card-image-container card-placeholder mb-4">Immortal Phoenix Gearfried</div>
+                        <h3 class="text-xl font-bold text-accent mb-2 text-center">Immortal Phoenix Gearfried</h3>
+                        <p class="text-red-100 text-sm text-center">The modern boss monster. Easily summoned by banishing an Equip Spell, it provides monster negation and non-destruction removal by equipping an opponent's monster.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bridge & Ancillary Forms -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <!-- Gearfried the Red-Eyes Iron Knight -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="gearfried-red-eyes-img" class="card-image-container card-placeholder">Gearfried the Red-Eyes Iron Knight</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Gearfried the Red-Eyes Iron Knight</h3>
+                            <p class="text-red-100 text-sm">A crucial bridge to the "Red-Eyes" archetype. Forces a strategic choice: destroy an equipped card (like <strong class="text-accent-red">Black Metal Dragon</strong>) to pop a Spell/Trap, OR send it to the GY to Special Summon a "Red-Eyes" monster.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ancillary Forms -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="phoenix-gearfried-img" class="card-image-container card-placeholder">Phoenix Gearfried</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Ancillary Forms</h3>
+                            <p class="text-red-100 text-sm"><strong class="text-accent-red">Phoenix Gearfried</strong> (a slow Gemini), <strong class="text-accent-red">Gilti-Gearfried</strong> (a generic Fusion), and <strong class="text-accent-red">Lightray Gearfried</strong> (a LIGHT variant) exist but are not central to the main competitive strategies.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Forging Alliances - Synergistic Engines -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Forging Alliances: Synergistic Engines</h2>
+            <p class="text-red-100 mb-8 text-center max-w-2xl mx-auto">
+                "Gearfried" operates as a modular package that must be integrated into a host engine. The host provides the consistency and combo starters to deploy the Gearfried package effectively.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Infernoble Knights -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent-red mb-4">The Infernoble Knights</h3>
+                    <p class="text-red-100 text-sm mb-4">
+                        <strong class="text-red-300">(Historical)</strong> This was the premier engine. As FIRE Warriors, they share perfect synergy, equipping themselves from the GY to provide endless fuel for <strong class="text-accent-red">Immortal Phoenix Gearfried</strong>.
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-red-100 text-sm">
+                        <li><strong class="text-accent">Key Card:</strong> <span class="line-through text-red-400">Isolde, Two Tales of the Noble Knights</span> (BANNED).</li>
+                        <li><strong class="text-accent">Key Card:</strong> Infernoble Knight - Renaud.</li>
+                    </ul>
+                </div>
+                <!-- Red-Eyes -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4">The Red-Eyes Brigade</h3>
+                    <p class="text-red-100 text-sm mb-4">
+                        A more focused, mid-range variant centered on <strong class="text-accent-red">Gearfried the Red-Eyes Iron Knight</strong> and <strong class="text-accent-red">Black Metal Dragon</strong> to generate advantage and summon <strong class="text-accent-red">Red-Eyes Slash Dragon</strong>.
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-red-100 text-sm">
+                        <li><strong class="text-accent">Key Card:</strong> Black Metal Dragon.</li>
+                        <li><strong class="text-accent">Key Card:</strong> Red-Eyes Fusion.</li>
+                    </ul>
+                </div>
+                <!-- Igknights -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4">The Igknight Vanguard</h3>
+                    <p class="text-red-100 text-sm mb-4">
+                        <strong class="text-red-300">(Historical)</strong> This Pendulum engine provided unparalleled consistency, as every Igknight monster could search any FIRE Warrior (like <strong class="text-accent-red">Renaud</strong> or <strong class="text-accent-red">IPG</strong>), guaranteeing access to the (now-banned) combo lines.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: The Art of War - HISTORICAL Combos -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Art of War: Historical Core Combos</h2>
+            <p class="text-red-100 mb-8 text-center max-w-2xl mx-auto">
+                <strong class="text-red-300">Note:</strong> The following combos are no longer possible in the TCG due to the banning of <strong class="text-accent-red">Isolde, Two Tales of the Noble Knights</strong>.
+            </p>
+            
+            <!-- Isolde Combo -->
+            <div class="card p-6 combo-step-card mb-6">
+                <h3 class="text-xl font-bold text-accent-red mb-4 text-center">The Foundational (Banned) Isolde Combo</h3>
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="isolde-img" class="card-image-container card-placeholder">Isolde, Two Tales of the Noble Knights</div>
+                    <div class="flex-1">
+                        <p class="text-red-100 mb-3"><strong class="text-accent">Step 1:</strong> Link Summon <strong class="text-accent-red">Isolde</strong> using any two Warrior monsters.</p>
+                        <p class="text-red-100 mb-3"><strong class="text-accent">Step 2:</strong> Activate Isolde's effect to send 4 Equip Spells (like <strong class="text-accent-red">Divine Sword - Phoenix Blade</strong>) from Deck to GY.</p>
+                        <p class="text-red-100"><strong class="text-accent">Step 3:</strong> Special Summon a Level 4 Warrior (like <strong class="text-accent-red">Infernoble Knight - Renaud</strong>) from Deck. This single play would set up the entire Graveyard with fuel for <strong class="text-accent-red">IPG</strong> and summon a key extender.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Red-Eyes Combo -->
+            <div class="card p-6 combo-step-card">
+                <h3 class="text-xl font-bold text-accent mb-4 text-center">Red-Eyes Control Loop</h3>
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="bmd-img" class="card-image-container card-placeholder">Black Metal Dragon</div>
+                    <div class="flex-1">
+                        <p class="text-red-100 mb-3"><strong class="text-accent">Step 1:</strong> Normal Summon <strong class="text-accent-red">Gearfried the Red-Eyes Iron Knight</strong>.</p>
+                        <p class="text-red-100 mb-3"><strong class="text-accent">Step 2:</strong> Equip it with <strong class="text-accent-red">Black Metal Dragon</strong> from hand.</p>
+                        <p class="text-red-100"><strong class="text-accent">Step 3 (Decision):</strong>
+                            <br>• <strong class="text-accent-red">Path A (Control):</strong> Activate Gearfried's effect. Destroy <strong class="text-accent-red">BMD</strong> to pop an opponent's backrow. <strong class="text-accent-red">BMD</strong> effect triggers to search a "Red-Eyes" card.
+                            <br>• <strong class="text-accent-red">Path B (Recursion):</strong> Do not activate the trigger. Use Gearfried's other effect to send <strong class="text-accent-red">BMD</strong> to GY, Special Summoning a "Red-Eyes" monster from GY (and still getting the <strong class="text-accent-red">BMD</strong> search).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historical End Board Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Historical End Boards</h2>
+            <p class="text-red-100 mb-8 text-center max-w-2xl mx-auto">
+                <strong class="text-red-300">Note:</strong> These end boards are no longer achievable due to the banning of their key components.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto max-w-5xl">
+                <!-- IPG -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Immortal Phoenix Gearfried</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ipg-end-img" class="card-image-container card-placeholder">Immortal Phoenix Gearfried</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-red-100 text-sm">
+                        <li><strong class="text-accent">Role:</strong> Monster Negation</li>
+                        <li>Provides a Quick Effect monster negate by sending an Equip Card to the GY.</li>
+                        <li>Provides non-destruction removal.</li>
+                    </ul>
+                </div>
+                <!-- Infernoble Knight Emperor Charles -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Infernoble Knight Emperor Charles</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="charles-end-img" class="card-image-container card-placeholder">Infernoble Knight Emperor Charles</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-red-100 text-sm">
+                        <li><strong class="text-accent">Role:</strong> Spell/Trap Negation & Removal</li>
+                        <li>Equips from GY in End Phase.</li>
+                        <li>Provides a Spell/Trap negate and destruction.</li>
+                    </ul>
+                </div>
+                <!-- Baronne de Fleur (BANNED) -->
+                <div class="card p-6 pro-con-card border-2 border-red-500">
+                    <h3 class="text-xl font-bold text-red-300 mb-4 text-center">Baronne de Fleur <span class="text-red-400">(BANNED)</span></h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="baronne-end-img" class="card-image-container card-placeholder">Baronne de Fleur</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-red-100 text-sm">
+                        <li><strong class="text-accent-red">Role:</strong> Omni-Negate</li>
+                        <li>The premier generic Level 10 Synchro, providing a powerful, reusable omni-negate.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Strengths and Weaknesses -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Analysis (Historical)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Power Ceiling:</strong> Historically capable of ending on multiple negates and disruptions.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Resilient Resource Loop:</strong> The GY-equipping mechanic of Infernobles made resources highly recursive.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400">In-Engine Protection:</strong> IPG could be summoned mid-combo to protect plays from hand traps like Nibiru.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400">Fragile Choke Points:</strong> The entire strategy was fatally reliant on <span class="line-through">Isolde</span>. A single negate on its effect could end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-400">Graveyard Hate:</strong> Cards like <strong class="text-accent-red">D.D. Crow</strong> or <strong class="text-accent-red">Bystial</strong> monsters are crippling, banishing key combo pieces from the GY.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Banned Cards:</strong> The deck's primary weakness is that its core engine (<span class="line-through">Isolde</span>, <span class="line-through">Smoke Grenade</span>) has been Forbidden.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Historical Tech Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-100">
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent">Divine Sword - Phoenix Blade:</strong> Essential for recursion and fuel.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-bomb"></i></span> <strong class="text-accent-red"><span class="line-through">Smoke Grenade of the Thief</span> (BANNED):</strong> Used with <span class="line-through">Isolde</span> or <strong class="text-accent-red">Charles</strong> to rip cards from the opponent's hand.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent">Fire Flint Lady:</strong> A generic extender to help make <span class="line-through">Isolde</span>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    
+    <!-- JavaScript for Banner and Card Loader -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- NEW EMBER BANNER SCRIPT ---
+            const canvas = document.getElementById('ember-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particlesArray = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y, size, color, weight) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = size;
+                        this.color = color;
+                        this.weight = weight; // How fast it moves up
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                    update() {
+                        // Slowly rise
+                        this.y -= this.weight;
+                        // Fade out
+                        if (this.size >= 0.2) this.size -= 0.1;
+                        // Reset particle when it's off-screen or invisible
+                        if (this.y < 0 || this.size < 0.2) {
+                            this.y = canvas.height + Math.random() * 50;
+                            this.x = Math.random() * canvas.width;
+                            this.size = (Math.random() * 2) + 1; // 1 to 3px
+                            this.weight = (Math.random() * 0.4) + 0.1; // 0.1 to 0.5
+                        }
+                        this.draw();
+                    }
+                }
+
+                function init() {
+                    particlesArray = [];
+                    const colors = ['#f6ad55', '#e53e3e', '#dd6b20'];
+                    let numberOfParticles = (canvas.height * canvas.width) / 5000;
+                    for (let i = 0; i < numberOfParticles; i++) {
+                        let x = Math.random() * canvas.width;
+                        let y = Math.random() * canvas.height;
+                        let size = (Math.random() * 2) + 1;
+                        let color = colors[Math.floor(Math.random() * colors.length)];
+                        let weight = (Math.random() * 0.4) + 0.1;
+                        particlesArray.push(new Particle(x, y, size, color, weight));
+                    }
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particlesArray.forEach(particle => particle.update());
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Assumes card-loader.js is loaded and CardLoader is available
+            CardLoader.loadCards({
+                // Banlist Section
+                'isolde-banned-img': 'Isolde, Two Tales of the Noble Knights',
+                'baronne-banned-img': 'Baronne de Fleur',
+                'apollousa-banned-img': 'Apollousa, Bow of the Goddess',
+
+                // Armory Section
+                'gearfried-iron-img': 'Gearfried the Iron Knight',
+                'gearfried-swordmaster-img': 'Gearfried the Swordmaster',
+                'ipg-img': 'Immortal Phoenix Gearfried',
+                'gearfried-red-eyes-img': 'Gearfried the Red-Eyes Iron Knight',
+                'phoenix-gearfried-img': 'Phoenix Gearfried',
+                
+                // Combo Section
+                'isolde-img': 'Isolde, Two Tales of the Noble Knights',
+                'bmd-img': 'Black Metal Dragon',
+
+                // End Board Section
+                'ipg-end-img': 'Immortal Phoenix Gearfried',
+                'charles-end-img': 'Infernoble Knight Emperor Charles',
+                'baronne-end-img': 'Baronne de Fleur'
+            });
+        });
+    </script>
+</body>
+</html>
+
+

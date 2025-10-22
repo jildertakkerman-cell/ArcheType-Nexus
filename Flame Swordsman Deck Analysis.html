@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flame Swordsman Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in an 'assets/js' folder relative to this file -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a0505; /* Deep, dark red */
+            color: #ffeadb; /* Warm off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #3b0f0f; /* Darker, slightly muted red */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            border: 1px solid #7f1d1d; /* Dark red border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(45, 10, 10, 0.8); /* Darker red with transparency */
+            border: 1px solid #991b1b;
+            backdrop-filter: blur(5px);
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px; /* Standard width */
+            min-height: 250px; /* Standard min height */
+            flex-shrink: 0;
+            position: relative; /* Needed for placeholder text centering */
+            display: flex; /* Use flexbox for centering */
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            object-fit: contain; /* Ensure image fits well */
+            max-height: 250px; /* Match min-height */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #450a0a; /* Slightly lighter dark red */
+            color: #fecaca;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #450a0a;
+            border: 1px dashed #b91c1c;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #fbbf24; } /* Amber for neutral/tech */
+        .text-accent { color: #f97316; } /* Bright orange */
+        .text-secondary-accent { color: #fdba74; } /* Lighter orange */
+        .arrow-color { color: #f97316; }
+        .heading-underline {
+            border-bottom: 2px solid #f97316;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f97316;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f97316;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f97316;
+        }
+
+        /* --- FLAME SWORDSMAN ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a0505;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #7f1d1d;
+        }
+
+        #ember-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at bottom, rgba(45, 10, 10, 0.5) 0%, rgba(26, 5, 5, 0.95) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(249, 115, 22, 0.8), 0 0 5px rgba(239, 68, 68, 0.5);
+        }
+
+        .banner-header h1 {
+             font-family: 'Cinzel Decorative', serif; /* More thematic font */
+             letter-spacing: 0.05em;
+        }
+        /* --- End Banner Styles --- */
+
+        /* --- Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 50%, #450a0a 100%);
+            color: white; border: 2px solid #f97316; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4), 0 0 20px rgba(239, 68, 68, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(249, 115, 22, 0.6), 0 0 30px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #fb923c;
+        }
+        .ygo-home-button:active { transform: translateY(-1px) scale(1.02); }
+        .ygo-home-button i {
+            font-size: 22px; position: relative; z-index: 2;
+            text-shadow: 0 0 10px rgba(249, 115, 22, 0.8);
+            animation: ygoIconGlowFlame 2s ease-in-out infinite alternate;
+        }
+        @keyframes ygoIconGlowFlame {
+            0% { text-shadow: 0 0 10px rgba(249, 115, 22, 0.8), 0 0 20px rgba(239, 68, 68, 0.4); }
+            100% { text-shadow: 0 0 15px rgba(249, 115, 22, 1), 0 0 30px rgba(239, 68, 68, 0.6), 0 0 40px rgba(251, 146, 60, 0.3); }
+        }
+        .ygo-home-button .ygo-home-text { display: none; } /* Hide text for simplicity or customize */
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+        /* --- End Home Button --- */
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed; display: none; opacity: 0; padding: 1rem;
+            background-color: rgba(26, 5, 5, 0.95); /* Dark red background */
+            border: 1px solid #f97316; /* Orange border */
+            border-radius: 0.75rem; color: #ffeadb; max-width: 300px; z-index: 1000;
+            pointer-events: none; transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel Decorative', serif; color: #f97316; font-weight: bold; font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats { font-family: 'Cinzel Decorative', serif; color: #f97316; }
+        /* --- End Popup Styles --- */
+
+        /* Table Styles */
+        .styled-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .styled-table th, .styled-table td {
+            border: 1px solid #7f1d1d; padding: 0.75rem; text-align: left;
+        }
+        .styled-table th { background-color: #450a0a; color: #f97316; font-weight: bold; }
+        .styled-table tr:nth-child(even) { background-color: #3b0f0f; }
+        .styled-table tr:hover { background-color: #521b1b; }
+
+        /* Sample Decklist Styles */
+        .decklist-section { background-color: #3b0f0f; border-radius: 0.5rem; padding: 1rem; margin-top: 0.5rem;}
+        .decklist-category { color: #f97316; font-weight: bold; margin-bottom: 0.5rem; border-bottom: 1px solid #7f1d1d; padding-bottom: 0.25rem;}
+        .decklist-card { color: #ffeadb; font-size: 0.875rem; }
+        .decklist-note { color: #fecaca; font-style: italic; font-size: 0.75rem; margin-left: 1rem;}
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Banner -->
+        <header class="banner-header text-center">
+            <canvas id="ember-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Flame Swordsman</h1>
+            <p class="text-lg md:text-xl text-orange-200">Forging a Modern Legend</p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-orange-100">
+                    From its humble origins as one of the earliest Fusion Monsters, <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=4021" target="_blank" class="lore-link">Flame Swordsman</a> has been reborn. Once a simple combination, <strong class="text-accent font-bold">this iconic monster</strong> has been reimagined through modern support, primarily from <strong class="text-accent font-bold">Maze of Millennia</strong>. This transformation shifts Flame Swordsman into a cohesive, engine-based strategy. The modern archetype operates as a highly efficient, linear combo deck focused on summoning its powerful new boss monster, <strong class="text-accent font-bold">Ultimate Flame Swordsman</strong>, often bypassing traditional Fusion methods. This report analyzes its core components, combos, synergies, and competitive standing.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Armory -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Core Armory</h2>
+            <p class="text-orange-100 mb-8 text-center max-w-2xl mx-auto">
+                The modern Flame Swordsman archetype functions as a tightly integrated system, executing a chain reaction of effects where each step enables the next, often treating effect summons *as* Fusion Summons.
+            </p>
+            <div class="card p-6 mb-6">
+                 <h3 class="text-xl font-bold text-secondary-accent mb-4"><i class="fas fa-star text-yellow-400 mr-2"></i>Initiators - Starting the Engine</h3>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent">Fighting Flame Swordsman</h4>
+                         <p class="text-sm text-orange-100">The one-card starter. Searches a Spell/Trap mentioning "Flame Swordsman" on summon. Sends a "Flame Swordsman" or related monster from Deck/Extra Deck to GY when sent to GY.</p>
+                     </div>
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent">Fighting Flame Sword</h4>
+                         <p class="text-sm text-orange-100">Quick-Play Spell. Searches any card mentioning "Flame Swordsman", provides battle destruction, or offers targeting protection.</p>
+                     </div>
+                 </div>
+            </div>
+            <div class="card p-6 mb-6">
+                 <h3 class="text-xl font-bold text-secondary-accent mb-4"><i class="fas fa-cogs text-gray-400 mr-2"></i>Enablers - Fueling the Fusion</h3>
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent">Salamandra, the Flying Flame Dragon</h4>
+                         <p class="text-sm text-orange-100">Searches "Salamandra" Spell/Trap (usually Salamandra Fusion) when sent to GY. Can equip itself for an ATK boost.</p>
+                     </div>
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent">Flame Swordsrealm</h4>
+                         <p class="text-sm text-orange-100">Continuous Spell. Protects FIRE Warrior Normal Summons. Sends a monster to GY to Special Summon the original Flame Swordsman from Extra Deck.</p>
+                     </div>
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent">Salamandra Fusion</h4>
+                         <p class="text-sm text-orange-100">Equip Spell. Sends itself and the equipped Fusion Monster to GY to Special Summon a "Flame Swordsman" Fusion (usually Ultimate Flame Swordsman) from Extra Deck.</p>
+                     </div>
+                 </div>
+            </div>
+             <div class="card p-6 mb-6">
+                 <h3 class="text-xl font-bold text-secondary-accent mb-4"><i class="fas fa-trophy text-yellow-500 mr-2"></i>Payoffs - The End Goal</h3>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent">Ultimate Flame Swordsman</h4>
+                         <p class="text-sm text-orange-100">Primary boss monster. Targeted destruction + burn (becomes Quick Effect if equipped). Can double its ATK (to 5600) for one battle.</p>
+                     </div>
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent">Fighting Flame Dragon</h4>
+                         <p class="text-sm text-orange-100">Functions as an Equip Spell from GY (Quick Effect). Grants equipped "Flame Swordsman" 700 ATK and a second attack. Key for OTK.</p>
+                     </div>
+                 </div>
+            </div>
+            <div class="card p-6">
+                 <h3 class="text-xl font-bold text-secondary-accent mb-4"><i class="fas fa-shield-alt text-blue-400 mr-2"></i>Support Corps - Utility and Recovery</h3>
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent">Mirage Swordsman</h4>
+                         <p class="text-sm text-orange-100">Summons itself from hand/GY if a FIRE Fusion is destroyed. Floats into a Level 7 or lower "Flame Swordsman" monster from Deck/Extra Deck if destroyed.</p>
+                     </div>
+                      <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent">Flame Swordsdance</h4>
+                         <p class="text-sm text-orange-100">Normal Trap. Changes a monster to face-down Defense. Can Special Summon a "Flame Swordsman" Fusion when any monster is Special Summoned.</p>
+                     </div>
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent">Salamandra with Chain</h4>
+                         <p class="text-sm text-orange-100">Normal Trap. Changes a monster to face-down Defense. Can be banished from GY to perform a Fusion Summon.</p>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- Card Role Table -->
+            <div class="card p-6 mt-6 overflow-x-auto">
+                 <h3 class="text-xl font-bold text-secondary-accent mb-4">Card Role Summary</h3>
+                 <table class="styled-table">
+                     <thead>
+                         <tr>
+                             <th>Card Name</th>
+                             <th>Card Type</th>
+                             <th>Primary Strategic Role</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr><td>Fighting Flame Swordsman</td><td>Effect Monster</td><td>One-Card Starter, Combo Initiator</td></tr>
+                         <tr><td>Fighting Flame Sword</td><td>Quick-Play Spell</td><td>Universal Searcher, Consistency Tool</td></tr>
+                         <tr><td>Salamandra, the Flying Flame Dragon</td><td>Effect Monster</td><td>Combo Enabler, Searcher</td></tr>
+                         <tr><td>Flame Swordsrealm</td><td>Continuous Spell</td><td>Combo Extender, Protection</td></tr>
+                         <tr><td>Salamandra Fusion</td><td>Equip Spell</td><td>Boss Monster Access</td></tr>
+                         <tr><td>Ultimate Flame Swordsman</td><td>Fusion/Effect Monster</td><td>Primary Win Condition, OTK Enabler</td></tr>
+                         <tr><td>Fighting Flame Dragon</td><td>Fusion/Effect Monster</td><td>OTK Enabler, Resource Recursion</td></tr>
+                         <tr><td>Mirage Swordsman</td><td>Effect Monster</td><td>Recovery, Synergy Bridge</td></tr>
+                         <tr><td>Flame Swordsdance</td><td>Normal Trap</td><td>Disruption Tool, Control Element</td></tr>
+                         <tr><td>Salamandra with Chain</td><td>Normal Trap</td><td>Disruption Tool, Control Element</td></tr>
+                     </tbody>
+                 </table>
+             </div>
+        </section>
+
+        <!-- Resource Management -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Flow of Battle: Resource Management</h2>
+            <p class="text-orange-100 mb-8 text-center max-w-2xl mx-auto">
+                Consistency stems from a linear sequence of searches and mills, ensuring access to all combo pieces from a single starter.
+            </p>
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-secondary-accent mb-4">The Primary Search Chain (FFS Line)</h3>
+                <ol class="list-decimal list-inside space-y-2 text-orange-100">
+                    <li><strong class="text-accent">On-Summon Search:</strong> Fighting Flame Swordsman (FFS) searches Flame Swordsrealm.</li>
+                    <li><strong class="text-accent">Graveyard Setup:</strong> Flame Swordsrealm sends FFS to GY to summon vanilla Flame Swordsman. FFS GY effect sends Salamandra, the Flying Flame Dragon to GY.</li>
+                    <li><strong class="text-accent">Secondary Search:</strong> Salamandra, the Flying Flame Dragon GY effect searches Salamandra Fusion.</li>
+                </ol>
+            </div>
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-secondary-accent mb-4">The Universal Searcher</h3>
+                <p class="text-orange-100">Fighting Flame Sword can search any card mentioning "Flame Swordsman", fixing hands by finding FFS, Flame Swordsrealm, or defensive Traps.</p>
+            </div>
+             <div class="card p-6">
+                <h3 class="text-xl font-bold text-secondary-accent mb-4">Resource Recursion</h3>
+                <ul class="list-disc list-inside space-y-2 text-orange-100">
+                    <li><strong class="text-accent">Fighting Flame Dragon:</strong> Equips itself from GY (Quick Effect) for OTK setup or follow-up.</li>
+                    <li><strong class="text-accent">Mirage Swordsman:</strong> Summons itself if a FIRE Fusion is destroyed. Floats into another "Flame Swordsman" monster if destroyed.</li>
+                </ul>
+            </div>
+             <!-- Trigger Table -->
+            <div class="card p-6 mt-6 overflow-x-auto">
+                 <h3 class="text-xl font-bold text-secondary-accent mb-4">Key Trigger Effects</h3>
+                 <table class="styled-table">
+                     <thead>
+                         <tr>
+                             <th>Triggering Card & Condition</th>
+                             <th>Effect</th>
+                             <th>Primary Target(s)</th>
+                             <th>Strategic Purpose</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                        <tr><td>Fighting Flame Swordsman (On Summon)</td><td>Add Spell/Trap from Deck</td><td>Flame Swordsrealm, Fighting Flame Sword</td><td>Combo Starter / Consistency</td></tr>
+                        <tr><td>Fighting Flame Swordsman (Sent to GY)</td><td>Send Monster from Deck/ED to GY</td><td>Salamandra, the Flying Flame Dragon</td><td>Combo Enabler</td></tr>
+                        <tr><td>Salamandra, the Flying Flame Dragon (Sent to GY)</td><td>Add "Salamandra" S/T from Deck</td><td>Salamandra Fusion</td><td>Boss Monster Access</td></tr>
+                        <tr><td>Fighting Flame Sword (Activation)</td><td>Add any "Flame Swordsman" card</td><td>FFS, Flame Swordsrealm, Traps</td><td>Universal Tutor</td></tr>
+                        <tr><td>Fighting Flame Dragon (In GY)</td><td>Equip self from GY</td><td>Ultimate Flame Swordsman</td><td>Recursion / OTK Enabler</td></tr>
+                        <tr><td>Mirage Swordsman (If destroyed)</td><td>Special Summon from Deck/ED</td><td>Fighting Flame Dragon, Flame Swordsman</td><td>Recovery / Follow-up</td></tr>
+                     </tbody>
+                 </table>
+             </div>
+        </section>
+
+        <!-- Blueprints for Victory -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Blueprints for Victory</h2>
+             <p class="text-orange-100 mb-8 text-center max-w-2xl mx-auto">The archetype primarily executes a go-second OTK but can pivot to a control setup if needed.</p>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- OTK Combo -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-secondary-accent mb-4 text-center">Foundational One-Card OTK (Going Second)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ffs-otk-img" class="card-image-container card-placeholder">Fighting Flame Swordsman</div>
+                    </div>
+                    <ol class="list-decimal list-inside space-y-2 text-sm text-orange-100">
+                        <li>Normal Summon FFS -> Search Flame Swordsrealm.</li>
+                        <li>Activate Flame Swordsrealm -> Send FFS -> Summon vanilla Flame Swordsman.</li>
+                        <li>FFS GY effect -> Send Salamandra, the Flying Flame Dragon to GY.</li>
+                        <li>Salamandra GY effect -> Search Salamandra Fusion.</li>
+                        <li>Activate Salamandra Fusion -> Equip to Flame Swordsman.</li>
+                        <li>Salamandra Fusion effect -> Send both -> Summon Ultimate Flame Swordsman (UFS).</li>
+                        <li>Battle Phase: Fighting Flame Dragon GY effect -> Equip to UFS.</li>
+                    </ol>
+                    <p class="mt-4 text-sm text-orange-200 font-semibold">End Board: UFS (3500 ATK) + Fighting Flame Dragon (Equip), enabling two attacks (7000+ damage) + Quick Effect destruction.</p>
+                    <div class="flex justify-center mt-4">
+                        <div id="ufs-otk-img" class="card-image-container card-placeholder">Ultimate Flame Swordsman</div>
+                    </div>
+                </div>
+                <!-- Control Setup -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-secondary-accent mb-4 text-center">First-Turn Control Setup</h3>
+                     <div class="flex justify-center mb-4">
+                        <div id="ffs-control-img" class="card-image-container card-placeholder">Fighting Flame Swordsman</div>
+                    </div>
+                    <ol class="list-decimal list-inside space-y-2 text-sm text-orange-100">
+                        <li>Normal Summon FFS -> Search Salamandra with Chain.</li>
+                        <li>Link Summon Linkuriboh/Almiraj using FFS.</li>
+                        <li>FFS GY effect -> Send Salamandra, the Flying Flame Dragon to GY.</li>
+                        <li>Salamandra GY effect -> Search Flame Swordsdance.</li>
+                        <li>Set both Traps.</li>
+                    </ol>
+                     <p class="mt-4 text-sm text-orange-200 font-semibold">End Board: Link-1 + 2 Set Traps (Salamandra with Chain, Flame Swordsdance) providing non-targeting disruption.</p>
+                     <div class="flex justify-center mt-4 space-x-2">
+                        <div id="chain-trap-img" class="w-1/2 card-image-container card-placeholder">Salamandra with Chain</div>
+                        <div id="dance-trap-img" class="w-1/2 card-image-container card-placeholder">Flame Swordsdance</div>
+                     </div>
+                </div>
+             </div>
+        </section>
+
+        <!-- Synergistic Engines -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Forging Alliances</h2>
+            <p class="text-orange-100 mb-8 text-center max-w-2xl mx-auto">The compact Flame Swordsman engine excels when integrated into other FIRE Warrior strategies.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-link text-red-400 mr-2"></i>Infernoble Knight Engine <span class="text-red-400 text-sm">(Impacted by Banlist)</span></h3>
+                    <p class="text-sm text-orange-100">FFS provides a resilient starter protected by Flame Swordsrealm. Combo leads into <strong class="text-accent">Isolde</strong> (<span class="text-red-300">Forbidden</span>) to start Infernoble plays. Shared support like Durendal boosts consistency.</p>
+                    <p class="text-sm text-red-300 mt-2">Note: Isolde's ban significantly weakens this synergy in TCG.</p>
+                </div>
+                 <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-fire-alt text-orange-500 mr-2"></i>Fire King Engine</h3>
+                    <p class="text-sm text-orange-100">Leverages <strong class="text-accent">Mirage Swordsman</strong>. Fire King effects destroy Mirage in hand/field, triggering its summon and search effects, creating advantage loops.</p>
+                </div>
+                 <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-plus-circle text-yellow-400 mr-2"></i>Generic Support</h3>
+                    <p class="text-sm text-orange-100"><strong class="text-accent">Diabellstar Engine:</strong> Provides free bodies for Link plays. <strong class="text-accent">Promethean Princess:</strong> Offers recursion and synergistic destruction.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Assessment -->
+         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Assessment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> High Consistency (One-card starter, searchable).</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> Potent OTK Capability (Double ATK + double attack).</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> Resilience to some hand traps (Maxx "C", targeted negates via Realm).</li>
+                        <li><span class="pro-icon"><i class="fas fa-puzzle-piece"></i></span> Flexible Engine for hybrid builds.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                     <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><span class="con-icon"><i class="fas fa-compress-arrows-alt"></i></span> Limited engine size/extenders (Pure version brittle).</li>
+                        <li><span class="con-icon"><i class="fas fa-route"></i></span> Linear and Predictable Strategy (Known choke points).</li>
+                        <li><span class="con-icon"><i class="fas fa-level-down-alt"></i></span> Low Power Ceiling (Pure version - often just one interaction).</li>
+                        <li><span class="con-icon"><i class="fas fa-skull"></i></span> Vulnerable to Graveyard Hate (Called by the Grave, Abyss Dweller).</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> Key Hybrid Enablers Banned (Isolde, Apollousa impacts ceiling).</li>
+                    </ul>
+                </div>
+            </div>
+             <div class="card p-6 mt-6">
+                <h3 class="text-xl font-bold text-secondary-accent mb-4 text-center">Final Verdict & Metagame Positioning</h3>
+                <p class="text-orange-100 text-center">
+                    As a <strong class="text-accent">pure strategy</strong>, Flame Swordsman is a competent <strong class="text-yellow-400">rogue deck</strong>, strong locally but lacking the interaction ceiling for top tables. As an <strong class="text-accent">engine</strong>, especially historically in Infernoble Knights, it was <strong class="text-green-400">competitively viable</strong>, fixing consistency issues. Post-banlist hits to key generic cards, its engine potential is still present but diminished compared to its peak. It remains a respectable choice, below top tier OTK like Tenpai Dragon.
+                </p>
+            </div>
+        </section>
+
+        <!-- Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status (Oct 2025 Sim)</h2>
+            <div class="card p-6">
+                 <p class="text-orange-100 mb-4 text-center">
+                    While the core Flame Swordsman archetype is largely unaffected, key generic cards often used alongside it or in hybrid builds face restrictions:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <div class="card combo-step-card p-4">
+                         <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted (Archetype)</h4>
+                         <ul class="list-disc list-inside space-y-1 text-sm text-orange-100">
+                             <li>Fighting Flame Swordsman</li>
+                             <li>Fighting Flame Sword</li>
+                             <li>Salamandra, the Flying Flame Dragon</li>
+                             <li>Flame Swordsrealm</li>
+                             <li>Salamandra Fusion</li>
+                             <li>Ultimate Flame Swordsman</li>
+                             <li>Fighting Flame Dragon</li>
+                             <li>Mirage Swordsman</li>
+                             <li>Flame Swordsdance</li>
+                             <li>Salamandra with Chain</li>
+                         </ul>
+                     </div>
+                      <div class="card combo-step-card p-4 border-yellow-500 bg-yellow-900 bg-opacity-20">
+                         <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (Generic/Support)</h4>
+                         <ul class="list-disc list-inside space-y-1 text-sm text-orange-100">
+                             <li>Reinforcement of the Army (1)</li>
+                             <li>Called by the Grave (1)</li>
+                             <li>Terraforming (1)</li>
+                             <li>Pot of Prosperity (1)</li>
+                         </ul>
+                     </div>
+                     <div class="card combo-step-card p-4 border-red-500 bg-red-900 bg-opacity-20">
+                         <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden (Generic/Support)</h4>
+                         <ul class="list-disc list-inside space-y-1 text-sm text-orange-100">
+                             <li>Isolde, Two Tales of the Noble Knights (0)</li>
+                             <li>Apollousa, Bow of the Goddess (0)</li>
+                             <li>Maxx "C" (0 in TCG)</li>
+                         </ul>
+                     </div>
+                </div>
+                 <div class="mt-4 p-3 bg-orange-900 bg-opacity-30 rounded border-l-4 border-orange-500">
+                    <p class="text-sm text-orange-100"><strong>Impact:</strong> The pure strategy remains intact. However, popular hybrid builds (especially Infernoble) are significantly weakened by the banning of key generic Link monsters like Isolde and Apollousa. Deck builders must adapt, potentially relying more on the pure version or finding alternative generic extenders. The sample list provided in the source document requires adjustment for TCG legality.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sample Deck Profile -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.7s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Appendix: Sample Deck Profile (TCG Adapted Hybrid)</h2>
+             <p class="text-orange-100 mb-4 text-center">This list adapts the Infernoble hybrid concept for the TCG banlist (Oct 2025 Sim), noting required changes from the source document.</p>
+            <div class="card p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Main Deck -->
+                    <div>
+                        <h3 class="text-xl font-bold text-secondary-accent mb-2">Main Deck (40 Cards)</h3>
+                        <div class="decklist-section">
+                            <p class="decklist-category">Monsters (18)</p>
+                            <p class="decklist-card">3x Fighting Flame Swordsman</p>
+                            <p class="decklist-card">3x Ash Blossom & Joyous Spring</p>
+                            <p class="decklist-card">1x Salamandra, the Flying Flame Dragon</p>
+                            <p class="decklist-card">1x Infernoble Knight - Renaud</p>
+                            <p class="decklist-card">1x Infernoble Knight Ogier</p>
+                            <p class="decklist-card">1x Infernoble Knight Oliver</p>
+                            <p class="decklist-card">1x Infernoble Knight Turpin</p>
+                            <p class="decklist-card">1x Infernoble Knight Ricciardetto</p>
+                            <p class="decklist-card">1x Immortal Phoenix Gearfried</p>
+                            <p class="decklist-card">3x Diabellstar the Black Witch</p>
+                            <p class="decklist-card">1x Effect Veiler <span class="decklist-note">(Replaces Forbidden Maxx "C")</span></p>
+                        </div>
+                        <div class="decklist-section">
+                            <p class="decklist-category">Spells (20)</p>
+                            <p class="decklist-card">3x Fighting Flame Sword</p>
+                            <p class="decklist-card">2x Flame Swordsrealm</p>
+                            <p class="decklist-card">2x Salamandra Fusion</p>
+                            <p class="decklist-card">3x "Infernoble Arms - Durendal"</p>
+                            <p class="decklist-card">1x "Infernoble Arms - Almace"</p>
+                            <p class="decklist-card">1x Noble Arms Museum</p>
+                            <p class="decklist-card">1x Reinforcement of the Army (Limited to 1)</p>
+                            <p class="decklist-card">1x Called by the Grave (Limited to 1)</p>
+                            <p class="decklist-card">1x Original Sinful Spoils - Snake-Eye</p>
+                            <p class="decklist-card">3x WANTED: Seeker of Sinful Spoils</p>
+                            <p class="decklist-card">1x Phoenix Gearblade</p>
+                        </div>
+                         <div class="decklist-section">
+                             <p class="decklist-category">Traps (2)</p>
+                            <p class="decklist-card">1x Salamandra with Chain</p>
+                            <p class="decklist-card">1x Infinite Impermanence</p>
+                        </div>
+                    </div>
+                     <!-- Extra Deck -->
+                    <div>
+                        <h3 class="text-xl font-bold text-secondary-accent mb-2">Extra Deck (15 Cards)</h3>
+                         <div class="decklist-section">
+                             <p class="decklist-category">Fusion (4)</p>
+                            <p class="decklist-card">2x Ultimate Flame Swordsman</p>
+                            <p class="decklist-card">1x Flame Swordsman</p>
+                            <p class="decklist-card">1x Fighting Flame Dragon</p>
+                        </div>
+                        <div class="decklist-section">
+                            <p class="decklist-category">Synchro (3)</p>
+                            <p class="decklist-card">1x Infernoble Knight Emperor Charles</p>
+                            <p class="decklist-card">1x Angelica, Princess of Noble Arms</p>
+                            <p class="decklist-card">1x Infernoble Knight Captain Roland</p>
+                        </div>
+                        <div class="decklist-section">
+                            <p class="decklist-category">Link (8)</p>
+                            <p class="decklist-card">1x Emperor Charles the Great</p>
+                            <p class="decklist-card">1x Promethean Princess, Bestower of Flames</p>
+                            <p class="decklist-card">1x S:P Little Knight</p>
+                            <p class="decklist-card">1x Salamangreat Almiraj</p>
+                            <p class="decklist-card">1x Hiita the Fire Charmer, Ablaze</p>
+                            <p class="decklist-card">1x Accesscode Talker</p>
+                            <p class="decklist-card">1x Linkuriboh <span class="decklist-note">(Replaces Forbidden Isolde start)</span></p>
+                             <p class="decklist-card">1x Knightmare Phoenix <span class="decklist-note">(Replaces Forbidden Apollousa)</span></p>
+                        </div>
+                    </div>
+                    <!-- Side Deck Placeholder -->
+                     <div>
+                        <h3 class="text-xl font-bold text-secondary-accent mb-2">Side Deck (Example Options)</h3>
+                        <div class="decklist-section">
+                             <p class="decklist-card">Hand traps (Nibiru, Droll, Veiler)</p>
+                             <p class="decklist-card">Board breakers (Evenly Matched, Lightning Storm)</p>
+                             <p class="decklist-card">Anti-Spell/Trap (Harpie's Feather Duster, Cosmic Cyclone)</p>
+                             <p class="decklist-card">Specific matchup cards</p>
+                        </div>
+                        <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                             <p class="text-sm text-red-100"><strong>Disclaimer:</strong> This adapted list reflects TCG banlist restrictions (Oct 2025 Sim). The bans on Isolde and Apollousa significantly reduce the combo potential and negate-heavy end boards achievable by the original Infernoble hybrid. This version focuses more on the Flame Swordsman OTK potential while retaining some Infernoble synergy.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             // --- EMBER ANIMATION SCRIPT ---
+            const canvas = document.getElementById('ember-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50; // Start below the canvas
+                        this.size = Math.random() * 2 + 1;
+                        this.speedY = Math.random() * 1 + 0.5;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                        this.color = `rgba(249, 115, 22, ${this.opacity})`; // Orange
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+                        this.opacity -= 0.005; // Fade out slowly
+
+                        if (this.y < -10 || this.opacity <= 0) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        if (this.opacity > 0) {
+                            ctx.fillStyle = `rgba(249, 115, 22, ${this.opacity})`;
+                            ctx.beginPath();
+                            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 10;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedY = Math.random() * 1 + 0.5;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles(); // Reinitialize particles on resize
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Load cards using the CardLoader module
+            CardLoader.loadCards({
+                'ffs-otk-img': 'Fighting Flame Swordsman',
+                'ufs-otk-img': 'Ultimate Flame Swordsman',
+                'ffs-control-img': 'Fighting Flame Swordsman',
+                'chain-trap-img': 'Salamandra with Chain',
+                'dance-trap-img': 'Flame Swordsdance',
+                // Add more mappings here based on IDs in your HTML sections
+                 'card-fighting-flame-swordsman': 'Fighting Flame Swordsman',
+                 'card-fighting-flame-sword': 'Fighting Flame Sword',
+                 'card-salamandra-dragon': 'Salamandra, the Flying Flame Dragon',
+                 'card-flame-swordsrealm': 'Flame Swordsrealm',
+                 'card-salamandra-fusion': 'Salamandra Fusion',
+                 'card-ultimate-flame-swordsman': 'Ultimate Flame Swordsman',
+                 'card-fighting-flame-dragon': 'Fighting Flame Dragon',
+                 'card-mirage-swordsman': 'Mirage Swordsman',
+                 'card-flame-swordsdance': 'Flame Swordsdance',
+                 'card-salamandra-chain': 'Salamandra with Chain',
+            });
+        });
+    </script>
+</body>
+</html>

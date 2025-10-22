@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From the Underworld Series Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- This assumes card-loader.js is in an 'assets/js/' directory -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1b26; /* Deep dark indigo */
+            color: #d1c4e9; /* Light lavender-grey */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a2633; /* Dark purple-grey */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a3d8e; /* Muted purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(42, 38, 51, 0.8);
+            border: 1px solid #6366f1; /* Indigo accent */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2457;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2457;
+            border: 1px dashed #6a5acd;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f43f5e; } /* Rose Red/Crimson */
+        .arrow-color { color: #f43f5e; }
+        .heading-underline {
+            border-bottom: 2px solid #f43f5e;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f43f5e;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f43f5e;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f43f5e;
+        }
+
+        /* --- NEW "FROM THE UNDERWORLD" ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1b26;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a3d8e;
+        }
+
+        #underworld-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 27, 38, 0.4) 0%, rgba(26, 27, 38, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(244, 63, 94, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'EB Garamond', serif; /* More professional, thematic font */
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 27, 38, 0.95); /* Theme background */
+            border: 1px solid #f43f5e; /* Accent border */
+            border-radius: 0.75rem;
+            color: #d1c4e9;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'EB Garamond', serif;
+            color: #f43f5e; /* Accent color */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #f43f5e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="underworld-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">FROM THE UNDERWORLD</h1>
+            <p class="text-lg md:text-xl text-rose-200">Deconstructing the "Tour Guide" Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Introduction: A Series, Not an Archetype</h2>
+                <p class="text-indigo-200">
+                    In the vast card pool of Yu-Gi-Oh!, the "from the Underworld" cards represent a unique case study. They are not a formal, searchable archetype but rather a thematic series of Fiend-Type monsters. Their strategic value is derived not from dedicated support but from their generic utility and ability to function as a compact, efficient "engine" that can be integrated into a wide variety of other strategies. This 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=from%20the%20Underworld&stype=1" target="_blank" class="lore-link">underworld cadre</a>
+                    is built to deconstruct and analyze.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Underworld Cadre Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Underworld Cadre</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main Deck Engine -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-secret text-4xl text-rose-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Core Engine</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tour Guide From the Underworld</h4>
+                            <p class="text-sm text-indigo-200">The lynchpin and one-card starter. Normal Summoning her allows you to Special Summon any Level 3 Fiend from your Deck, instantly setting up Xyz or Link plays.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tour Bus From the Underworld</h4>
+                            <p class="text-sm text-indigo-200">A key utility piece and target for Tour Guide. When sent to the GY, it recycles a monster from either GY to the Deck, providing disruption or resource recovery.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Extra Deck Support -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-briefcase text-4xl text-rose-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Extra Deck Operatives</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Beat Cop from the Underworld</h4>
+                            <p class="text-sm text-indigo-200">A Link-2 protection tool. It can place a Patrol Counter on a face-up card, allowing it to survive destruction once.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Muckraker From the Underworld</h4>
+                            <p class="text-sm text-indigo-200">A powerful Link-2 extender. It offers protection by Tributing a Fiend and can revive any Fiend from the GY by discarding a card, though it locks you into Fiends.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Foundational Play</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The engine's power is its simplicity. A single card converts your Normal Summon into immediate Extra Deck access, bypassing the "Synchro Material" restriction from 2011 to become a perfect, unrestricted Link enabler.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="tour-guide-img-container" class="card-image-container flex-shrink-0 card-placeholder">Tour Guide From the Underworld</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a2633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Summon</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Tour Guide From the Underworld</strong>. Her mandatory trigger effect activates.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sangan-img-container" class="card-image-container flex-shrink-0 card-placeholder">Level 3 Fiend (e.g., Sangan, Graff)</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a2633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Effect</h3>
+                            </div>
+                            <p class="text-indigo-200">Special Summon 1 Level 3 Fiend from your Deck (e.g., <strong class="text-accent">Graff</strong>, <strong class="text-accent">Sangan</strong>, <strong class="text-accent">Fiendish Rhino Warrior</strong>). Its effects are negated.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cherubini-img-container" class="card-image-container flex-shrink-0 card-placeholder">Link-2 / Rank 3</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a2633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Result</h3>
+                            </div>
+                            <p class="text-indigo-200">Use both monsters to Link Summon a Link-2 (like <strong class="text-accent">Cherubini</strong>) or Xyz Summon a Rank 3 (like <strong class="text-accent">Dante</strong>). This is the gateway to your main archetype's combo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard / Strategic Blueprints Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Blueprints: The End Goal</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                The "From the Underworld" engine doesn't have its own end board. Its purpose is to be a flawless starter for other, more powerful Fiend-based strategies by providing immediate access to their key combo pieces.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-auto max-w-6xl">
+                <!-- Phantom Knights -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">Phantom Knights</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="rusty-bardiche-img-container" class="card-image-container card-placeholder">The Phantom Knights of Rusty Bardiche</div>
+                    </div>
+                    <p class="text-sm text-indigo-200">Tour Guide makes <strong class="text-accent">Cherubini</strong>, which sends a PK monster to the GY, starting the full combo to summon <strong class="text-accent">Rusty Bardiche</strong> and set multiple Fog Blades.</p>
+                </div>
+                <!-- Burning Abyss -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">Burning Abyss</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dante-img-container" class="card-image-container card-placeholder">Dante, Traveler of the Burning Abyss</div>
+                    </div>
+                    <p class="text-sm text-indigo-200">Tour Guide summons <strong class="text-accent">Graff</strong>, and both are overlaid to make <strong class="text-accent">Dante</strong>. Graff triggers, summoning <strong class="text-accent">Cir</strong>, which establishes GY setup and field presence.</p>
+                </div>
+                <!-- Unchained -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">Unchained</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="yama-img-container" class="card-image-container card-placeholder">Unchained Soul Lord of Yama</div>
+                    </div>
+                    <p class="text-sm text-indigo-200">Tour Guide summons <strong class="text-accent">Fiendish Rhino Warrior</strong>. Linking both into <strong class="text-accent">Yama</strong> triggers both effects, searching and sending an Unchained card to GY.</p>
+                </div>
+                <!-- Goblin Biker -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">Goblin Biker</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="gabonga-img-container" class="card-image-container card-placeholder">Goblin Biker Big Gabonga</div>
+                    </div>
+                    <p class="text-sm text-indigo-200">Tour Guide summons <strong class="text-accent">Goblin Biker Mean Merciless</strong>. Both are used to Xyz Summon <strong class="text-accent">Big Gabonga</strong>, setting up the Goblin Biker revival and swarm effects.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ultimate Out Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ultimate Out</h2>
+            <div class="card p-6 max-w-2xl mx-auto flex flex-col md:flex-row items-center gap-6">
+                <div id="underworld-goddess-img-container" class="card-image-container card-placeholder">Underworld Goddess of the Closed World</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Underworld Goddess of the Closed World</h3>
+                    <p class="text-indigo-200">
+                        Though not part of the core engine, the "Underworld Goddess" is a thematically related Link-5 boss monster. She serves as a powerful, generic board-breaker, famous for her ability to use one of your opponent's monsters as Link Material, removing threats that are otherwise immune to targeting or destruction.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">One-Card Starter:</strong> Tour Guide is one of the most efficient starters ever printed.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Generic & Flexible:</strong> Enables Link-2, Rank 3, and perfect Graveyard setup for any Fiend deck.</li>
+                        <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-green-300">Compact Engine:</strong> The core engine takes up very few Main Deck slots.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">"Choke Point":</strong> The entire play relies on Tour Guide's Normal Summon and effect resolution.</li>
+                        <li><span class="con-icon"><i class="fas fa-bolt"></i></span> <strong class="text-red-300">Vulnerable to Hand Traps:</strong> Extremely weak to <strong class="text-accent">Ash Blossom</strong>, <strong class="text-accent">Effect Veiler</strong>, and <strong class="text-accent">Infinite Impermanence</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-user-slash"></i></span> <strong class="text-red-300">Normal Summon Reliant:</strong> Consumes the turn's only Normal Summon, which can be risky.</li>
+                    </ul>
+                </div>
+                <!-- Key Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent">Cherubini, Ebon Angel:</strong> The single most important bridge to modern Fiend combos.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-pastafarianism"></i></span> <strong class="text-accent">Burning Abyss:</strong> The entire archetype is a toolbox for Tour Guide.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-ghost"></i></span> <strong class="text-accent">Phantom Knights:</strong> Uses the engine to get its GY-based plays started.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="my-10 md:my-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The "From the Underworld" engine is impacted by the TCG banlist, which balances its power.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Tour Guide From the Underworld</strong></li>
+                            <li><strong class="text-yellow-300">The Phantom Knights of Rusty Bardiche</strong></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Tour Bus From the Underworld</strong></li>
+                            <li><strong class="text-green-300">Beat Cop from the Underworld</strong></li>
+                            <li><strong class="text-green-300">Muckraker From the Underworld</strong></li>
+                            <li><strong class="text-green-300">Cherubini, Ebon Angel</strong></li>
+                            <li><strong class="text-green-300">Underworld Goddess</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With <strong class="text-accent">Tour Guide</strong> at one copy, the engine is less consistent as a standalone starter but remains an incredibly high-impact card to draw. Decks can no longer rely on opening it, but its power as a one-card combo is unchanged. The limitation on <strong class="text-accent">Rusty Bardiche</strong> also limits the ceiling of its most common end board.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- UNDERWORLD PARTICLE ANIMATION ---
+            const canvas = document.getElementById('underworld-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 0.5 + 0.2; // Slow drift
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.color = `rgba(244, 63, 94, ${Math.random() * 0.5 + 0.3})`; // Accent color
+                    }
+                    update() {
+                        this.y -= this.speed; // Move upwards
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Uses the global CardLoader from assets/js/card-loader.js
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'tour-guide-img-container': 'Tour Guide From the Underworld',
+                    'sangan-img-container': 'Sangan', // Using Sangan as a classic example
+                    'cherubini-img-container': 'Cherubini, Ebon Angel of the Burning Abyss',
+                    'rusty-bardiche-img-container': 'The Phantom Knights of Rusty Bardiche',
+                    'dante-img-container': 'Dante, Traveler of the Burning Abyss',
+                    'yama-img-container': 'Unchained Soul Lord of Yama',
+                    'gabonga-img-container': 'Goblin Biker Big Gabonga',
+                    'underworld-goddess-img-container': 'Underworld Goddess of the Closed World'
+                });
+            } else {
+                console.error('CardLoader is not defined. Make sure card-loader.js is loaded correctly.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gizmek Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in assets/js/ as per other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c141c; /* Dark metallic blue/grey */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1d24; /* Darker grey */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a3f4a; /* Metallic border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #242933; /* Slightly lighter grey */
+            border: 1px solid #4a5060;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #242933;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #242933;
+            border: 1px dashed #4a5060;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ff9500; } /* Gizmek Orange */
+        .arrow-color { color: #ff9500; }
+        .heading-underline {
+            border-bottom: 2px solid #ff9500;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ff9500;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff9500;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ff9500;
+        }
+
+        /* --- NEW GIZMEK ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c141c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3a3f4a;
+        }
+
+        #gear-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.2;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 20, 28, 0.4) 0%, rgba(12, 20, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(255, 149, 0, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', monospace;
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(12, 20, 28, 0.95); /* Match body bg */
+            border: 1px solid #ff9500; /* Accent color */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #ff9500;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #ff9500;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="gear-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">GIZMEK</h1>
+            <p class="text-lg md:text-xl text-orange-200">A Strategic Deconstruction of the Machine Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">Gizmek</strong> archetype is a series of Machine monsters sharing a diverse range of Attributes and Levels. Their unifying trait is a statistical peculiarity: their Attack (ATK) is always equal to their Defense (DEF). This lynchpin mechanic allows the Gizmeks to function as a modular, synergistic engine capable of explosive offensive plays, complex board-building, and a resilient "grind game" fueled by an unconventional resource loop that treats the banished zone as a secondary resource pool.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Gizmek Blueprint Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Gizmek Blueprint</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The archetype is a "beautiful mess" of non-linear parts that come together to form a cohesive whole. Its power comes from how these interconnected <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=gizmek&stype=1" target="_blank" class="lore-link">mechanical cards</a> build upon each other.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-orange-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Engine: Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">"Baby" Gizmeks (Lvl 1-4)</h4>
+                            <p class="text-sm text-blue-200"><strong class="text-white">Inaba (1)</strong> & <strong class="text-white">Arakami (4)</strong> swarm the field, <strong class="text-white">Naganaki (2)</strong> summons from Deck, and <strong class="text-white">Taniguku (3)</strong> sets up the Deck and GY.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">"Mid-Range" Gizmeks (Lvl 5-7)</h4>
+                            <p class="text-sm text-blue-200"><strong class="text-white">Makami (6)</strong> is the primary searcher, <strong class="text-white">Yata (5)</strong> grants an extra Normal Summon, and <strong class="text-white">Uka (7)</strong> is a reactive extender that summons from Deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">"Boss" Gizmeks (Lvl 8-10)</h4>
+                            <p class="text-sm text-blue-200"><strong class="text-white">Orochi (8)</strong> is the recursive engine and removal. <strong class="text-white">Kaku (9)</strong> and <strong class="text-white">Okami (10)</strong> are powerful board-breakers that punish Extra Deck summons.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Support -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-orange-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Blueprint: Archetypal Support</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Sacred Scrolls of the Gizmek Legend</h4>
+                            <p class="text-sm text-blue-200">The Field Spell. It excavates for consistency and fuels the banished pile. Its most powerful effect is a one-sided <strong class="text-white">Skill Drain</strong> that activates after 10 qualifying monsters are summoned, locking opponents out of their monster effects.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Banish-Recursion Loop</h4>
+                            <p class="text-sm text-blue-200"><strong class="text-white">Orochi</strong> banishes 8 from Deck to summon itself. <strong class="text-white">Naganaki's</strong> GY effect banishes itself to recover one of those face-down banished cards. This turns Orochi's "cost" into a net advantage and a powerful resource loop.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Sequence A: The Orochi OTK</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                Gizmeks excel at "going second" to end the game in a single Battle Phase by generating massive ATK values.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="orochi-img-container" class="card-image-container flex-shrink-0 card-placeholder">Gizmek Orochi, the Serpentron Sky Slasher</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1d24] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon the Engine</h3>
+                            </div>
+                            <p class="text-blue-200">Send <strong class="text-accent">Gizmek Orochi</strong> to the GY (e.g., with <strong class="text-white">Foolish Burial</strong> or <strong class="text-white">Gizmek Makami</strong>). Activate its Quick Effect, banishing 8 cards from your Deck to Special Summon it.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="inaba-img-container" class="card-image-container flex-shrink-0 card-placeholder">Gizmek Inaba, the Hopping Hare of Hakuto</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1d24] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Amplify ATK</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon <strong class="text-accent">Gizmek Inaba</strong> and summon another Gizmek (e.g., <strong class="text-white">Arakami</strong>). Banish <strong class="text-accent">Inaba</strong> from the GY to target <strong class="text-accent">Orochi</strong>. Its ATK becomes the combined original ATK of all Gizmeks on field (e.g., 2450 + 1850 + 50 = 4350 ATK or more).</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="limiter-img-container" class="card-image-container flex-shrink-0 card-placeholder">Limiter Removal</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1d24] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Declare Battle</h3>
+                            </div>
+                            <p class="text-blue-200">Enter the Battle Phase and activate <strong class="text-accent">Limiter Removal</strong>. This doubles the ATK of all your Machine monsters, pushing <strong class="text-accent">Orochi</strong>'s ATK to 8700+ and securing the One-Turn Kill.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Configuration (End Board)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The OTK Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The "Resource-State" Board</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="orochi-end-img-container" class="card-image-container card-placeholder">Gizmek Orochi, the Serpentron Sky Slasher</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Recursive Threat:</strong> <strong class="text-white">Orochi</strong> in the GY, ready to be summoned as a Quick Effect for removal or pressure.</li>
+                        <li><strong class="text-accent">Loaded GY:</strong> <strong class="text-white">Naganaki</strong> (for recovery) and <strong class="text-white">Taniguku</strong> (for revival) ready to be banished.</li>
+                        <li><strong class="text-accent">Deceptive Power:</strong> A modest field backed by a fully loaded GY and banished pile, ready to overwhelm the opponent on the follow-up turn.</li>
+                    </ul>
+                </div>
+                <!-- The Control Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The "Sacred Scrolls" Control Board</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="scrolls-end-img-container" class="card-image-container card-placeholder">Sacred Scrolls of the Gizmek Legend</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">One-Sided Floodgate:</strong> The Field Spell with 10+ counters, preventing opponents from activating effects of monsters whose ATK &ne; DEF.</li>
+                        <li><strong class="text-accent">Delayed Trigger:</strong> End your turn with 8 or 9 counters. Use <strong class="text-white">Orochi's</strong> Quick Effect on the opponent's turn to summon it, apply the 10th counter, and activate the floodgate mid-combo.</li>
+                        <li><strong class="text-accent">Supporting Cast:</strong> Often backed by generic Link monsters summoned via <strong class="text-white">I:P Masquerena</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- External Synergies Section (Part 5) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Forging Alliances: External Synergies</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Banish-Beatdown -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-orange-300 mb-4">Banish-Beatdown</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent">Partners:</strong> <strong class="text-white">Gren Maju Da Eiza</strong>, <strong class="text-white">Pot of Desires</strong>, <strong class="text-white">Eater of Millions</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-accent">Synergy:</strong> <strong class="text-white">Orochi</strong> and <strong class="text-white">Scrolls</strong> banish cards at high speed, turning <strong class="text-white">Gren Maju</strong> into a 10,000+ ATK boss monster for easy OTKs.</li>
+                    </ul>
+                </div>
+                <!-- Machine Conglomerate -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-orange-300 mb-4">Machine Conglomerate</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-robot"></i></span> <strong class="text-accent">Partners:</strong> Orcust, Machina, Therion.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent">Synergy:</strong> Gizmeks provide DARK Machines for <strong class="text-white">Orcust</strong> plays. <strong class="text-white">Makami</strong> can search <strong class="text-white">Therion "King" Regulus</strong>. They provide bodies and GY fuel for <strong class="text-white">Machina Ruinforce</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Going-Second Toolbox -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-orange-300 mb-4">Going-Second Toolbox</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-tools"></i></span> <strong class="text-accent">Partners:</strong> Kaiju monsters, <strong class="text-white">Urgent Schedule</strong>, <strong class="text-white">Lightning Storm</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-bolt"></i></span> <strong class="text-accent">Synergy:</strong> Complements the archetype's reactive design. <strong class="text-white">Kaijus</strong> remove threats and provide Attributes for <strong class="text-white">Gizmek Uka</strong>. <strong class="text-white">Urgent Schedule</strong> provides instant Link/Xyz material.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The Gizmek archetype remains fully available and at full power in the current TCG format:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Core Archetype</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">All Gizmek Monsters (3 copies)</strong> - Inaba, Naganaki, Orochi, Kaku, Okami, Uka, Makami, etc.</li>
+                            <li>Sacred Scrolls of the Gizmek Legend (3 copies)</li>
+                            <li>Complete archetype engine unrestricted.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Key External Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Pot of Desires (3 copies)</li>
+                            <li>Therion "King" Regulus (3 copies)</li>
+                            <li><strong class="text-yellow-300">Limiter Removal (Limited - 1 copy)</strong></li>
+                            <li><strong class="text-yellow-300">Foolish Burial (Limited - 1 copy)</strong></li>
+                            <li><strong class="text-red-400">Mecha Phantom Beast Auroradon (Forbidden)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its entire core archetype at 3, the Gizmek engine is a highly consistent and powerful option. While some generic combo tools are limited or banned, the deck's primary strategy and synergies remain at full strength.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Gizmek Arsenal: Key Cards</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">A quick-reference guide to the archetype's most important components.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Gizmek Orochi, the Serpentron Sky Slasher</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 8 DARK Machine (2450/2450)</strong></p>
+                    <p class="text-blue-200">The core engine. Summons itself from hand/GY as a Quick Effect by banishing 8 from Deck. Provides targeted removal by banishing from your Extra Deck.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Gizmek Makami, the Ferocious Fanged Fortress</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 6 WIND Machine (2150/2150)</strong></p>
+                    <p class="text-blue-200">The primary searcher. On summon, discard 1 monster to add any monster with ATK=DEF from Deck to hand (including non-Gizmeks like Regulus).</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Gizmek Inaba, the Hopping Hare of Hakuto</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 1 WIND Machine (50/50)</strong></p>
+                    <p class="text-blue-200">A main starter. On summon, can Special Summon a qualifying Machine from hand. GY effect banishes itself to grant one monster massive ATK for an OTK.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Sacred Scrolls of the Gizmek Legend</h3>
+                    <p class="text-blue-200 mb-2"><strong>Field Spell</strong></p>
+                    <p class="text-blue-200">Provides consistency by excavating 3 (add 1, banish 2). After 10 qualifying summons, it becomes a one-sided Skill Drain against most of the metagame.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Gizmek Naganaki, the Sunrise Signaler</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 2 LIGHT Machine (950/950)</strong></p>
+                    <p class="text-blue-200">Toolbox summoner (Tributes to summon a lower-Level from Deck). GY effect banishes itself to add 1 face-down banished Machine to hand, completing the Orochi loop.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Gizmek Kaku, the Supreme Shining Sky Stag</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 9 FIRE Machine (2750/2750)</strong></p>
+                    <p class="text-blue-200">Board-breaker. Summons itself if a monster is in the Extra Monster Zone, then equips that monster, removing it from the field without destroying it.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GIZMEK GEAR ANIMATION ---
+            const canvas = document.getElementById('gear-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let gears = [];
+                let angle = 0;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                // Colors from the Gizmek attributes
+                const attributeColors = [
+                    '#FF9500', // FIRE (Kaku) - Main Accent
+                    '#00BFFF', // WATER (Arakami, Okami)
+                    '#32CD32', // WIND (Inaba, Makami)
+                    '#FFD700', // LIGHT (Naganaki, Yata)
+                    '#8B4513', // EARTH (Taniguku, Uka)
+                    '#4B0082'  // DARK (Orochi)
+                ];
+
+                class Gear {
+                    constructor(x, y, radius, teeth, speed, color) {
+                        this.x = x;
+                        this.y = y;
+                        this.radius = radius;
+                        this.teeth = teeth;
+                        this.speed = speed;
+                        this.color = color;
+                    }
+
+                    draw(angle) {
+                        const toothSize = this.radius * 0.2;
+                        const innerRadius = this.radius - toothSize;
+                        
+                        ctx.beginPath();
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 2;
+                        
+                        for (let i = 0; i < this.teeth * 2; i++) {
+                            const r = (i % 2 === 0) ? this.radius : innerRadius;
+                            const a = angle + (Math.PI * 2 / (this.teeth * 2)) * i;
+                            ctx.lineTo(this.x + r * Math.cos(a), this.y + r * Math.sin(a));
+                        }
+                        ctx.closePath();
+                        ctx.stroke();
+
+                        // Inner circle
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius * 0.3, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                }
+
+                function initGears() {
+                    gears = [];
+                    const baseRadius = Math.min(canvas.width, canvas.height) / 6;
+                    
+                    gears.push(new Gear(canvas.width * 0.2, canvas.height * 0.3, baseRadius, 10, 0.005, attributeColors[0]));
+                    gears.push(new Gear(canvas.width * 0.5, canvas.height * 0.7, baseRadius * 1.2, 12, -0.003, attributeColors[1]));
+                    gears.push(new Gear(canvas.width * 0.8, canvas.height * 0.4, baseRadius * 0.8, 8, 0.007, attributeColors[2]));
+                    gears.push(new Gear(canvas.width * 0.05, canvas.height * 0.8, baseRadius * 0.6, 6, -0.004, attributeColors[3]));
+                    gears.push(new Gear(canvas.width * 0.9, canvas.height * 0.8, baseRadius * 0.9, 9, 0.006, attributeColors[4]));
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    angle += 0.01;
+                    
+                    gears.forEach(gear => {
+                        gear.draw(angle * gear.speed * 100);
+                    });
+
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initGears();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initGears();
+                });
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'orochi-img-container': 'Gizmek Orochi, the Serpentron Sky Slasher',
+                'inaba-img-container': 'Gizmek Inaba, the Hopping Hare of Hakuto',
+                'limiter-img-container': 'Limiter Removal',
+                'orochi-end-img-container': 'Gizmek Orochi, the Serpentron Sky Slasher',
+                'scrolls-end-img-container': 'Sacred Scrolls of the Gizmek Legend'
+            });
+        });
+    </script>
+</body>
+</html>

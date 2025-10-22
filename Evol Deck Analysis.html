@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evol Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assumes card-loader.js is in /assets/js/ relative to this HTML file -->
+    <script src="assets/js/card-loader.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a0f00; /* Dark fiery brown */
+            color: #fff0e6; /* Light peach/off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #331f00; /* Darker brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #663d00; /* Burnt orange border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #4d2e00; /* Slightly lighter brown */
+            border: 1px solid #995c00;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Add cursor pointer for card images */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #4d2e00;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #4d2e00;
+            border: 1px dashed #995c00;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ff8c1a; } /* Fiery Orange for accents */
+        .arrow-color { color: #ff8c1a; }
+        .heading-underline {
+            border-bottom: 2px solid #ff8c1a;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .hint-link { /* Style for the hint link */
+            color: #ffcc66; /* Light orange */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffcc66;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .hint-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ffcc66;
+        }
+
+        /* --- New Evol Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a0f00;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #663d00;
+        }
+
+        #volcano-canvas {
+            position: absolute;
+            bottom: 0; /* Position at the bottom */
+            left: 0;
+            width: 100%;
+            height: 100%; /* Adjust height as needed */
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(26, 15, 0, 0.9) 0%, rgba(51, 31, 0, 0.7) 50%, rgba(26, 15, 0, 0.4) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(255, 140, 26, 0.8); /* Orange glow */
+        }
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif; /* Keep Orbitron for a distinct feel */
+             color: #ffcc99; /* Lighter orange for title */
+        }
+        .banner-header p {
+            color: #ffd9b3; /* Even lighter peach */
+        }
+
+        /* Home Button Styling */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white; border: 2px solid #6366f1; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i { font-size: 22px; position: relative; z-index: 2; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+
+        /* Card Popup Styling */
+        #card-popup {
+            position: fixed; display: none; opacity: 0; padding: 1rem;
+            background-color: rgba(26, 15, 0, 0.95); /* Dark brown popup */
+            border: 1px solid #ff8c1a; /* Orange border */
+            border-radius: 0.75rem; color: #fff0e6; max-width: 300px;
+            z-index: 1000; pointer-events: none; transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); font-size: 0.875rem;
+        }
+        #card-popup h3 { color: #ff8c1a; font-weight: bold; font-size: 1.125rem; }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats { color: #ff8c1a; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Banner Section -->
+        <header class="banner-header text-center">
+            <canvas id="volcano-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-2">EVOL</h1>
+            <p class="text-lg md:text-xl">The Evolutionary Apex: Reptiles to Dragons</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-amber-100">
+                    The <strong class="text-accent font-bold">Evol</strong> archetype presents a unique, multi-stage strategy centered around the concept of evolution. It progresses through three distinct FIRE-Attribute sub-archetypes: the Reptile <strong class="text-accent font-bold">Evoltiles</strong>, the Dinosaur <strong class="text-accent font-bold">Evolsaurs</strong>, and the Dragon <strong class="text-accent font-bold">Evolzars</strong>. The core mechanic involves using Evoltiles to Special Summon Evolsaurs, which gain effects only when summoned this way. These Evolsaurs then become Xyz Material for the powerful Evolzar monsters, known for their potent negation effects. This chain forms the deck's identity, demanding careful sequencing to unleash its final forms.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Evolutionary Chain Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Evolutionary Chain</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Evoltiles -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-egg text-4xl text-orange-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Evoltiles: The Starters</h3>
+                    </div>
+                    <p class="text-sm text-amber-100 mb-4">Low-level FIRE Reptiles that initiate combos by Special Summoning Evolsaurs.</p>
+                    <div class="space-y-3">
+                        <p class="text-sm"><strong class="text-accent">Najasho:</strong> Tributes itself to summon an Evolsaur from Deck. Key combo piece.</p>
+                        <p class="text-sm"><strong class="text-accent">Westlo:</strong> FLIP monster that summons an Evolsaur from Deck. Slower, defensive option.</p>
+                        <p class="text-sm"><strong class="text-accent">Megachirella:</strong> Tributes a Reptile and discards to summon a Dinosaur from Deck. Offers flexibility.</p>
+                         <p class="text-sm"><strong class="text-accent">Pholis:</strong> Summons another Evoltile and sets key Spells/Traps ("Evo-Force", "Evo-Instant") from Deck.</p>
+                    </div>
+                </div>
+                <!-- Evolsaurs -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-paw text-4xl text-orange-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Evolsaurs: The Bridge</h3>
+                    </div>
+                    <p class="text-sm text-amber-100 mb-4">Mid-level FIRE Dinosaurs providing toolbox effects, *only* when summoned by an Evoltile.</p>
+                     <div class="space-y-3">
+                        <p class="text-sm"><strong class="text-accent">Vulcano:</strong> Summons another Evolsaur from GY, enabling Rank 4 plays.</p>
+                        <p class="text-sm"><strong class="text-accent">Diplo:</strong> Destroys an opponent's Spell/Trap upon summon.</p>
+                        <p class="text-sm"><strong class="text-accent">Cerato:</strong> Searches an Evoltile when it destroys a monster by battle.</p>
+                        <p class="text-sm"><strong class="text-accent">Lios:</strong> Modern powerhouse. Sets "Evo-Singularity" and modulates Levels for Rank 6 plays.</p>
+                    </div>
+                </div>
+                <!-- Evolzars -->
+                <div class="card p-6">
+                     <div class="flex items-center mb-4">
+                        <i class="fas fa-dragon text-4xl text-red-500 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Evolzars: The Apex</h3>
+                    </div>
+                    <p class="text-sm text-amber-100 mb-4">Powerful Dragon Xyz Monsters summoned using Evolsaurs, acting as the primary win conditions.</p>
+                     <div class="space-y-3">
+                        <p class="text-sm"><strong class="text-accent">Laggia (Rank 4):</strong> Negates Summons or Spell/Trap activations (like Solemn Judgment).</p>
+                        <p class="text-sm"><strong class="text-accent">Dolkka (Rank 4):</strong> Negates monster effects (up to twice).</p>
+                        <p class="text-sm"><strong class="text-accent">Solda (Rank 6):</strong> Prevents Special Summons and has protection.</p>
+                        <p class="text-sm"><strong class="text-accent">Lars (Rank 6):</strong> Negates face-up card effects.</p>
+                         <p class="text-sm"><strong class="text-accent">Razh (Rank 6):</strong> Omni-negate for card or effect activations.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Spells & Traps Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Engines of Evolution: Key Support</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Consistency & Searching</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><strong class="text-accent">Evo-Diversity:</strong> Searches any Evoltile or Evolsaur. Essential 3-of.</li>
+                        <li><strong class="text-accent">Fossil Dig:</strong> Searches Level 6 or lower Dinosaurs (Evolsaurs, especially Lios).</li>
+                    </ul>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Combo Enablers & Disruption</h3>
+                     <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><strong class="text-accent">Evo-Force:</strong> Tributes an Evoltile to summon an Evolsaur from Deck, triggering its effect. Key for the Najasho combo.</li>
+                        <li><strong class="text-accent">Evo-Singularity (Trap):</strong> Summons an Evolzar from the Extra Deck using materials from GY during the opponent's turn. Powerful disruption searched by Lios.</li>
+                    </ul>
+                </div>
+            </div>
+             <p class="text-amber-100 mt-6 text-center max-w-3xl mx-auto">
+                These support <a href="#" class="hint-link">cards</a> enable two main playstyles: a proactive turn-one combo using <strong class="text-accent">Evo-Force</strong>, or a more reactive, GY-focused disruption plan using <strong class="text-accent">Evo-Singularity</strong> set by <strong class="text-accent">Lios</strong>.
+            </p>
+        </section>
+
+        <!-- Core Combo Tutorials Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo Paths</h2>
+            <div class="space-y-8">
+                <!-- Najasho + Evo-Force Combo -->
+                <div>
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-4 text-center">Foundational Combo: Najasho + Evo-Force</h3>
+                    <div class="flex flex-col items-center gap-6">
+                        <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="najasho-img-container" class="card-image-container flex-shrink-0 card-placeholder">Evoltile Najasho</div>
+                            <div>
+                                <div class="flex items-center mb-2"><span class="bg-[#331f00] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span><h4 class="font-bold">Summon & Activate</h4></div>
+                                <p class="text-amber-100">Normal Summon <strong class="text-accent">Najasho</strong>. Activate <strong class="text-accent">Evo-Force</strong>, Tributing Najasho.</p>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                        <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="evolsaur-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Evolsaur Vulcano / Diplo</div>
+                            <div>
+                                <div class="flex items-center mb-2"><span class="bg-[#331f00] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span><h4 class="font-bold">Chain Summoning</h4></div>
+                                <p class="text-amber-100">Chain Link 1: Evo-Force summons an <strong class="text-accent">Evolsaur</strong> (e.g., Vulcano). Chain Link 2: Najasho's GY effect summons another <strong class="text-accent">Evolsaur</strong> (e.g., Diplo). Both trigger their effects.</p>
+                            </div>
+                        </div>
+                         <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                         <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                             <div id="laggia-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Evolzar Laggia / Dolkka</div>
+                             <div>
+                                <div class="flex items-center mb-2"><span class="bg-[#331f00] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span><h4 class="font-bold">Xyz Summon</h4></div>
+                                <p class="text-amber-100">Overlay the two Evolsaurs into <strong class="text-accent">Evolzar Laggia</strong> or <strong class="text-accent">Evolzar Dolkka</strong> for immediate negation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Lios Combo -->
+                <div>
+                     <h3 class="text-lg md:text-xl font-bold text-white mb-4 text-center">Modern Centerpiece: One-Card Lios</h3>
+                     <div class="flex flex-col items-center gap-6">
+                        <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                             <div id="lios-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Evolsaur Lios</div>
+                             <div>
+                                <div class="flex items-center mb-2"><span class="bg-[#331f00] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span><h4 class="font-bold">Summon & Set</h4></div>
+                                <p class="text-amber-100">Normal Summon <strong class="text-accent">Lios</strong> (or search it first). Effect activates, Set <strong class="text-accent">Evo-Singularity</strong> directly from Deck.</p>
+                            </div>
+                        </div>
+                         <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                         <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                             <div id="singularity-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Evo-Singularity</div>
+                             <div>
+                                <div class="flex items-center mb-2"><span class="bg-[#331f00] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span><h4 class="font-bold">Reactive Disruption</h4></div>
+                                <p class="text-amber-100">End turn with Lios and the Set Trap. During the opponent's turn, use Singularity targeting an Evoltile and Evolsaur in GY to summon an <strong class="text-accent">Evolzar</strong> for disruption.</p>
+                            </div>
+                        </div>
+                         <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-2xl arrow-color"></i></div>
+                        <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                             <div id="razh-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Evolzar Razh / Lars</div>
+                             <div>
+                                <div class="flex items-center mb-2"><span class="bg-[#331f00] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span><h4 class="font-bold">(Optional) Rank 6 Play</h4></div>
+                                <p class="text-amber-100">If extended, Lios can send a Level 6 Evolsaur to GY, modulate Levels, and allow an immediate Xyz Summon into <strong class="text-accent">Evolzar Razh</strong> or <strong class="text-accent">Lars</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Typical End Boards</h2>
+            <p class="text-amber-100 mb-8 text-center max-w-3xl mx-auto">
+                Modern Evol boards prioritize disruption through Evolzars, either established proactively or reactively via Evo-Singularity.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Rank 4 Focus -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Rank 4 Control</h3>
+                     <div class="flex justify-center mb-4 space-x-2">
+                        <div id="laggia-end-img-container" class="w-1/2 card-placeholder">Evolzar Laggia</div>
+                        <div id="dolkka-end-img-container" class="w-1/2 card-placeholder">Evolzar Dolkka</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><strong class="text-accent">Evolzar Laggia:</strong> Broad negation for Summons/Spells/Traps.</li>
+                        <li><strong class="text-accent">Evolzar Dolkka:</strong> Targeted monster effect negation (x2).</li>
+                         <li><strong class="text-accent">(Optional) Evo-Singularity:</strong> Set for reactive summoning on opponent's turn.</li>
+                    </ul>
+                </div>
+                <!-- Rank 6 Focus -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Rank 6 Power</h3>
+                     <div class="flex justify-center mb-4 space-x-2">
+                         <div id="razh-end-img-container" class="w-1/2 card-placeholder">Evolzar Razh</div>
+                         <div id="lars-end-img-container" class="w-1/2 card-placeholder">Evolzar Lars</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><strong class="text-accent">Evolzar Razh:</strong> Powerful omni-negate.</li>
+                        <li><strong class="text-accent">Evolzar Lars:</strong> Versatile face-up card negation.</li>
+                        <li>Often combined with a Rank 4 or Evo-Singularity for layered interruption.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Potent Negation:</strong> Evolzars offer some of the strongest specific and generic negations available on Xyz monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-toolbox"></i></span> <strong class="text-green-300">Toolbox Flexibility:</strong> Access to multiple Rank 4 and Rank 6 Evolzars allows adaptation to different matchups.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Reactive Plays:</strong> Evo-Singularity provides strong interruption potential during the opponent's turn.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Normal Summon Reliant:</strong> Pure builds are vulnerable to disruption on the initial Evoltile summon.</li>
+                         <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Graveyard Hate:</strong> Evo-Singularity and Vulcano plays are susceptible to GY banishment (e.g., D.D. Crow, Bystials).</li>
+                        <li><span class="con-icon"><i class="fas fa-dice"></i></span> <strong class="text-red-300">Inconsistency (Pure):</strong> Reliance on specific combinations (Evoltile + Evolsaur/Enabler) can lead to brick hands in pure versions.</li>
+                    </ul>
+                </div>
+                <!-- Hybrids & Tech -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Hybrids & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-amber-100">
+                        <li><span class="neutral-icon"><i class="fas fa-dna"></i></span> <strong class="text-accent">Dinosaur Engine:</strong> Natural synergy; provides searching (Fossil Dig, Oviraptor), protection (Misc), and swarming (Babies).</li>
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent">Snake-Eye Engine:</strong> Powerful modern hybrid leveraging FIRE attribute synergy for consistency and a higher power ceiling.</li>
+                         <li><span class="neutral-icon"><i class="fas fa-pastafarianism"></i></span> <strong class="text-accent">Ogdoadic Engine:</strong> Niche Reptile synergy for rapid GY setup for Evo-Singularity via Snake Rain.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status (Oct 2025)</h2>
+            <div class="card p-6">
+                <p class="text-amber-100 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">LARGELY UNRESTRICTED:</strong> The Evol archetype itself has minimal TCG banlist restrictions impacting its core strategy.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-amber-100">
+                            <li>All Evoltile Monsters (Najasho, Westlo, etc.) - Unlimited</li>
+                            <li>All Evolsaur Monsters (Vulcano, Diplo, Lios, etc.) - Unlimited</li>
+                            <li><strong class="text-green-300">Evolzar Laggia - Unlimited</strong></li>
+                            <li><strong class="text-green-300">Evolzar Dolkka - Unlimited</strong></li>
+                            <li>Evolzar Solda, Lars, Razh - Unlimited</li>
+                            <li>Evo-Diversity, Evo-Force, Evo-Singularity - Unlimited</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Relevant External Restrictions</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-amber-100">
+                            <li>Generic powerful staples may be Limited/Forbidden.</li>
+                            <li>Some hybrid engine cards (e.g., within Snake-Eye) might be restricted, indirectly affecting those variants.</li>
+                            <li>(Historically relevant but banned: Block Dragon, Spright Elf)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-amber-100"><strong>Meta Implications:</strong> With key boss monsters like Laggia and Dolkka unlimited, the core Evol strategy remains intact. The deck's viability depends more on the power level of the meta and the strength of its synergistic engines (like Dinosaurs or Snake-Eye) rather than direct hits to the archetype itself.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- VOLCANO BANNER ANIMATION ---
+            const canvas = document.getElementById('volcano-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 80;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.reset();
+                        this.y = Math.random() * canvas.height; // Start anywhere vertically
+                    }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50; // Start below the canvas
+                        this.speedY = -(Math.random() * 2 + 1); // Move upwards
+                        this.speedX = (Math.random() - 0.5) * 1; // Slight horizontal drift
+                        this.radius = Math.random() * 2.5 + 1;
+                        this.life = Math.random() * 100 + 100; // Longer life
+                        this.initialLife = this.life;
+                        // Orange/Red/Yellow colors
+                        const colors = ['rgba(255, 69, 0,', 'rgba(255, 140, 0,', 'rgba(255, 215, 0,'];
+                        this.colorBase = colors[Math.floor(Math.random() * colors.length)];
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        this.life--;
+                        // Slow down as it rises
+                        this.speedY *= 0.99;
+                        if (this.life <= 0 || this.y < -this.radius) {
+                             this.reset();
+                        }
+                    }
+                    draw() {
+                        const opacity = (this.life / this.initialLife) * 0.7; // Fade out effect
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.colorBase + opacity + ')';
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Assumes CardLoader is initialized globally from card-loader.js
+             CardLoader.loadCards({
+                 'najasho-img-container': 'Evoltile Najasho',
+                 'evolsaur-combo-img-container': 'Evolsaur Vulcano', // Placeholder, shows one example
+                 'laggia-combo-img-container': 'Evolzar Laggia',
+                 'lios-combo-img-container': 'Evolsaur Lios',
+                 'singularity-combo-img-container': 'Evo-Singularity',
+                 'razh-combo-img-container': 'Evolzar Razh',
+                 'laggia-end-img-container': 'Evolzar Laggia',
+                 'dolkka-end-img-container': 'Evolzar Dolkka',
+                 'razh-end-img-container': 'Evolzar Razh',
+                 'lars-end-img-container': 'Evolzar Lars'
+            });
+        });
+    </script>
+</body>
+</html>

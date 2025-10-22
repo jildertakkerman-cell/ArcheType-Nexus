@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallen of Albaz Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      This page assumes 'card-loader.js' is in an 'assets/js/' directory.
+      Update the path if it's different in your project structure.
+    -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0d0d; /* Very dark charcoal/black */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a0000; /* Dark, "branded" red-black */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d0000; /* Dark red border */
+        }
+        .combo-step-card {
+            background-color: #210000; /* Even darker red */
+            border: 1px solid #660000;
+        }
+        .pro-con-card {
+            background-color: #210000;
+            border: 1px solid #660000;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1a0000;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a0000;
+            border: 1px dashed #660000;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #b91c1c; } /* Crimson Red */
+        .text-accent-light { color: #fca5a5; } /* Light Red */
+        .arrow-color { color: #b91c1c; }
+        .heading-underline {
+            border-bottom: 2px solid #b91c1c;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        /* Lore link as requested by user */
+        .lore-link {
+            color: #fca5a5; /* Light Red */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fca5a5;
+            transition: color 0.3s, text-shadow 0.3s;
+            cursor: help; /* Hint that it's an interactive element */
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #b91c1c;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d0d0d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4d0000;
+        }
+
+        #brand-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 13, 13, 0.4) 0%, rgba(13, 13, 13, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(185, 28, 28, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+        }
+        
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 13, 13, 0.95);
+            border: 1px solid #b91c1c;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #b91c1c;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Playfair Display', serif;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="banner-header text-center">
+            <canvas id="brand-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Fallen of Albaz</h1>
+            <p class="text-lg md:text-xl text-red-200">The Abyss Dragon's Playbook</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent-light font-bold">"Fallen of Albaz"</strong> series, colloquially known as <strong class="text-accent-light font-bold">"Branded,"</strong> is a Fusion-centric strategy that has remained a powerful and resilient force in the competitive Yu-Gi-Oh! TCG. Its design is a masterclass in blending narrative lore with gameplay mechanics, creating a deck that is not only potent but also 
+                    <a class="lore-link" title="The deck's cards follow the story of Albaz and his journey.">
+                        tells a story with every card played
+                    </a>. This report will provide an exhaustive analysis of the archetype's core components, card interactions, combo pathways, and strategic applications.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Protagonist Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Protagonist: Fallen of Albaz</h2>
+            <div class="card p-6">
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div id="albaz-img-container" class="card-image-container card-placeholder">Fallen of Albaz</div>
+                    <div class="flex-1">
+                        <p class="text-blue-200 mb-4">
+                            At the heart of the entire saga is the titular monster, <strong class="text-accent-light font-bold">Fallen of Albaz</strong>. His journey and abilities are the mechanical and thematic foundation upon which the entire Branded strategy is built.
+                        </p>
+                        <p class="text-blue-200 mb-4">
+                            His effect allows him to discard 1 card to Fusion Summon using himself and monsters on either field, similar to <strong class="text-accent-light font-bold">Super Polymerization</strong>. This provides inherent board-breaking capabilities.
+                        </p>
+                        <p class="text-blue-200">
+                            However, a central paradox defines his role. In practice, his on-field effect is a secondary tool. The true strength of the archetype lies in the powerful <strong class="text-accent-light font-bold">"Branded"</strong> support cards designed to summon his various Fusion forms more efficiently, primarily by using him as a material from the deck or Graveyard.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Core Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Core Engine: Enablers & Grimoire</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-users text-4xl text-red-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Enablers: Key Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Aluber the Jester of Despia</h4>
+                            <p class="text-sm text-blue-200">The premier starter. On summon, adds any <strong class="text-accent-light font-bold">"Branded"</strong> Spell/Trap from Deck to hand (usually <strong class="text-accent-light font-bold">Branded Fusion</strong>).</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Guiding Quem, the Virtuous</h4>
+                            <p class="text-sm text-blue-200">A setup and recursion tool. On summon, sends an Albaz-related card from Deck to GY. Revives an Albaz monster if a card leaves the Extra Deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Blazing Cartesia, the Virtuous</h4>
+                            <p class="text-sm text-blue-200">An in-hand Fusion enabler. As a Quick Effect, she can Fusion Summon a Level 8 or higher Fusion monster.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Despian Tragedy & Tri-Brigade Mercourier</h4>
+                            <p class="text-sm text-blue-200">Utility monsters. Tragedy searches a <strong class="text-accent-light font-bold">"Despia"</strong> monster when sent to GY. Mercourier negates a monster effect from hand and searches Albaz when banished.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book-sparkles text-4xl text-red-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Grimoire: Key Spells & Traps</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Branded Fusion</h4>
+                            <p class="text-sm text-blue-200">The single most important card. Fusion Summons an Albaz Fusion monster using materials from your Deck. This is the deck's primary starter.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Branded in Red</h4>
+                            <p class="text-sm text-blue-200">A Quick-Play Spell for interruption. Recycles an Albaz or <strong class="text-accent-light font-bold">"Despia"</strong> monster and then Fusions Summons (often into <strong class="text-accent-light font-bold">Guardian Chimera</strong>).</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Branded Lost</h4>
+                            <p class="text-sm text-blue-200">A Continuous Spell that provides powerful protection, preventing your Fusion Summons and their effects from being negated.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Branded Retribution</h4>
+                            <p class="text-sm text-blue-200">A Counter Trap that negates Special Summon effects. Its GY effect recovers a <strong class="text-accent-light font-bold">"Branded"</strong> Spell/Trap, creating a resource loop.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Combo: The "One-Card" Branded Fusion</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This is the deck's most direct and powerful opening play, converting a single spell into a boss monster and follow-up.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="combo-branded-fusion-img" class="card-image-container flex-shrink-0 card-placeholder">Branded Fusion</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a0000] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate Branded Fusion</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent-light font-bold">Branded Fusion</strong>. Send <strong class="text-accent-light font-bold">Fallen of Albaz</strong> and <strong class="text-accent-light font-bold">Despian Tragedy</strong> from your Deck to the Graveyard to Fusion Summon <strong class="text-accent-light font-bold">Lubellion the Searing Dragon</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="combo-lubellion-img" class="card-image-container flex-shrink-0 card-placeholder">Lubellion the Searing Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a0000] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Trigger & Chain</h3>
+                            </div>
+                            <p class="text-blue-200">Upon summon, two effects trigger. Activate <strong class="text-accent-light font-bold">Despian Tragedy</strong> as Chain Link 1 and <strong class="text-accent-light font-bold">Lubellion</strong> as Chain Link 2. Lubellion discards 1 card to shuffle itself and Albaz from the GY back into the Deck, Fusion Summoning <strong class="text-accent-light font-bold">Mirrorjade the Iceblade Dragon</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="combo-mirrorjade-img" class="card-image-container flex-shrink-0 card-placeholder">Mirrorjade the Iceblade Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a0000] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Resolve & Search</h3>
+                            </div>
+                            <p class="text-blue-200"><strong class="text-accent-light font-bold">Despian Tragedy's</strong> effect resolves, allowing you to search your Deck for a "Despia" monster, typically <strong class="text-accent-light font-bold">Aluber the Jester of Despia</strong> or <strong class="text-accent-light font-bold">Ad Libitum of Despia</strong> for a follow-up play.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ideal End Board</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                A strong turn-one board for Branded is not a wall of negates, but multiple layers of diverse and recurring interruptions that adapt to the opponent's strategy.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Mirrorjade -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Layer 1: The Apex Predator</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="end-mirrorjade-img" class="card-image-container card-placeholder">Mirrorjade the Iceblade Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent-light">Quick-Effect Banish:</strong> Provides a non-targeting banish by sending a "Branded" Fusion from the Extra Deck to the GY as cost.</li>
+                        <li><strong class="text-accent-light">Floating Effect:</strong> If removed by an opponent's card, it destroys all opponent's monsters during the End Phase.</li>
+                        <li><strong class="text-accent-light">Cost as Advantage:</strong> Sending a card like <strong class="text-accent-light">Albion the Branded Dragon</strong> as cost sets up an End Phase search for a "Branded" S/T.</li>
+                    </ul>
+                </div>
+                <!-- Branded in Red -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Layer 2: The Ambush</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="end-branded-in-red-img" class="card-image-container card-placeholder">Branded in Red</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent-light">Set Spell/Trap:</strong> A set <strong class="text-accent-light font-bold">Branded in Red</strong> (or other "Branded" Trap) threatens interruption on the opponent's turn.</li>
+                        <li><strong class="text-accent-light">Guardian Chimera:</strong> Resolving Branded in Red often summons <strong class="text-accent-light font-bold">Guardian Chimera</strong>, which provides non-targeting destruction and card advantage.</li>
+                        <li><strong class="text-accent-light">Resource Loop:</strong> Resources in hand (like <strong class="text-accent-light">Tri-Brigade Mercourier</strong>) or GY (like <strong class="text-accent-light">Branded Opening</strong>) provide further layers of protection and negation.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Resilience:</strong> Can play through multiple interruptions thanks to various extenders and recursion.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400 font-bold">Resource Loop:</strong> The deck's "grind game" is among the best, able to recycle key cards like Albaz and Branded Fusion.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400 font-bold">Synergy Engine:</strong> Seamlessly integrates with <strong class="text-accent-light font-bold">"Despia"</strong> and <strong class="text-accent-light font-bold">"Bystial"</strong> monsters, which function as both engine extenders and disruption.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Branded Fusion Choke Point:</strong> Negating <strong class="text-accent-light font-bold">Branded Fusion</strong> with <strong class="text-accent-light font-bold">Ash Blossom</strong> is often the most effective way to stop the deck's primary line.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Graveyard Disruption:</strong> Relies heavily on the GY. Cards like <strong class="text-accent-light font-bold">D.D. Crow</strong> or opposing <strong class="text-accent-light font-bold">Bystials</strong> can be highly effective.</li>
+                        <li><span class="con-icon"><i class="fas fa-globe"></i></span> <strong class="text-red-400 font-bold">Floodgates:</strong> Extremely vulnerable to <strong class="text-accent-light font-bold">Dimensional Barrier</strong> (calling Fusion) and <strong class="text-accent-light font-bold">Anti-Spell Fragrance</strong>.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Tech Choices</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent-light font-bold">Bystial Engine:</strong> Provides disruption against LIGHT/DARK decks and fuels your own Fusion Summons.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-magic"></i></span> <strong class="text-accent-light font-bold">Super Polymerization:</strong> A powerful, unchainable board-breaker that fits the deck's Fusion theme.</li>
+                         <li><span class="neutral-icon"><i class="fas fa-box-open"></i></span> <strong class="text-accent-light font-bold">Frightfur Engine:</strong> <strong class="text-accent-light font-bold">Frightfur Patchwork</strong> adds <strong class="text-accent-light font-bold">Polymerization</strong> and an Imp, providing card advantage and discard fodder.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">MODERATE IMPACT:</strong> The Branded strategy remains highly viable, but has been adjusted by the banlist to curb its consistency and remove its most toxic win condition.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Semi-Limited Cards (2 copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Branded Fusion</strong> - Losing one copy slightly reduces the deck's one-card combo consistency.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards (0 copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Gimmick Puppet Nightmare</strong> - The "lock" tech choice is now banned, removing this non-interactive strategy.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The deck is at nearly full power. All core main deck monsters, extenders like <strong class="text-accent-light font-bold">Quem</strong> and <strong class="text-accent-light font-bold">Cartesia</strong>, and boss monsters like <strong class="text-accent-light font-bold">Mirrorjade</strong> are unlimited. The deck remains a top-tier contender, relying on its powerful recursion and layered interruptions.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Dragon's Arsenal: Card Overview</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">A detailed overview of the key cards and their roles.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Cards -->
+                <div class="card p-6" id="aluber-img-container">
+                    <h3 class="text-xl font-bold text-accent-light mb-2">Aluber the Jester of Despia</h3>
+                    <p class="text-blue-200">Premier one-card starter. On Normal or Special Summon, searches any "Branded" Spell/Trap (typically Branded Fusion).</p>
+                </div>
+                <div class="card p-6" id="branded-fusion-img-container">
+                    <h3 class="text-xl font-bold text-accent-light mb-2">Branded Fusion</h3>
+                    <p class="text-blue-200">The deck's engine. Fuses from the Deck, simultaneously summoning a boss monster and setting up the Graveyard with resources like Despian Tragedy.</p>
+                </div>
+                <div class="card p-6" id="mirrorjade-img-container">
+                    <h3 class="text-xl font-bold text-accent-light mb-2">Mirrorjade the Iceblade Dragon</h3>
+                    <p class="text-blue-200">The primary boss monster. Offers a Quick-Effect, non-targeting banish and a devastating board wipe if removed by the opponent.</p>
+                </div>
+                <div class="card p-6" id="guardian-chimera-img-container">
+                    <h3 class="text-xl font-bold text-accent-light mb-2">Guardian Chimera</h3>
+                    <p class="text-blue-200">The go-to interruption for the opponent's turn. Summoned with Branded in Red, it destroys opponent's cards and draws you cards.</p>
+                </div>
+                <div class="card p-6" id="quem-img-container">
+                    <h3 class="text-xl font-bold text-accent-light mb-2">Guiding Quem, the Virtuous</h3>
+                    <p class="text-blue-200">A key setup and recursion piece. Dumps Albaz or a related card from Deck to GY, and revives an Albaz monster from GY when a card leaves the Extra Deck.</p>
+                </div>
+                <div class="card p-6" id="cartesia-img-container">
+                    <h3 class="text-xl font-bold text-accent-light mb-2">Blazing Cartesia, the Virtuous</h3>
+                    <p class="text-blue-200">A versatile extender. Has a Quick Effect to Fusion Summon and recycles herself from the GY, enabling plays through disruption.</p>
+                </div>
+                <div class="card p-6" id="albion-branded-img-container">
+                    <h3 class="text-xl font-bold text-accent-light mb-2">Albion the Branded Dragon</h3>
+                    <p class="text-blue-200">A key combo extender. On summon, Fuses again by banishing from GY. In the End Phase, sets a "Branded" Spell/Trap from Deck.</p>
+                </div>
+                 <div class="card p-6" id="lubellion-searing-img-container">
+                    <h3 class="text-xl font-bold text-accent-light mb-2">Lubellion the Searing Dragon</h3>
+                    <p class="text-blue-200">The other primary combo extender. On summon, Fuses again by shuffling materials from GY/banished into the Deck, which recycles resources.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- BRANDED SIGIL CANVAS ANIMATION ---
+            const canvas = document.getElementById('brand-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                    centerX = canvas.width / 2;
+                    centerY = canvas.height / 2;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.reset();
+                    }
+                    reset() {
+                        this.x = centerX;
+                        this.y = centerY;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 3 + 1;
+                        this.radius = Math.random() * 2 + 1;
+                        this.life = Math.random() * 100 + 50;
+                        this.initialLife = this.life;
+                        // Use crimson/red colors
+                        this.color = `rgba(185, 28, 28, ${Math.random() * 0.5 + 0.3})`;
+                    }
+                    update() {
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed;
+                        this.speed *= 0.98; // Slow down
+                        this.life--;
+                        if (this.life <= 0) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = (this.life / this.initialLife) * 0.7; // Fade out
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+                    
+                    // Draw the pulsing "Brand" sigil (simplified)
+                    const pulse = Math.abs(Math.sin(Date.now() * 0.001));
+                    ctx.shadowColor = '#b91c1c';
+                    ctx.shadowBlur = 15 + pulse * 10;
+                    
+                    ctx.strokeStyle = `rgba(185, 28, 28, ${0.5 + pulse * 0.5})`;
+                    ctx.lineWidth = 2 + pulse;
+                    
+                    // Simple cross-like shape
+                    ctx.beginPath();
+                    ctx.moveTo(centerX - 30, centerY);
+                    ctx.lineTo(centerX + 30, centerY);
+                    ctx.moveTo(centerX, centerY - 30);
+                    ctx.lineTo(centerX, centerY + 30);
+                    ctx.stroke();
+                    
+                    ctx.lineWidth = 1 + pulse;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, 40 + pulse * 5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Reset shadow for particles
+                    ctx.shadowBlur = 0;
+
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Assumes CardLoader.js is loaded and initialized
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'albaz-img-container': 'Fallen of Albaz',
+                    'aluber-img-container': 'Aluber the Jester of Despia',
+                    'quem-img-container': 'Guiding Quem, the Virtuous',
+                    'cartesia-img-container': 'Blazing Cartesia, the Virtuous',
+                    'albion-shrouded-img-container': 'Albion the Shrouded Dragon',
+                    'tragedy-img-container': 'Despian Tragedy',
+                    'branded-fusion-img-container': 'Branded Fusion',
+                    'branded-in-red-img-container': 'Branded in Red',
+                    'branded-opening-img-container': 'Branded Opening',
+                    'branded-lost-img-container': 'Branded Lost',
+                    'albion-branded-img-container': 'Albion the Branded Dragon',
+                    'lubellion-searing-img-container': 'Lubellion the Searing Dragon',
+                    'mirrorjade-img-container': 'Mirrorjade the Iceblade Dragon',
+                    'guardian-chimera-img-container': 'Guardian Chimera',
+                    'granguignol-img-container': 'Granguignol the Dusk Dragon',
+                    'combo-branded-fusion-img': 'Branded Fusion',
+                    'combo-lubellion-img': 'Lubellion the Searing Dragon',
+                    'combo-mirrorjade-img': 'Mirrorjade the Iceblade Dragon',
+                    'end-mirrorjade-img': 'Mirrorjade the Iceblade Dragon',
+                    'end-branded-in-red-img': 'Branded in Red'
+                });
+            }
+        });
+    </script>
+</body>
+</html>

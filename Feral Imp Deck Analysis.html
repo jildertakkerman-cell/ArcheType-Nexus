@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feral Imp Lineage Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in an 'assets/js/' directory relative to this HTML file -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1d; /* Dark grey/black */
+            color: #c5c6c7; /* Light grey */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2f33; /* Slightly lighter dark grey */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4f545c; /* Mid-grey border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #36393f; /* Discord-like grey */
+            border: 1px solid #5865f2; /* Discord purple/blue accent */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px; /* Adjusted size for lineage cards */
+            flex-shrink: 0;
+            cursor: pointer; /* Add cursor pointer for interaction */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #40444b; /* Darker grey placeholder */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; /* Consistent height */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #40444b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #99aab5; } /* Lighter grey for accents */
+        .text-title-accent { color: #7289da; } /* Discord blue for titles */
+        .text-link-accent { color: #7289da; font-weight: bold; text-decoration: underline; }
+        .arrow-color { color: #7289da; }
+        .heading-underline {
+            font-family: 'MedievalSharp', cursive;
+            border-bottom: 2px solid #7289da;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+            font-size: 1.75rem; /* Larger heading */
+        }
+        .lore-link {
+            color: #7289da; /* Discord blue */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #7289da;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #ffffff;
+            text-shadow: 0 0 5px #7289da;
+        }
+
+        /* --- Banner Styles --- */
+        .banner-header {
+            position: relative;
+            min-height: 140px;
+            background: linear-gradient(rgba(44, 47, 51, 0.8), rgba(44, 47, 51, 0.8)), url('https://placehold.co/1024x140/1a1a1d/2c2f33?text=Ancient+Scroll'); /* Placeholder, replace if needed */
+            background-size: cover;
+            background-position: center;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4f545c;
+            text-align: center;
+        }
+
+        .banner-header h1 {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 2.5rem;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .banner-header p {
+            font-size: 1.1rem;
+            color: #c5c6c7;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #2c2f33 0%, #36393f 100%);
+            color: white; border: 2px solid #7289da; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); transition: all 0.3s ease;
+            cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 25px rgba(114, 137, 218, 0.4);
+            border-color: #ffffff;
+        }
+        .ygo-home-button i { font-size: 22px; text-shadow: 0 0 8px rgba(114, 137, 218, 0.6); }
+
+        /* --- Card Popup --- */
+        #card-popup {
+            position: fixed; display: none; opacity: 0; padding: 1rem;
+            background-color: rgba(30, 31, 34, 0.95); /* Darker theme background */
+            border: 1px solid #7289da; border-radius: 0.75rem; color: #c5c6c7;
+            max-width: 300px; z-index: 1000; pointer-events: none;
+            transition: opacity 0.2s ease-in-out; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px); font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif; color: #7289da; font-weight: bold; font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats { font-family: 'Inter', sans-serif; color: #7289da; }
+
+        /* Table styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; margin-bottom: 1rem; }
+        th, td { border: 1px solid #4f545c; padding: 0.75rem; text-align: left; }
+        th { background-color: #36393f; color: #ffffff; font-weight: bold; }
+        tbody tr:nth-child(odd) { background-color: #2c2f33; }
+        tbody tr:hover { background-color: #40444b; }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- Header -->
+        <header class="banner-header text-center">
+            <h1>The Feral Imp Lineage</h1>
+            <p>From Classic Fiend to Metagame King</p>
+        </header>
+
+        <!-- I. The Progenitor: Feral Imp -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">I. The Progenitor: Feral Imp</h2>
+            <div class="card p-6">
+                 <div class="flex flex-col md:flex-row gap-6 items-start">
+                     <div id="feral-imp-img-container" class="card-image-container card-placeholder mx-auto md:mx-0">Feral Imp</div>
+                     <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-title-accent mb-2">A. Card Profile & Initial Role</h3>
+                        <p class="text-accent mb-4">
+                            "Feral Imp" (グレムリン - Gremlin) is a Level 4 DARK Fiend Normal Monster with 1300 ATK / 1400 DEF. In early Yu-Gi-Oh!, its DEF made it a respectable wall against common threats. Its flavor text, "A playful little fiend that lurks in the dark, waiting to attack an unwary enemy," and association with Yami Yugi cemented its iconic status beyond its modest stats.
+                        </p>
+                        <h3 class="text-xl font-bold text-title-accent mb-2">B. Printing History</h3>
+                        <p class="text-accent mb-4">
+                            Debuting in <strong class="text-white">Metal Raiders (MRD)</strong>, Feral Imp saw numerous reprints in early Yugi-themed starter decks (SDY, SYE), historical collections (DB1, YGLD), and anniversary sets, highlighting its nostalgic significance.
+                        </p>
+                         <div class="overflow-x-auto">
+                            <table>
+                                <thead>
+                                    <tr><th>Release Date</th><th>Card Number</th><th>Set Name</th><th>Rarity</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>2002-06-26</td><td>MRD-001 / MRD-EN001</td><td>Metal Raiders</td><td>Common</td></tr>
+                                    <tr><td>2002-03-29</td><td>SDY-002</td><td>Starter Deck: Yugi</td><td>Common</td></tr>
+                                    <tr><td>2003-10-10</td><td>SYE-003</td><td>Starter Deck: Yugi Evolution</td><td>Common</td></tr>
+                                    <tr><td>2004-10-12</td><td>DB1-EN140</td><td>Dark Beginning 1</td><td>Common</td></tr>
+                                    <tr><td>2015-10-23</td><td>YGLD-ENA11</td><td>Yugi's Legendary Decks</td><td>Common</td></tr>
+                                    <tr><td>2023-04-21</td><td>MRD-EN001</td><td>Metal Raiders (25th Anniv.)</td><td>Common</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <h3 class="text-xl font-bold text-title-accent mb-2">C. Market Valuation</h3>
+                        <p class="text-accent">
+                            The 1st Edition MRD version (~$4.50+) is significantly more valuable than Unlimited (~$0.25) due to rarity and collector demand. Graded 1st Editions (PSA 9) can fetch upwards of $50+, emphasizing condition and scarcity as primary value drivers for this vintage card, whose playability value is negligible today.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- II. The Evolution: Des Feral Imp -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">II. The Evolution: Des Feral Imp</h2>
+            <div class="card p-6">
+                <div class="flex flex-col md:flex-row gap-6 items-start">
+                     <div id="des-feral-imp-img-container" class="card-image-container card-placeholder mx-auto md:mx-0">Des Feral Imp</div>
+                     <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-title-accent mb-2">A. Card Profile & Strategic Application</h3>
+                        <p class="text-accent mb-4">
+                            "Des Feral Imp" is a Level 4 DARK <strong class="text-white">Reptile</strong> Flip Effect Monster with 1600 ATK / 1800 DEF. Its effect, "FLIP: Target 1 card in your Graveyard; shuffle that target into the Deck," offered minor recycling utility. Critically, its type changed from Fiend to Reptile, a subtle shift foreshadowing the lineage's future.
+                        </p>
+                         <h3 class="text-xl font-bold text-title-accent mb-2">B. Printing History</h3>
+                         <p class="text-accent mb-4">
+                            Released in <strong class="text-white">Dark Crisis (DCR)</strong>, it saw fewer reprints, often linked to Seto Kaiba (SDBE, SDKS), contrasting with the original's Yugi association.
+                        </p>
+                         <div class="overflow-x-auto">
+                           <table>
+                                <thead>
+                                    <tr><th>Release Date</th><th>Card Number</th><th>Set Name</th><th>Rarity</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>2003-12-01</td><td>DCR-068 / DCR-EN068</td><td>Dark Crisis</td><td>Common</td></tr>
+                                    <tr><td>2005-03-19</td><td>DR1-EN123</td><td>Dark Revelation Volume 1</td><td>Common</td></tr>
+                                    <tr><td>2013-12-06</td><td>SDBE-EN012</td><td>Saga of Blue-Eyes White Dragon SD</td><td>Common</td></tr>
+                                    <tr><td>2016-10-21</td><td>SDKS-EN013</td><td>Structure Deck: Seto Kaiba</td><td>Common</td></tr>
+                                    <tr><td>2023-04-20</td><td>DCR-EN068</td><td>Dark Crisis (25th Anniv.)</td><td>Common</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <h3 class="text-xl font-bold text-title-accent mb-2">C. Market Valuation</h3>
+                        <p class="text-accent">
+                            Holds modest value, primarily for set collectors. 1st Edition DCR versions have a slight premium but lack the high collector demand of the original Feral Imp.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- III. The Apex: King of the Feral Imps -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">III. The Apex: King of the Feral Imps</h2>
+            <div class="card p-6">
+                 <div class="flex flex-col md:flex-row gap-6 items-start">
+                     <div id="king-feral-imp-img-container" class="card-image-container card-placeholder mx-auto md:mx-0">King of the Feral Imps</div>
+                     <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-title-accent mb-2">A. Card Profile & Competitive Impact</h3>
+                        <p class="text-accent mb-4">
+                            "King of the Feral Imps" is a Rank 4 DARK Reptile Xyz Monster (2300 ATK / 2000 DEF), requiring 2 Level 4 monsters. Its effect, "Once per turn: You can detach 1 material from this card; add 1 Reptile monster from your Deck to your hand," provided unparalleled consistency for Reptile strategies. Its generic summoning condition and powerful search effect made it a staple, leading to its eventual status on the TCG Forbidden & Limited List.
+                        </p>
+                        <!-- BANLIST STATUS -->
+                        <div class="bg-red-900 bg-opacity-40 border border-red-700 rounded-lg p-3 mb-4">
+                            <h4 class="text-lg font-bold text-red-400 mb-1 flex items-center"><i class="fas fa-ban mr-2"></i>TCG Status: FORBIDDEN</h4>
+                            <p class="text-sm text-red-300">As of the current TCG Banlist, King of the Feral Imps is Forbidden and cannot be used in official tournament play.</p>
+                        </div>
+                        <h3 class="text-xl font-bold text-title-accent mb-2">B. Printing History</h3>
+                         <p class="text-accent mb-4">
+                            Initially a Common in <strong class="text-white">Lord of the Tachyon Galaxy (LTGY)</strong>, it was reprinted several times, culminating in high-rarity Ultra and Starlight Rare versions in <strong class="text-white">Battles of Legend: Monster Mayhem (BLMM)</strong>.
+                        </p>
+                        <div class="overflow-x-auto">
+                            <table>
+                                <thead>
+                                    <tr><th>Release Date</th><th>Card Number</th><th>Set Name</th><th>Rarity</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>2013-05-17</td><td>LTGY-EN056</td><td>Lord of the Tachyon Galaxy</td><td>Common</td></tr>
+                                    <tr><td>2014-08-28</td><td>MP14-EN033</td><td>2014 Mega-Tins Mega Pack</td><td>Common</td></tr>
+                                    <tr><td>2021-05-06</td><td>ANGU-EN049</td><td>Ancient Guardians</td><td>Rare</td></tr>
+                                    <!-- Date corrected based on standard notation, assuming 2024 -->
+                                    <tr><td>2024-06-13</td><td>BLMM-EN154</td><td>Battles of Legend: Monster Mayhem</td><td>Ultra Rare</td></tr>
+                                    <tr><td>2024-06-13</td><td>BLMM-EN154</td><td>Battles of Legend: Monster Mayhem</td><td>Starlight Rare</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <h3 class="text-xl font-bold text-title-accent mb-2">C. Market Valuation</h3>
+                        <p class="text-accent">
+                            Low-rarity prints are affordable. The high-end market focuses intensely on the BLMM Starlight Rare, whose value is driven by extreme scarcity and the card's competitive legacy, making it a significant asset for modern collectors.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- IV. The Unofficial Archetype -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">IV. The Unofficial Archetype</h2>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-title-accent mb-2">A. Thematic Connections & "Gremlins" Theory</h3>
+                <p class="text-accent mb-4">
+                   Despite lacking direct synergy, the three cards—the mischievous <a class="lore-link">Feral Imp</a>, its evolution <a class="lore-link">Des Feral Imp</a>, and the powerful <a class="lore-link text-red-500 line-through">King of the Feral Imps</a>—are often discussed as a conceptual lineage. The Japanese name "Gremlin," the shared visual motifs, and the fan theory connecting them to the movie <em class="text-white">Gremlins</em> create a strong thematic resonance within the community.
+                </p>
+                <h3 class="text-xl font-bold text-title-accent mb-2">B. Community Creativity</h3>
+                <p class="text-accent mb-4">
+                    This thematic connection inspires fans to create custom "Feral Imp" archetypes, attempting to bridge the mechanical gaps and build a playable strategy based on the lore and flavor text, demonstrating the power of conceptual identity.
+                </p>
+                 <h3 class="text-xl font-bold text-title-accent mb-2">C. The Conceptual Archetype</h3>
+                 <p class="text-accent">
+                     The lineage exemplifies how shared narrative, nostalgia (Feral Imp), subtle foreshadowing (Des Feral Imp's type change), and a powerful culmination (King) can create an "archetype" in the community's mind, even without direct gameplay synergy, proving theme can be as impactful as mechanics.
+                 </p>
+            </div>
+        </section>
+
+        <!-- V. Conclusion -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">V. Conclusion: Collector & Investor Synopsis</h2>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-title-accent mb-2">A. Summary of Trajectory</h3>
+                <p class="text-accent mb-4">
+                    The Feral Imp lineage mirrors Yu-Gi-Oh!'s evolution: from the simple <strong class="text-white">Feral Imp</strong> representing early gameplay, through the transitional <strong class="text-white">Des Feral Imp</strong> introducing effects and type-shifting, to the competitively dominant (and now Forbidden) <strong class="text-white">King of the Feral Imps</strong> embodying modern searching power.
+                </p>
+                <h3 class="text-xl font-bold text-title-accent mb-2">B. Tiered Recommendations</h3>
+                <div class="space-y-4 text-accent">
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <strong class="text-white">Nostalgia Collector:</strong> Seek a high-grade 1st Edition <strong class="text-white">Feral Imp (MRD-001)</strong>.
+                    </div>
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <strong class="text-white">Master Set Collector:</strong> Acquire all printings of all three cards (Feral, Des, King), noting 1st/Unlimited editions using the tables provided.
+                    </div>
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <strong class="text-white">High-End Investor:</strong> Target professionally graded (PSA 9/10) <strong class="text-white">Starlight Rare King of the Feral Imps (BLMM-EN154)</strong> or a PSA 10 1st Edition <strong class="text-white">Feral Imp (MRD-001)</strong>.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load card images using the CardLoader
+            CardLoader.loadCards({
+                'feral-imp-img-container': 'Feral Imp',
+                'des-feral-imp-img-container': 'Des Feral Imp',
+                'king-feral-imp-img-container': 'King of the Feral Imps'
+            });
+
+            // Add hover/click listeners for lore links if desired (requires card-loader adaptation)
+            // Example for one link:
+            /*
+            const kingLink = document.querySelector('a[href*="King"]'); // Adjust selector
+            if (kingLink) {
+                kingLink.addEventListener('mouseenter', (e) => CardLoader.showPopup(e, 'King of the Feral Imps'));
+                kingLink.addEventListener('mouseleave', CardLoader.hidePopup);
+                kingLink.addEventListener('click', (e) => {
+                    e.preventDefault(); // Prevent link navigation if it's just for popup
+                    CardLoader.showPopup(e, 'King of the Feral Imps');
+                });
+            }
+            */
+            // Repeat for other lore links if needed
+        });
+    </script>
+</body>
+</html>

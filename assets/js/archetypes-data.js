@@ -1,5 +1,6 @@
 ﻿// Complete archetype data extracted from index.html
 // Generated on 10/03/2025 01:09:02
+// Updated on 10/22/2025 with Evol, Exchange of the Spirit, Fallen of Albaz, Feral Imp, Fleur, Flame Swordsman, Fairy Tale, Felgrand, and From the Underworld entries
 // Total file size: 661.93 KB
 
 const archetypes = [
@@ -3124,6 +3125,43 @@ const archetypes = [
                         <!-- Xyz/Link energy rings -->
                         <circle cx="50" cy="50" r="38" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.4" stroke-dasharray="3,2"/>
                         <circle cx="50" cy="50" r="32" fill="none" stroke="#dc2626" stroke-width="1" opacity="0.3" stroke-dasharray="2,3"/>
+                </svg>`
+            },
+            {
+                name: 'Armored Xyz',
+                description: 'A contemporary and competitively relevant series that converts any generic Rank 3 or Rank 4 Xyz Monster into a formidable piece of interaction.',
+                filepath: 'Armored xyz Deck Analysis.html',
+                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="armoredXyzGrad" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" style="stop-color:#e0e7ff;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#4c1d95;stop-opacity:1" />
+                            </radialGradient>
+                            <linearGradient id="armorPlateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#e5e7eb;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#9ca3af;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#374151;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#armoredXyzGrad)" stroke="#4c1d95" stroke-width="3"/>
+                        <!-- Shield base -->
+                        <path d="M35 25 L65 25 L70 35 L70 65 L50 75 L30 65 L30 35 Z" fill="url(#armorPlateGrad)" stroke="#374151" stroke-width="2"/>
+                        <!-- Armor details -->
+                        <path d="M40 30 L60 30 L65 35 L65 40 L40 40 Z" fill="url(#armorPlateGrad)" stroke="#374151" stroke-width="1"/>
+                        <path d="M45 45 L55 45 L57 50 L43 50 Z" fill="url(#armorPlateGrad)" stroke="#374151" stroke-width="1"/>
+                        <!-- Xyz overlay -->
+                        <text x="50" y="55" text-anchor="middle" font-size="16" fill="#ffffff" font-weight="bold">X</text>
+                        <circle cx="50" cy="50" r="25" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.7"/>
+                        <!-- Rank indicators -->
+                        <circle cx="35" cy="20" r="3" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <text x="35" y="23" text-anchor="middle" font-size="4" fill="#7f1d1d" font-weight="bold">3</text>
+                        <circle cx="65" cy="20" r="3" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <text x="65" y="23" text-anchor="middle" font-size="4" fill="#7f1d1d" font-weight="bold">4</text>
+                        <!-- Energy effects -->
+                        <circle cx="25" cy="40" r="2" fill="#8b5cf6" opacity="0.6"/>
+                        <circle cx="75" cy="40" r="2" fill="#8b5cf6" opacity="0.6"/>
+                        <circle cx="50" cy="80" r="1.5" fill="#4c1d95" opacity="0.8"/>
                 </svg>`
             },
             {
@@ -7938,6 +7976,49 @@ const archetypes = [
                     </svg>`
             },
             {
+                name: 'Gaia',
+                description: 'A knight archetype that transforms a simple warrior into a potent One-Turn Kill engine, aiming to dismantle opponents in a single decisive Battle Phase.',
+                filepath: 'Gaia Deck Analysis.html',
+                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="gaiaGrad" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" style="stop-color="#dbeafe;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color="#3b82f6;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color="#1e3a8a;stop-opacity:1" />
+                            </radialGradient>
+                            <linearGradient id="armorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color="#e5e7eb;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color="#9ca3af;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color="#374151;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="swordGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color="#f59e0b;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color="#d97706;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color="#92400e;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#gaiaGrad)" stroke="#1e3a8a" stroke-width="3"/>
+                        <!-- Knight silhouette -->
+                        <path d="M35 35 Q50 20 65 35 L70 45 L65 70 Q50 80 35 70 L30 45 Z" fill="url(#armorGrad)" stroke="#374151" stroke-width="2"/>
+                        <!-- Helmet -->
+                        <path d="M40 30 Q50 25 60 30 L58 35 L42 35 Z" fill="url(#armorGrad)" stroke="#374151" stroke-width="1"/>
+                        <!-- Sword -->
+                        <path d="M25 40 L35 35 L40 50 L35 55 L30 50 Z" fill="url(#swordGrad)" stroke="#92400e" stroke-width="1"/>
+                        <!-- Shield -->
+                        <path d="M65 40 L75 35 L80 50 L75 55 L70 50 Z" fill="url(#armorGrad)" stroke="#374151" stroke-width="1"/>
+                        <!-- Dragon fusion emblem -->
+                        <circle cx="50" cy="50" r="8" fill="#ffffff" opacity="0.8"/>
+                        <path d="M45 45 L50 40 L55 45 L52 50 L55 55 L50 52 L45 55 L48 50 Z" fill="#dc2626"/>
+                        <!-- Battle Phase energy -->
+                        <circle cx="35" cy="25" r="2" fill="#f59e0b" opacity="0.8"/>
+                        <circle cx="65" cy="25" r="2" fill="#dc2626" opacity="0.8"/>
+                        <circle cx="35" cy="75" r="1.5" fill="#f59e0b" opacity="0.7"/>
+                        <circle cx="65" cy="75" r="1.5" fill="#dc2626" opacity="0.7"/>
+                        <!-- OTK indicator -->
+                        <text x="50" y="85" text-anchor="middle" font-size="6" fill="#ffffff" font-weight="bold">OTK</text>
+                </svg>`
+            },
+            {
                 name: 'Gagaga',
                 description: 'A Spellcaster archetype focused on Level manipulation and Xyz summoning through dynamic Level changes.',
                 filepath: 'Gagaga Deck Analysis.html',
@@ -8427,6 +8508,52 @@ const archetypes = [
                             </rect>
                         </g>
                     </svg>`
+            },
+            {
+                name: 'Gearfried',
+                description: 'A unique case study representing an evolving warrior concept that manipulates Equip Spells as a vital and recyclable resource for summoning, removal, and negation.',
+                filepath: 'Gearfried Deck Analysis.html',
+                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="gearfriedGrad" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" style="stop-color:#fef3c7;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#dc2626;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#7f1d1d;stop-opacity:1" />
+                            </radialGradient>
+                            <linearGradient id="armorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#e5e7eb;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#9ca3af;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#374151;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="swordGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#d97706;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#92400e;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#gearfriedGrad)" stroke="#7f1d1d" stroke-width="3"/>
+                        <!-- Warrior silhouette -->
+                        <path d="M35 35 Q50 20 65 35 L70 45 L65 70 Q50 80 35 70 L30 45 Z" fill="url(#armorGrad)" stroke="#374151" stroke-width="2"/>
+                        <!-- Helmet -->
+                        <path d="M40 30 Q50 25 60 30 L58 35 L42 35 Z" fill="url(#armorGrad)" stroke="#374151" stroke-width="1"/>
+                        <!-- Sword -->
+                        <path d="M25 40 L35 35 L40 50 L35 55 L30 50 Z" fill="url(#swordGrad)" stroke="#92400e" stroke-width="1"/>
+                        <!-- Shield -->
+                        <path d="M65 40 L75 35 L80 50 L75 55 L70 50 Z" fill="url(#armorGrad)" stroke="#374151" stroke-width="1"/>
+                        <!-- Equip Spell cards -->
+                        <rect x="20" y="20" width="8" height="12" rx="1" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <rect x="72" y="20" width="8" height="12" rx="1" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <rect x="20" y="68" width="8" height="12" rx="1" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <rect x="72" y="68" width="8" height="12" rx="1" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <!-- Phoenix emblem -->
+                        <circle cx="50" cy="50" r="8" fill="#ffffff" opacity="0.8"/>
+                        <path d="M45 45 L50 40 L55 45 L52 50 L55 55 L50 52 L45 55 L48 50 Z" fill="#dc2626"/>
+                        <!-- Energy effects -->
+                        <circle cx="35" cy="25" r="2" fill="#f59e0b" opacity="0.8"/>
+                        <circle cx="65" cy="25" r="2" fill="#dc2626" opacity="0.8"/>
+                        <circle cx="35" cy="75" r="1.5" fill="#f59e0b" opacity="0.7"/>
+                        <circle cx="65" cy="75" r="1.5" fill="#dc2626" opacity="0.7"/>
+                </svg>`
             },
             {
                 name: 'Genex',
@@ -9060,6 +9187,57 @@ const archetypes = [
                     </svg>`
             },
             {
+                name: 'Gigo',
+                description: 'The Gigo lineage serves as a vital supporting engine within Charmer and Familiar-Possessed strategies, featuring a celebrated reptilian warrior character with extensive lore.',
+                filepath: 'Gigo Deck Analysis.html',
+                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="gigoGrad" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" style="stop-color="#e0f2f1;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color="#0d1a1c;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color="#1a2b2f;stop-opacity:1" />
+                            </radialGradient>
+                            <linearGradient id="reptileGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color="#3d6a7a;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color="#1a2b2f;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color="#0d1a1c;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="spineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color="#4a7c8c;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color="#3d6a7a;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color="#20363d;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#gigoGrad)" stroke="#0d1a1c" stroke-width="3"/>
+                        <!-- Reptilian body -->
+                        <path d="M35 40 Q50 25 65 40 L70 50 L65 75 Q50 85 35 75 L30 50 Z" fill="url(#reptileGrad)" stroke="#1a2b2f" stroke-width="2"/>
+                        <!-- Spine/back plates -->
+                        <path d="M40 35 L45 30 L50 35 L55 30 L60 35" stroke="url(#spineGrad)" stroke-width="3" fill="none"/>
+                        <path d="M42 45 L47 40 L52 45 L57 40 L62 45" stroke="url(#spineGrad)" stroke-width="2" fill="none"/>
+                        <path d="M44 55 L49 50 L54 55 L59 50 L64 55" stroke="url(#spineGrad)" stroke-width="2" fill="none"/>
+                        <!-- Eyes -->
+                        <circle cx="45" cy="45" r="4" fill="#e0f2f1" stroke="#3d6a7a" stroke-width="1"/>
+                        <circle cx="55" cy="45" r="4" fill="#e0f2f1" stroke="#3d6a7a" stroke-width="1"/>
+                        <circle cx="45" cy="45" r="2" fill="#0d1a1c"/>
+                        <circle cx="55" cy="45" r="2" fill="#0d1a1c"/>
+                        <!-- Mouth -->
+                        <path d="M45 55 Q50 60 55 55" stroke="#3d6a7a" stroke-width="2" fill="none"/>
+                        <!-- Claws -->
+                        <path d="M30 65 L25 70 L28 72 L30 68" fill="#4a7c8c"/>
+                        <path d="M70 65 L75 70 L72 72 L70 68" fill="#4a7c8c"/>
+                        <!-- Evolution chain indicators -->
+                        <circle cx="25" cy="25" r="3" fill="#e0f2f1" stroke="#3d6a7a" stroke-width="1"/>
+                        <text x="25" y="28" text-anchor="middle" font-size="4" fill="#0d1a1c" font-weight="bold">1</text>
+                        <circle cx="50" cy="20" r="3" fill="#e0f2f1" stroke="#3d6a7a" stroke-width="1"/>
+                        <text x="50" y="23" text-anchor="middle" font-size="4" fill="#0d1a1c" font-weight="bold">2</text>
+                        <circle cx="75" cy="25" r="3" fill="#e0f2f1" stroke="#3d6a7a" stroke-width="1"/>
+                        <text x="75" y="28" text-anchor="middle" font-size="4" fill="#0d1a1c" font-weight="bold">3</text>
+                        <!-- Charmer synergy effect -->
+                        <circle cx="50" cy="80" r="6" fill="#4a7c8c" opacity="0.7"/>
+                        <text x="50" y="83" text-anchor="middle" font-size="5" fill="#e0f2f1" font-weight="bold">C</text>
+                </svg>`
+            },
+            {
                 name: 'Gimmick Puppet',
                 description: 'A dark xyz archetype that uses puppet-themed monsters and rank-up magic to summon devastating Number xyz monsters with burn effects.',
                 filepath: 'Gimmick Puppet Deck Analysis.html',
@@ -9578,6 +9756,128 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.3;0.7;0.3" dur="5s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`
+            },
+            {
+                name: 'Glacial Beast',
+                description: 'A small, cohesive package of WATER monsters that function as a Level 7 Synchro engine, best utilized as stepping stones to access the broader WATER Synchro toolbox.',
+                filepath: 'Glacial Beast Deck Analysis.html',
+                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="glacialGrad" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" style="stop-color="#dbeafe;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color="#0d111c;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color="#1a2033;stop-opacity:1" />
+                            </radialGradient>
+                            <linearGradient id="iceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color="#e0f2fe;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color="#3a6b8e;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color="#0d111c;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="beastGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color="#dbeafe;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color">#2a344f;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color">#1a2033;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#glacialGrad)" stroke="#0d111c" stroke-width="3"/>
+                        <!-- Iceberg base -->
+                        <path d="M20 70 L35 60 L50 55 L65 60 L80 70 L75 85 L25 85 Z" fill="url(#iceGrad)" stroke="#3a6b8e" stroke-width="2"/>
+                        <!-- Polar Penguin -->
+                        <ellipse cx="35" cy="45" rx="8" ry="12" fill="url(#beastGrad)" stroke="#dbeafe" stroke-width="1"/>
+                        <circle cx="32" cy="40" r="2" fill="#dbeafe"/>
+                        <circle cx="38" cy="40" r="2" fill="#dbeafe"/>
+                        <!-- Blizzard Wolf -->
+                        <ellipse cx="65" cy="45" rx="10" ry="8" fill="url(#beastGrad)" stroke="#dbeafe" stroke-width="1"/>
+                        <circle cx="62" cy="42" r="1.5" fill="#dbeafe"/>
+                        <circle cx="68" cy="42" r="1.5" fill="#dbeafe"/>
+                        <!-- Ice spikes -->
+                        <path d="M25 70 L25 50" stroke="#3a6b8e" stroke-width="3"/>
+                        <path d="M35 70 L35 45" stroke="#3a6b8e" stroke-width="2"/>
+                        <path d="M45 70 L45 40" stroke="#3a6b8e" stroke-width="2"/>
+                        <path d="M55 70 L55 45" stroke="#3a6b8e" stroke-width="2"/>
+                        <path d="M65 70 L65 50" stroke="#3a6b8e" stroke-width="3"/>
+                        <path d="M75 70 L75 55" stroke="#3a6b8e" stroke-width="2"/>
+                        <!-- Narwhal horn -->
+                        <path d="M50 35 L50 20 L52 15" stroke="#dbeafe" stroke-width="3" fill="none"/>
+                        <!-- Synchro energy rings -->
+                        <circle cx="50" cy="50" r="25" fill="none" stroke="#3a6b8e" stroke-width="1" opacity="0.6" stroke-dasharray="3,2"/>
+                        <circle cx="50" cy="50" r="18" fill="none" stroke="#dbeafe" stroke-width="1" opacity="0.4" stroke-dasharray="2,3"/>
+                        <!-- Level indicators -->
+                        <circle cx="30" cy="25" r="3" fill="#dbeafe" stroke="#3a6b8e" stroke-width="1"/>
+                        <text x="30" y="28" text-anchor="middle" font-size="4" fill="#0d111c" font-weight="bold">4</text>
+                        <circle cx="50" cy="15" r="3" fill="#dbeafe" stroke="#3a6b8e" stroke-width="1"/>
+                        <text x="50" y="18" text-anchor="middle" font-size="4" fill="#0d111c" font-weight="bold">7</text>
+                        <circle cx="70" cy="25" r="3" fill="#dbeafe" stroke="#3a6b8e" stroke-width="1"/>
+                        <text x="70" y="28" text-anchor="middle" font-size="4" fill="#0d111c" font-weight="bold">3</text>
+                        <!-- Ice crystals -->
+                        <g opacity="0.7">
+                            <circle cx="20" cy="30" r="1.5" fill="#dbeafe"/>
+                            <circle cx="80" cy="35" r="1.5" fill="#dbeafe"/>
+                            <circle cx="15" cy="75" r="1" fill="#3a6b8e"/>
+                            <circle cx="85" cy="80" r="1" fill="#3a6b8e"/>
+                        </g>
+                </svg>`
+            },
+            {
+                name: 'Golden Castle of Stromberg',
+                description: 'A small, self-contained engine centered around its titular Field Spell. Its design is one of extreme dependency; the entire deck is built to facilitate, protect, and exploit this single, high-risk, high-reward card.',
+                filepath: 'Golden Castle of Stromberg Deck Analysis.html',
+                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="castleGrad" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" style="stop-color="#fbbf24;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color="#f59e0b;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+                            </radialGradient>
+                            <linearGradient id="stoneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#78716c;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#57534e;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#374151;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="magicGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#7c3aed;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#581c87;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#castleGrad)" stroke="#92400e" stroke-width="3"/>
+                        <!-- Castle base -->
+                        <rect x="25" y="60" width="50" height="25" fill="url(#stoneGrad)" stroke="#374151" stroke-width="2" rx="2"/>
+                        <!-- Castle towers -->
+                        <rect x="20" y="45" width="12" height="30" fill="url(#stoneGrad)" stroke="#374151" stroke-width="1" rx="1"/>
+                        <rect x="68" y="45" width="12" height="30" fill="url(#stoneGrad)" stroke="#374151" stroke-width="1" rx="1"/>
+                        <!-- Central tower -->
+                        <rect x="42" y="35" width="16" height="40" fill="url(#stoneGrad)" stroke="#374151" stroke-width="1" rx="1"/>
+                        <!-- Golden dome -->
+                        <ellipse cx="50" cy="30" rx="8" ry="6" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <!-- Tower tops -->
+                        <polygon points="26,45 30,40 34,45" fill="#fbbf24"/>
+                        <polygon points="74,45 78,40 82,45" fill="#fbbf24"/>
+                        <polygon points="50,35 54,30 58,35" fill="#fbbf24"/>
+                        <!-- Windows -->
+                        <rect x="23" y="50" width="4" height="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/>
+                        <rect x="33" y="50" width="4" height="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/>
+                        <rect x="43" y="50" width="4" height="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/>
+                        <rect x="53" y="50" width="4" height="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/>
+                        <rect x="63" y="50" width="4" height="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/>
+                        <rect x="73" y="50" width="4" height="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/>
+                        <!-- Castle door -->
+                        <rect x="46" y="70" width="8" height="15" fill="#374151" stroke="#1f2937" stroke-width="1"/>
+                        <!-- Magical energy rings -->
+                        <circle cx="50" cy="50" r="20" fill="none" stroke="url(#magicGrad)" stroke-width="2" opacity="0.8" stroke-dasharray="4,2"/>
+                        <circle cx="50" cy="50" r="15" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.6" stroke-dasharray="3,3"/>
+                        <!-- Fairy-tale sparkles -->
+                        <g opacity="0.9">
+                            <circle cx="25" cy="25" r="1.5" fill="#fbbf24"/>
+                            <circle cx="75" cy="30" r="1.5" fill="#fbbf24"/>
+                            <circle cx="20" cy="75" r="1" fill="#a855f7"/>
+                            <circle cx="80" cy="80" r="1" fill="#a855f7"/>
+                            <circle cx="15" cy="35" r="1" fill="#fbbf24"/>
+                            <circle cx="85" cy="40" r="1" fill="#fbbf24"/>
+                        </g>
+                        <!-- Crown on top -->
+                        <polygon points="46,25 50,20 54,25 52,28 50,25 48,28" fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/>
+                </svg>`
             },
             {
                 name: 'Goblin',
@@ -25090,6 +25390,424 @@ const archetypes = [
                             <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite" begin="0.5s"/>
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="8" fill="#4682B4" font-weight="bold">Counter Fairy</text>
+                    </svg>`
+            },
+            {
+                name: "Evol",
+                description: "An archetype focused on evolution mechanics and summoning powerful evolved monsters through strategic card management and resource acceleration.",
+                filepath: "Evol Deck Analysis.html",
+                icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="evolGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="evolGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Evolution spiral -->
+                        <path d="M50 20 Q70 30 80 50 Q70 70 50 80 Q30 70 20 50 Q30 30 50 20 Z" fill="url(#evolGrad)" stroke="#FFA500" stroke-width="3" filter="url(#evolGlow)">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="4s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Inner evolution core -->
+                        <circle cx="50" cy="50" r="15" fill="#FFFFFF" stroke="#FFD700" stroke-width="2">
+                            <animate attributeName="r" values="15;18;15" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Evolution arrows -->
+                        <path d="M35 35 L45 45 M40 40 L45 45 L42 42" stroke="#FF4500" stroke-width="2" fill="none">
+                            <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M65 35 L55 45 M60 40 L55 45 L58 42" stroke="#FF4500" stroke-width="2" fill="none">
+                            <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+                        </path>
+                        <text x="50" y="95" text-anchor="middle" font-size="10" fill="#FFD700" font-weight="bold">EVOL</text>
+                    </svg>`
+            },
+            {
+                name: "Exchange of the Spirit",
+                description: "A deck centered around the powerful Exchange of the Spirit card, utilizing graveyard manipulation and deck thinning strategies for explosive plays.",
+                filepath: "Exchange of the Spirit Deck Analysis.html",
+                icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="exchangeGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#8B0000;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#DC143C;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="exchangeGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Central exchange vortex -->
+                        <circle cx="50" cy="50" r="35" fill="url(#exchangeGrad)" stroke="#FF0000" stroke-width="3" filter="url(#exchangeGlow)">
+                            <animate attributeName="r" values="35;40;35" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Swirling exchange arrows -->
+                        <path d="M30 30 Q50 20 70 30 Q80 50 70 70 Q50 80 30 70 Q20 50 30 30 Z" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-dasharray="10,5">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;-360 50 50" dur="5s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Card exchange symbols -->
+                        <rect x="40" y="40" width="8" height="12" fill="#FFFFFF" stroke="#000000" stroke-width="1" rx="1">
+                            <animate attributeName="x" values="40;45;40" dur="2s" repeatCount="indefinite"/>
+                        </rect>
+                        <rect x="52" y="48" width="8" height="12" fill="#FFFFFF" stroke="#000000" stroke-width="1" rx="1">
+                            <animate attributeName="x" values="52;47;52" dur="2s" repeatCount="indefinite"/>
+                        </rect>
+                        <!-- Spirit energy lines -->
+                        <path d="M20 50 Q50 30 80 50" stroke="#FFD700" stroke-width="2" fill="none" opacity="0.7">
+                            <animate attributeName="stroke-dasharray" values="0,60;60,0" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <text x="50" y="95" text-anchor="middle" font-size="7" fill="#FFFFFF" font-weight="bold">EXCHANGE</text>
+                        <text x="50" y="105" text-anchor="middle" font-size="7" fill="#FFFFFF" font-weight="bold">OF SPIRIT</text>
+                    </svg>`
+            },
+            {
+                name: "Fallen of Albaz",
+                description: "A fusion-based archetype centered around the Fallen of Albaz monster, focusing on fusion summoning and banishing mechanics for powerful board control and disruption.",
+                filepath: "Fallen of Albaz Deck Analysis.html",
+                icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="fallenGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#8B0000;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#2F0000;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="fallenGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Dark crimson background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#fallenGrad)" stroke="#DC143C" stroke-width="3" filter="url(#fallenGlow)">
+                            <animate attributeName="r" values="45;48;45" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Fallen wings silhouette -->
+                        <path d="M20 40 Q35 25 50 30 Q65 25 80 40 L75 55 Q60 50 50 60 Q40 50 25 55 Z" fill="#000000" stroke="#8B0000" stroke-width="2" opacity="0.8">
+                            <animateTransform attributeName="transform" type="scale" values="1;1.05;1" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Albaz symbol - stylized A -->
+                        <path d="M35 35 L45 25 L55 35 L50 45 L40 45 Z M42 40 L48 40" stroke="#FFD700" stroke-width="3" fill="none">
+                            <animate attributeName="stroke-width" values="3;4;3" dur="1.5s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Fusion energy particles -->
+                        <circle cx="30" cy="30" r="2" fill="#FFD700" opacity="0.7">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="70" cy="30" r="2" fill="#FFD700" opacity="0.7">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                        </circle>
+                        <circle cx="50" cy="70" r="2" fill="#FFD700" opacity="0.7">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite" begin="1s"/>
+                        </circle>
+                        <text x="50" y="95" text-anchor="middle" font-size="8" fill="#FFD700" font-weight="bold">FALLEN</text>
+                        <text x="50" y="105" text-anchor="middle" font-size="6" fill="#FFD700" font-weight="bold">OF ALBAZ</text>
+                    </svg>`
+            },
+            {
+                name: "Feral Imp",
+                description: "A DARK Fiend archetype featuring powerful beatstick monsters and hand trap disruption, focusing on aggressive plays and graveyard recursion for consistent pressure.",
+                filepath: "Feral Imp Deck Analysis.html",
+                icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="feralGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#2F1B14;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a0a00;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="feralGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Dark demonic background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#feralGrad)" stroke="#8B4513" stroke-width="3" filter="url(#feralGlow)">
+                            <animate attributeName="r" values="45;48;45" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Imp horns silhouette -->
+                        <path d="M30 35 L35 25 L40 35 M60 35 L65 25 L70 35" stroke="#FF4500" stroke-width="4" fill="none">
+                            <animate attributeName="stroke-width" values="4;6;4" dur="1.5s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Feral eyes -->
+                        <circle cx="40" cy="45" r="3" fill="#FF0000">
+                            <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="60" cy="45" r="3" fill="#FF0000">
+                            <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                        </circle>
+                        <!-- Sharp teeth -->
+                        <path d="M45 60 L50 65 L55 60 M42 62 L46 66 L50 62 M50 62 L54 66 L58 62" stroke="#FFFFFF" stroke-width="2" fill="none">
+                            <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Dark energy tendrils -->
+                        <path d="M20 50 Q35 40 50 50 Q65 60 80 50" stroke="#8B0000" stroke-width="3" fill="none" opacity="0.6">
+                            <animate attributeName="stroke-dasharray" values="0,60;60,0" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                        <text x="50" y="95" text-anchor="middle" font-size="9" fill="#FF4500" font-weight="bold">FERAL</text>
+                        <text x="50" y="105" text-anchor="middle" font-size="7" fill="#FF4500" font-weight="bold">IMP</text>
+                    </svg>`
+            },
+            {
+                name: "Fleur",
+                description: "A Plant archetype featuring powerful Synchro and Xyz monsters with banishing effects, focusing on resource management and explosive board presence through strategic summoning.",
+                filepath: "Fleur Deck Analysis.html",
+                icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="fleurGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#228B22;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#006400;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="fleurGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Lush green background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#fleurGrad)" stroke="#32CD32" stroke-width="3" filter="url(#fleurGlow)">
+                            <animate attributeName="r" values="45;48;45" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Fleur de lis inspired petals -->
+                        <path d="M50 20 L45 35 L35 35 L42 45 L38 60 L50 52 L62 60 L58 45 L65 35 L55 35 Z" fill="#90EE90" stroke="#228B22" stroke-width="2">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="6s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Central flower core -->
+                        <circle cx="50" cy="50" r="8" fill="#FFD700" stroke="#FFA500" stroke-width="2">
+                            <animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Leaf accents -->
+                        <path d="M25 70 Q35 65 45 70 Q35 75 25 70" fill="#228B22" stroke="#006400" stroke-width="1">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M75 70 Q65 65 55 70 Q65 75 75 70" fill="#228B22" stroke="#006400" stroke-width="1">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite" begin="1.5s"/>
+                        </path>
+                        <!-- Growth vines -->
+                        <path d="M15 50 Q30 45 50 50 Q70 55 85 50" stroke="#32CD32" stroke-width="3" fill="none" opacity="0.8">
+                            <animate attributeName="stroke-dasharray" values="0,70;70,0" dur="4s" repeatCount="indefinite"/>
+                        </path>
+                        <text x="50" y="95" text-anchor="middle" font-size="10" fill="#FFD700" font-weight="bold">FLEUR</text>
+                    </svg>`
+            },
+            {
+                name: "Flame Swordsman",
+                description: "A FIRE Warrior archetype centered around the iconic Flame Swordsman monster, focusing on fusion summoning and burn damage strategies for aggressive control and field dominance.",
+                filepath: "Flame Swordsman Deck Analysis.html",
+                icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="flameGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#FF4500;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#8B0000;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="flameGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Fiery background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#flameGrad)" stroke="#FFD700" stroke-width="3" filter="url(#flameGlow)">
+                            <animate attributeName="r" values="45;48;45" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Swordsman silhouette -->
+                        <rect x="40" y="30" width="20" height="35" fill="#000000" stroke="#FFD700" stroke-width="2" rx="2">
+                            <animate attributeName="stroke-width" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        </rect>
+                        <!-- Sword blade -->
+                        <path d="M50 25 L55 15 L60 25 L58 50 L42 50 Z" fill="#C0C0C0" stroke="#FFFFFF" stroke-width="2">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 37.5;-5 50 37.5;5 50 37.5;0 50 37.5" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Flame effects -->
+                        <path d="M35 45 Q40 35 45 40 Q50 30 55 40 Q60 35 65 45" fill="#FF6347" stroke="#FF0000" stroke-width="2" opacity="0.8">
+                            <animate attributeName="d" values="M35 45 Q40 35 45 40 Q50 30 55 40 Q60 35 65 45;M35 45 Q42 32 48 38 Q52 28 58 38 Q62 32 65 45" dur="1s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Fire particles -->
+                        <circle cx="30" cy="35" r="2" fill="#FFD700">
+                            <animate attributeName="cy" values="35;25;35" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="70" cy="35" r="2" fill="#FFD700">
+                            <animate attributeName="cy" values="35;25;35" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                            <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                        </circle>
+                        <text x="50" y="90" text-anchor="middle" font-size="8" fill="#FFD700" font-weight="bold">FLAME</text>
+                        <text x="50" y="100" text-anchor="middle" font-size="8" fill="#FFD700" font-weight="bold">SWORDSMAN</text>
+                    </svg>`
+            },
+            {
+                name: "Fairy Tale",
+                description: "A LIGHT Fairy archetype featuring storybook-themed monsters and spell cards, focusing on field control and swarming strategies through narrative-based effects and fairy tale mechanics.",
+                filepath: "Fairy Tale Deck Analysis.html",
+                icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="fairyGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#FFE4E1;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#FFB6C1;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="fairyGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Magical fairy tale background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#fairyGrad)" stroke="#FFD700" stroke-width="3" filter="url(#fairyGlow)">
+                            <animate attributeName="r" values="45;48;45" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Open book silhouette -->
+                        <rect x="35" y="35" width="30" height="30" fill="#8B4513" stroke="#654321" stroke-width="2" rx="2">
+                            <animate attributeName="stroke-width" values="2;3;2" dur="2s" repeatCount="indefinite"/>
+                        </rect>
+                        <!-- Book pages -->
+                        <rect x="37" y="37" width="13" height="26" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1">
+                            <animate attributeName="fill" values="#FFFFFF;#F0F8FF;#FFFFFF" dur="3s" repeatCount="indefinite"/>
+                        </rect>
+                        <rect x="52" y="37" width="13" height="26" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1">
+                            <animate attributeName="fill" values="#FFFFFF;#F0F8FF;#FFFFFF" dur="3s" repeatCount="indefinite" begin="1.5s"/>
+                        </rect>
+                        <!-- Fairy wand/sparkles -->
+                        <path d="M25 25 L30 20 L35 25 L30 30 Z" fill="#FFD700" stroke="#FFA500" stroke-width="1">
+                            <animateTransform attributeName="transform" type="rotate" values="0 30 25;360 30 25" dur="4s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Magic sparkles -->
+                        <circle cx="20" cy="40" r="1.5" fill="#FFD700">
+                            <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="80" cy="40" r="1.5" fill="#FFD700">
+                            <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite" begin="1s"/>
+                        </circle>
+                        <circle cx="50" cy="75" r="1.5" fill="#FFD700">
+                            <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                        </circle>
+                        <!-- Fairy tale decorative elements -->
+                        <path d="M15 50 Q25 45 35 50 Q25 55 15 50" stroke="#FF69B4" stroke-width="2" fill="none" opacity="0.7">
+                            <animate attributeName="stroke-dasharray" values="0,40;40,0" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                        <text x="50" y="90" text-anchor="middle" font-size="9" fill="#FF69B4" font-weight="bold">FAIRY</text>
+                        <text x="50" y="100" text-anchor="middle" font-size="9" fill="#FF69B4" font-weight="bold">TALE</text>
+                    </svg>`
+            },
+            {
+                name: "Felgrand",
+                description: "A LIGHT Dragon archetype featuring powerful Dragon monsters with revival mechanics, focusing on graveyard recursion and high-level summoning strategies for explosive comebacks and field dominance.",
+                filepath: "Felgrand Deck Analysis.html",
+                icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="felgrandGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="felgrandGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Golden dragon background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#felgrandGrad)" stroke="#FF4500" stroke-width="3" filter="url(#felgrandGlow)">
+                            <animate attributeName="r" values="45;48;45" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Dragon head silhouette -->
+                        <path d="M35 40 Q45 30 55 35 Q65 30 75 40 L70 50 Q60 45 55 55 Q45 45 40 50 Z" fill="#000000" stroke="#FFD700" stroke-width="2">
+                            <animate attributeName="stroke-width" values="2;4;2" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Dragon horns -->
+                        <path d="M42 35 L38 28 L42 35 M58 35 L62 28 L58 35" stroke="#FFD700" stroke-width="3" fill="none">
+                            <animate attributeName="stroke-width" values="3;5;3" dur="1.5s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Dragon eyes -->
+                        <circle cx="45" cy="42" r="2" fill="#FF0000">
+                            <animate attributeName="r" values="2;3;2" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="55" cy="42" r="2" fill="#FF0000">
+                            <animate attributeName="r" values="2;3;2" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                        </circle>
+                        <!-- Revival energy waves -->
+                        <path d="M25 60 Q50 50 75 60" stroke="#FFFFFF" stroke-width="3" fill="none" opacity="0.8">
+                            <animate attributeName="stroke-dasharray" values="0,50;50,0" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M25 70 Q50 60 75 70" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.6">
+                            <animate attributeName="stroke-dasharray" values="0,50;50,0" dur="2s" repeatCount="indefinite" begin="1s"/>
+                        </path>
+                        <!-- Dragon scales pattern -->
+                        <circle cx="35" cy="55" r="1.5" fill="#FFD700" opacity="0.7">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="65" cy="55" r="1.5" fill="#FFD700" opacity="0.7">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite" begin="1.5s"/>
+                        </circle>
+                        <text x="50" y="90" text-anchor="middle" font-size="9" fill="#FFD700" font-weight="bold">FELGRAND</text>
+                    </svg>`
+            },
+            {
+                name: "From the Underworld",
+                description: "A DARK Fiend archetype featuring powerful monsters that banish themselves to the underworld for strategic advantage, focusing on graveyard setup and explosive summoning plays through underworld mechanics.",
+                filepath: "From the Underworld Deck Analysis.html",
+                icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="underworldGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#2F1B14;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="underworldGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Dark underworld background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#underworldGrad)" stroke="#8B0000" stroke-width="3" filter="url(#underworldGlow)">
+                            <animate attributeName="r" values="45;48;45" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Underworld portal -->
+                        <ellipse cx="50" cy="50" rx="25" ry="35" fill="none" stroke="#DC143C" stroke-width="4" opacity="0.8">
+                            <animate attributeName="stroke-width" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <!-- Swirling underworld energy -->
+                        <path d="M35 30 Q50 20 65 30 Q75 45 65 60 Q50 70 35 60 Q25 45 35 30 Z" fill="none" stroke="#FF4500" stroke-width="3" stroke-dasharray="10,5">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="4s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Underworld chains -->
+                        <path d="M20 40 L30 35 M25 45 L35 40 M30 50 L40 45" stroke="#8B4513" stroke-width="3" fill="none">
+                            <animate attributeName="stroke-width" values="3;4;3" dur="1.5s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M80 40 L70 35 M75 45 L65 40 M70 50 L60 45" stroke="#8B4513" stroke-width="3" fill="none">
+                            <animate attributeName="stroke-width" values="3;4;3" dur="1.5s" repeatCount="indefinite" begin="0.75s"/>
+                        </path>
+                        <!-- Demonic eyes peering from underworld -->
+                        <circle cx="40" cy="45" r="3" fill="#FF0000">
+                            <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="60" cy="45" r="3" fill="#FF0000">
+                            <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite" begin="1s"/>
+                        </circle>
+                        <!-- Underworld mist -->
+                        <ellipse cx="50" cy="70" rx="20" ry="8" fill="#4B0082" opacity="0.6">
+                            <animate attributeName="opacity" values="0.6;0.9;0.6" dur="3s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <text x="50" y="85" text-anchor="middle" font-size="7" fill="#DC143C" font-weight="bold">FROM THE</text>
+                        <text x="50" y="95" text-anchor="middle" font-size="7" fill="#DC143C" font-weight="bold">UNDERWORLD</text>
                     </svg>`
             }
         ];

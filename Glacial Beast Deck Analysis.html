@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glacial Beast Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      Loading the card-loader.js from the root, as it was uploaded there.
+      If you have it in an 'assets/js/' folder, you can change the path to 'assets/js/card-loader.js'.
+    -->
+    <script src="card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d111c; /* Deep blue-black */
+            color: #dbeafe; /* Light blue-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a2033; /* Dark blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a6b8e; /* Icy blue border */
+        }
+        .combo-step-card {
+            background-color: #2a344f; /* Lighter blue */
+            border: 1px solid #3a6b8e;
+        }
+        .pro-con-card {
+            background-color: #2a344f;
+            border: 1px solid #3a6b8e;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #2a344f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a344f;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a7d8ff; } /* Icy light blue */
+        .arrow-color { color: #a7d8ff; }
+        .heading-underline {
+            border-bottom: 2px solid #a7d8ff;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #a7d8ff;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a7d8ff;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d111c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3a6b8e;
+        }
+
+        #ice-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 17, 28, 0.4) 0%, rgba(13, 17, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(167, 216, 255, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 17, 28, 0.95); /* Deep blue-black */
+            border: 1px solid #a7d8ff; /* Icy light blue */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #a7d8ff; /* Icy light blue */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Orbitron', sans-serif;
+            color: #a7d8ff;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="ice-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">GLACIAL BEAST</h1>
+            <p class="text-lg md:text-xl text-blue-200">A Strategic Deep Dive into a Compact WATER Synchro Package</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The "Glacial Beast" series, introduced in Battles of Legend: Armageddon, represents a fascinating case study in modern Yu-Gi-Oh! card design. Comprising just three cards—two Main Deck monsters and one Synchro boss monster—it lacks the sprawling support of a full-fledged 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Glacial%20Beast&stype=1" target="_blank" class="lore-link">archetype</a>.
+                    Instead, it functions as a compact, specialized engine. This report provides an exhaustive analysis of these three cards, dissecting their individual functions, their intended internal synergy, their critical limitations, and, most importantly, their true strategic role as a component within the broader ecosystem of WATER-attribute decks.
+                </p>
+            </div>
+        </section>
+
+        <!-- Anatomy of the Archetype Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Anatomy of the Archetype</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                Each card possesses a distinct role, yet they share a design philosophy rooted in Battle Phase interaction—a trait that defines both their potential and their limitations.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Polar Penguin -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="polar-penguin-img" class="card-image-container mb-4 card-placeholder">Glacial Beast Polar Penguin</div>
+                    <h3 class="text-xl font-bold text-accent mb-2">Glacial Beast Polar Penguin</h3>
+                    <p class="text-blue-200 text-sm">The core disruptor. Its power lies in its generic on-Special Summon effect to bounce an opponent's monster, making any card that summons it a piece of removal.</p>
+                </div>
+                <!-- Blizzard Wolf -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="blizzard-wolf-img" class="card-image-container mb-4 card-placeholder">Glacial Beast Blizzard Wolf</div>
+                    <h3 class="text-xl font-bold text-accent mb-2">Glacial Beast Blizzard Wolf</h3>
+                    <p class="text-blue-200 text-sm">A defensive hand-trap designed for Battle Phase interaction. In modern play, it functions almost exclusively as a Level 4 WATER non-Tuner body for Synchro Summons.</p>
+                </div>
+                <!-- Iceberg Narwhal -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="iceberg-narwhal-img" class="card-image-container mb-4 card-placeholder">Glacial Beast Iceberg Narwhal</div>
+                    <h3 class="text-xl font-bold text-accent mb-2">Glacial Beast Iceberg Narwhal</h3>
+                    <p class="text-blue-200 text-sm">The boss monster. A Level 7 Synchro with a conditional Battle Phase negation. It's the intended payoff but is often outclassed by more generic WATER Synchros.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Penguin Alliance Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Penguin Alliance: A Misunderstood Synergy</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The most common pairing for Glacial Beasts is the "Penguin" archetype. However, the true nature of this synergy is often misread by players.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- The Myth -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4"><i class="fas fa-times-circle pro-icon mr-2"></i>The Myth</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-red-300">Myth:</strong> <span id="g-emperor-penguin-img" class="card-image-container inline-block h-6 w-6 mr-1"></span><strong>The Great Emperor Penguin</strong> can summon Polar Penguin from deck.</li>
+                        <li><strong class="text-red-300">Myth:</strong> <span id="nopenguin-img" class="card-image-container inline-block h-6 w-6 mr-1"></span><strong>Nopenguin</strong> banishes cards bounced by Polar Penguin.</li>
+                    </ul>
+                </div>
+                <!-- The Reality -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4"><i class="fas fa-check-circle con-icon mr-2"></i>The Reality</h3>
+                    <p class="text-blue-200 mb-4">A careful reading proves these combos illegal. <strong class="text-accent">Glacial Beast Polar Penguin</strong> is not a "Penguin" card.</p>
+                    <p class="text-blue-200">The true synergy is a shared <strong class="text-accent">WATER/Aqua Toolbox</strong>. The Penguin engine swarms the field with WATER monsters, which are then used as generic material for Synchro Summons, with Polar Penguin serving as a high-value, disruptive Tuner.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- WATER Extra Deck Toolbox Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The WATER Extra Deck Toolbox</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The most compelling reason to run the Glacial Beast engine is to gain access to the entire powerful WATER Synchro toolbox, using the Glacial Beasts as mere stepping stones.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Dragite -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="dragite-img" class="card-image-container mb-4 card-placeholder">Adamancipator Risen - Dragite</div>
+                    <h3 class="text-lg font-bold text-accent mb-2">Adamancipator Risen - Dragite</h3>
+                    <p class="text-blue-200 text-sm">The primary goal. A Level 8 Synchro that provides powerful, non-once-per-turn Spell/Trap negation.</p>
+                </div>
+                <!-- Chengying -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="chengying-img" class="card-image-container mb-4 card-placeholder">Swordsoul Supreme Sovereign - Chengying</div>
+                    <h3 class="text-lg font-bold text-accent mb-2">Swordsoul Chengying</h3>
+                    <p class="text-blue-200 text-sm">A Level 10 boss monster with built-in protection and powerful, recurring banishing disruption.</p>
+                </div>
+                <!-- White Aura Whale -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="white-aura-whale-img" class="card-image-container mb-4 card-placeholder">White Aura Whale</div>
+                    <h3 class="text-lg font-bold text-accent mb-2">White Aura Whale</h3>
+                    <p class="text-blue-200 text-sm">A Level 8 board-breaker capable of destroying all of the opponent's Attack Position monsters on summon.</p>
+                </div>
+                <!-- Brionac -->
+                <div class="card p-4 flex flex-col items-center text-center">
+                    <div id="brionac-img" class="card-image-container mb-4 card-placeholder">Brionac, Dragon of the Ice Barrier</div>
+                    <h3 class="text-lg font-bold text-accent mb-2">Brionac</h3>
+                    <p class="text-blue-200 text-sm">A generic Level 6 Synchro that offers versatile removal by discarding cards to bounce cards on the field.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sample End Boards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Sample End Boards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Dragite Lock -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Dragite Lock</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dragite-end-img" class="card-image-container card-placeholder">Adamancipator Risen - Dragite</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Key Monster:</strong> Adamancipator Risen - Dragite.</li>
+                        <li><strong class="text-accent">Disruption:</strong> 1 Spell/Trap negate (potentially multiple uses).</li>
+                        <li><strong class="text-accent">Vulnerability:</strong> Monster effects and board-wipes like Dark Ruler No More.</li>
+                    </ul>
+                </div>
+                <!-- Chengying Domination -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Chengying Domination</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="chengying-end-img" class="card-image-container card-placeholder">Swordsoul Supreme Sovereign - Chengying</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Key Monster:</strong> Swordsoul Supreme Sovereign - Chengying.</li>
+                        <li><strong class="text-accent">Disruption:</strong> 1 monster/S/T banish; ATK reduction; protection.</li>
+                        <li><strong class="text-accent">Vulnerability:</strong> Requires significant resource investment to summon.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The "Glacial Beast" engine itself is completely unaffected by the banlist. However, its synergy with the broader WATER strategy is impacted by key hits to generic combo enablers.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Glacial Beast Polar Penguin (3 copies)</li>
+                            <li>Glacial Beast Blizzard Wolf (3 copies)</li>
+                            <li>Glacial Beast Iceberg Narwhal (3 copies)</li>
+                            <li>Deep Sea Diva (3 copies)</li>
+                            <li>Atlantean Dragoons (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Crystron Halqifibrax (0 copies)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-400">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The archetype itself is at full power. The loss of <strong class="text-accent">Crystron Halqifibrax</strong> removes a major generic combo line that previously summoned <strong class="text-accent">Polar Penguin</strong> directly from the deck, slightly reducing the engine's consistency as a one-card starter package.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Conclusion: Final Assessment</h2>
+                <p class="text-blue-200">
+                    The three "Glacial Beast" cards do not form a self-sufficient archetype. They are a small, cohesive package of WATER monsters that function as a Level 7 Synchro engine. Their individual designs are hampered by an outdated reliance on Battle Phase-centric effects.
+                </p>
+                <p class="text-blue-200 mt-4">
+                    The engine's true value is unlocked when integrated into a broader WATER Synchro strategy. In this context, <strong class="text-accent">Glacial Beast Polar Penguin</strong> becomes a valuable piece of disruption that can be summoned mid-combo, while <strong class="text-accent">Glacial Beast Blizzard Wolf</strong> serves as a simple Level 4 body. Their primary function is to provide the necessary attribute-locked materials to access the formidable WATER Synchro toolbox, enabling a deck to summon powerful boss monsters like <strong class="text-accent">Adamancipator Risen - Dragite</strong> and <strong class="text-accent">Swordsoul Supreme Sovereign - Chengying</strong>.
+                </p>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GLACIAL/ICE BANNER ANIMATION ---
+            const canvas = document.getElementById('ice-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedY = Math.random() * 0.5 + 0.2; // Slow fall speed
+                        this.speedX = (Math.random() * 0.4) - 0.2; // Slight horizontal drift
+                        this.radius = Math.random() * 2 + 1;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                        this.fade = Math.random() * 0.01 + 0.005;
+                    }
+                    update() {
+                        this.y += this.speedY;
+                        this.x += this.speedX;
+                        this.opacity -= this.fade;
+                        
+                        if (this.opacity <= 0 || this.y > canvas.height) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(167, 216, 255, ${this.opacity})`; // Icy blue
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = -10; // Start just above the screen
+                        this.speedY = Math.random() * 0.5 + 0.2;
+                        this.speedX = (Math.random() * 0.4) - 0.2;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    const numParticles = (canvas.width * canvas.height) / 5000;
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // This assumes card-loader.js is loaded correctly.
+            CardLoader.loadCards({
+                'polar-penguin-img': 'Glacial Beast Polar Penguin',
+                'blizzard-wolf-img': 'Glacial Beast Blizzard Wolf',
+                'iceberg-narwhal-img': 'Glacial Beast Iceberg Narwhal',
+                'g-emperor-penguin-img': 'The Great Emperor Penguin',
+                'nopenguin-img': 'Nopenguin',
+                'dragite-img': 'Adamancipator Risen - Dragite',
+                'chengying-img': 'Swordsoul Supreme Sovereign - Chengying',
+                'white-aura-whale-img': 'White Aura Whale',
+                'brionac-img': 'Brionac, Dragon of the Ice Barrier',
+                'dragite-end-img': 'Adamancipator Risen - Dragite',
+                'chengying-end-img': 'Swordsoul Supreme Sovereign - Chengying',
+                'penguin-brave-img': 'Penguin Brave'
+            });
+        });
+    </script>
+</body>
+</html>

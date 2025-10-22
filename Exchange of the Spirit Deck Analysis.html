@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exchange of the Spirit Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assume card-loader.js is in assets/js/ -->
+    <script src="assets/js/card-loader.js"></script> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Dark stone/charcoal */
+            color: #f5f5f5; /* Light sand */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2c2c; /* Darker stone */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #a37c44; /* Dull gold border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #383838; /* Slightly lighter stone */
+            border: 1px solid #c8a86a; /* Lighter gold */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Add cursor pointer for card popups */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #383838;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem; /* 12px */
+            line-height: 1rem; /* 16px */
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem; /* 8px */
+            padding: 0.5rem; /* 8px */
+            box-shadow: 0 0 10px #383838;
+            border: 1px dashed #c8a86a;
+        }
+        .pro-icon { color: #34d399; } /* Teal for Pros */
+        .con-icon { color: #ef4444; } /* Red for Cons */
+        .neutral-icon { color: #60a5fa; } /* Blue for Neutral */
+        .text-accent { color: #ffd700; } /* Gold for accents */
+        .arrow-color { color: #ffd700; }
+        .heading-underline {
+            border-bottom: 2px solid #ffd700;
+            display: inline-block;
+            padding-bottom: 0.25rem; /* 4px */
+        }
+        .lore-link {
+            color: #ffd700;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffd700;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ffd700;
+        }
+
+        /* --- NEW EGYPTIAN THEME BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a1a;
+            border-radius: 1rem; /* 16px */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem; /* 32px */
+            margin-bottom: 2.5rem; /* 40px */
+            border: 1px solid #a37c44;
+        }
+
+        #sand-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(44, 44, 44, 0.7) 0%, rgba(26, 26, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5); /* Gold shadow */
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif; /* Use Egyptian-like font */
+             color: #ffd700; /* Gold color */
+        }
+         .banner-header p {
+            color: #f5f5dc; /* Beige/Sand */
+         }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%); animation: ygoButtonPulse 3s ease-in-out infinite; pointer-events: none; }
+        .ygo-home-button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2); border-color: #8b5cf6; }
+        .ygo-home-button:active { transform: translateY(-1px) scale(1.02); }
+        .ygo-home-button i { font-size: 22px; position: relative; z-index: 2; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); animation: ygoIconGlow 2s ease-in-out infinite alternate; }
+        .ygo-home-button .ygo-home-text { position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 600; color: #a5b4fc; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); opacity: 0; transition: opacity 0.3s ease; white-space: nowrap; pointer-events: none; }
+        .ygo-home-button:hover .ygo-home-text { opacity: 1; }
+        @keyframes ygoButtonPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+        @keyframes ygoIconGlow { 0% { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); } 100% { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3); } }
+        @media (max-width: 768px) { .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; } .ygo-home-button i { font-size: 18px; } }
+
+        /* Card Popup Styles (Themed) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 26, 26, 0.95); /* Dark background */
+            border: 1px solid #ffd700; /* Gold border */
+            border-radius: 0.75rem;
+            color: #f5f5dc; /* Beige text */
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #ffd700; /* Gold title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Cinzel', serif;
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    <!-- Card Popup Placeholder -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="sand-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-2">Exchange of the Spirit</h1>
+            <p class="text-lg md:text-xl text-yellow-200">From FTK Legend to Modern Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    <strong class="text-accent font-bold">Exchange of the Spirit</strong> holds a unique place in Yu-Gi-Oh! history, initially infamous as a non-interactive First-Turn-Kill (FTK) strategy enabled by <strong class="text-accent">Makyura the Destructor</strong> (Forbidden). Its original goal was to deck out the opponent by swapping Graveyards. Years later, the theme was revitalized with the "Ishizu" support cards, transforming it into a sophisticated, graveyard-centric control and disruption engine. This modern iteration leverages the <span class="italic">presence</span> of "Exchange of the Spirit" in the Graveyard to unlock powerful milling and shuffling effects, culminating in its integration into the Tier 0 "Ishizu Tearlaments" strategy, one of the most dominant decks ever conceived.
+                </p>
+            </div>
+        </section>
+
+        <!-- Original FTK Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Genesis: The Original FTK</h2>
+            <div class="card p-6 flex flex-col md:flex-row items-center gap-6">
+                 <div id="exchange-original-img-container" class="card-image-container flex-shrink-0 card-placeholder">Exchange of the Spirit</div>
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3">Deck-Out Strategy</h3>
+                    <p class="text-gray-300 mb-4">
+                        The original Trap Card allowed players with 15+ cards in GY to pay 1000 LP and swap Decks and Graveyards. The FTK aimed to rapidly mill its own deck while keeping the opponent's GY empty. Activating the trap resulted in the opponent having zero cards to draw, leading to an immediate loss.
+                    </p>
+                    <h3 class="text-xl font-bold text-white mb-3">The Makyura Engine</h3>
+                     <div class="flex items-center gap-4 mb-4">
+                       <div id="makyura-img-container" class="w-24 flex-shrink-0 card-placeholder">Makyura the Destructor</div>
+                       <p class="text-gray-300 flex-1">
+                           <strong class="text-accent">Makyura the Destructor</strong> (Forbidden) was essential, allowing Trap activation from hand the turn it was sent to the GY. This bypassed the normal Set requirement, enabling the Turn 1 kill before the opponent could act. The deck used extensive draw/mill power (<strong class="text-accent">Pot of Greed</strong>, <strong class="text-accent">Graceful Charity</strong>, <strong class="text-accent">Reasoning</strong> - all Limited/Forbidden now) to achieve consistency.
+                       </p>
+                     </div>
+                    <p class="text-sm text-gray-400 italic">This strategy's dominance led to both Exchange of the Spirit and Makyura being Forbidden for years.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modern Ishizu Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Rebirth: The Ishizu Engine</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">
+                The modern support, known as the "Ishizu" cards, repurposed the theme. Instead of the deck swap, these EARTH Fairy monsters gain potent effects if "Exchange of the Spirit" is in the Graveyard, focusing on controlling GY resources. Meet the <a href="https://yugipedia.com/wiki/Exchange_of_the_Spirit_(archetype)" target="_blank" class="lore-link">modern cadre of graveyard manipulators</a>.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Millers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-sync-alt text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Millers: Engine Starters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Agido the Ancient Sentinel <span class="text-red-400">(Forbidden)</span></h4>
+                            <p class="text-sm text-gray-300">Triggered when sent to GY: Mills top 5 cards from each Deck. Bonus: Mills 5 more from one Deck if EotS is in GY. Also an extender from hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Kelbek the Ancient Vanguard <span class="text-red-400">(Forbidden)</span></h4>
+                            <p class="text-sm text-gray-300">Triggered when sent to GY: Mills top 5 from each Deck. Bonus: Sets a Trap from GY if EotS is in GY. Also provides hand disruption.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Shufflers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-random text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Shufflers: Disruption & Recursion</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Keldo the Sacred Protector <span class="text-yellow-400">(Limited)</span></h4>
+                            <p class="text-sm text-gray-300">Searches EotS or related cards. Quick Effect (from field/GY): Banishes itself to shuffle 3 (or 5 with EotS) cards from GYs back into the Deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Mudora the Sword Oracle <span class="text-yellow-400">(Limited)</span></h4>
+                            <p class="text-sm text-gray-300">Places <strong class="text-accent">Gravekeeper's Trap</strong> from Deck. Quick Effect identical to Keldo's, shuffling GY cards back into the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <!-- Support Suite -->
+             <div class="card p-6 mt-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-cogs text-4xl text-yellow-300 mr-4"></i>
+                    <h3 class="text-xl font-bold text-white">Support Suite: Utility & Control</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">Gravekeeper's Trap</h4>
+                        <p class="text-sm text-gray-300">Continuous Trap. Floodgate: Opponent cannot use GY effects/summon from GY if EotS is in GY. Searcher: Discard 1 to add any Ishizu monster.</p>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">Blast Held by Destiny</h4>
+                        <p class="text-sm text-gray-300">Battle Trap. Destroys attacker, inflicts damage (no reciprocal damage if EotS in GY). If milled, adds Level 4 EARTH Fairy from GY to hand.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Engine Dynamics Section -->
+         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Engine Dynamics: Search Chains</h2>
+             <div class="card p-6">
+                 <p class="text-gray-300 mb-4">The engine's strength comes from its internal search loops, primarily through Keldo and the Mudora/Gravekeeper's Trap interaction.</p>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent mb-2">Keldo: The Universal Tutor</h4>
+                         <p class="text-sm text-gray-300">Searches any card mentioning "Exchange of the Spirit," providing access to Millers, Shufflers, or Traps based on the situation.</p>
+                     </div>
+                     <div class="combo-step-card p-4 rounded-lg">
+                         <h4 class="font-bold text-accent mb-2">Mudora + Gravekeeper's Trap: Recursive Loop</h4>
+                         <p class="text-sm text-gray-300">Mudora places Gravekeeper's Trap, which can then discard a card each turn to search any EARTH Fairy (including other Ishizu monsters for discard fodder).</p>
+                     </div>
+                 </div>
+             </div>
+         </section>
+
+        <!-- Ishizu Tearlaments Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Apex Predator: Ishizu Tearlaments (Historical)</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4">The Ishizu engine's synergy with the Tearlaments archetype created one of the most dominant Tier 0 decks in history. Tearlaments monsters Fusion Summon when sent to the GY by card effect.</p>
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <!-- Mill Synergy -->
+                    <div class="combo-step-card p-4 rounded-lg">
+                         <div class="flex items-center mb-2"><i class="fas fa-link text-accent mr-2"></i><h4 class="font-bold text-white">Milling Catalyst</h4></div>
+                         <p class="text-sm text-gray-300">Ishizu Millers (Agido/Kelbek - both Forbidden) provided massive, reliable mills, triggering multiple Tearlaments Fusion effects simultaneously and bypassing the archetype's intended randomness.</p>
+                    </div>
+                     <!-- Turn 0 -->
+                     <div class="combo-step-card p-4 rounded-lg">
+                          <div class="flex items-center mb-2"><i class="fas fa-fast-forward text-accent mr-2"></i><h4 class="font-bold text-white">"Turn 0" Dominance</h4></div>
+                          <p class="text-sm text-gray-300">Via <strong class="text-accent">Tearlaments Havnis</strong> (Limited) + Ishizu millers, the deck could establish a full board with negates during the opponent's first Main Phase.</p>
+                     </div>
+                      <!-- Grind Game -->
+                     <div class="combo-step-card p-4 rounded-lg">
+                           <div class="flex items-center mb-2"><i class="fas fa-recycle text-accent mr-2"></i><h4 class="font-bold text-white">Infinite Grind Game</h4></div>
+                           <p class="text-sm text-gray-300">Ishizu Shufflers (Keldo/Mudora - both Limited) recycled key Tearlaments and disrupted opponent's GYs, creating an almost unbeatable resource loop.</p>
+                     </div>
+                 </div>
+            </div>
+        </section>
+
+         <!-- End Board Section (Ishizu Tear) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">End State: The "Living" Board (Ishizu Tear)</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+                Ishizu Tearlaments didn't rely on a static board but a dynamic web of interactions across multiple zones. A typical end-state included:
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- On-Field Monsters -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Field Presence</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300 text-sm">
+                        <li><strong class="text-accent">Tearlaments Rulkallos:</strong> Special Summon negate.</li>
+                        <li><strong class="text-accent">Tearlaments Kaleido-Heart:</strong> Non-targeting removal on summon.</li>
+                         <li><strong class="text-accent">Abyss Dweller</strong> (Forbidden) or <strong class="text-accent">Time Thief Redoer:</strong> GY or disruption Xyz.</li>
+                         <li><strong class="text-accent">Spright Elf</strong> (Forbidden): Revived key pieces on opponent's turn.</li>
+                    </ul>
+                </div>
+                <!-- Backrow -->
+                 <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Spell/Trap Zone</h3>
+                     <ul class="list-disc list-inside space-y-2 text-gray-300 text-sm">
+                         <li><strong class="text-accent">Tearlaments Sulliek:</strong> Searchable monster negate.</li>
+                         <li><strong class="text-accent">Tearlaments Cryme:</strong> Searchable omni-negate.</li>
+                         <li><strong class="text-accent">Gravekeeper's Trap:</strong> GY lock & searcher.</li>
+                    </ul>
+                 </div>
+                <!-- Graveyard -->
+                 <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Graveyard Threats</h3>
+                     <ul class="list-disc list-inside space-y-2 text-gray-300 text-sm">
+                         <li><strong class="text-accent">Keldo the Sacred Protector</strong> (Limited): Live Quick Effect disruption.</li>
+                         <li><strong class="text-accent">Mudora the Sword Oracle</strong> (Limited): Live Quick Effect disruption.</li>
+                         <li> milled <strong class="text-accent">Tearlaments monsters:</strong> Potential for further Fusion Summons.</li>
+                    </ul>
+                 </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">CRITICAL IMPACT:</strong> The Ishizu engine has been heavily restricted on the TCG banlist, dismantling its Tier 0 status:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Agido the Ancient Sentinel (0)</strong></li>
+                            <li><strong class="text-red-400">Kelbek the Ancient Vanguard (0)</strong></li>
+                             <li><strong class="text-red-400">Exchange of the Spirit (0)</strong> (*Original Trap*)</li>
+                             <li><span class="text-gray-400 italic">(Also Tearlaments Kitkallos, Spright Elf, Abyss Dweller)</span></li>
+                        </ul>
+                    </div>
+                     <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Keldo the Sacred Protector (1)</strong></li>
+                            <li><strong class="text-yellow-400">Mudora the Sword Oracle (1)</strong></li>
+                             <li><span class="text-gray-400 italic">(Also Tearlaments Havnis, Merrli, Scheiren)</span></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Gravekeeper's Trap (3)</li>
+                            <li>Blast Held by Destiny (3)</li>
+                            <li>Exchange of Despair and Hope (3)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With both primary millers forbidden and the shufflers limited, the Ishizu engine's core functionality is severely hampered. It can no longer reliably fuel graveyard strategies or maintain the oppressive resource loop that defined its peak power. While individual cards might see niche play, the engine as a whole is no longer competitively viable in its previous form.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- SANDSTORM ANIMATION ---
+            const canvas = document.getElementById('sand-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.vx = Math.random() * 1.5 + 0.5; // Move right
+                        this.vy = (Math.random() - 0.5) * 0.2; // Slight vertical drift
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.color = `rgba(210, 180, 140, ${Math.random() * 0.4 + 0.1})`; // Tan/Sand color
+                    }
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        if (this.x > canvas.width + this.radius) {
+                            this.x = -this.radius;
+                            this.y = Math.random() * canvas.height; // Reposition vertically
+                        }
+                         if (this.y < -this.radius || this.y > canvas.height + this.radius) {
+                             this.vy *= -1; // Bounce off top/bottom edges slightly
+                         }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    // Slightly clearing with alpha creates trails/blur
+                    ctx.fillStyle = 'rgba(26, 26, 26, 0.2)'; 
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles(); // Reinitialize particles on resize
+                });
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'exchange-original-img-container': 'Exchange of the Spirit',
+                'makyura-img-container': 'Makyura the Destructor',
+                // Add IDs for the other cards if needed, following the pattern
+                // 'agido-img-container': 'Agido the Ancient Sentinel',
+                // 'kelbek-img-container': 'Kelbek the Ancient Vanguard',
+                // 'keldo-img-container': 'Keldo the Sacred Protector',
+                // 'mudora-img-container': 'Mudora the Sword Oracle',
+                // 'gravekeeper-trap-img-container': 'Gravekeeper\'s Trap',
+                // 'blast-held-img-container': 'Blast Held by Destiny'
+            });
+        });
+    </script>
+</body>
+</html>

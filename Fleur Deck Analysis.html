@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleur Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Make sure card-loader.js is in the correct path relative to this HTML file -->
+    <!-- Assuming it's in an 'assets/js/' folder -->
+    <script src="assets/js/card-loader.js"></script> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet"> {/* Elegant font */}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            color: #1e3a8a; /* Deep blue text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #ffffff; /* White card background */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #bfdbfe; /* Light blue border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #e0f2fe; /* Very light blue background */
+            border: 1px solid #93c5fd; /* Medium blue border */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Add cursor pointer for interaction */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #e0f2fe;
+            color: #1e3a8a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #e0f2fe;
+            border: 1px dashed #93c5fd;
+        }
+        .pro-icon { color: #10b981; } /* Emerald green */
+        .con-icon { color: #ef4444; } /* Red */
+        .neutral-icon { color: #60a5fa; } /* Blue */
+        .text-accent { color: #fbbf24; } /* Amber/Gold accent */
+        .text-content { color: #1e3a8a; } /* Main text color */
+        .text-subtle { color: #3b82f6; } /* Lighter blue for subtitles/less important text */
+        .arrow-color { color: #fbbf24; }
+        .heading-underline {
+            border-bottom: 2px solid #fbbf24;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link { /* Link styling */
+            color: #2563eb; /* Stronger blue for links */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #2563eb;
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+        /* --- Elegant Fleur Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%); /* Light gradient */
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #bfdbfe;
+            box-shadow: 0 8px 25px rgba(191, 219, 254, 0.5); /* Soft blue shadow */
+        }
+
+        #petal-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 1px 1px 3px rgba(30, 58, 138, 0.1); /* Subtle shadow */
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif; /* Elegant serif font */
+             color: #1e3a8a; /* Deep blue */
+             font-size: 2.8rem;
+        }
+        .banner-header p {
+            color: #3b82f6; /* Medium blue */
+            font-size: 1.1rem;
+        }
+         @media (max-width: 768px) {
+            .banner-header h1 { font-size: 2.2rem; }
+            .banner-header p { font-size: 1rem; }
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%); color: #1e3a8a;
+            border: 2px solid #93c5fd; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(147, 197, 253, 0.4), 0 0 20px rgba(147, 197, 253, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(147, 197, 253, 0.6), 0 0 30px rgba(147, 197, 253, 0.4), inset 0 1px 0 rgba(0, 0, 0, 0.1);
+            border-color: #60a5fa;
+        }
+        .ygo-home-button i {
+            font-size: 22px; position: relative; z-index: 2;
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        .ygo-home-button .ygo-home-text {
+            position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%);
+            font-size: 10px; font-weight: 600; color: #3b82f6;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5); opacity: 0;
+            transition: opacity 0.3s ease; white-space: nowrap; pointer-events: none;
+        }
+        .ygo-home-button:hover .ygo-home-text { opacity: 1; }
+        @keyframes ygoIconGlow { 0% { text-shadow: 0 0 10px rgba(96, 165, 250, 0.5); } 100% { text-shadow: 0 0 15px rgba(96, 165, 250, 0.8), 0 0 25px rgba(59, 130, 246, 0.4); } }
+        @media (max-width: 768px) { .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; } .ygo-home-button i { font-size: 18px; } }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed; display: none; opacity: 0; padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.95); /* White popup */
+            border: 1px solid #fbbf24; /* Gold border */
+            border-radius: 0.75rem; color: #1e3a8a; /* Blue text */
+            max-width: 300px; z-index: 1000; pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px); font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif; color: #1e3a8a; font-weight: bold; font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats { font-family: 'Cinzel', serif; color: #1e3a8a; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Banner Header -->
+        <header class="banner-header text-center animate-fadeIn">
+            <canvas id="petal-canvas"></canvas>
+            <h1>Fleur Archetype</h1>
+            <p>The Knight's Bloom: Niche Engine, Meta-Defining Boss</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-content mb-4">I. Introduction: The Duality of Fleur</h2>
+                <p class="text-subtle">
+                    The "Fleur" archetype occupies a unique and paradoxical space within Yu-Gi-Oh! It's a small, mechanically disjointed series of cards that struggles on its own. Yet, it birthed one of the most dominant Synchro Monsters: <strong class="text-accent">Baronne de Fleur</strong> (currently Forbidden in TCG). This defines the archetype's story. While possessing an internal strategy, its main function became summoning a boss monster that other decks could make more easily. Historically boosted by banned cards like <strong class="text-accent">Crystron Halqifibrax</strong>, its intended mechanics lack the synergy for top-tier play due to mismatched Types and Attributes among its <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Fleur&stype=1&ctype=2&othercon=2" target="_blank" class="lore-link">core components</a>. This analysis explores the engine, its flaws, and why hybridization is key.
+                </p>
+            </div>
+        </section>
+
+        <!-- Card-by-Card Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-content mb-6 text-center heading-underline">II. Anatomy of the Floral Knights</h2>
+            <p class="text-subtle mb-8 text-center max-w-2xl mx-auto">
+                Understanding the "Fleur" strategy requires a granular analysis of each component.
+            </p>
+            <!-- Tuners -->
+            <div class="mb-8">
+                <h3 class="text-lg md:text-xl font-semibold text-content mb-4 ml-2">The Tuners: Foundation of Synchro Plays</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-4">
+                        <div id="fleur-synchron-img" class="card-image-container card-placeholder">Fleur Synchron</div>
+                        <div class="flex-1">
+                            <h4 class="text-md font-bold text-accent mb-1">Fleur Synchron</h4>
+                            <p class="text-sm text-subtle">Lvl 2 LIGHT Machine. Original Tuner, required for <strong class="text-accent">Chevalier</strong>. Floats into a small monster from hand upon Synchro Summon.</p>
+                        </div>
+                    </div>
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-4">
+                        <div id="necro-synchron-img" class="card-image-container card-placeholder">Necro Synchron</div>
+                        <div class="flex-1">
+                            <h4 class="text-md font-bold text-accent mb-1">Necro Synchron</h4>
+                            <p class="text-sm text-subtle">Lvl 2 DARK Machine. Core Tuner. Becomes "Fleur Synchron", modulates levels (+2), floats into <strong class="text-accent">Necro Fleur</strong> from Deck if used for a WIND Synchro.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Combo Engine -->
+            <div class="mb-8">
+                <h3 class="text-lg md:text-xl font-semibold text-content mb-4 ml-2">The Combo Engine: Path to Power</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-4">
+                        <div id="necro-fleur-img" class="card-image-container card-placeholder">Necro Fleur</div>
+                        <div class="flex-1">
+                            <h4 class="text-md font-bold text-accent mb-1">Necro Fleur</h4>
+                            <p class="text-sm text-subtle">Lvl 1 DARK Plant. Ignition switch. Summons <strong class="text-accent">Sorciere de Fleur</strong> from Deck when destroyed by card effect and sent to GY.</p>
+                        </div>
+                    </div>
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-4">
+                        <div id="sorciere-de-fleur-img" class="card-image-container card-placeholder">Sorciere de Fleur</div>
+                        <div class="flex-1">
+                            <h4 class="text-md font-bold text-accent mb-1">Sorciere de Fleur</h4>
+                            <p class="text-sm text-subtle">Lvl 8 DARK Spellcaster. Payoff for <strong class="text-accent">Necro Fleur</strong>. High ATK (2900), revives an opponent's monster (situational).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <!-- Extenders -->
+            <div class="mb-8">
+                <h3 class="text-lg md:text-xl font-semibold text-content mb-4 ml-2">Primary Extenders: Enabling and Continuing</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-4">
+                        <div id="sauge-de-fleur-img" class="card-image-container card-placeholder">Sauge de Fleur</div>
+                        <div class="flex-1">
+                            <h4 class="text-md font-bold text-accent mb-1">Sauge de Fleur</h4>
+                            <p class="text-sm text-subtle">Lvl 8 DARK Spellcaster. Enabler. Summons itself by destroying your cards (triggers <strong class="text-accent">Necro Fleur</strong>). Recycles to search <strong class="text-accent">Necro Fleur</strong>.</p>
+                        </div>
+                    </div>
+                     <div class="card p-4 flex flex-col md:flex-row items-center gap-4">
+                        <div id="fleuret-de-fleur-img" class="card-image-container card-placeholder">Fleuret de Fleur</div>
+                        <div class="flex-1">
+                            <h4 class="text-md font-bold text-accent mb-1">Fleuret de Fleur</h4>
+                            <p class="text-sm text-subtle">Equip Spell. Extender. Revives a Lvl 2 or lower monster (usually Tuner) from GY upon activation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <!-- Synchro Bosses -->
+            <div class="mb-8">
+                <h3 class="text-lg md:text-xl font-semibold text-content mb-4 ml-2">The Synchro Bosses: Ultimate Goal</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div class="card p-4 flex flex-col md:flex-row items-center gap-4">
+                        <div id="chevalier-de-fleur-img" class="card-image-container card-placeholder">Chevalier de Fleur</div>
+                        <div class="flex-1">
+                            <h4 class="text-md font-bold text-accent mb-1">Chevalier de Fleur</h4>
+                            <p class="text-sm text-subtle">Lvl 8 WIND Warrior. Mid-tier boss. Requires "Fleur Synchron". Negates one Spell/Trap during your turn. Stepping stone.</p>
+                        </div>
+                    </div>
+                     <div class="card p-4 flex flex-col md:flex-row items-center gap-4 bg-red-100 border-red-300"> {/* Highlight forbidden card */}
+                        <div id="baronne-de-fleur-img" class="card-image-container card-placeholder">Baronne de Fleur</div>
+                        <div class="flex-1">
+                            <h4 class="text-md font-bold text-red-600 mb-1">Baronne de Fleur <span class="text-red-500 text-sm font-semibold">(FORBIDDEN)</span></h4>
+                            <p class="text-sm text-red-700">Lvl 10 WIND Warrior. Ultimate boss (banned in TCG). Omni-negate (once while face-up), targeted destruction, self-recycling revive.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Direct Support -->
+            <div>
+                <h3 class="text-lg md:text-xl font-semibold text-content mb-4 ml-2">Direct Support: Bridging Gaps</h3>
+                 <div class="card p-4 flex flex-col md:flex-row items-center gap-4 max-w-lg mx-auto">
+                    <div id="spearholder-img" class="card-image-container card-placeholder">Noble Knight's Spearholder</div>
+                    <div class="flex-1">
+                        <h4 class="text-md font-bold text-accent mb-1">Noble Knight's Spearholder</h4>
+                        <p class="text-sm text-subtle">Lvl 2 LIGHT Warrior. Consistency tool. Tributes to search <strong class="text-accent">Fleuret de Fleur</strong>. Can make another monster "Fleur Synchron" and a Tuner.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Central Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-content mb-6 text-center heading-underline">III. The Central Engine: Synergies</h2>
+            <div class="card p-6 space-y-4">
+                 <div>
+                    <h3 class="text-lg font-bold text-accent">Primary Ignition: Sauge + Necro Fleur</h3>
+                    <p class="text-subtle">The core play: Activate <strong class="text-accent">Sauge de Fleur</strong> from hand, destroying a monster and <strong class="text-accent">Necro Fleur</strong> on field to summon Sauge. <strong class="text-accent">Necro Fleur</strong> triggers in GY to summon <strong class="text-accent">Sorciere de Fleur</strong> from Deck. This fragile combo (vulnerable to Ash, Called By, Crow) turns 2 cards into 2 Level 8s.</p>
+                </div>
+                 <div>
+                    <h3 class="text-lg font-bold text-accent">Necro Synchron: Swiss Army Knife</h3>
+                    <p class="text-subtle"><strong class="text-accent">Necro Synchron</strong> provides flexibility. It acts as "Fleur Synchron", modulates levels (+2) for easier Synchros (like Baronne), and crucially floats into <strong class="text-accent">Necro Fleur</strong> when used for a WIND Synchro, setting up or extending plays.</p>
+                </div>
+                 <div>
+                    <h3 class="text-lg font-bold text-accent">Search and Recovery</h3>
+                    <p class="text-subtle"><strong class="text-accent">Noble Knight's Spearholder</strong> searches <strong class="text-accent">Fleuret de Fleur</strong>. Sauge recycles a monster to add <strong class="text-accent">Necro Fleur</strong> back. Fleuret revives Tuners. Baronne (banned) offered powerful late-game recovery via its recycle effect.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Lines Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-content mb-6 text-center heading-underline">IV. Constructing the End Board</h2>
+             <p class="text-subtle mb-4 text-center">Pure Fleur lacks simple 1-2 card combos for its bosses, requiring specific 3+ card hands, making it inconsistent.</p>
+             <div class="card p-6">
+                 <h3 class="text-lg font-bold text-accent mb-3">Example Combo Line (Resource Intensive)</h3>
+                 <p class="text-subtle mb-4"><strong>Requires:</strong> <strong class="text-accent">Noble Knight's Spearholder</strong> + <strong class="text-accent">Sauge de Fleur</strong> + another monster.</p>
+                 <ol class="list-decimal list-inside space-y-2 text-subtle">
+                     <li>Normal Summon <strong class="text-accent">Spearholder</strong>.</li>
+                     <li>Tribute <strong class="text-accent">Spearholder</strong> -> Add <strong class="text-accent">Fleuret de Fleur</strong>.</li>
+                     <li>Special Summon the 3rd monster. Activate <strong class="text-accent">Sauge de Fleur</strong> from hand -> Target 3rd monster + 1 other card -> Destroy them -> Summon <strong class="text-accent">Sauge</strong>.</li>
+                     <li>Activate <strong class="text-accent">Fleuret de Fleur</strong> -> Target <strong class="text-accent">Spearholder</strong> in GY -> Summon <strong class="text-accent">Spearholder</strong>.</li>
+                     <li>Activate <strong class="text-accent">Spearholder</strong> effect -> Target <strong class="text-accent">Sauge</strong> -> Sauge becomes "Fleur Synchron" & a Tuner.</li>
+                     <li>Synchro Summon: Lvl 8 Tuner (<strong class="text-accent">Sauge</strong>) + Lvl 2 non-Tuner (<strong class="text-accent">Spearholder</strong>) = <strong class="text-red-600">Baronne de Fleur</strong> <span class="text-red-500 text-sm font-semibold">(FORBIDDEN)</span>.</li>
+                 </ol>
+                  <p class="text-subtle mt-4">This highlights the need for multiple specific cards, pushing players towards hybrid builds.</p>
+             </div>
+        </section>
+
+        <!-- Hybrid Builds Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+             <h2 class="text-xl md:text-3xl font-bold text-content mb-6 text-center heading-underline">V. Beyond the Garden: Hybrid Builds</h2>
+             <div class="card p-6 space-y-4">
+                 <div>
+                    <h3 class="text-lg font-bold text-accent">Noble Knight Alliance</h3>
+                    <p class="text-subtle">The best pairing. Shared Warrior type for Synchros. <strong class="text-accent">Spearholder</strong> bridges the archetypes. Use the consistent Infernoble engine to build a board, then add the compact Fleur package (<strong class="text-accent">Necro Synchron</strong>, <strong class="text-accent">Fleuret</strong>, <strong class="text-accent">Spearholder</strong>) to summon Baronne (pre-ban) or other Synchros.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-accent">Broader Synchron Family</h3>
+                    <p class="text-subtle">Leverages generic Synchron support (<strong class="text-accent">Junk Speeder</strong>, <strong class="text-accent">Assault Synchron</strong>, <strong class="text-accent">Revolution Synchron</strong>). Focuses on explosive Synchro spam rather than the slow Necro Fleur engine, aiming for multiple Synchro bosses.</p>
+                </div>
+                 <div>
+                    <h3 class="text-lg font-bold text-accent">Clarification: Not Dogmatika</h3>
+                    <p class="text-subtle"><strong class="text-accent">Dogmatika Fleurdelis, the Knighted</strong> has no synergy with this archetype and restricts Extra Deck summoning.</p>
+                </div>
+             </div>
+        </section>
+
+         <!-- Strategic Blueprint Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+             <h2 class="text-xl md:text-3xl font-bold text-content mb-6 text-center heading-underline">VI. Strategic Blueprint: Deck Construction</h2>
+             <div class="card p-6 space-y-4">
+                 <div>
+                    <h3 class="text-lg font-bold text-accent">Sample Concept: "Infernoble Fleur"</h3>
+                    <p class="text-subtle">Focus on Infernoble core. Minimal Fleur package: 3 <strong class="text-accent">Necro Synchron</strong>, 1 <strong class="text-accent">Fleur Synchron</strong>, 1-2 <strong class="text-accent">Necro Fleur</strong>, 1 <strong class="text-accent">Sauge</strong>, 1 <strong class="text-accent">Fleuret</strong>, 1-2 <strong class="text-accent">Spearholder</strong>. Fill remaining slots with Infernobles, Warrior support (<strong class="text-accent">ROTA</strong>), and hand traps.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-accent">Identifying Weaknesses</h3>
+                    <p class="text-subtle">Protect GY effects (Necro Fleur, Tuners). Normal Summon is vulnerable to negation (Veiler, Imperm). Bait interactions before committing key pieces.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-accent">Grind Game (Pre-Ban)</h3>
+                     <p class="text-subtle">Historically, Baronne's self-recycle effect was key. Returning it to revive <strong class="text-accent">Necro Synchron</strong> or <strong class="text-accent">Spearholder</strong> restarted the engine, offering recurring value unlike decks just using it as a generic boss.</p>
+                </div>
+             </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.7s;">
+            <h2 class="text-xl md:text-3xl font-bold text-content mb-6 text-center heading-underline">TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-subtle mb-4 text-center">
+                    <strong class="text-red-600 font-bold">MAJOR IMPACT:</strong> The archetype's competitive viability is heavily impacted by the banlist.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4 bg-red-100 border-red-300">
+                        <h4 class="text-lg font-bold text-red-600 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-red-700">
+                            <li><strong class="text-red-600">Baronne de Fleur (0 copies)</strong> - Archetype's intended ultimate boss monster</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-600 mb-2">Unrestricted & Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-subtle">
+                           <li>Most core "Fleur" engine cards (3 copies): <strong class="text-accent">Necro Synchron</strong>, <strong class="text-accent">Necro Fleur</strong>, <strong class="text-accent">Sauge de Fleur</strong>, <strong class="text-accent">Fleuret de Fleur</strong>, <strong class="text-accent">Spearholder</strong>, <strong class="text-accent">Chevalier de Fleur</strong>.</li>
+                           <li><strong class="text-accent">Reinforcement of the Army</strong> (Limited to 1)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-100 border-l-4 border-red-500 rounded">
+                    <p class="text-sm text-red-700"><strong>Meta Implications:</strong> With <strong class="text-red-600">Baronne de Fleur</strong> forbidden, the primary reason to play the "Fleur" engine is removed. The remaining cards lack the power and consistency to function effectively on their own or as a significant package in hybrid builds compared to other available engines.</p>
+                </div>
+            </div>
+        </section>
+
+</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             // --- Petal Animation ---
+            const canvas = document.getElementById('petal-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let petals = [];
+                const numPetals = 30;
+                const petalColors = ['rgba(251, 191, 36, 0.7)', 'rgba(255, 255, 255, 0.8)', 'rgba(191, 219, 254, 0.6)']; // Gold, White, Light Blue
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Petal {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 5 + 3;
+                        this.speedX = Math.random() * 1 - 0.5;
+                        this.speedY = Math.random() * 1 + 0.5; // Mostly fall down
+                        this.color = petalColors[Math.floor(Math.random() * petalColors.length)];
+                        this.spin = Math.random() * Math.PI;
+                        this.spinSpeed = Math.random() * 0.05 - 0.025;
+                    }
+
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        this.spin += this.spinSpeed;
+
+                        if (this.y > canvas.height + this.size) {
+                            this.y = -this.size;
+                            this.x = Math.random() * canvas.width;
+                        }
+                        if (this.x > canvas.width + this.size) this.x = -this.size;
+                        if (this.x < -this.size) this.x = canvas.width + this.size;
+                    }
+
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.spin);
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        // Simple oval shape for petal
+                        ctx.ellipse(0, 0, this.size / 2, this.size, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+
+                function initPetals() {
+                    petals = [];
+                    for (let i = 0; i < numPetals; i++) {
+                        petals.push(new Petal());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    petals.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initPetals();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initPetals();
+                });
+            }
+
+            // --- Card Loading ---
+             CardLoader.loadCards({
+                'fleur-synchron-img': 'Fleur Synchron',
+                'necro-synchron-img': 'Necro Synchron',
+                'necro-fleur-img': 'Necro Fleur',
+                'sorciere-de-fleur-img': 'Sorciere de Fleur',
+                'sauge-de-fleur-img': 'Sauge de Fleur',
+                'fleuret-de-fleur-img': 'Fleuret de Fleur',
+                'chevalier-de-fleur-img': 'Chevalier de Fleur',
+                'baronne-de-fleur-img': 'Baronne de Fleur',
+                'spearholder-img': "Noble Knight's Spearholder",
+                // Add any other specific card containers if needed
+            });
+        });
+    </script>
+</body>
+</html>

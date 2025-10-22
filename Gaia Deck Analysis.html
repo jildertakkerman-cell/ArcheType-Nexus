@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaia Knight Archetype</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Card Loader Script (assuming path from other files) -->
+    <script src="assets/js/card-loader.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #101827; /* Dark Navy Blue */
+            color: #dbeafe; /* Light blue-white text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1F2937; /* Dark Slate Gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #374151; /* Cool Gray border */
+        }
+        .combo-step-card,
+        .pro-con-card {
+            background-color: #374151; /* Cool Gray */
+            border: 1px solid #4B5563;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        /* Card placeholder styling */
+        .card-placeholder {
+            background-color: #1F2937;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1F2937;
+            border: 1px dashed #4B5563;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        
+        /* Gaia Theme Colors */
+        .text-accent { color: #FBBF24; } /* Amber/Gold */
+        .arrow-color { color: #FBBF24; }
+        .heading-underline {
+            border-bottom: 2px solid #FBBF24;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #FBBF24;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #FBBF24;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER (Adapted from Battlewasp) --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #101827;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #374151;
+        }
+
+        #charge-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(16, 24, 39, 0.4) 0%, rgba(16, 24, 39, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif; /* Knightly font */
+        }
+        
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(16, 24, 39, 0.95); /* Dark Navy */
+            border: 1px solid #FBBF24; /* Gold border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #FBBF24;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #FBBF24;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="charge-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Gaia the Fierce Knight</h1>
+            <p class="text-lg md:text-xl text-amber-200">A Strategic Analysis of a Modern OTK Doctrine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: The Charging Knight's Modern Assault</h2>
+                <p class="text-blue-200">
+                    From its origins as a Level 7 Normal Monster, Gaia The Fierce Knight has galloped through the game's history, evolving from a nostalgic icon into a highly specialized and 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Gaia%20The%20Fierce%20Knight&stype=2" target="_blank" class="lore-link">aggressive modern archetype</a>.
+                    The contemporary "Gaia Knight" strategy is a testament to focused card design, transforming a simple warrior into the engine of a potent One-Turn Kill (OTK) deck. Its identity is built upon a "go-second" philosophy, aiming to dismantle an opponent's board and reduce their Life Points to zero in a single, decisive Battle Phase.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Royal Armory Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Royal Armory</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main-Deck Knights -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-chess-knight text-4xl text-amber-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Main-Deck Knights</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gaia the Magical Knight</h4>
+                            <p class="text-sm text-blue-200">The unequivocal heart of the deck and premier combo starter. It Normal Summons itself for free and then Special Summons a Level 5 Dragon from the hand or GY.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gaia the Fierce Knight Origin</h4>
+                            <p class="text-sm text-blue-200">A combo extender that can Special Summon itself by sending a Level 5+ monster (like <strong class="text-accent">Cursed Dragon</strong>) from hand to GY, setting up the main combo.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Dragons & Spells -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dragon text-4xl text-amber-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Dragons & Decisive Weaponry</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Curse of Dragon, the Cursed Dragon</h4>
+                            <p class="text-sm text-blue-200">The essential partner. When summoned, it searches any Spell/Trap listing "Gaia the Dragon Champion," primarily <strong class="text-accent">Spiral Fusion</strong>.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Spiral Fusion</h4>
+                            <p class="text-sm text-blue-200">The deck's ultimate win condition. Fuses into "Gaia the Dragon Champion," granting it <strong class="text-accent">+2600 ATK</strong> and a <strong class="text-accent">second attack on a monster</strong>.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Galloping Gaia</h4>
+                            <p class="text-sm text-blue-200">The Field Spell and consistency engine. It searches either <strong class="text-accent">Gaia</strong> or a Level 5 Dragon, assembling your two combo pieces.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Foundational OTK Combo</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The standard OTK sequence is remarkably concise, often requiring only two specific cards in hand to initiate.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="gaia-magical-knight-img" class="card-image-container flex-shrink-0 card-placeholder">Gaia the Magical Knight</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1F2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Charge</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon <strong class="text-accent">Gaia the Magical Knight</strong> using its inherent effect. Activate its on-summon effect.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cursed-dragon-img" class="card-image-container flex-shrink-0 card-placeholder">Curse of Dragon, the Cursed Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1F2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon & Search</h3>
+                            </div>
+                            <p class="text-blue-200">Special Summon <strong class="text-accent">Curse of Dragon, the Cursed Dragon</strong> from your hand (or GY). Its effect triggers, adding <strong class="text-accent">Spiral Fusion</strong> from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="gaia-magical-knight-of-dragons-img-combo" class="card-image-container flex-shrink-0 card-placeholder">Gaia the Magical Knight of Dragons</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1F2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Fuse for the Champion</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent">Spiral Fusion</strong>, fusing the two monsters into <strong class="text-accent">Gaia the Magical Knight of Dragons</strong>. It gains 2600 ATK (total <strong class="text-accent">5200 ATK</strong>) and can make a second attack on a monster.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Endboard" is the OTK</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The Gaia archetype rejects the concept of a traditional, defensive endboard. Its "endboard" is not a state of the field, but a state of the game: the opponent's Life Points being reduced to zero. The entire deck is built to achieve this singular outcome.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Primary OTK Tool -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Gaia the Magical Knight of Dragons</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="gaia-magical-knight-of-dragons-img-endboard" class="card-image-container card-placeholder">Gaia the Magical Knight of Dragons</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Initial ATK (with Spiral Fusion):</strong> 5200</li>
+                        <li><strong class="text-accent">Effect:</strong> Gains 2600 ATK (to 7800) after destroying a monster by battle.</li>
+                        <li><strong class="text-accent">Effect:</strong> Can make a second attack on a monster.</li>
+                        <li><strong class="text-accent">Total Damage (vs. 2 monsters):</strong> 8000+</li>
+                    </ul>
+                </div>
+                <!-- Secondary OTK Tool -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Sky Galloping Gaia the Dragon Champion</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="sky-galloping-gaia-img" class="card-image-container card-placeholder">Sky Galloping Gaia the Dragon Champion</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Initial ATK (with Spiral Fusion):</strong> 5200</li>
+                        <li><strong class="text-accent">On-Summon:</strong> Searches <strong class="text-accent">Spiral Spear Strike</strong>.</li>
+                        <li><strong class="text-accent">Utility:</strong> <strong class="text-accent">Spiral Spear Strike</strong> grants piercing damage, ensuring lethal even through Defense Position monsters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Consistency:</strong> The core combo is searchable via <strong class="text-accent">Galloping Gaia</strong> and requires only two cards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-green-300">Explosive OTK Potential:</strong> <strong class="text-accent">Spiral Fusion</strong> creates a boss monster that often exceeds 8000 damage on its own.</li>
+                        <li><span class="pro-icon"><i class="fas fa-boxes"></i></span> <strong class="text-green-300">Compact Engine:</strong> The small engine size leaves 20-25+ deck slots for generic "go-second" board breakers.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-link"></i></span> <strong class="text-red-300">Linear Choke Point:</strong> The entire combo hinges on the on-summon effect of <strong class="text-accent">Gaia the Magical Knight</strong>. A single <strong class="text-accent">Ash Blossom</strong> or <strong class="text-accent">Impermanence</strong> can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-red-300">No "Going First" Plan:</strong> The deck has almost no defensive capabilities and struggles immensely if forced to go first.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Mass Negation:</strong> Cards like <strong class="text-accent">Dark Ruler No More</strong> are a problem, but the deck's main vulnerability is to negation *before* it can even play.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Support & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent">Board Breakers:</strong> The deck is *reliant* on cards like <strong class="text-accent">Lightning Storm</strong>, <strong class="text-accent">Raigeki</strong>, <strong class="text-accent">Dark Ruler No More</strong>, and <strong class="text-accent">Forbidden Droplet</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-rocket"></i></span> <strong class="text-accent">Kaijus:</strong> Essential for removing singular, indestructible boss monsters that the Gaia fusion can't handle.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-magic"></i></span> <strong class="text-accent">Black Luster Soldier:</strong> Synergizes via <strong class="text-accent">Charging Gaia</strong> and <strong class="text-accent">Arisen Gaia</strong>, allowing for hybrid builds.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The Gaia Knight archetype operates at full power in the current TCG format:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Gaia the Magical Knight (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Curse of Dragon, the Cursed Dragon (3 copies)</strong></li>
+                            <li>All Main Deck "Gaia" monsters</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Support</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Spiral Fusion (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Galloping Gaia (3 copies)</strong></li>
+                            <li>All Extra Deck "Gaia" Fusion Monsters</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With complete archetype freedom, Gaia Knight can operate its full-power OTK strategy. The deck's success is not limited by the banlist, but rather by its "go-second" nature and vulnerability to common hand traps.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Script for Banner Animation and Card Loader -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GAIA CHARGE BANNER ANIMATION ---
+            const canvas = document.getElementById('charge-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                let particles = [];
+                
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedX = (Math.random() * 3) + 1; // Faster "charge"
+                        this.speedY = (Math.random() * 0.4) - 0.2; // Slight vertical drift
+                        this.len = Math.random() * 20 + 15; // Longer trails
+                        this.color = `rgba(251, 191, 36, ${Math.random() * 0.5 + 0.3})`; // Gold color
+                    }
+
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.x - this.len > canvas.width) {
+                            this.x = 0 - this.len;
+                            this.y = Math.random() * canvas.height;
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.x - this.len, this.y - this.speedY * 3);
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 2;
+                        ctx.shadowColor = this.color;
+                        ctx.shadowBlur = 10;
+                        ctx.stroke();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    // Fewer particles, but faster and longer
+                    const particleCount = (canvas.width * canvas.height) / 15000; 
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    // Motion blur effect
+                    ctx.fillStyle = 'rgba(16, 24, 39, 0.15)'; // Dark navy fade
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.shadowBlur = 0; // Reset shadow blur for rect
+
+                    particles.forEach(particle => {
+                        particle.update();
+                        particle.draw();
+                    });
+
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Assumes CardLoader is loaded from assets/js/card-loader.js
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'gaia-magical-knight-img': 'Gaia the Magical Knight',
+                    'cursed-dragon-img': 'Curse of Dragon, the Cursed Dragon',
+                    'gaia-magical-knight-of-dragons-img-combo': 'Gaia the Magical Knight of Dragons',
+                    'gaia-magical-knight-of-dragons-img-endboard': 'Gaia the Magical Knight of Dragons',
+                    'sky-galloping-gaia-img': 'Sky Galloping Gaia the Dragon Champion'
+                });
+            } else {
+                console.error('CardLoader is not defined. Please check the path to card-loader.js');
+            }
+        });
+    </script>
+</body>
+</html>
