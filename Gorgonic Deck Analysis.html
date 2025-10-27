@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gorgonic Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in assets/js/ as seen in other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1c1c1c; /* Dark Stone Grey */
+            color: #e0e0e0; /* Light Grey Text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b2b2b; /* Darker Stone */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a3a4a; /* Stony Purple Border */
+        }
+        .combo-step-card {
+            background-color: #3a3a3a; /* Medium Stone */
+            border: 1px solid #6a0dad; /* Deep Purple Border */
+        }
+        .pro-con-card {
+            background-color: #3a3a3a;
+            border: 1px solid #6a0dad;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3a3a3a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 128px; /* <-- Reduced height from 250px */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3a3a3a;
+            border: 1px dashed #6a0dad;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #9370DB; } /* Medium Purple */
+        .arrow-color { color: #9370DB; }
+        .heading-underline {
+            border-bottom: 2px solid #9370DB;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #9370DB;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #9370DB;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #9370DB;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1c1c1c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a3a4a;
+        }
+
+        #stone-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(28, 28, 28, 0.75); /* Dark Stone overlay */
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Home Button Styles (from other files) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(28, 28, 28, 0.95); /* Dark Stone */
+            border: 1px solid #9370DB; /* Purple border */
+            border-radius: 0.75rem;
+            color: #e0e0e0;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif;
+            color: #9370DB; /* Purple title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #9370DB;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="stone-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Gorgonic</h1>
+            <p class="text-lg md:text-xl text-purple-300">Petrification, Pulverization, and Parasitic Power</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: The Gorgonic Paradox</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">Gorgonic</strong> archetype is a fascinating case study from the Zexal era. It's less a self-sufficient strategy and more a specialized, "parasitic" engine engineered to summon its singular, powerful boss monster: <strong class="text-accent font-bold">Gorgonic Guardian</strong>. This creates a strategic paradox where an exceptionally potent Extra Deck monster is tethered to a main deck core that lacks modern searchers, protection, or recursion.
+                </p>
+                <p class="text-gray-300 mt-2">
+                    This analysis will dissect the individual components of the 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Gorgonic&stype=1" target="_blank" class="lore-link">Gorgonic toolkit</a>, 
+                    explore the external engines that grant it functionality, detail its core combo lines, and provide a holistic analysis of its strengths and inherent weaknesses.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Gorgonic Core Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Anatomy of an Engine: The Gorgonic Core</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">
+                The canonical "Gorgonic" series consists of five cards: four main deck Effect Monsters and one Rank 3 Xyz Monster. These components are focused exclusively on assembling the materials for an Xyz Summon.
+            </p>
+            
+            <!-- Boss Monster -->
+            <div class="card p-6 mb-8">
+                <h3 class="text-xl font-bold text-white mb-4 text-center">The Boss Monster: Gorgonic Guardian</h3>
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div id="guardian-img-container" class="card-image-container card-placeholder">Gorgonic Guardian</div>
+                    <div class="flex-1">
+                        <p class="text-gray-300 mb-4">The centerpiece and sole objective of the archetype. Its strategic value is derived from two powerful, synergistic effects that provide potent monster control:</p>
+                        <ul class="list-disc list-inside space-y-2 text-gray-300">
+                            <li><strong class="text-accent">Quick Effect:</strong> Detach 1 material to target an opponent's face-up monster; its ATK becomes 0 and its effects are negated.</li>
+                            <li><strong class="text-accent">Ignition Effect:</strong> Once per turn, target and destroy any monster on the field with 0 ATK.</li>
+                        </ul>
+                        <p class="text-gray-300 mt-4">As a Quick Effect, its negation can interrupt an opponent's key plays. It can even be activated during the Damage Step, a crucial tactical advantage.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Deck Enablers -->
+            <div class="card p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-hammer-crash text-4xl text-purple-300 mr-4"></i>
+                    <h3 class="text-xl font-bold text-white">The Main Deck Enablers</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">Gorgonic Gargoyle</h4>
+                        <p class="text-sm text-gray-300">The primary extender. Special Summons itself from the hand when you Normal Summon a Rock monster. This provides the most straightforward path to your boss monster.</p>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">Gorgonic Golem</h4>
+                        <p class="text-sm text-gray-300">A standard Level 3 body. If destroyed by battle, the attacker's ATK becomes 0, setting up a play for your Guardian.</p>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">Gorgonic Cerberus</h4>
+                        <p class="text-sm text-gray-300">A level modulator. On Normal Summon, it can change all Rock monsters you control to Level 3, allowing for flexibility with non-Level 3 Rock monsters.</p>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">Gorgonic Ghoul</h4>
+                        <p class="text-sm text-gray-300">A Level 1 monster focused on Rank 1 or Link Summons. Its lack of synergy with the Rank 3 goal often leads to its exclusion from optimized builds.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- External Engines Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Forging a Functional Deck: External Engines</h2>
+             <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">
+                Given its severe limitations, a functional Gorgonic deck must import powerful engines from other archetypes.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Chronomaly -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center md:text-left">The Chronomaly Engine</h3>
+                    <div class="flex flex-col sm:flex-row gap-4 items-center">
+                        <div id="bones-img-container" class="card-image-container card-placeholder">Chronomaly Crystal Bones</div>
+                        <div class="flex-1">
+                            <p class="text-gray-300 mb-2">The classic pairing, using <strong class="text-accent">Chronomaly Crystal Bones</strong> and <strong class="text-accent">Chronomaly Crystal Skull</strong>.</p>
+                            <p class="text-gray-300">Crystal Bones can Special Summon itself and then revive Crystal Skull, providing an instant Rank 3 Xyz Summon for a go-second strategy.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Adamancipator -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center md:text-left">The Adamancipator Engine</h3>
+                    <div class="flex flex-col sm:flex-row gap-4 items-center">
+                        <div id="researcher-img-container" class="card-image-container card-placeholder">Adamancipator Researcher</div>
+                        <div class="flex-1">
+                            <p class="text-gray-300 mb-2">The modern powerhouse. Tuners like <strong class="text-accent">Adamancipator Researcher</strong> can excavate and Special Summon Rock monsters.</p>
+                            <p class="text-gray-300">This transforms the deck into a versatile combo deck capable of making powerful Synchros alongside Gorgonic Guardian.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Reptilianne -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center md:text-left">The Reptilianne Engine</h3>
+                    <div class="flex flex-col sm:flex-row gap-4 items-center">
+                        <div id="echidna-img-container" class="card-image-container card-placeholder">Reptilianne Echidna</div>
+                        <div class="flex-1">
+                            <p class="text-gray-300 mb-2">An unorthodox synergy. Reptilianne monsters thrive on 0-ATK monsters. <strong class="text-accent">Reptilianne Echidna</strong> can search based on 0-ATK monsters.</p>
+                            <p class="text-gray-300">Gorgonic Guardian is the perfect enabler for this strategy, pivoting the deck into a unique control build.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Executing the Game Plan: Foundational Combo</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">This is the most direct combo available to the archetype using only its in-theme cards.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="golem-img-container" class="card-image-container flex-shrink-0 card-placeholder">Gorgonic Golem</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b2b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Normal Summon</h3>
+                            </div>
+                            <p class="text-gray-300">Normal Summon <strong class="text-accent">Gorgonic Golem</strong> (or any Level 3 Rock monster). You must have <strong class="text-accent">Gorgonic Gargoyle</strong> in your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="gargoyle-img-container" class="card-image-container flex-shrink-0 card-placeholder">Gorgonic Gargoyle</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b2b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Activate Extender</h3>
+                            </div>
+                            <p class="text-gray-300">Activate the effect of <strong class="text-accent">Gorgonic Gargoyle</strong> in your hand to Special Summon it to the field.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="guardian-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Gorgonic Guardian</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b2b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon the Guardian</h3>
+                            </div>
+                            <p class="text-gray-300">Overlay the two Level 3 Rock monsters (Gargoyle and Golem) to Xyz Summon <strong class="text-accent">Gorgonic Guardian</strong> with two materials.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Target Endboards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Basic Endboard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Basic Endboard</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="guardian-end-img-container" class="card-image-container card-placeholder">Gorgonic Guardian</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent">Gorgonic Guardian:</strong> On-field with two materials, providing a reusable Quick Effect negate and destruction.</li>
+                        <li><strong class="text-accent">Set Backrow:</strong> Supported by one or more Set Spell/Trap cards (e.g., Infinite Impermanence) to protect it and disrupt further.</li>
+                    </ul>
+                </div>
+                <!-- Optimal Endboard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Optimal Endboard (Adamancipator)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dragite-img-container" class="card-image-container card-placeholder">Adamancipator Risen - Dragite</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent">Adamancipator Risen - Dragite:</strong> Provides a powerful Spell/Trap negate.</li>
+                        <li><strong class="text-accent">Gorgonic Guardian:</strong> Provides the monster negate and removal.</li>
+                        <li><strong class="text-accent">Gallant Granite:</strong> Searches for a follow-up play (like another extender or <strong class="text-red-400">Block Dragon</strong> if it were legal).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Strategic Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">Potent Disruption:</strong> Gorgonic Guardian's Quick Effect is an incredibly powerful and reusable form of control.</li>
+                        <li><span class="pro-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-green-400">Unorthodox Synergies:</strong> Its ATK reduction enables creative strategies with archetypes like Reptilianne.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400">Generic Support:</strong> Can leverage the best generic Rock support in the game, like <strong class="text-accent">Gallant Granite</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400">Incomplete Archetype:</strong> Fundamentally lacks in-theme searchers, protection, and recursion.</li>
+                        <li><span class="con-icon"><i class="fas fa-heart-broken"></i></span> <strong class="text-red-400">Fragile Combos:</strong> Highly susceptible to a single hand trap (e.g., Ash Blossom, Infinite Impermanence) on its Normal Summon or extender.</li>
+                        <li><span class="con-icon"><i class="fas fa-link"></i></span> <strong class="text-red-400">Engine Reliant:</strong> The deck's power level is entirely dependent on the strength of the external engine it incorporates.</li>
+                    </ul>
+                </div>
+                <!-- Key Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="neutral-icon"><i class="fas fa-search"></i></span> <strong class="text-accent">Gallant Granite:</strong> Rank 4 Xyz that searches any Rock monster, dramatically improving consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Block Dragon (BANNED):</strong> A historically powerful extender that could search 3 Rock monsters. Its banning severely hurt Rock-combo strategies.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-crane"></i></span> <strong class="text-accent">Crane Crane:</strong> A one-card Rank 3 Xyz enabler that revives a Level 3 monster from the GY on Normal Summon.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The Gorgonic archetype operates with a mixed status: while its own cards are fully available, its most powerful historical support is <strong class="text-red-500 font-bold">Forbidden</strong>.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-400">All "Gorgonic" monsters (3 copies each)</strong></li>
+                            <li>Gorgonic Guardian, Gargoyle, and Golem</li>
+                            <li><strong class="text-green-400">Adamancipator Researcher (3 copies)</strong></li>
+                            <li><strong class="text-green-400">Gallant Granite (3 copies)</strong></li>
+                            <li><strong class="text-green-400">Chronomaly Crystal Bones (3 copies)</strong></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Block Dragon (0 copies)</strong> - Essential searcher and resource engine for any Rock combo deck.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The "Gorgonic" archetype itself is at full power. However, the banning of <strong class="text-accent">Block Dragon</strong> removes the explosive, high-ceiling potential of its Adamancipator variant, forcing the deck to rely on less powerful, more linear combo lines.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GORGONIC STONE CRACK ANIMATION ---
+            const canvas = document.getElementById('stone-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let cracks = [];
+                const maxCracks = 30;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Crack {
+                    constructor(x, y) {
+                        this.x = x || Math.random() * canvas.width;
+                        this.y = y || Math.random() * canvas.height;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 0.5 + 0.2;
+                        this.life = Math.random() * 200 + 100;
+                        this.maxLength = Math.random() * 10 + 5;
+                        this.points = [{x: this.x, y: this.y}];
+                    }
+
+                    update() {
+                        this.life--;
+                        if (this.points.length < this.maxLength) {
+                            this.angle += (Math.random() - 0.5) * 0.9;
+                            const lastPoint = this.points[this.points.length - 1];
+                            const newX = lastPoint.x + Math.cos(this.angle) * this.speed;
+                            const newY = lastPoint.y + Math.sin(this.angle) * this.speed;
+                            
+                            if (newX > 0 && newX < canvas.width && newY > 0 && newY < canvas.height) {
+                                this.points.push({ x: newX, y: newY });
+                            } else {
+                                this.life = 0; // Kill crack if it goes off-screen
+                            }
+                        }
+                        
+                        if (this.life <= 0 && cracks.length < maxCracks) {
+                            // Spawn a new crack
+                            if (Math.random() > 0.1) {
+                                const forkPoint = this.points[Math.floor(Math.random() * this.points.length)];
+                                if(forkPoint) {
+                                    cracks.push(new Crack(forkPoint.x, forkPoint.y));
+                                }
+                            }
+                             // Reset this crack
+                            Object.assign(this, new Crack());
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.moveTo(this.points[0].x, this.points[0].y);
+                        for (let i = 1; i < this.points.length; i++) {
+                            ctx.lineTo(this.points[i].x, this.points[i].y);
+                        }
+                        ctx.strokeStyle = `rgba(147, 112, 219, ${Math.min(0.3, this.life / 100)})`; // Faint purple
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+
+                function init() {
+                    cracks = [];
+                    for (let i = 0; i < maxCracks; i++) {
+                        cracks.push(new Crack());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    cracks.forEach(crack => {
+                        crack.update();
+                        crack.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'guardian-img-container': 'Gorgonic Guardian',
+                'bones-img-container': 'Chronomaly Crystal Bones',
+                'researcher-img-container': 'Adamancipator Researcher',
+                'echidna-img-container': 'Reptilianne Echidna',
+                'golem-img-container': 'Gorgonic Golem',
+                'gargoyle-img-container': 'Gorgonic Gargoyle',
+                'guardian-combo-img-container': 'Gorgonic Guardian',
+                'guardian-end-img-container': 'Gorgonic Guardian',
+                'dragite-img-container': 'Adamancipator Risen - Dragite'
+            });
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goyo Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      IMPORTANT: Assumes card-loader.js is in 'assets/js/card-loader.js'
+      Please adjust this path if it is incorrect in your file structure.
+    -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1c1a0d; /* Dark earthy brown */
+            color: #f0f0e6; /* Off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2e2b1a; /* Dark slate/brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d2b18; /* Muted red-brown border */
+        }
+        .combo-step-card {
+            background-color: #3a3622; /* Lighter brown */
+            border: 1px solid #5a4a3a;
+        }
+        .pro-con-card {
+            background-color: #3a3622;
+            border: 1px solid #5a4a3a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3a3622;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            /* min-height: 250px; */ /* <--- REMOVED THIS LINE */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3a3622;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ef4444; } /* Siren Red */
+        .arrow-color { color: #ef4444; }
+        .heading-underline {
+            border-bottom: 2px solid #ef4444;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ef4444;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ef4444;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- New Goyo "Sector Security" Animated Banner --- */
+        .banner {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(45deg, #1a1633, #0c0a1a);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #4d2b18;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: content-appear 1s ease-out 0.5s forwards;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 2.5rem;
+            color: #e0e7ff;
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.5), 0 0 15px rgba(59, 130, 246, 0.3);
+            letter-spacing: 0.1em;
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #c7d2fe;
+        }
+        
+        /* Police light effects */
+        .banner::before, .banner::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            opacity: 0.3;
+            z-index: 1;
+        }
+        .banner::before {
+            left: -50%;
+            background: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.6) 0%, rgba(239, 68, 68, 0) 70%);
+            animation: sweep-red 4s linear infinite;
+        }
+        .banner::after {
+            right: -50%;
+            background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%);
+            animation: sweep-blue 4s linear infinite 2s; /* 2s delay */
+        }
+
+        @keyframes content-appear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes sweep-red {
+            0% { left: -50%; opacity: 0.3; }
+            50% { left: 100%; opacity: 0.8; }
+            51% { opacity: 0; }
+            100% { left: 100%; opacity: 0; }
+        }
+        @keyframes sweep-blue {
+            0% { right: -50%; opacity: 0.3; }
+            50% { right: 100%; opacity: 0.8; }
+            51% { opacity: 0; }
+            100% { right: 100%; opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+
+        /* Home Button (Copied from other files) */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+        }
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup (Required by card-loader.js) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(28, 26, 13, 0.95); /* Themed background */
+            border: 1px solid #ef4444; /* Accent color border */
+            border-radius: 0.75rem;
+            color: #f0f0e6;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #ef4444; /* Accent color */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    <!-- Card Popup Container -->
+    <div id="card-popup"></div>
+
+<div classT="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="banner-content">
+                    <h1 class="banner-title">Goyo</h1>
+                    <p class="banner-subtitle">Sector Security Analysis</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-yellow-100">
+                    The history of the <a href="#armory" class="lore-link">"Goyo" series</a> is, in essence, the history of its progenitor: <strong class="text-accent font-bold">Goyo Guardian</strong>. Released in 2008, it was a format-defining force with high ATK and a devastating monster-stealing effect. This dominance led to its banning and an eventual errata, changing its requirement to an EARTH Tuner.
+                </p>
+                <p class="text-yellow-100 mt-4">
+                    This historical context frames the central challenge of the "Goyo" series. It is an archetype in name only, consisting entirely of Extra Deck monsters with no Main Deck support. A "Goyo" deck cannot function on its own; it is a specialized toolkit of battle-oriented monsters that must be grafted onto a separate "host" engine to be summoned.
+                </p>
+            </div>
+        </section>
+
+        <!-- Card-by-Card Analysis Section -->
+        <section id="armory" class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Goyo Armory</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">A granular analysis of each individual member of the series. Each monster serves a distinct, albeit highly specialized, role.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Goyo Guardian -->
+                <div class="card p-6">
+                    <div class="flex items-start gap-4">
+                        <div id="goyo-guardian-img" class="card-image-container flex-shrink-0 w-24 card-placeholder">Goyo Guardian</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Goyo Guardian</h3>
+                            <p class="text-yellow-100 mb-2"><strong>Level 6 Synchro</strong></p>
+                            <p class="text-yellow-100 text-sm">The primary beatstick. Its 2800 ATK is formidable, and it steals any monster it destroys by battle. Its modern limitation is the required EARTH Tuner.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Goyo Predator -->
+                <div class="card p-6">
+                    <div class="flex items-start gap-4">
+                        <div id="goyo-predator-img" class="card-image-container flex-shrink-0 w-24 card-placeholder">Goyo Predator</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Goyo Predator</h3>
+                            <p class="text-yellow-100 mb-2"><strong>Level 6 Synchro</strong></p>
+                            <p class="text-yellow-100 text-sm">A flexible alternative with generic materials. It steals monsters in Attack Position, allowing for follow-up attacks, but their damage is halved.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Goyo Chaser -->
+                <div class="card p-6">
+                    <div class="flex items-start gap-4">
+                        <div id="goyo-chaser-img" class="card-image-container flex-shrink-0 w-24 card-placeholder">Goyo Chaser</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Goyo Chaser</h3>
+                            <p class="text-yellow-100 mb-2"><strong>Level 5 Synchro</strong></p>
+                            <p class="text-yellow-100 text-sm">A swarm component. It gains ATK for other EARTH Warrior Synchros and steals monsters with halved ATK. Best used alongside other Goyos.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Goyo Defender -->
+                <div class="card p-6">
+                    <div class="flex items-start gap-4">
+                        <div id="goyo-defender-img" class="card-image-container flex-shrink-0 w-24 card-placeholder">Goyo Defender</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Goyo Defender</h3>
+                            <p class="text-yellow-100 mb-2"><strong>Level 3 Synchro</strong></p>
+                            <p class="text-yellow-100 text-sm">The single most important combo piece. It can Special Summon another 'Goyo Defender' from the Extra Deck, enabling the "Defender Swarm."</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Goyo King -->
+                <div class="card p-6">
+                    <div class="flex items-start gap-4">
+                        <div id="goyo-king-img" class="card-image-container flex-shrink-0 w-24 card-placeholder">Goyo King</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Goyo King</h3>
+                            <p class="text-yellow-100 mb-2"><strong>Level 8 Synchro</strong></p>
+                            <p class="text-yellow-100 text-sm">The Synchro boss. Gains ATK when attacking and offers a powerful choice: steal the destroyed monster OR steal any other face-up monster.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Goyo Emperor -->
+                <div class="card p-6">
+                    <div class="flex items-start gap-4">
+                        <div id="goyo-emperor-img" class="card-image-container flex-shrink-0 w-24 card-placeholder">Goyo Emperor</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Goyo Emperor</h3>
+                            <p class="text-yellow-100 mb-2"><strong>Level 10 Fusion</strong></p>
+                            <p class="text-yellow-100 text-sm">The ultimate boss. Has a Quick Effect to Tribute a Synchro and steal an opponent's Special Summoned monster(s). Summoned via the Defender Swarm.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ideal Endboard: The Emperor Play</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-3xl mx-auto">
+                This is the ideal endboard for a Goyo deck going first. It uses the "Defender Swarm" plus a Fusion card like <strong class="text-accent">Miracle Synchro Fusion</strong>.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Goyo Emperor -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Goyo Emperor</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="emperor-endboard-img" class="card-image-container card-placeholder">Goyo Emperor</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent">The Boss:</strong> A 3300 ATK Fusion monster.</li>
+                        <li><strong class="text-accent">The Interruption:</strong> Its Quick Effect can steal an opponent's Special Summoned monster(s).</li>
+                    </ul>
+                </div>
+                <!-- Goyo Defender -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Goyo Defender</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="defender-endboard-img" class="card-image-container card-placeholder">Goyo Defender</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent">The Fodder:</strong> The third Defender from the swarm is kept on field.</li>
+                        <li><strong class="text-accent">The Fuel:</strong> It serves as the perfect Tribute for Goyo Emperor's interruption effect, making the cost "free."</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-gavel"></i></span> <strong class="text-green-400 font-bold">High Raw ATK:</strong> Monsters like Guardian and King can run over many threats in battle.</li>
+                        <li><span class="pro-icon"><i class="fas fa-magic-wand-sparkles"></i></span> <strong class="text-green-400 font-bold">Non-Targeting Removal:</strong> The stealing effects do not target, bypassing common forms of protection.</li>
+                        <li><span class="pro-icon"><i class="fas fa-snowball"></i></span> <strong class="text-green-400 font-bold">Snowball Potential:</strong> Can rapidly accumulate advantage by stealing multiple monsters.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Battle-Phase Reliance:</strong> Any effect that stops the Battle Phase or prevents battle destruction shuts down the deck.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Fragile Combos:</strong> Highly vulnerable to hand traps on key starters or on the first Goyo Defender.</li>
+                        <li><span class="con-icon"><i class="fas fa-ghost"></i></span> <strong class="text-red-400 font-bold">"Sends to GY" Clause:</strong> Ineffective against Pendulum monsters or monsters that banish themselves.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Host Engines & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-cogs"></i></span> <strong class="text-accent font-bold">Junk / Synchron:</strong> The most natural partner. Rich with EARTH Tuners (like <strong class="text-accent">Junk Synchron</strong>) and Warriors.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-recycle"></i></span> <strong class="text-accent font-bold">Scrap Engine:</strong> <strong class="text-accent">Scrap Raptor</strong> (an EARTH Tuner) and <strong class="text-accent">Scrap Chimera</strong> provide access to Level 8 Synchros like Goyo King.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-magic"></i></span> <strong class="text-accent font-bold">Miracle Synchro Fusion:</strong> The key non-engine card required to summon Goyo Emperor.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section (Dynamic) -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center" id="banlist-loading">
+                    <i class="fas fa-spinner animate-spin mr-2"></i>Fetching current TCG banlist status from YGOPRODeck API...
+                </p>
+                <div class="hidden grid-cols-1 md:grid-cols-2 gap-4" id="banlist-content">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Restricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300" id="limited-cards">
+                            <!-- JS will populate this -->
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300" id="unrestricted-cards">
+                            <!-- JS will populate this -->
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-900 bg-opacity-30 rounded border-l-4 border-gray-500 hidden" id="banlist-summary-container">
+                    <p class="text-sm text-gray-300" id="banlist-summary">
+                        <!-- JS will populate this -->
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Load Card Images
+            CardLoader.loadCards({
+                'goyo-guardian-img': 'Goyo Guardian',
+                'goyo-predator-img': 'Goyo Predator',
+                'goyo-chaser-img': 'Goyo Chaser',
+                'goyo-defender-img': 'Goyo Defender',
+                'goyo-king-img': 'Goyo King',
+                'goyo-emperor-img': 'Goyo Emperor',
+                'defender-step1-img': 'Goyo Defender',
+                'defender-step2-img': 'Goyo Defender',
+                'defender-step3-img': 'Goyo Defender',
+                'emperor-endboard-img': 'Goyo Emperor',
+                'defender-endboard-img': 'Goyo Defender'
+            });
+
+            // 2. Fetch and Display Banlist Status
+            async function checkBanlist() {
+                const goyoCards = [
+                    'Goyo Guardian', 
+                    'Goyo Predator', 
+                    'Goyo Chaser', 
+                    'Goyo Defender', 
+                    'Goyo King', 
+                    'Goyo Emperor'
+                ];
+                
+                const loadingText = document.getElementById('banlist-loading');
+                const contentGrid = document.getElementById('banlist-content');
+                const summaryContainer = document.getElementById('banlist-summary-container');
+                const summaryText = document.getElementById('banlist-summary');
+                const unrestrictedList = document.getElementById('unrestricted-cards');
+                const limitedList = document.getElementById('limited-cards');
+
+                try {
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    
+                    const data = await response.json();
+                    const restrictedCards = {};
+                    
+                    // Create a map of all restricted cards for easy lookup
+                    data.data.forEach(card => {
+                        if (card.banlist_info && card.banlist_info.ban_tcg) {
+                            restrictedCards[card.name] = card.banlist_info.ban_tcg; // e.g., "Limited", "Forbidden"
+                        }
+                    });
+
+                    let hasRestrictions = false;
+                    let limitedCount = 0;
+
+                    goyoCards.forEach(cardName => {
+                        const status = restrictedCards[cardName];
+                        if (status) {
+                            hasRestrictions = true;
+                            limitedCount++;
+                            let statusColor = "text-yellow-400"; // Limited/Semi-Limited
+                            if (status.toLowerCase() === 'forbidden') {
+                                statusColor = "text-red-500 font-bold";
+                            }
+                            limitedList.innerHTML += `<li><strong class="${statusColor}">${cardName} (${status})</strong></li>`;
+                        } else {
+                            unrestrictedList.innerHTML += `<li>${cardName} (3 copies)</li>`;
+                        }
+                    });
+
+                    if (limitedCount === 0) {
+                        limitedList.innerHTML = '<li>None</li>';
+                    }
+
+                    // Update summary text
+                    if (hasRestrictions) {
+                        summaryText.textContent = "Meta Implications: The Goyo archetype is impacted by the TCG banlist. Key cards are restricted, which can affect consistency and power. Players must build around these limitations.";
+                        summaryContainer.classList.remove('border-gray-500');
+                        summaryContainer.classList.add('border-red-500', 'bg-red-900', 'bg-opacity-30');
+                    } else {
+                        summaryText.textContent = "Meta Implications: The Goyo archetype is completely unrestricted. Players have access to the entire card pool, allowing for maximum consistency and combo potential with host engines.";
+                        summaryContainer.classList.remove('border-gray-500');
+                        summaryContainer.classList.add('border-green-500', 'bg-green-900', 'bg-opacity-30');
+                    }
+
+                    // Show content
+                    loadingText.classList.add('hidden');
+                    contentGrid.classList.remove('hidden');
+                    contentGrid.classList.add('grid');
+                    summaryContainer.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error("Failed to fetch banlist:", error);
+                    loadingText.textContent = "Failed to fetch TCG banlist data. Please check your connection.";
+                    loadingText.classList.add('text-red-400');
+                }
+            }
+
+            checkBanlist();
+        });
+    </script>
+</body>
+</html>
+

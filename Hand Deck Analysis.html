@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Make sure the path to card-loader.js is correct, e.g., /js/card-loader.js or similar -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep cosmic purple */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1633; /* Darker purple/blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4c3d8e; /* Lighter purple border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(26, 22, 51, 0.8);
+            border: 1px solid #6a5acd;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2457;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2457;
+            border: 1px dashed #6a5acd;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        
+        /* --- NEW THEME ACCENTS --- */
+        .text-accent-fire { color: #f87171; } /* Fiery Red */
+        .text-accent-ice { color: #60a5fa; } /* Icy Blue */
+        
+        .arrow-color-fire { color: #f87171; }
+        .arrow-color-ice { color: #60a5fa; }
+
+        .heading-underline {
+            border-bottom: 2px solid #f87171;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f87171;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f87171;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f87171;
+        }
+        .lore-link-ice {
+            color: #60a5fa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #60a5fa;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link-ice:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #60a5fa;
+        }
+
+        /* --- NEW FIRE & ICE ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c0a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c3d8e;
+        }
+
+        #fire-ice-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 10, 26, 0.4) 0%, rgba(12, 10, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px rgba(248, 113, 113, 0.5), 0 0 10px rgba(96, 165, 250, 0.5);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles (Copied from other pages) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        /* --- Card Popup Styles --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(12, 10, 26, 0.95); /* Match body bg */
+            border: 1px solid #f87171; /* Fire accent border */
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #f87171; /* Fire accent title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Orbitron', sans-serif;
+            color: #f87171;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="fire-ice-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">HAND</h1>
+            <p class="text-lg md:text-xl text-red-200">Masters of Attrition</p>
+        </header>
+
+        <!-- Executive Summary Section (from DOCX Intro) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The "Hand" series is a classic Yu-Gi-Oh! engine, not a self-contained archetype. It is distinct from the modern "hand trap" (like Ash Blossom), and instead comprises a cohesive series of on-field monsters: <strong class="text-accent-fire">Fire Hand</strong>, <strong class="text-accent-ice">Ice Hand</strong>, Thunder Hand, Magic Hand, and Prominence Hand. These cards are not "hand traps" but rather a compact, "splashable" engine designed for control and resource generation.
+                </p>
+                <p class="text-indigo-200 mt-4">
+                    The engine's design is linked to the April 2014 "H.A.T." (Hand, Artifact, Traptrix) format, which represents its peak competitive relevance. The "Hands" exemplify a design philosophy of small, generic, self-contained engines that create an interactive, attrition-based metagame. This report will focus exclusively on this specific series of five monsters and their role in <a href="#core-cards" class="lore-link">dismantling an opponent's board</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Hand Arsenal Section (from DOCX Sec 1) -->
+        <section id="core-cards" class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Anatomy of the "Hand" Series</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- The Core Loop -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-sync-alt text-4xl text-red-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Core Loop: Fire & Ice</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-fire mb-1">Fire Hand</h4>
+                            <p class="text-sm text-indigo-200">The monster removal specialist. When destroyed by the opponent, it destroys one of their monsters, then Special Summons <strong class="text-accent-ice">Ice Hand</strong> from the deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-ice mb-1">Ice Hand</h4>
+                            <p class="text-sm text-indigo-200">The Spell/Trap disruption specialist. When destroyed by the opponent, it destroys one of their S/T cards, then Special Summons <strong class="text-accent-fire">Fire Hand</strong> from the deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Extenders -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-expand-arrows-alt text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Extenders: Thunder & Prominence</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-gray-300 mb-1">Thunder Hand</h4>
+                            <p class="text-sm text-indigo-200">A reactive extender. If a monster with 1600 ATK/DEF (like Fire or Ice Hand) is destroyed, this card summons itself from the hand/GY and destroys one card (non-targeting).</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-gray-300 mb-1">Prominence Hand</h4>
+                            <p class="text-sm text-indigo-200">A proactive Xyz enabler. If you control another "Hand" monster, you can Special Summon this card from your hand, instantly setting up a Rank 4 play.</p>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Niche Tech -->
+                <div class="card p-6 md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cog text-4xl text-purple-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Niche Tech: Magic Hand</h3>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-purple-300 mb-1">Magic Hand</h4>
+                        <p class="text-sm text-indigo-200">A specialized punish card. When the opponent adds a card from their Deck to their hand (except by drawing), you can send it to the GY and inflict 800 damage. This was a rare tech choice, not part of the core engine.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section (from DOCX Sec 2.1) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Unbroken Cycle of Advantage</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The engine's power was not in explosive combos, but in a relentless, self-perpetuating loop of destruction that forced the opponent into a no-win scenario. Any attempt to interact with the board resulted in a net loss of resources.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="fire-hand-img-container" class="card-image-container flex-shrink-0 card-placeholder">Fire Hand</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold text-accent-fire">Initiation: Fire Hand Destroyed</h3>
+                            </div>
+                            <p class="text-indigo-200">The loop begins. The opponent destroys <strong class="text-accent-fire">Fire Hand</strong> (by battle or effect). Its effect triggers, destroying an opponent's monster.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color-fire animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ice-hand-img-container" class="card-image-container flex-shrink-0 card-placeholder">Ice Hand</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold text-accent-ice">Response: Ice Hand Summoned</h3>
+                            </div>
+                            <p class="text-indigo-200"><strong class="text-accent-fire">Fire Hand's</strong> effect resolves, Special Summoning <strong class="text-accent-ice">Ice Hand</strong> from the Deck. The opponent has lost a monster, and you have replaced yours.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color-ice animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ice-hand-img-container-2" class="card-image-container flex-shrink-0 card-placeholder">Ice Hand</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold text-accent-ice">The Loop: Ice Hand Destroyed</h3>
+                            </div>
+                            <p class="text-indigo-200">The opponent is forced to destroy <strong class="text-accent-ice">Ice Hand</strong>. Its effect triggers, destroying an opponent's Spell/Trap card.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color-ice animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 4 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="fire-hand-img-container-2" class="card-image-container flex-shrink-0 card-placeholder">Fire Hand</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                <h3 class="text-lg font-bold text-accent-fire">Reset: Fire Hand Summoned</h3>
+                            </div>
+                            <p class="text-indigo-200"><strong class="text-accent-ice">Ice Hand's</strong> effect resolves, Special Summoning <strong class="text-accent-fire">Fire Hand</strong> from the Deck. The loop is reset, ready to begin again.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section (from DOCX Sec 3.3 / Table 3.1) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "H.A.T." End Board</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                The "Hand" engine's end board was not a field of negates, but a state of overwhelming resource superiority. The goal was to establish a single, powerful Rank 4 Xyz monster, backed by the recurring "Hand" loop and a field of disruptive Trap Cards.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Abyss Dweller -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Graveyard Disruption</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="abyss-dweller-img-container" class="card-image-container card-placeholder">Abyss Dweller</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-ice">Abyss Dweller:</strong> A key Xyz monster. Its Quick Effect prevents the opponent from activating any card effects in their Graveyard, shutting down opposing "floating" effects and entire meta strategies.</li>
+                    </ul>
+                </div>
+                <!-- Number 101 -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Non-Destruction Removal</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="number-101-img-container" class="card-image-container card-placeholder">Number 101: Silent Honor ARK</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-ice">Number 101: Silent Honor ARK:</strong> Provided a critical out to monsters that were immune to destruction. It could target an opponent's Special Summoned monster and attach it to itself as Xyz Material.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section (from DOCX Sec 4 & 5) -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis & Legacy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths (Historical)</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Card Advantage:</strong> Each loop activation was a "2-for-1" trade, grinding the opponent out of resources.</li>
+                        <li><span class="pro-icon"><i class="fas fa-brain"></i></span> <strong class="text-green-300">Forced Awkward Plays:</strong> The mere presence of a "Hand" forced opponents into suboptimal plays to avoid triggering the loop.</li>
+                        <li><span class="pro-icon"><i class="fas fa-gavel"></i></span> <strong class="text-green-300">Board Simplification:</strong> Excelled at breaking complex boards and simplifying the game to a top-decking war it was built to win.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses (Modern Era)</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-clock"></i></span> <strong class="text-red-300">Too Slow:</strong> Relies on the Normal Summon and opponent's destruction, which is obsolete in an era of mass Special Summons.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Non-Destruction Removal:</strong> Modern decks use banishing or sending to GY, which does not trigger the "Hands".</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Vulnerable to Disruption:</strong> A single <strong class="text-accent-fire">Ash Blossom</strong> or <strong class="text-accent-fire">Called by the Grave</strong> permanently breaks the loop.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">The "H.A.T." Coalition</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-leaf"></i></span> <strong class="text-accent-fire">Traptrix:</strong> Provided consistency and control, searching "Hole" traps while being protected by the "Hand" engine's board presence.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-accent-fire">Artifacts:</strong> Provided explosive power. <strong class="text-accent-fire">Artifact Sanctum</strong> summoning <strong class="text-accent-fire">Artifact Moralltach</strong> punished backrow removal.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="my-10 md:my-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">HISTORICAL CONTEXT:</strong> The "Hand" engine itself is fully unrestricted. However, the legendary "H.A.T." deck it anchored has been significantly impacted by the banlist over time.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Key H.A.T. Engine Hits</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Artifact Scythe (0 copies)</strong> - FORBIDDEN</li>
+                            <li><strong class="text-yellow-400">Artifact Moralltach (1 copy)</strong> - LIMITED</li>
+                            <li><strong class="text-yellow-400">Evilswarm Exciton Knight (1 copy)</strong> - LIMITED</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-400">All "Hand" Monsters (3 copies each)</strong></li>
+                            <li>(Fire Hand, Ice Hand, Thunder Hand, etc.)</li>
+                            <li><strong class="text-green-400">Traptrix Engine (3 copies each)</strong></li>
+                            <li>(Myrmeleo, Dionaea, etc.)</li>
+                            <li><strong class="text-green-400">Artifact Sanctum (3 copies)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the "Hand" engine is at full power, its primary historical partners in the "Artifact" engine have been neutralized (Scythe) or limited (Moralltach). This, combined with the extreme power creep of the modern game, has solidified the "Hand" engine's status as a beloved but obsolete historical strategy.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- FIRE & ICE ANIMATION ---
+            const canvas = document.getElementById('fire-ice-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(isFire) {
+                        this.isFire = isFire;
+                        this.x = this.isFire ? Math.random() * (canvas.width / 4) : canvas.width - (Math.random() * (canvas.width / 4));
+                        this.y = Math.random() * canvas.height;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 1.5 + 0.5;
+                        this.radius = Math.random() * 2 + 1;
+                        this.life = Math.random() * 100 + 50;
+                        this.initialLife = this.life;
+                        
+                        this.color = this.isFire 
+                            ? `rgba(248, 113, 113, ${Math.random() * 0.5 + 0.3})` // Fire color
+                            : `rgba(96, 165, 250, ${Math.random() * 0.5 + 0.3})`; // Ice color
+                    }
+                    update() {
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed;
+                        this.life--;
+
+                        // Swirl logic
+                        let dx = (canvas.width / 2) - this.x;
+                        let dy = (canvas.height / 2) - this.y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+
+                        this.x += dx / dist * 0.2;
+                        this.y += dy / dist * 0.2;
+
+
+                        if (this.life <= 0 || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = this.life / this.initialLife;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                    reset() {
+                        this.isFire = Math.random() > 0.5;
+                        this.x = this.isFire ? Math.random() * (canvas.width / 4) : canvas.width - (Math.random() * (canvas.width / 4));
+                        this.y = Math.random() * canvas.height;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 1.5 + 0.5;
+                        this.life = Math.random() * 100 + 50;
+                        this.initialLife = this.life;
+                        this.color = this.isFire 
+                            ? `rgba(248, 113, 113, ${Math.random() * 0.5 + 0.3})`
+                            : `rgba(96, 165, 250, ${Math.random() * 0.5 + 0.3})`;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle(i < numParticles / 2));
+                    }
+                }
+
+                function animate() {
+                    ctx.fillStyle = 'rgba(12, 10, 26, 0.1)'; // Fading effect
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.globalAlpha = 1;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Use the global CardLoader object (from card-loader.js)
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'fire-hand-img-container': 'Fire Hand',
+                    'ice-hand-img-container': 'Ice Hand',
+                    'fire-hand-img-container-2': 'Fire Hand',
+                    'ice-hand-img-container-2': 'Ice Hand',
+                    'abyss-dweller-img-container': 'Abyss Dweller',
+                    'number-101-img-container': 'Number 101: Silent Honor ARK',
+                    // These are not in the layout but are good to have if you expand
+                    'thunder-hand-img-container': 'Thunder Hand',
+                    'prominence-hand-img-container': 'Prominence Hand',
+                    'magic-hand-img-container': 'Magic Hand'
+                });
+            } else {
+                console.error("CardLoader is not defined. Make sure card-loader.js is loaded correctly.");
+            }
+        });
+    </script>
+</body>
+</html>

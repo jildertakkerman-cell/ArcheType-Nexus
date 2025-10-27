@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardragon Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Make sure the path to card-loader.js is correct, e.g., /js/card-loader.js or assets/js/card-loader.js -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0d1f; /* Deep dark blue */
+            color: #dbeafe; /* Light blue/white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1f3b; /* Dark blue/purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3b3d6b; /* Lighter blue/purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a2f5a; /* Slightly lighter blue */
+            border: 1px solid #4a4d8a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Added cursor pointer for card loader */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2f5a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2f5a;
+            border: 1px dashed #4a4d8a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Gold/Yellow Accent */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15; /* Gold link */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- NEW GUARDRAGON ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a0d1f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3b3d6b;
+        }
+
+        #circuit-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 13, 31, 0.4) 0%, rgba(10, 13, 31, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes ygoIconGlow {
+            from { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); }
+            to { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6); }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* --- Card Popup Styles (Guardragon Theme) --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 13, 31, 0.95); /* Dark blue */
+            border: 1px solid #facc15; /* Gold border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #facc15; /* Gold title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Orbitron', sans-serif;
+            color: #facc15;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="circuit-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">GUARDRAGON</h1>
+            <p class="text-lg md:text-xl text-yellow-200">Anatomy of an Engine: Legacy and Link</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    Few archetypes have had as transformative an impact as the Guardragons. This small collection of 
+                    <a href="https://db.ygoprodeck.com/api/v7/cardinfo.php?archetype=Guardragon" target="_blank" class="lore-link">Dragon monsters, spells, and traps</a>
+                    was not a self-contained strategy but a hyper-efficient "engine" capable of being integrated into any Dragon deck to elevate its power to unprecedented levels. The Guardragons offered unparalleled consistency, extension, and access to boss monsters, fundamentally reshaping Dragon decks in the modern era.
+                </p>
+                <p class="text-blue-200 mt-4">
+                    Any discussion of Guardragons must be framed by a critical reality: its core combo-enablers, <strong class="text-accent">Guardragon Elpy</strong> and <strong class="text-accent">Guardragon Agarpain</strong>, are <strong class="text-red-400 font-bold">Forbidden</strong>. This creates a dual narrative: a historical analysis of the engine at its format-warping zenith, and a contemporary look at its legacy. The surviving pieces remain instrumental to the strategy known as "Dragon Link," a testament to an engine so influential that even its remnants define an entire style of play.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Guardragon Pantheon Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Guardragon Pantheon</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Link Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-link text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Link Monsters: Architects of Power</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4 border-l-4 border-red-500">
+                            <h4 class="text-lg font-bold text-red-400 mb-1">Guardragon Elpy (FORBIDDEN)</h4>
+                            <p class="text-sm text-blue-200">The undisputed heart of the original engine. Its simple, non-cost effect could Special Summon any Dragon monster directly from the Deck, providing a level of consistency and power previously unseen.</p>
+                        </div>
+                        <div class="card combo-step-card p-4 border-l-4 border-red-500">
+                            <h4 class="text-lg font-bold text-red-400 mb-1">Guardragon Agarpain (FORBIDDEN)</h4>
+                            <p class="text-sm text-blue-200">The game-ending payoff. Its effect could Special Summon one Dragon monster directly from the Extra Deck, completely circumventing summoning mechanics to cheat out boss monsters for free.</p>
+                        </div>
+                        <div class="card combo-step-card p-4 border-l-4 border-green-500">
+                            <h4 class="text-lg font-bold text-green-400 mb-1">Guardragon Pisty (UNLIMITED)</h4>
+                            <p class="text-sm text-blue-200">The surviving extender. Pisty focuses on resource recursion, Special Summoning a Dragon from the Graveyard or Banished zone. It is the central, crucial bridge in modern Dragon Link combos.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Main Deck & Spells -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cubes text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Main Deck Corps & Armory</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Guardragon Justicia (Normal Tuner)</h4>
+                            <p class="text-sm text-blue-200">A Level 2 Normal Tuner. Its status as a "Normal Monster" is its key, turning it into essential combo fuel for its brethren.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Garmides & Promineses</h4>
+                            <p class="text-sm text-blue-200">This pair Special Summons itself from the hand (Garmides) or GY (Promineses) whenever a Normal Monster is sent to the GY, creating a resource loop.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">World Legacy Guardragon (Spell)</h4>
+                            <p class="text-sm text-blue-200">A Continuous Spell that revives a small Dragon and, critically, can move a Dragon to another Main Monster Zone to set up the Link Monsters' arrows.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section (Historical) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Peak Power: The Forbidden Combo (Historical)</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The full-power engine was brutally efficient, revolving around <strong class="text-accent">Elpy</strong>, <strong class="text-accent">Pisty</strong>, and <strong class="text-accent">Red-Eyes Darkness Metal Dragon (REDMD)</strong>.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="elpy-img-container" class="card-image-container flex-shrink-0 card-placeholder">Guardragon Elpy</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon Elpy & Tutor REDMD</h3>
+                            </div>
+                            <p class="text-blue-200">Summon <strong class="text-red-400">Elpy (Forbidden)</strong> to a zone pointed to by another Link Monster. Activate <strong class="text-red-400">Elpy's</strong> effect to Special Summon <strong class="text-accent">Red-Eyes Darkness Metal Dragon</strong> directly from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="redmd-img-container" class="card-image-container flex-shrink-0 card-placeholder">Red-Eyes Darkness Metal Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Extend & Loop</h3>
+                            </div>
+                            <p class="text-blue-200">Use <strong class="text-accent">REDMD's</strong> effect to revive another Dragon. Link away REDMD, then summon <strong class="text-accent">Guardragon Pisty</strong> and use its effect to revive <strong class="text-accent">REDMD</strong> again for a second extension.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="agarpain-img-container" class="card-image-container flex-shrink-0 card-placeholder">Guardragon Agarpain</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Agarpain Checkmate</h3>
+                            </div>
+                            <p class="text-blue-200">Link Summon <strong class="text-red-400">Agarpain (Forbidden)</strong>. Activate its effect to Special Summon a powerful Dragon Synchro like <strong class="text-accent">Hot Red Dragon Archfiend Abyss</strong> directly from the Extra Deck, for free.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section (Modern) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Modern End Board (Dragon Link)</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                With Elpy and Agarpain banned, the deck (now "Dragon Link") adapts. It uses <strong class="text-accent">Pisty</strong> as a key mid-combo extender to build a resilient board of multiple interruptions.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Borreload Savage Dragon -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Borreload Savage Dragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="borreload-savage-img-container" class="card-image-container card-placeholder">Borreload Savage Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Omni-Negate:</strong> Provides multiple negates by equipping a Link Monster from the GY.</li>
+                        <li><strong class="text-accent">High ATK:</strong> A powerful body that's difficult to remove.</li>
+                    </ul>
+                </div>
+                <!-- Bystial Dis Pater -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Bystial Dis Pater</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dis-pater-img-container" class="card-image-container card-placeholder">Bystial Dis Pater</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Double Interruption:</strong> Can either negate a monster effect or destroy a card, by reviving a banished LIGHT/DARK monster.</li>
+                        <li><strong class="text-accent">Resource Loop:</strong> Interacts with the "Bystial" engine that fuels the deck.</li>
+                    </ul>
+                </div>
+                <!-- Hieratic Seal -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Hieratic Seal of the Heavenly Spheres</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="hieratic-seal-img-container" class="card-image-container card-placeholder">Hieratic Seal of the Heavenly Spheres</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Reactive Bounce:</strong> A Quick Effect to Tribute itself to bounce an opponent's card.</li>
+                        <li><strong class="text-accent">Floater:</strong> When Tributed, it summons any Dragon from the deck, often a searcher or extender for the next turn.</li>
+                    </ul>
+                </div>
+                <!-- I:P Masquerena -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">I:P Masquerena</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ip-masquerena-img-container" class="card-image-container card-placeholder">I:P Masquerena</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Opponent's Turn Link:</strong> Allows you to Link Summon on the opponent's turn.</li>
+                        <li><strong class="text-accent">Destruction Protection:</strong> The monster summoned using I:P as material cannot be destroyed by card effects.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Extreme Efficiency (Historical):</strong> The Elpy/Agarpain engine generated massive advantage for no cost.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Resilience (Modern):</strong> Modern Dragon Link is built on redundancy, using multiple engines (Rokket, Bystial) to play through disruption.</li>
+                        <li><span class="pro-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-green-300">Modular:</strong> The "Dragon Link" philosophy allows the deck to absorb any new, efficient Dragon engine.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Fragile Choke Points (Historical):</strong> A single hand trap on Elpy could end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-globe"></i></span> <strong class="text-red-300">GY & Banish Hate:</strong> Modern versions are vulnerable to cards that lock the Graveyard or prevent banishing (e.g., Dimension Shifter).</li>
+                        <li><span class="con-icon"><i class="fas fa-link"></i></span> <strong class="text-red-300">Extra Deck Reliance:</strong> The entire strategy relies on the Extra Deck, making cards that counter it very effective.</li>
+                    </ul>
+                </div>
+                <!-- Synergistic Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergistic Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-rocket"></i></span> <strong class="text-accent">Rokket Engine:</strong> The backbone of modern Dragon Link, providing Tuners and extenders via Quick Launch and Boot Sector Launch.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Bystial Engine:</strong> Provides free extenders, disruption, and fuel for Chaos summons and Dis Pater.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-adjust"></i></span> <strong class="text-accent">Chaos Core:</strong> The LIGHT/DARK "Chaos" Dragons (Collapserpent, Wyverburster) create a self-sustaining loop of extenders.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">CRITICAL IMPACT:</strong> The Guardragon engine has been permanently dismantled by the TCG banlist:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Guardragon Elpy</strong></li>
+                            <li><strong class="text-red-400">Guardragon Agarpain</strong></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>(None)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Guardragon Pisty</strong></li>
+                            <li>All Main Deck Guardragons</li>
+                            <li>World Legacy Guardragon</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The banning of Elpy and Agarpain completely removed the original "Guardragon" deck. However, the legacy lives on as "Dragon Link," a new strategy built from the ashes, which uses the surviving <strong class="text-accent">Pisty</strong> as a single, powerful extender rather than the core of the engine.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Card Compendium</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">A detailed overview of each key card's individual role and status.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Cards -->
+                <div class="card p-6 bg-red-500 bg-opacity-10 border border-red-500">
+                    <h3 class="text-xl font-bold text-red-400 mb-2">Guardragon Elpy (FORBIDDEN)</h3>
+                    <p class="text-blue-200 mb-2"><strong>Link-1 DARK Dragon/Effect</strong></p>
+                    <p class="text-blue-200">The starter. Could Special Summon any Dragon from the Deck. Its banning was necessary to stop overwhelming consistency.</p>
+                </div>
+                <div class="card p-6 bg-red-500 bg-opacity-10 border border-red-500">
+                    <h3 class="text-xl font-bold text-red-400 mb-2">Guardragon Agarpain (FORBIDDEN)</h3>
+                    <p class="text-blue-200 mb-2"><strong>Link-2 DARK Dragon/Effect</strong></p>
+                    <p class="text-blue-200">The payoff. Could Special Summon any Dragon from the Extra Deck for free. This effect was deemed too powerful and non-interactive.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Guardragon Pisty (UNLIMITED)</h3>
+                    <p class="text-blue-200 mb-2"><strong>Link-1 DARK Dragon/Effect</strong></p>
+                    <p class="text-blue-200">The extender. Revives a Dragon from the GY or Banished zone. It is the last surviving Guardragon Link monster and a key piece in modern Dragon Link.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">World Legacy Guardragon (UNLIMITED)</h3>
+                    <p class="text-blue-200 mb-2"><strong>Continuous Spell</strong></p>
+                    <p class="text-blue-200">Provided revival for small Dragons and a unique effect to move monsters, which was essential for setting up the co-linked zones for Elpy and Agarpain.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GUARDRAGON CIRCUITRY ANIMATION ---
+            const canvas = document.getElementById('circuit-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 70;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.speedY = (Math.random() - 0.5) * 0.5;
+                        this.radius = Math.random() * 1.5 + 1;
+                        this.color = `rgba(250, 204, 21, ${Math.random() * 0.5 + 0.3})`; // Gold
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function connectParticles() {
+                    for (let a = 0; a < particles.length; a++) {
+                        for (let b = a + 1; b < particles.length; b++) {
+                            const dx = particles[a].x - particles[b].x;
+                            const dy = particles[a].y - particles[b].y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+
+                            if (distance < 100) {
+                                const opacity = 1 - (distance / 100);
+                                ctx.strokeStyle = `rgba(59, 130, 246, ${opacity * 0.5})`; // Blue lines
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[a].x, particles[a].y);
+                                ctx.lineTo(particles[b].x, particles[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    connectParticles();
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                // Historical Combo
+                'elpy-img-container': 'Guardragon Elpy',
+                'redmd-img-container': 'Red-Eyes Darkness Metal Dragon',
+                'agarpain-img-container': 'Guardragon Agarpain',
+                // Modern End Board
+                'borreload-savage-img-container': 'Borreload Savage Dragon',
+                'dis-pater-img-container': 'Bystial Dis Pater',
+                'hieratic-seal-img-container': 'Hieratic Seal of the Heavenly Spheres',
+                'ip-masquerena-img-container': 'I:P Masquerena'
+            });
+        });
+    </script>
+</body>
+</html>

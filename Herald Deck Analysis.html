@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herald Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use card-loader.js from the assumed path -->
+    <script src="assets/js/card-loader.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Cinzel for a divine/celestial header, Inter for readable body text -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Light gray/white background */
+            color: #1f2937; /* Dark gray text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #ffffff; /* Clean white cards */
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eab308; /* Gold border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #fefce8; /* Light cream/yellow */
+            border: 1px solid #fde047; /* Lighter gold border */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Add cursor pointer for card loader */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #f3f4f6; /* Light gray placeholder */
+            color: #4b5563; /* Darker text for placeholder */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #e5e7eb;
+            border: 1px dashed #d1d5db;
+        }
+        .pro-icon { color: #10b981; } /* Green */
+        .con-icon { color: #ef4444; } /* Red */
+        .neutral-icon { color: #3b82f6; } /* Blue */
+        .text-accent { color: #ca8a04; } /* Dark Gold */
+        .arrow-color { color: #ca8a04; }
+        .heading-underline {
+            border-bottom: 2px solid #eab308; /* Gold underline */
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .header-font {
+            font-family: 'Cinzel', serif;
+        }
+        .lore-link {
+            color: #0369a1; /* Celestial Blue */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #0369a1;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #0ea5e9;
+            text-shadow: 0 0 5px #0ea5e9;
+        }
+
+        /* --- NEW HERALD ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c0a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            /* Light celestial background */
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            border: 1px solid #bae6fd;
+        }
+
+        #celestial-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            /* Subtle white glow gradient */
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.7) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            /* Dark text shadow for readability on light bg */
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Card Popup Styles (to match this page's theme) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.95); /* White popup */
+            border: 1px solid #eab308; /* Gold border */
+            border-radius: 0.75rem;
+            color: #1f2937; /* Dark text */
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #ca8a04; /* Dark Gold */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #ca8a04;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup Container -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="celestial-canvas"></canvas>
+            <h1 class="header-font text-3xl md:text-5xl font-extrabold text-gray-900 mb-2">HERALD</h1>
+            <p class="text-lg md:text-xl text-blue-800">The Celestial Verdict & The Architects of "No"</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="header-font text-xl md:text-2xl font-bold text-gray-900 mb-4">Executive Summary</h2>
+                <p class="text-gray-700">
+                    The <strong class="text-accent font-bold">Herald</strong> archetype represents the pinnacle of proactive denial, a control strategy focused on establishing an impenetrable field of omni-negation. Its goal is to create a game state where every opposing card is met with a swift "No," locking the opponent out of the duel. This strategy is fueled by trading Fairy-Type monsters from hand to negate opposing actions. Critically, "Herald" is not self-sufficient; it relies on powerful external engines like <strong class="text-accent font-bold">Drytron</strong> and <strong class="text-accent font-bold">Cyber Angel</strong> to facilitate its demanding summons and fuel its costly, resource-based negation.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Herald Arsenal Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="header-font text-xl md:text-3xl font-bold text-gray-900 mb-8 text-center heading-underline">
+                <!-- This is the hint link as requested -->
+                <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Herald&stype=1" target="_blank" class="lore-link" title="See the card database">
+                    The Celestial Court
+                </a>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- The Boss Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-gavel text-4xl text-yellow-500 mr-4"></i>
+                        <h3 class="header-font text-xl font-bold text-gray-900">The Omni-Negators</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Herald of Ultimateness</h4>
+                            <p class="text-sm text-gray-700">The ultimate boss monster. A Level 12 Ritual that negates Spells, Traps, monster effects, AND Special Summons by discarding one Fairy.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Herald of Perfection</h4>
+                            <p class="text-sm text-gray-700">The Level 6 predecessor. Negates Spells, Traps, and monster effects. It cannot stop inherent Special Summons, but is easier to bring out.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Engine Starters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-blue-600 mr-4"></i>
+                        <h3 class="header-font text-xl font-bold text-gray-900">The Engine & Fuel</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Diviner of the Herald</h4>
+                            <p class="text-sm text-gray-700">The premier one-card starter. On summon, sends a Fairy from Deck or Extra Deck to GY, famously triggering <strong class="text-accent">Herald of the Arc Light</strong>.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Herald of the Arc Light</h4>
+                            <p class="text-sm text-gray-700">A Level 4 Synchro. When sent to GY, it searches any Ritual Monster or Ritual Spell. The primary target for Diviner's effect.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Herald of Orange Light</h4>
+                            <p class="text-sm text-gray-700">A hand-trap monster negate that discards itself and another Fairy. It doubles as disruption and "negation fuel" for the on-field Heralds.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="header-font text-xl md:text-3xl font-bold text-gray-900 mb-6 text-center heading-underline">Blueprint for Denial</h2>
+            <p class="text-gray-700 mb-8 text-center max-w-2xl mx-auto">
+                The deck's remarkable consistency is shown in its one-card starter. A single <strong class="text-accent">Diviner of the Herald</strong> begins the entire sequence.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="diviner-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Diviner of the Herald</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-white border border-yellow-400 text-yellow-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Normal Summon & Send</h3>
+                            </div>
+                            <p class="text-gray-700">Normal Summon <strong class="text-accent">Diviner of the Herald</strong>. Activate its effect, sending <strong class="text-accent">Herald of the Arc Light</strong> from your Extra Deck to the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="arc-light-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Herald of the Arc Light</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-white border border-yellow-400 text-yellow-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Trigger & Search</h3>
+                            </div>
+                            <p class="text-gray-700"><strong class="text-accent">Arc Light's</strong> Graveyard effect triggers, allowing you to search your deck for any Ritual Monster (like <strong class="text-accent">Herald of Ultimateness</strong>) or any Ritual Spell (like <strong class="text-accent">Meteonis Drytron</strong>).</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="benten-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Cyber Angel Benten</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-white border border-yellow-400 text-yellow-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Begin The Engine</h3>
+                            </div>
+                            <p class="text-gray-700">From here, you use your searched card to start the <strong class="text-accent">Drytron</strong> engine, repeatedly Tributing <strong class="text-accent">Cyber Angel Benten</strong> to search for more Fairies, assembling your full board and filling your hand with "negation fuel".</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="header-font text-xl md:text-3xl font-bold text-gray-900 mb-6 text-center heading-underline">The Final Verdict (End Board)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Herald -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="header-font text-xl font-bold text-gray-900 mb-4 text-center">The Lockdown</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ultimateness-endboard-img" class="card-image-container card-placeholder">Herald of Ultimateness</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong class="text-accent">Herald of Ultimateness:</strong> On field, ready to negate any card or effect the opponent activates.</li>
+                        <li><strong class="text-accent">A Hand Full of Fairies:</strong> 3-5+ Fairy monsters (like <strong class="text-accent">Herald of Orange Light</strong>) to fuel the negations.</li>
+                    </ul>
+                </div>
+                <!-- Support -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="header-font text-xl font-bold text-gray-900 mb-4 text-center">Supplementary Disruption</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ip-masquerena-endboard-img" class="card-image-container card-placeholder">I:P Masquerena</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong class="text-accent">I:P Masquerena:</strong> Allows you to Link Summon on the opponent's turn for a surprise removal (e.g., Knightmare Unicorn).</li>
+                        <li><strong class="text-accent">GY Resources:</strong> A loaded Graveyard with <strong class="text-accent">Meteonis Drytron</strong> and other Drytron monsters, ready to rebuild next turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn mb-10 md:mb-16" style="animation-delay: 0.8s;">
+            <h2 class="header-font text-xl md:text-3xl font-bold text-gray-900 mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-600 mb-4 header-font">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-700">Unmatched Negation:</strong> Can negate 5+ cards in a turn.</li>
+                        <li><span class="pro-icon"><i class="fas fa-star"></i></span> <strong class="text-green-700">High Consistency:</strong> <strong class="text-accent">Diviner</strong> is a one-card full combo.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-700">Resource Loop:</strong> The <strong class="text-accent">Drytron-Benten</strong> engine generates immense card advantage.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-600 mb-4 header-font">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-700">Choke Points:</strong> Vulnerable to hand-traps like <strong class="text-accent">Ash Blossom</strong> on <strong class="text-accent">Drytron Alpha</strong> or <strong class="text-accent">Veiler/Imperm</strong> on <strong class="text-accent">Diviner</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-shield-virus"></i></span> <strong class="text-red-700">"Board Breakers":</strong> Powerless against non-activating effects (like <strong class="text-accent">Kaijus</strong>) or unrespondable cards (like <strong class="text-accent">Dark Ruler No More</strong>).</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-700">Engine-Reliant:</strong> The deck is a "glass cannon" that must establish its board on turn one.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 header-font">Key Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent">Drytron Engine:</strong> Solves the high cost of Ritual Summoning by tributing ATK instead of Levels.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-infinity"></i></span> <strong class="text-accent">Cyber Angel Benten:</strong> The resource generator. Its non-once-per-turn TCG effect searches a LIGHT Fairy every time it's tributed.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-box-open"></i></span> <strong class="text-accent">Eva (Forbidden):</strong> Previously converted spent GY resources into fresh hand-traps, but is now forbidden.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="header-font text-xl md:text-3xl font-bold text-gray-900 mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-700 mb-4 text-center">
+                    <strong classs="text-accent font-bold">CRITICAL IMPACT:</strong> The "Herald" strategy is defined by the status of its engine pieces. While the core "Herald" cards are untouched, its key resource generators have been hit.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Forbidden/Limited -->
+                    <div class="card combo-step-card p-4 bg-red-50 border-red-300">
+                        <h4 class="text-lg font-bold text-red-700 mb-2 header-font">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                            <li><strong class="text-red-600">Eva (0 copies)</strong> - The primary "negation fuel" generator is Forbidden, severely limiting the deck's ability to generate free hand-traps.</li>
+                        </ul>
+                    </div>
+                    <!-- Unlimited -->
+                    <div class="card combo-step-card p-4 bg-green-50 border-green-300">
+                        <h4 class="text-lg font-bold text-green-700 mb-2 header-font">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                            <li><strong class="text-green-600">Herald of Ultimateness (3 copies)</strong></li>
+                            <li><strong class="text-green-600">Herald of Perfection (3 copies)</strong></li>
+                            <li><strong class="text-green-600">Diviner of the Herald (3 copies)</strong></li>
+                            <li><strong class="text-green-600">Herald of the Arc Light (3 copies)</strong></li>
+                            <li><strong class="text-green-600">Cyber Angel Benten (3 copies)</strong></li>
+                            <li><strong class="text-green-600">All "Drytron" cards (3 copies each)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-50 rounded border-l-4 border-yellow-400">
+                    <p class="text-sm text-gray-800"><strong>Meta Implications:</strong> With <strong class="text-red-700 font-bold">Eva</strong> forbidden, the deck can no longer generate an overwhelming number of free negates. It must rely solely on the <strong class="text-accent">Cyber Angel Benten</strong> loop to fill its hand, making its end board powerful but more finite and manageable than in its prime.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- HERALD CELESTIAL ANIMATION ---
+            const canvas = document.getElementById('celestial-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 0.5 + 0.2; // Slow and gentle
+                        this.radius = Math.random() * 2 + 1;
+                        this.color = `rgba(234, 179, 8, ${Math.random() * 0.5 + 0.3})`; // Gold color
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.shadowColor = this.color;
+                        ctx.shadowBlur = 10;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalCompositeOperation = 'lighter';
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // We are using the CardLoader class defined in `assets/js/card-loader.js`
+            // This assumes the file is present at that path.
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'diviner-combo-img': 'Diviner of the Herald',
+                    'arc-light-combo-img': 'Herald of the Arc Light',
+                    'benten-combo-img': 'Cyber Angel Benten',
+                    'ultimateness-endboard-img': 'Herald of Ultimateness',
+                    'ip-masquerena-endboard-img': 'I:P Masquerena'
+                });
+            } else {
+                console.error('CardLoader is not defined. Make sure assets/js/card-loader.js is loaded correctly.');
+            }
+        });
+    </script>
+</body>
+</html>

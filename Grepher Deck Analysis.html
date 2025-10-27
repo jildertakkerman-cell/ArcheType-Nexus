@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grepher Engine Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in a 'js' folder relative to this html file -->
+    <script src="js/card-loader.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1633; /* Deep dark purple */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a2457; /* Darker purple/blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4c3d8e; /* Lighter purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #362f78; /* Mid-tone purple */
+            border: 1px solid #6a5acd;
+        }
+        .card-image-container {
+            width: 100%;
+            /* max-width: 180px; */ /* Removed */
+            /* flex-shrink: 0; */ /* Removed */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2457;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 200px; /* Reduced from 250px */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2457;
+            border: 1px dashed #6a5acd;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent-light { color: #fef08a; } /* Lightray Gold */
+        .text-accent-dark { color: #f43f5e; } /* Dark/Chaos Magenta */
+        .arrow-color { color: #f43f5e; }
+        .heading-underline {
+            border-bottom: 2px solid #f43f5e;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fef08a; /* Gold link */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fef08a;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #fef08a;
+        }
+
+        /* --- NEW GREPHER ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1633;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c3d8e;
+        }
+
+        #chaos-rift-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            filter: blur(5px);
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 22, 51, 0.4) 0%, rgba(26, 22, 51, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(244, 63, 94, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 22, 51, 0.95); /* Dark purple popup */
+            border: 1px solid #f43f5e; /* Magenta border */
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #f43f5e; /* Magenta title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Orbitron', sans-serif;
+            color: #fef08a; /* Gold stats */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="chaos-rift-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Grepher Engine</h1>
+            <p class="text-lg md:text-xl text-indigo-200">Analysis of Graveyard Enablers</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: Paradigm of Graveyard Setup</h2>
+                <p class="text-indigo-200">
+                    In the strategic landscape of Yu-Gi-Oh!, the Graveyard (GY) is not merely a discard pile but a secondary resource zone, a nexus of effects, and a staging ground for powerful combos. While many archetypes possess internal mechanisms for this purpose, a select few generic cards have transcended their origins to become universal tools.
+                </p>
+                <p class="text-indigo-200 mt-4">
+                    The Grepher series is not a formal archetype, but a loose family of Level 4 Warrior monsters that function as a highly efficient and flexible "engine." The core purpose of this 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Grepher&stype=1" target="_blank" class="lore-link">warrior family</a>
+                    is to convert cards from the hand or Deck directly into the Graveyard, thereby activating the powerful effects of other monsters. This analysis will explore the evolution of the Grepher concept, from the attribute-specific <strong class="text-accent-dark">Dark Grepher</strong> and <strong class="text-accent-light">Lightray Grepher</strong> to the modern, versatile <strong class="text-accent-light">Chaos Grepher</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Grepher Cadre Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Grepher Cadre: Individual Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> <!-- CHANGED from lg:grid-cols-4 -->
+                <!-- Warrior Dai Grepher -->
+                <div class="card p-6"> <!-- REMOVED flex flex-col -->
+                    <div class="flex flex-col sm:flex-row gap-4 items-start">
+                        <div id="warrior-dai-grepher-img" class="card-image-container w-full sm:w-1/3 flex-shrink-0 card-placeholder">Warrior Dai Grepher</div>
+                        <div class="w-full sm:w-2/3">
+                            <h3 class="text-xl font-bold text-white mb-2">Warrior Dai Grepher</h3>
+                            <p class="text-sm text-indigo-200">The progenitor of the series. As a Normal Monster, he holds no modern competitive relevance but establishes the thematic and statistical baseline (Level 4 Warrior, 1700 ATK) for all his successors.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Dark Grepher -->
+                <div class="card p-6"> <!-- REMOVED flex flex-col -->
+                    <div class="flex flex-col sm:flex-row gap-4 items-start">
+                        <div id="dark-grepher-img" class="card-image-container w-full sm:w-1/3 flex-shrink-0 card-placeholder">Dark Grepher</div>
+                        <div class="w-full sm:w-2/3">
+                            <h3 class="text-xl font-bold text-accent-dark mb-2">Dark Grepher</h3>
+                            <p class="text-sm text-indigo-200">The most iconic member. Can Special Summon itself by discarding a Level 5+ DARK. Once per turn, can discard 1 DARK to send 1 DARK from Deck to GY. He is the linchpin of DARK-based Graveyard setup.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Lightray Grepher -->
+                <div class="card p-6"> <!-- REMOVED flex flex-col -->
+                    <div class="flex flex-col sm:flex-row gap-4 items-start">
+                        <div id="lightray-grepher-img" class="card-image-container w-full sm:w-1/3 flex-shrink-0 card-placeholder">Lightray Grepher</div>
+                        <div class="w-full sm:w-2/3">
+                            <h3 class="text-xl font-bold text-accent-light mb-2">Lightray Grepher</h3>
+                            <p class="text-sm text-indigo-200">The LIGHT counterpart. Can Special Summon itself by discarding a Level 5+ LIGHT. Once per turn, can discard 1 LIGHT to **banish** 1 LIGHT from Deck. This alters his use to setup for "Chaos" or banish-reliant strategies.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Chaos Grepher -->
+                <div class="card p-6"> <!-- REMOVED flex flex-col -->
+                    <div class="flex flex-col sm:flex-row gap-4 items-start">
+                        <div id="chaos-grepher-img" class="card-image-container w-full sm:w-1/3 flex-shrink-0 card-placeholder">Chaos Grepher</div>
+                        <div class="w-full sm:w-2/3">
+                            <h3 class="text-xl font-bold text-white mb-2">Chaos Grepher</h3>
+                            <p class="text-sm text-indigo-200">The modern powerhouse. While on the field, he is also DARK-Attribute. You can discard 1 LIGHT or DARK to send a monster of the **opposite** Attribute from Deck to GY. This single card perfectly sets up Chaos summons.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Engine Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Engine Mechanics & Core Interactions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- ROTA -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-light mb-4">Accessing the Engine: ROTA</h3>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div id="rota-img" class="card-image-container w-full md:w-1/3 card-placeholder">Reinforcement of the Army</div>
+                        <p class="text-indigo-200 md:w-2/3">A primary strength of the Grepher series is its Warrior typing. This grants access to <strong class="text-accent-light">Reinforcement of the Army (ROTA)</strong>, one of the most powerful generic searchers in the game. As ROTA is Limited to one copy, it effectively functions as an extra copy of whichever Grepher or Warrior starter you need, dramatically increasing consistency.</p>
+                    </div>
+                </div>
+                <!-- Arma Knight -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-dark mb-4">Grepher vs. Armageddon Knight</h3>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div id="arma-knight-img" class="card-image-container w-full md:w-1/3 card-placeholder">Armageddon Knight</div>
+                        <p class="text-indigo-200 md:w-2/3"><strong class="text-accent-dark">Armageddon Knight</strong> sends 1 DARK from Deck to GY on summon. This is more resource-efficient (no discard) but vulnerable to hand traps (Ash Blossom) and consumes your Normal Summon. <strong class="text-accent-dark">Dark Grepher</strong> is resource-intensive (needs discards) but more flexible, as he can be Special Summoned, saving your Normal Summon for extenders.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Key Payloads -->
+            <div class="card p-6 mt-6">
+                <h3 class="text-xl font-bold text-white mb-4 text-center">Key Payloads: Optimizing the Graveyard</h3>
+                <p class="text-indigo-200 text-center mb-6">The Grepher engine is only as powerful as the cards it sends. These are the premier targets.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Malicious -->
+                    <div class="combo-step-card p-4 rounded-lg flex flex-col"> <!-- ADDED flex flex-col -->
+                        <h4 class="text-lg font-bold text-accent-dark text-center mb-2">Destiny HERO - Malicious</h4> <!-- MOVED h4 up -->
+                        <div id="malicious-img" class="card-image-container mx-auto mb-3 card-placeholder">Destiny HERO - Malicious</div>
+                        <p class="text-sm text-indigo-200 mt-2 flex-grow">The quintessential target. Banish from GY to summon another copy from Deck. A single Grepher can turn one monster into three, enabling massive Link/Synchro plays.</p> <!-- ADDED flex-grow -->
+                    </div>
+                    <!-- Phantom Knights -->
+                    <div class="combo-step-card p-4 rounded-lg flex flex-col"> <!-- ADDED flex flex-col -->
+                        <h4 class="text-lg font-bold text-accent-dark text-center mb-2">Phantom Knights</h4> <!-- MOVED h4 up -->
+                        <div id="pk-cloak-img" class="card-image-container mx-auto mb-3 card-placeholder">The Phantom Knights of Ancient Cloak</div>
+                        <p class="text-sm text-indigo-200 mt-2 flex-grow">Sending <strong class="text-accent-dark">Ancient Cloak</strong> (searches a PK card) or <strong class="text-accent-dark">Silent Boots</strong> (searches a PK S/T) starts the entire Phantom Knights engine, leading to Fog Blade negates.</p> <!-- ADDED flex-grow -->
+                    </div>
+                    <!-- Orcust -->
+                    <div class="combo-step-card p-4 rounded-lg flex flex-col"> <!-- ADDED flex flex-col -->
+                        <h4 class="text-lg font-bold text-accent-dark text-center mb-2">Orcust</h4> <!-- MOVED h4 up -->
+                        <div id="orc-harp-img" class="card-image-container mx-auto mb-3 card-placeholder">Orcust Harp Horror</div>
+                        <p class="text-sm text-indigo-200 mt-2 flex-grow">Sending <strong class="text-accent-dark">Orcust Harp Horror</strong> allows it to banish itself to summon any Orcust from Deck, single-handedly starting the full Orcust Link-climbing sequence.</p> <!-- ADDED flex-grow -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Execution: Core Combo Lines</h2>
+
+            <!-- Combo 1: Malicious Link Climb -->
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-accent-dark mb-4">Foundation Combo: The Malicious Link Climb</h3>
+                
+                <!-- BANLIST WARNING -->
+                <div class="bg-red-900 bg-opacity-50 border border-red-500 rounded-lg p-4 mb-4">
+                    <h4 class="text-lg font-bold text-red-300 flex items-center"><i class="fas fa-exclamation-triangle mr-2"></i>TCG BANLIST WARNING</h4>
+                    <p class="text-indigo-200 mt-2">This combo is presented for historical context. As of the current TCG banlist, this line is **NOT LEGAL**.
+                        <ul class="list-disc list-inside ml-4 mt-2 text-indigo-200">
+                            <li><strong class="text-red-300">Isolde, Two Tales of the Noble Knights</strong> is <strong class="text-red-300">FORBIDDEN</strong>.</li>
+                            <li><strong class="text-red-300">Destiny HERO - Malicious</strong> is <strong class="text-red-300">SEMI-LIMITED</strong> (2 copies), making the 3-material combo impossible.</li>
+                        </ul>
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <!-- Step 1 -->
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Special Summon & Send</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Special Summon <strong class="text-accent-dark">Dark Grepher</strong> by discarding a Level 5+ DARK. Activate Grepher's effect, discard another DARK to send <strong class="text-accent-dark">Destiny HERO - Malicious</strong> from Deck to GY.</p>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Activate Malicious & Link</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Banish <strong class="text-accent-dark">Malicious</strong> from GY to summon a 2nd copy from Deck. Link Summon <strong class="text-accent-light">Isolde, Two Tales of the Noble Knights</strong> using Grepher and Malicious.</p>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Isolde & Final Malicious</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Use Isolde's 2nd effect: send an Equip Spell (like <strong class="text-accent-light">Divine Sword - Phoenix Blade</strong>) to summon a Tuner (like <strong class="text-accent-light">Attack Gainer</strong>). Activate the 2nd <strong class="text-accent-dark">Malicious</strong> in GY to summon the 3rd copy.</p>
+                    </div>
+                     <!-- Step 4 -->
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                            <h3 class="text-lg font-bold">Endboard: Synchro</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Synchro Summon a Level 7 Synchro (like <strong class="text-accent-light">F.A. Dawn Dragster</strong>) using Attack Gainer (Lvl 1) and Malicious (Lvl 6). <strong class="text-red-300">(Result: Isolde + Level 7 Synchro - ILLEGAL)</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Combo 2: PK Extension -->
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-accent-dark mb-4">Advanced Combo: The Phantom Knights Extension (TCG Legal)</h3>
+                <div class="flex flex-col gap-4">
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Search & Send</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Activate <strong class="text-accent-light">ROTA</strong> to add <strong class="text-accent-dark">Dark Grepher</strong>. Normal Summon Grepher, activate effect, discard 1 DARK to send <strong class="text-accent-dark">The Phantom Knights of Ancient Cloak</strong> to GY.</p>
+                    </div>
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Chain Search</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Banish <strong class="text-accent-dark">Ancient Cloak</strong> from GY to add <strong class="text-accent-dark">The Phantom Knights of Silent Boots</strong> to hand. Special Summon Silent Boots.</p>
+                    </div>
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Summon Rusty & Set</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Link Summon <strong class="text-accent-dark">The Phantom Knights of Rusty Bardiche</strong> using Grepher and Boots. Activate Rusty's effect: send <strong class="text-accent-dark">The Phantom Knights of Torn Scales</strong> to GY and set <strong class="text-accent-dark">Phantom Knights' Fog Blade</strong> from Deck.</p>
+                    </div>
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                            <h3 class="text-lg font-bold">Endboard: Double Negate</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Banish <strong class="text-accent-dark">Silent Boots</strong> from GY to add a 2nd <strong class="text-accent-dark">Fog Blade</strong> to hand. Set it. <strong class="text-accent-light">(Result: Rusty Bardiche + 2 Fog Blade negates)</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Combo 3: Orcust Ignition -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-accent-dark mb-4">Engine Integration: The Orcust Ignition (TCG Legal)</h3>
+                <div class="flex flex-col gap-4">
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Send Starter</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Normal Summon <strong class="text-accent-dark">Dark Grepher</strong>. Activate effect, discard 1 DARK to send <strong class="text-accent-dark">Orcust Harp Horror</strong> from Deck to GY.</p>
+                    </div>
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Ignite Engine</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Banish <strong class="text-accent-dark">Harp Horror</strong> from GY to Special Summon <strong class="text-accent-dark">Orcust Knightmare</strong> from Deck. Link Summon <strong class="text-accent-dark">Galatea, the Orcust Automaton</strong> using Grepher and Knightmare.</p>
+                    </div>
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Build & Set Babel</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Banish <strong class="text-accent-dark">Orcust Knightmare</strong> from GY to send <strong class="text-accent-light">World Legacy - "World Wand"</strong> to GY. Activate Galatea's effect, shuffle back Harp Horror to set <strong class="text-accent-dark">Orcustrated Babel</strong> from Deck.</p>
+                    </div>
+                    <div class="card combo-step-card p-4 w-full">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                            <h3 class="text-lg font-bold">Endboard: Quick Effects</h3>
+                        </div>
+                        <p class="text-indigo-200 ml-11">Activate Babel. Banish <strong class="text-accent-light">World Wand</strong> to summon back the banished Knightmare. <strong class="text-accent-light">(Result: Galatea + Knightmare + Babel, enabling Quick Effects from GY)</strong></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Final Endboards: Historical vs. Modern</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Historical (Illegal) -->
+                <div class="card p-6 pro-con-card border-red-500 border-2">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 text-center">Historical Endboard (ILLEGAL)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="isolde-img" class="card-image-container card-placeholder">Isolde, Two Tales...</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-light">Isolde, Two Tales... (Forbidden):</strong> The lynchpin that enabled the entire combo by summoning a Tuner from Deck.</li>
+                        <li><strong class="text-accent-light">Level 7 Synchro:</strong> Typically <strong class="text-accent-light">F.A. Dawn Dragster</strong> (for a S/T negate) or a <strong class="text-red-400">Forbidden</strong> boss like <strong class="text-red-400">Baronne de Fleur</strong>.</li>
+                        <li><strong class="text-accent-dark">Malicious (Semi-Limited):</strong> The combo required 3 copies, which is no longer possible.</li>
+                    </ul>
+                </div>
+                <!-- Modern (Legal) -->
+                <div class="card p-6 pro-con-card border-green-500 border-2">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 text-center">Modern Endboard (TCG Legal)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="rusty-bardiche-img" class="card-image-container card-placeholder">The Phantom Knights of Rusty Bardiche</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-dark">Rusty Bardiche:</strong> Provides a pop and sets up the GY and backrow.</li>
+                        <li><strong class="text-accent-dark">2x Phantom Knights' Fog Blade:</strong> Two targeted monster effect negates that also stop attacks.</li>
+                        <li><strong class="text-accent-dark">GY Follow-up:</strong> <strong class="text-accent-dark">Torn Scales</strong> in GY provides an extender for the next turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The Grepher engine's power is <strong class="text-yellow-400 font-bold">HEAVILY MODERATED</strong> by the banlist. While the core Grephers are unlimited, their most powerful payoffs and enablers are restricted.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Isolde, Two Tales...</strong></li>
+                            <li><strong class="text-red-400">Apollousa, Bow...</strong></li>
+                            <li><strong class="text-red-400">Baronne de Fleur</strong></li>
+                            <li><strong class="text-red-400">Borreload Savage Dragon</strong></li>
+                            <li><strong class="text-red-400">Chaos Ruler...</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Reinforcement of the Army</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Semi-Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-blue-400 mb-2">Semi-Limited (2 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-blue-300">Destiny HERO - Malicious</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Unlimited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Dark Grepher</strong></li>
+                            <li><strong class="text-green-300">Chaos Grepher</strong></li>
+                            <li><strong class="text-green-300">Armageddon Knight</strong></li>
+                            <li><strong class="text-green-300">Orcust Harp Horror</strong></li>
+                            <li><strong class="text-green-300">Rusty Bardiche</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The banning of <strong class="text-red-400">Isolde</strong> and generic boss monsters like <strong class="text-red-400">Baronne</strong> and <strong class="text-red-400">Apollousa</strong> has completely removed the "Malicious Link Climb" combo from viability. The engine is still strong but is now funneled into more archetype-specific lines, like Phantom Knights and Orcust, which remain legal and effective.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CHAOS RIFT ANIMATION ---
+            const canvas = document.getElementById('chaos-rift-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        // 50/50 chance for light or dark particle
+                        this.isLight = Math.random() > 0.5;
+                        this.vx = this.isLight ? (Math.random() * 1) - 0.5 : (Math.random() * 1) - 0.5;
+                        this.vy = (Math.random() * 1.5) + 0.5; // All fall down
+                        this.radius = Math.random() * 1.5 + 1;
+                        this.life = Math.random() * 50 + 50;
+                        this.initialLife = this.life;
+                        this.color = this.isLight ? `rgba(254, 240, 138, ${Math.random() * 0.5 + 0.3})` : `rgba(244, 63, 94, ${Math.random() * 0.5 + 0.3})`;
+                    }
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        this.life--;
+                        if (this.y > canvas.height) {
+                            this.y = 0;
+                            this.x = Math.random() * canvas.width;
+                            this.life = Math.random() * 50 + 50;
+                            this.initialLife = this.life;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = (this.life / this.initialLife) * 0.7;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Check if CardLoader is defined
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'warrior-dai-grepher-img': 'Warrior Dai Grepher',
+                    'dark-grepher-img': 'Dark Grepher',
+                    'lightray-grepher-img': 'Lightray Grepher',
+                    'chaos-grepher-img': 'Chaos Grepher',
+                    'rota-img': 'Reinforcement of the Army',
+                    'arma-knight-img': 'Armageddon Knight',
+                    'malicious-img': 'Destiny HERO - Malicious',
+                    'pk-cloak-img': 'The Phantom Knights of Ancient Cloak',
+                    'pk-boots-img': 'The Phantom Knights of Silent Boots',
+                    'orc-harp-img': 'Orcust Harp Horror',
+                    'isolde-img': 'Isolde, Two Tales of the Noble Knights',
+                    'fa-dawn-dragster-img': 'F.A. Dawn Dragster',
+                    'rusty-bardiche-img': 'The Phantom Knights of Rusty Bardiche',
+                    'fog-blade-img': "Phantom Knights' Fog Blade",
+                    'galatea-img': 'Galatea, the Orcust Automaton',
+                    'babel-img': 'Orcustrated Babel'
+                });
+            } else {
+                console.error('CardLoader is not defined. Make sure card-loader.js is loaded correctly.');
+            }
+        });
+    </script>
+</body>
+</html>
+
