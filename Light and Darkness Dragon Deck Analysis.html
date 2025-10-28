@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Light and Darkness Dragon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use the shared card-loader.js file --><script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a10; /* Very dark background */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1c1a29; /* Dark desaturated purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a416d; /* Muted purple border */
+        }
+        .combo-step-card {
+            background-color: #2a2840; /* Slightly lighter card bg */
+            border: 1px solid #6a6199;
+        }
+        .pro-con-card {
+            background-color: #2a2840;
+            border: 1px solid #6a6199;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px; /* Constrain width */
+            max-height: 250px; /* Constrain height */
+            flex-shrink: 0;
+            cursor: pointer;
+            overflow: hidden; /* Hide overflow if image is too large */
+            display: flex; /* For centering placeholder */
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #2a2840; /* Placeholder background */
+        }
+        .card-image {
+            width: 100%;
+            height: 100%; /* Make image fill container height */
+            object-fit: cover; /* Cover the container while maintaining aspect ratio */
+            border-radius: 0.5rem;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; /* Ensure placeholder has enough height */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        
+        /* Duality Theme Accents */
+        .text-accent-light {
+            color: #f0e68c; /* Pale Gold */
+        }
+        .text-accent-dark {
+            color: #bca0dc; /* Pale Violet */
+        }
+        .arrow-color {
+            color: #f0e68c;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #f0e68c;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f0e68c;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f0e68c;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f0e68c;
+        }
+
+        /* --- Duality Banner Styles --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a0a10;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a416d;
+        }
+
+        #duality-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 10, 16, 0.4) 0%, rgba(10, 10, 16, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px rgba(240, 230, 140, 0.5), 0 0 10px rgba(188, 160, 220, 0.5);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles (Copied from other pages) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles (Adapted for new theme) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 10, 16, 0.95);
+            border: 1px solid #f0e68c;
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #f0e68c;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #bca0dc;
+        }
+
+        /* Banlist Status Loader */
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f0e68c;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup --><div id="card-popup"></div>
+    
+    <!-- Home Button --><a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Animated Banner --><header class="banner-header text-center">
+            <canvas id="duality-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Duality of Dominance</h1>
+            <p class="text-lg md:text-xl text-indigo-200">A Strategic Deep Dive into Light and Darkness Dragon</p>
+        </header>
+
+        <!-- Executive Summary (From Docx Section 1 Intro) --><section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The strategic identity of any deck built around "Light and Darkness Dragon" is fundamentally defined by its central boss monsters. The original, a relic of a bygone era, established a powerful but restrictive control style, while its modern incarnation, a formidable Fusion monster, has been redesigned for the speed and efficiency of the contemporary game. A thorough analysis of these two titans reveals not only their individual mechanics but also a broader narrative about the evolution of card design in the Yu-Gi-Oh! TCG.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Twin Dragons: Core Monster Analysis (From Docx Section 1) --><section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Twin Dragons</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- 1.1. The Original Sovereign --><div class="card p-6">
+                    <h3 class="text-2xl font-bold text-accent-light mb-4">The Original Sovereign</h3>
+                    <div id="ladd-img-container" class="card-image-container mx-auto mb-4">Light and Darkness Dragon</div>
+                    <h4 class="text-xl font-bold text-white mb-2">Light and Darkness Dragon (LaDD)</h4>
+                    <p class="text-indigo-200 mb-4 text-sm font-mono">LIGHT Dragon/Effect | LV 8 | 2800 ATK / 2400 DEF</p>
+                    <p class="text-indigo-200 mb-4">
+                        One of the most unique boss monsters of its time, LaDD's value comes from a complex interplay of powerful effects and significant restrictions.
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-dark">Summoning Restriction:</strong> Cannot be Special Summoned. Requires two Tributes, mandating engines like <strong class="text-accent-light">Treeborn Frog</strong>.</li>
+                        <li><strong class="text-accent-dark">Attribute Modulation:</strong> Also treated as DARK, making it a "Chaos" dragon.</li>
+                        <li><strong class="text-accent-dark">Mandatory Omni-Negation:</strong> Loses 500 ATK/DEF to negate a Spell, Trap, or monster effect (max 4 times). This is mandatory and negates its *own controller's* cards.</li>
+                        <li><strong class="text-accent-dark">Destructive Revival:</strong> When destroyed, it destroys all cards you control, then revives a monster from your GY.</li>
+                    </ul>
+                    <p class="text-indigo-200 mt-4">
+                        This design creates a "prison" for both players, freezing the game state until LaDD's negations are exhausted. It is the *entire* endboard, not just a part of it.
+                    </p>
+                </div>
+                <!-- 1.2. The Modern Successor --><div class="card p-6">
+                    <h3 class="text-2xl font-bold text-accent-light mb-4">The Modern Successor</h3>
+                    <div id="laddl-img-container" class="card-image-container mx-auto mb-4">Light and Darkness Dragonlord</div>
+                    <h4 class="text-xl font-bold text-white mb-2">Light and Darkness Dragonlord</h4>
+                    <p class="text-indigo-200 mb-4 text-sm font-mono">LIGHT Dragon/Fusion/Effect | LV 10 | 3400 ATK / 3000 DEF</p>
+                    <p class="text-indigo-200 mb-4">
+                        A direct evolution, re-imagined as a Fusion monster to fit the modern game's pace.
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-dark">Fusion Materials:</strong> 1 Level 8 LIGHT Dragon + 1 Level 8 DARK Dragon.</li>
+                        <li><strong class="text-accent-dark">Attribute Modulation:</strong> Also treated as DARK.</li>
+                        <li><strong class="text-accent-dark">Controlled Omni-Negation:</strong> (Quick Effect) Loses 1000 ATK/DEF to negate an activation (max 3 times). This is optional and *not* mandatory.</li>
+                        <li><strong class="text-accent-dark">Constructive Revival:</strong> If destroyed by an *opponent's* card, it Special Summons one Dragon from your GY without destroying your board.</li>
+                    </ul>
+                    <p class="text-indigo-200 mt-4">
+                        LaDDL generates asymmetrical advantage. Its effects are purely beneficial, making it a streamlined, efficient boss monster that functions *with* a larger board.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Chaos Engine (From Docx Section 2) --><section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Chaos Engine: Key Enablers</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                Summoning Dragonlord requires a consistent method of accessing its Level 8 LIGHT and DARK Dragon materials. This is done through a suite of "Chaos" support cards that form the deck's
+                <a href="https://yugipedia.com/wiki/Chaos_(archetype)" target="_blank" class="lore-link">core engine</a>.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Primary Consistency Tools --><div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-light mb-4">Primary Starters</h3>
+                    <div id="seyfert-img-container" class="card-image-container mx-auto mb-4">Starliege Seyfert</div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-dark">Starliege Seyfert:</strong> The best Normal Summon. Sends Dragons from hand/field to search, and banishes itself from GY to add a Level 8 LIGHT/DARK Dragon from GY to hand.</li>
+                        <li><strong class="text-accent-dark">Chaos Space:</strong> Sends a LIGHT/DARK from hand to GY to add the opposite Attribute. Banishes from GY to recycle a banished monster and draw 1.</li>
+                    </ul>
+                </div>
+                <!-- The "Chaos Baby Dragons" --><div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-light mb-4">The "Baby Dragons"</h3>
+                    <div id="collapserpent-img-container" class="card-image-container mx-auto mb-4">Black Dragon Collapserpent</div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-dark">Black Dragon Collapserpent:</strong> Summons by banishing 1 LIGHT. When sent from field to GY, searches <strong class="text-accent-light">Wyverburster</strong>.</li>
+                        <li><strong class="text-accent-dark">White Dragon Wyverburster:</strong> Summons by banishing 1 DARK. When sent from field to GY, searches <strong class="text-accent-light">Collapserpent</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Power Plays --><div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent-light mb-4">Power Plays & Fuel</h3>
+                    <div id="levianeer-img-container" class="card-image-container mx-auto mb-4">Chaos Dragon Levianeer</div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent-dark">Chaos Dragon Levianeer:</strong> Premier boss and material. Summons by banishing 3 LIGHT/DARKs for various effects (rip from hand, destroy 2, or revive).</li>
+                        <li><strong class="text-accent-dark">Dragon Ravine / Dragon Shrine:</strong> Key spells to send Dragons from the Deck to the GY, setting up combos or <strong class="text-accent-light">Eclipse Wyvern</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough (From Docx Table 1) --><section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: Chaos Space</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">This one-card combo demonstrates the engine's efficiency, turning a single Spell and a discard into interaction and follow-up.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 --><div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="chaos-space-img-container" class="card-image-container flex-shrink-0">Chaos Space</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1a29] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate & Search</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent-light">Chaos Space</strong>. Send a LIGHT Dragon from hand to GY to search <strong class="text-accent-dark">Black Dragon Collapserpent</strong>. (GY is now set up).</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow --><div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color"></i></div>
+                <!-- Step 2 --><div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="striker-dragon-img-container" class="card-image-container flex-shrink-0">Striker Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1a29] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Start the "Flywheel"</h3>
+                            </div>
+                            <p class="text-indigo-200">Special Summon <strong class="text-accent-dark">Collapserpent</strong> (banish LIGHT). Link Summon <strong class="text-accent-light">Striker Dragon</strong>. <strong class="text-accent-dark">Collapserpent</strong> effect triggers, search <strong class="text-accent-light">White Dragon Wyverburster</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow --><div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color"></i></div>
+                <!-- Step 3 --><div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="hieratic-seal-img-container" class="card-image-container flex-shrink-0">Hieratic Seal of the Heavenly Spheres</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1a29] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Build Interaction</h3>
+                            </div>
+                            <p class="text-indigo-200">Special Summon <strong class="text-accent-light">Wyverburster</strong> (banish <strong class="text-accent-dark">Collapserpent</strong>). Link Summon <strong class="text-accent-light">Hieratic Seal of the Heavenly Spheres</strong> using Striker and Wyverburster. <strong class="text-accent-light">Wyverburster</strong> triggers, search <strong class="text-accent-dark">Collapserpent</strong> for next turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Target Endboard (From Docx Section 3.2) --><section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Target Endboard</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">The primary objective is to establish a board that can effectively control the opponent's turn. An ideal board supplements the main boss with other forms of interaction.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-4xl">
+                <!-- Centerpiece: Dragonlord --><div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Centerpiece</h3>
+                    <div id="laddl-endboard-img" class="card-image-container mx-auto">Light and Darkness Dragonlord</div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200 mt-4">
+                        <li><strong class="text-accent-light">3x Optional Omni-Negates</strong></li>
+                        <li><strong class="text-accent-light">3400 ATK Body</strong></li>
+                    </ul>
+                </div>
+                <!-- Support: Bystial --><div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Grave Disruption</h3>
+                    <div id="druiswurm-endboard-img" class="card-image-container mx-auto">Bystial Druiswurm</div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200 mt-4">
+                        <li><strong class="text-accent-dark">Bystial Druiswurm</strong></li>
+                        <li><strong class="text-accent-dark">Quick-Effect Banish</strong></li>
+                        <li><strong class="text-accent-dark">Field Removal</strong></li>
+                    </ul>
+                </div>
+                <!-- Support: Xyz --><div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Spell Negation</h3>
+                    <div id="number-38-endboard-img" class="card-image-container mx-auto">Number 38: Hope Harbinger Dragon Titanic Galaxy</div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200 mt-4">
+                        <li><strong class="text-accent-dark">Number 38</strong></li>
+                        <li><strong class="text-accent-dark">Once-per-turn Spell Negate</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis (From Docx Section 5) --><section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths --><div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Ceiling:</strong> Can end on one of the most formidable boss monsters in the game (Dragonlord).</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Resilience & Grind Game:</strong> Effects of <strong class="text-accent-light">Seyfert</strong> and <strong class="text-accent-light">Chaos Space</strong> allow for resource recovery.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sitemap"></i></span> <strong class="text-green-300">Flexibility:</strong> The core Chaos engine is highly modular and synergizes perfectly with other archetypes like <strong class="text-accent-dark">Bystial</strong>.</li>
+                        <li><span class="pro-icon"><i class="fas fa-meteor"></i></span> <strong class="text-green-300">Board-Breaking:</strong> Access to <strong class="text-accent-light">Chaos Dragon Levianeer</strong> provides a built-in tool for dismantling boards.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses --><div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Graveyard Dependency:</strong> Extremely vulnerable to floodgates like <strong class="text-accent-light">Dimension Shifter</strong> or <strong class="text-accent-light">Abyss Dweller</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">Identifiable Choke Points:</strong> A well-timed <strong class="text-accent-light">Ash Blossom</strong> on <strong class="text-accent-light">Chaos Space</strong> or <strong class="text-accent-light">Seyfert</strong> can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Extra Deck Reliance:</strong> Vulnerable to cards like <strong class="text-accent-light">Dimension Barrier</strong> calling Fusion.</li>
+                    </ul>
+                </div>
+                <!-- Pilot Recommendations --><div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">Pilot Recommendations</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-tasks"></i></span> <strong class="text-blue-300">Master Sequencing:</strong> Understand the optimal order of plays to bait interruptions and maximize the "Chaos flywheel."</li>
+                        <li><span classS="neutral-icon"><i class="fas fa-calculator"></i></span> <strong class="text-blue-300">Resource Management:</strong> The GY is a resource. Know when to use <strong class="text-accent-light">Seyfert</strong>'s effect vs. leaving it as a LIGHT monster for other costs.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-adjust"></i></span> <strong class="text-blue-300">Adaptability:</strong> Know when to rush out Dragonlord and when to play a slower, more conservative grind game.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section (Dynamic) --><section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <div id="banlist-loader" class="flex items-center justify-center p-4">
+                    <div class="loader"></div>
+                    <p class="ml-4 text-accent-light">Fetching live TCG banlist status...</p>
+                </div>
+                <div id="banlist-content" class="hidden">
+                    <p class="text-indigo-200 mb-4 text-center">
+                        Status of key archetype and engine cards in the TCG, loaded dynamically.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:4 gap-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden (0 copies)</h4>
+                            <ul id="banlist-forbidden" class="list-disc list-inside space-y-1 text-sm text-red-300">
+                                <!-- JS will populate this --></ul>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 copy)</h4>
+                            <ul id="banlist-limited" class="list-disc list-inside space-y-1 text-sm text-yellow-300">
+                                <!-- JS will populate this --></ul>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-blue-400 mb-2">Semi-Limited (2 copies)</h4>
+                            <ul id="banlist-semi-limited" class="list-disc list-inside space-y-1 text-sm text-blue-300">
+                                <!-- JS will populate this --></ul>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited (3 copies)</h4>
+                            <ul id="banlist-unlimited" class="list-disc list-inside space-y-1 text-sm text-green-300">
+                                <!-- JS will populate this --></ul>
+                        </div>
+                    </div>
+                    <div id="banlist-meta" class="mt-4 p-3 bg-opacity-30 rounded border-l-4">
+                        <!-- JS will populate this --></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- DUALITY BANNER ANIMATION ---
+            const canvas = document.getElementById('duality-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+                    canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+                    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+                };
+
+                class Particle {
+                    constructor(isLight) {
+                        this.isLight = isLight;
+                        this.x = canvas.offsetWidth / 2;
+                        this.y = canvas.offsetHeight / 2;
+                        this.radius = Math.random() * 1.5 + 1;
+                        this.color = this.isLight ? '#f0e68c' : '#bca0dc';
+                        this.radians = Math.random() * Math.PI * 2;
+                        this.velocity = 0.03;
+                        this.distance = Math.random() * 60 + 40;
+                        this.lastPoint = { x: this.x, y: this.y };
+                    }
+                    
+                    update() {
+                        const prev = this.lastPoint;
+                        this.radians += this.velocity;
+                        
+                        // Circular motion
+                        this.lastPoint = { x: this.x, y: this.y };
+                        this.x = canvas.offsetWidth / 2 + Math.cos(this.radians) * this.distance;
+                        this.y = canvas.offsetHeight / 2 + Math.sin(this.radians) * this.distance;
+
+                        // Add some random drift
+                        this.distance += (Math.random() - 0.5) * 0.2;
+                        if (this.distance < 40) this.distance = 40;
+                        if (this.distance > 100) this.distance = 100;
+                        
+                        this.draw(prev);
+                    }
+                    
+                    draw(prev) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = this.radius;
+                        ctx.moveTo(prev.x, prev.y);
+                        ctx.lineTo(this.x, this.y);
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    for (let i = 0; i < 50; i++) {
+                        particles.push(new Particle(true)); // Light
+                    }
+                    for (let i = 0; i < 50; i++) {
+                        particles.push(new Particle(false)); // Dark
+                    }
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ctx.fillStyle = 'rgba(10, 10, 16, 0.1)'; // Slow fade
+                    ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+                    
+                    particles.forEach(p => p.update());
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Call the shared CardLoader.js function
+            CardLoader.loadCards({
+                'ladd-img-container': 'Light and Darkness Dragon',
+                'laddl-img-container': 'Light and Darkness Dragonlord',
+                'seyfert-img-container': 'Starliege Seyfert',
+                'collapserpent-img-container': 'Black Dragon Collapserpent',
+                'levianeer-img-container': 'Chaos Dragon Levianeer',
+                'chaos-space-img-container': 'Chaos Space',
+                'striker-dragon-img-container': 'Striker Dragon',
+                'hieratic-seal-img-container': 'Hieratic Seal of the Heavenly Spheres',
+                'laddl-endboard-img': 'Light and Darkness Dragonlord',
+                'druiswurm-endboard-img': 'Bystial Druiswurm',
+                'number-38-endboard-img': 'Number 38: Hope Harbinger Dragon Titanic Galaxy'
+            });
+
+            // --- BANLIST FETCHER ---
+            async function fetchBanlistStatus() {
+    const keyCards = [
+        'Light and Darkness Dragon', 'Light and Darkness Dragonlord', 
+        'Starliege Seyfert', 'Chaos Space', 'Black Dragon Collapserpent', 
+        'White Dragon Wyverburster', 'Chaos Dragon Levianeer', 'Dragon Ravine', 
+        'Dragon Shrine', 'Eclipse Wyvern', 'Bystial Druiswurm', 
+        'The Bystial Lubellion', 'Bystial Magnamhut', 
+        'Number 38: Hope Harbinger Dragon Titanic Galaxy', 
+        'Destiny HERO - Malicious', 'Treeborn Frog', 'Striker Dragon', 
+        'Hieratic Seal of the Heavenly Spheres'
+    ];
+
+    const lists = {
+        forbidden: document.getElementById('banlist-forbidden'),
+        limited: document.getElementById('banlist-limited'),
+        semi: document.getElementById('banlist-semi-limited'),
+        unlimited: document.getElementById('banlist-unlimited')
+    };
+    
+    const metaBox = document.getElementById('banlist-meta');
+    const loader = document.getElementById('banlist-loader');
+    const content = document.getElementById('banlist-content');
+
+    let forbiddenCount = 0;
+    let limitedCount = 0;
+
+    // Create a map to track which cards we've found
+    const cardStatusMap = new Map(keyCards.map(name => [name, 'Unlimited'])); // Assume unlimited by default
+
+    try {
+        // Fetch all cards at once (no name filter for better compatibility)
+        const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php`);
+        
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        
+        const data = await response.json();
+
+        if (!data || !data.data) {
+            throw new Error("Received empty or invalid data from API.");
+        }
+        
+        // Filter to only our key cards and update the status map
+        data.data.forEach(card => {
+            if (keyCards.includes(card.name)) {
+                const status = card.banlist_info ? card.banlist_info.ban_tcg : 'Unlimited';
+                cardStatusMap.set(card.name, status || 'Unlimited');
+            }
+        });
+
+        // Sort and populate the lists from our map
+        keyCards.sort().forEach(cardName => {
+            const status = cardStatusMap.get(cardName);
+            const li = document.createElement('li');
+            li.textContent = cardName;
+
+            switch (status) {
+                case 'Banned':
+                    lists.forbidden.appendChild(li);
+                    forbiddenCount++;
+                    break;
+                case 'Limited':
+                    lists.limited.appendChild(li);
+                    limitedCount++;
+                    break;
+                case 'Semi-Limited':
+                    lists.semi.appendChild(li);
+                    break;
+                default:
+                    lists.unlimited.appendChild(li);
+                    break;
+            }
+        });
+
+        // Check for empty lists and add a placeholder
+        if (lists.forbidden.children.length === 0) lists.forbidden.innerHTML = '<li class="text-gray-400">None</li>';
+        if (lists.limited.children.length === 0) lists.limited.innerHTML = '<li class="text-gray-400">None</li>';
+        if (lists.semi.children.length === 0) lists.semi.innerHTML = '<li class="text-gray-400">None</li>';
+        if (lists.unlimited.children.length === 0) lists.unlimited.innerHTML = '<li class="text-gray-400">None</li>';
+
+        // Update meta box
+        if (forbiddenCount > 0 || limitedCount > 0) {
+            metaBox.className = 'mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500';
+            metaBox.innerHTML = `<p class="text-sm text-red-300"><strong>Meta Implications:</strong> With ${forbiddenCount} key card(s) Forbidden and ${limitedCount} Limited, the deck's consistency and power are impacted. Players must rely on alternatives for banned engine pieces.</p>`;
+        } else {
+            metaBox.className = 'mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500';
+            metaBox.innerHTML = `<p class="text-sm text-green-300"><strong>Meta Implications:</strong> The deck is at full power. With no key components on the TCG banlist, all core combo lines and strategies are fully available.</p>`;
+        }
+
+    } catch (error) {
+        console.error('Failed to fetch banlist:', error);
+        metaBox.className = 'mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500';
+        metaBox.innerHTML = `<p class="text-sm text-yellow-300"><strong>Error:</strong> Could not load live banlist data. Please check your connection or try again later.</p>`;
+    } finally {
+        // Hide loader and show content
+        loader.style.display = 'none';
+        content.style.display = 'block';
+    }
+}
+
+            fetchBanlistStatus();
+        });
+    </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystical Elf Deck Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      IMPORTANT: This page assumes 'card-loader.js' is in an 'assets/js/' directory.
+      Please adjust the path if necessary.
+    -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c142a; /* Dark Mystical Blue */
+            color: #e0e7ff; /* Light Lavender White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a2a4d; /* Deep Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a6a9b; /* Lighter Blue Border */
+        }
+        .combo-step-card {
+            background-color: #2a3f6b;
+            border: 1px solid #4a6a9b;
+        }
+        .pro-con-card {
+            background-color: #2a3f6b;
+            border: 1px solid #4a6a9b;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1a2a4d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a2a4d;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #1a2a4d);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent {
+            color: #f0e68c; /* Khaki/Gold */
+        }
+        .arrow-color {
+            color: #a0c4ff; /* Light Blue */
+        }
+        .heading-underline {
+            border-bottom: 2px solid #f0e68c;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f0e68c;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f0e68c;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- Mystical Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: linear-gradient(45deg, #0c142a, #1a2a4d);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a6a9b;
+        }
+        #mystical-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 20, 42, 0.4) 0%, rgba(12, 20, 42, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(240, 230, 140, 0.7);
+        }
+        .banner-header h1 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        @keyframes ygoButtonPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+        @keyframes ygoIconGlow {
+            0% { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); }
+            100% { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6); }
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+        
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(12, 20, 42, 0.95); /* Dark Blue */
+            border: 1px solid #f0e68c; /* Gold Accent */
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #f0e68c; /* Gold Accent */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: #f0e68c;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="mystical-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Mystical Elf</h1>
+            <p class="text-lg md:text-xl text-yellow-100">Mystical Power, Modern Strategy</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Deconstructing a Legacy, Building a Strategy</h2>
+                <p class="text-indigo-200">
+                    The name "Mystical Elf" evokes a specific era of Yu-Gi-Oh!, a time of simpler mechanics where raw defensive power could define a duel. However, a common misconception is to view the 
+                    <a href="#card-analysis-section" class="lore-link">collection of cards</a> 
+                    bearing this name as a formal, cohesive "archetype".
+                </p>
+                <p class="text-indigo-200 mt-4">
+                    This analysis presents a new thesis: a viable "Mystical Elf" deck is not an archetype-driven strategy but rather a sophisticated and potent <strong class="text-accent font-bold">Normal Monster control strategy</strong>. The entire framework is built to enable its modern incarnation, <strong class="text-accent font-bold">Mystical Elf - White Lightning</strong>, a powerful piece of interaction that fundamentally redefines the purpose of its namesake.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Elven Trinity: Card Analysis Section -->
+        <section id="card-analysis-section" class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Elven Trinity: Card Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Core Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-magic text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Core Playmakers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="mystical-elf-img" class="card-image-container card-placeholder">Mystical Elf</div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-accent mb-1">Mystical Elf</h4>
+                                    <p class="text-sm text-indigo-200">The foundational card. Its true value is not its 2000 DEF, but its status as a Level 4 Normal Monster, making it a prime target for powerful support cards like <strong class="text-accent">Unexpected Dai</strong> and <strong class="text-accent">Rescue Rabbit</strong>. It is the key to starting your combos.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="white-lightning-img" class="card-image-container card-placeholder">Mystical Elf - White Lightning</div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-accent mb-1">Mystical Elf - White Lightning</h4>
+                                    <p class="text-sm text-indigo-200">The deck's primary win condition. As a Quick Effect, this hand-trap can Special Summon itself and <strong class="text-accent">negate an opponent's monster effect</strong>, provided you control a Level 5 or higher Normal Monster. This is the payoff for the entire strategy.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Thematic Cards -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book-open text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Thematic Counterparts</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gift of the Mystical Elf</h4>
+                            <p class="text-sm text-indigo-200">A Normal Trap that gains 300 LP for each monster on the field. While a direct anime homage, it is competitively unviable as it does not advance your board state or disrupt the opponent. Its inclusion is for theme and casual play only.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Dark Elf</h4>
+                            <p class="text-sm text-indigo-200">A thematic foil with 2000 ATK and a 1000 LP cost to attack. This card has zero functional synergy with the "Mystical Elf" strategy, as it is not a Normal Monster and does not support the core game plan.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Support Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Support Engine: The Mystical Machine</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The true power of the deck lies in the robust engine of generic support that enables its core combo.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Primary Starters -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Primary Starters: Summoning the Elf</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="unexpected-dai-img" class="card-image-container card-placeholder">Unexpected Dai</div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-accent mb-1">Unexpected Dai</h4>
+                                    <p class="text-sm text-indigo-200">Arguably the deck's best starter. It Special Summons <strong class="text-accent">Mystical Elf</strong> from the deck for free if you control no monsters, all without using your Normal Summon.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="rescue-rabbit-img" class="card-image-container card-placeholder">Rescue Rabbit</div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-accent mb-1">Rescue Rabbit</h4>
+                                    <p class="text-sm text-indigo-200">A high-reward Normal Summon. It banishes itself to summon two copies of <strong class="text-accent">Mystical Elf</strong> from the deck, setting up an immediate Rank 4 Xyz or Link-2 play.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- High-Level Enablers -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Enablers: Fueling "White Lightning"</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="bewd-img" class="card-image-container card-placeholder">Blue-Eyes White Dragon</div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-accent mb-1">The High-Level Normal</h4>
+                                    <p class="text-sm text-indigo-200"><strong class="text-accent">Blue-Eyes White Dragon</strong> or <strong class="text-accent">Dark Magician</strong> is required to turn on <strong class="text-accent">White Lightning's</strong> negation. The deck is built around tutoring and summoning this card consistently.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="ancient-rules-img" class="card-image-container card-placeholder">Ancient Rules</div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-accent mb-1">The Tutors & Summons</h4>
+                                    <p class="text-sm text-indigo-200">Cards like <strong class="text-accent">Summoner's Art</strong> and <strong class="text-accent">The White Stone of Legend</strong> search your enabler, while <strong class="text-accent">Ancient Rules</strong> Special Summons it from your hand for free.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Execution: Combo Lines</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">These paths show how the deck assembles its key pieces to prepare for the opponent's turn.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Combo 1: Unexpected Dai -->
+                <div class="flex flex-col items-center gap-6">
+                    <h3 class="text-xl font-bold text-white mb-2 text-center">Path 1: The "Unexpected Dai" Open</h3>
+                    <!-- Step 1 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="unexpected-dai-combo-img" class="card-image-container card-placeholder">Unexpected Dai</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate Starter</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent">Unexpected Dai</strong> to Special Summon <strong class="text-accent">Mystical Elf</strong> from the Deck.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                    <!-- Step 2 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="white-stone-img" class="card-image-container card-placeholder">The White Stone of Legend</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Synchro & Search</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">The White Stone of Legend</strong>. Tune with <strong class="text-accent">Mystical Elf</strong> for a Level 5 Synchro. <strong class="text-accent">White Stone's</strong> effect activates, adding <strong class="text-accent">Blue-Eyes White Dragon</strong> from Deck to hand.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                    <!-- Step 3 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="bewd-combo-img" class="card-image-container card-placeholder">Blue-Eyes White Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Establish Enabler</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent">Ancient Rules</strong> to Special Summon <strong class="text-accent">Blue-Eyes White Dragon</strong> from hand. <strong class="text-accent">White Lightning</strong> is now live.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Combo 2: Rescue Rabbit -->
+                <div class="flex flex-col items-center gap-6">
+                    <h3 class="text-xl font-bold text-white mb-2 text-center">Path 2: The "Rescue Rabbit" Explosion</h3>
+                    <!-- Step 1 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="rescue-rabbit-combo-img" class="card-image-container card-placeholder">Rescue Rabbit</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Normal & Banish</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Rescue Rabbit</strong>. Activate its effect, banishing it to summon two copies of <strong class="text-accent">Mystical Elf</strong> from the Deck.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                    <!-- Step 2 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="vepartu-img" class="card-image-container card-placeholder">Magikey Spirit - Vepartu</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Xyz Summon</h3>
+                            </div>
+                            <p class="text-indigo-200">Overlay the two <strong class="text-accent">Mystical Elves</strong> to Xyz Summon a Rank 4 monster. <strong class="text-accent">Magikey Spirit - Vepartu</strong> can search a Normal Monster, or <strong class="text-accent">Bagooska</strong> can stall.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                    <!-- Step 3 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="bewd-combo-img-2" class="card-image-container card-placeholder">Blue-Eyes White Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Search & Summon</h3>
+                            </div>
+                            <p class="text-indigo-200">Use <strong class="text-accent">Summoner's Art</strong> to search <strong class="text-accent">Blue-Eyes White Dragon</strong>, then <strong class="text-accent">Ancient Rules</strong> to summon it. <strong class="text-accent">White Lightning</strong> is now live.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Grand Finale: A Typical End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Mystical Elf" End Board: A Realistic Goal</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                This strategy does not build an unbreakable board of omni-negates. Instead, it is a reactive control deck that establishes a minimal, specific board to enable powerful, targeted interaction from the hand.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The Core Disruption Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Enabler</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="bewd-endboard-img" class="card-image-container card-placeholder">Blue-Eyes White Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Level 5+ Normal Monster:</strong> The non-negotiable core of the board. <strong class="text-accent">Blue-Eyes White Dragon</strong> is the most iconic and well-supported choice.</li>
+                        <li><strong class="text-accent">The "On" Switch:</strong> Its presence on the field is what turns on your main piece of disruption.</li>
+                    </ul>
+                </div>
+                <!-- The Payoff -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Disruption</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="white-lightning-endboard-img" class="card-image-container card-placeholder">Mystical Elf - White Lightning</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">White Lightning (in Hand):</strong> The key piece of interaction. A hand-trap monster negate that summons itself to the field.</li>
+                        <li><strong class="text-accent">Reactive Control:</strong> The strategy is to let the opponent commit to their main combo line, then negate their most critical monster effect.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The "Mystical Elf" Normal Monster strategy remains fully available in the current TCG format:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Core Cards (Unlimited)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Mystical Elf (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Mystical Elf - White Lightning (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Blue-Eyes White Dragon (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Dark Magician (3 copies)</strong></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Support Engine (Unlimited)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Rescue Rabbit (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Unexpected Dai (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Summoner's Art (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Ancient Rules (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Tenyi Spirit - Vishuda (3 copies)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With all core starters, extenders, and enablers at full, unrestricted power, the "Mystical Elf" strategy can be built with maximum consistency. The deck does not suffer from any F&L list restrictions to its primary game plan.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- External Synergies Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">External Synergies & Engine Integration</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Blue-Eyes -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4">Blue-Eyes Engine</h3>
+                    <p class="text-indigo-200">The most natural pairing. The Blue-Eyes deck is already built to summon its Level 8 Normal Monster consistently. <strong class="text-accent">White Lightning</strong> slots in perfectly, providing a monster negate the archetype otherwise lacks.</p>
+                </div>
+                <!-- Tenyi -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4">Tenyi Engine</h3>
+                    <p class="text-indigo-200">A highly effective synergy. The original <strong class="text-accent">Mystical Elf</strong> (as a non-Effect monster) enables the entire Tenyi engine, allowing for a flurry of Special Summons and access to <strong class="text-accent">Tenyi Spirit - Vishuda's</strong> powerful removal.</p>
+                </div>
+                <!-- Dark Magician / Magikey -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4">Magikey & Dark Magician</h3>
+                    <p class="text-indigo-200">The <strong class="text-accent">Dark Magician</strong> engine functions similarly to Blue-Eyes. The <strong class="text-accent">Magikey</strong> archetype uses Normal Monsters as material, and its Rank 4 Xyz <strong class="text-accent">Vepartu</strong> can search <strong class="text-accent">Mystical Elf</strong>, creating a powerful symbiotic loop.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Mystical Banner Animation ---
+            const canvas = document.getElementById('mystical-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speed = Math.random() * 1 + 0.2;
+                        this.radius = Math.random() * 2 + 1;
+                        this.color = `rgba(240, 230, 140, ${Math.random() * 0.5 + 0.2})`; // Gold/Khaki
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- Card Loading ---
+            // This relies on card-loader.js being loaded
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'mystical-elf-img': 'Mystical Elf',
+                    'white-lightning-img': 'Mystical Elf - White Lightning',
+                    'unexpected-dai-img': 'Unexpected Dai',
+                    'rescue-rabbit-img': 'Rescue Rabbit',
+                    'bewd-img': 'Blue-Eyes White Dragon',
+                    'ancient-rules-img': 'Ancient Rules',
+                    'unexpected-dai-combo-img': 'Unexpected Dai',
+                    'white-stone-img': 'The White Stone of Legend',
+                    'bewd-combo-img': 'Blue-Eyes White Dragon',
+                    'rescue-rabbit-combo-img': 'Rescue Rabbit',
+                    'vepartu-img': 'Magikey Spirit - Vepartu',
+                    'bewd-combo-img-2': 'Blue-Eyes White Dragon',
+                    'bewd-endboard-img': 'Blue-Eyes White Dragon',
+                    'white-lightning-endboard-img': 'Mystical Elf - White Lightning'
+                });
+            } else {
+                console.error("CardLoader is not defined. Make sure card-loader.js is loaded correctly.");
+            }
+        });
+    </script>
+</body>
+</html>

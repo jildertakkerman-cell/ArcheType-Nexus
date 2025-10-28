@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monarch Deck Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importing the shared card loader -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Inter for body and Cinzel for a regal, stone-carved title font -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #18181b; /* Dark Charcoal */
+            color: #e0e7ff; /* Light lavender white, good contrast */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #27272a; /* Slightly lighter charcoal */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #a16207; /* Dark Gold/Amber border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a2a2a;
+            border: 1px solid #ca8a04; /* Brighter Gold */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3f3f46;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3f3f46;
+            border: 1px dashed #ca8a04;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Gold/Yellow */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- MONARCH ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #18181b;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #a16207;
+        }
+
+        #throne-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(24, 24, 27, 0.4) 0%, rgba(24, 24, 27, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel', serif;
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #facc15; /* Gold border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #facc15; /* Gold header */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Cinzel', serif;
+            color: #facc15;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="throne-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Monarchs' Dominion</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Strategic Analysis of a Tribute-Summoning Powerhouse</p>
+        </header>
+
+        <!-- Executive Summary Section (From DOCX Section 1) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: An Anti-Meta Legacy</h2>
+                <p class="text-indigo-200">
+                    The "Monarch" archetype represents a strategic philosophy fundamentally at odds with modern Yu-Gi-Oh!. It is a control-oriented strategy built upon the game's original core mechanic: the 
+                    <a href="https://db.ygoprodeck.com/api/v7/cardinfo.php?archetype=Monarch" target="_blank" class="lore-link">Tribute Summon</a>.
+                    In an era defined by rapid-fire Special Summons, the Monarch deck deliberately slows the pace of the game, aiming to simplify the board state and punish opponents who rely on these intricate mechanics. Its identity is not merely to compete with the meta, but to actively dismantle it.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section (From DOCX Section 1) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Foundational Philosophy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The Power of Tribute Summoning</h3>
+                    <p class="text-indigo-200">At its heart, the Monarch strategy revolves around the act of Tribute Summoning. The archetype is ingeniously designed to subvert the mechanic's weaknesses. Through a suite of powerful support cards, the deck transforms tributing from a cost into a catalyst for generating immense advantage.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The Anti-Extra Deck Doctrine</h3>
+                    <p class="text-indigo-200">The primary strategic objective is to completely invalidate the opponent's Extra Deck. This is most effectively achieved through their signature Field Spell, <strong class="text-accent">Domain of the True Monarchs</strong>, which prevents the opponent from Special Summoning from their Extra Deck.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Royal Court Section (From DOCX Section 2) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Royal Court: Core Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-crown text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Ruling Class: The Monarchs</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Erebus the Underworld Monarch</h4>
+                            <p class="text-sm text-indigo-200">The ultimate removal tool. When Tribute Summoned, it shuffles a card from the opponent's hand, field, or GY back into the Deck without targeting.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Ehther the Heavenly Monarch</h4>
+                            <p class="text-sm text-indigo-200">The key to disruption. Can be Tribute Summoned during the opponent's turn as a Quick Effect, allowing it to summon another Monarch from the deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Caius the Shadow Monarch</h4>
+                            <p class="text-sm text-indigo-200">Premier, versatile spot removal. Upon summon, it targets and banishes any one card on the field.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Engine -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Engine Room: Squires & Spells</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Edea the Heavenly Squire</h4>
+                            <p class="text-sm text-indigo-200">The premier one-card starter. Summons Eidos from the deck to enable an immediate Tribute Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Pantheism of the Monarchs</h4>
+                            <p class="text-sm text-indigo-200">The deck's main consistency tool. Provides draw power and a powerful search from the Graveyard. (<strong class="text-yellow-400">Limited to 1</strong>)</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Monarchs Stormforth</h4>
+                            <p class="text-sm text-indigo-200">One of the best removal cards in the game. Allows you to use an opponent's monster as a tribute. (<strong class="text-yellow-400">Limited to 1</strong>)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section (From DOCX Section 3) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The One-Card Monarch</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                This walkthrough demonstrates the deck's fundamental play: summoning a Level 8 Monarch from a single card.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="edea-img-container" class="card-image-container flex-shrink-0 card-placeholder">Edea the Heavenly Squire</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#18181b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Normal Summon Edea</h3>
+                            </div>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Edea the Heavenly Squire</strong>. On summon, activate its effect to Special Summon <strong class="text-accent">Eidos the Underworld Squire</strong> from your deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="eidos-img-container" class="card-image-container flex-shrink-0 card-placeholder">Eidos the Underworld Squire</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#18181b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Gain Additional Summon</h3>
+                            </div>
+                            <p class="text-indigo-200">When <strong class="text-accent">Eidos</strong> is summoned, its effect triggers, granting you one additional Tribute Summon for the turn.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="erebus-img-container" class="card-image-container flex-shrink-0 card-placeholder">Erebus the Underworld Monarch</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#18181b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon the Monarch</h3>
+                            </div>
+                            <p class="text-indigo-200">Tribute both Edea and Eidos to Tribute Summon <strong class="text-accent">Erebus the Underworld Monarch</strong>. Erebus's effect (Chain Link 1) and Edea's GY effect (Chain Link 2) now activate, allowing you to get removal and a resource back.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section (From DOCX Section 4 & 3) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Throne: A Typical End Board</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                Unlike combo decks, the Monarch end board is a simplified, oppressive game state defined by floodgates and targeted disruption.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The "Domain Lock" -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The "Domain Lock"</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="domain-img-container" class="card-image-container card-placeholder">Domain of the True Monarchs</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Domain of the True Monarchs:</strong> Prevents the opponent from Special Summoning from the Extra Deck.</li>
+                        <li><strong class="text-accent">The Monarchs Erupt:</strong> A one-sided "Skill Drain" that negates all non-Tribute Summoned monsters on the field.</li>
+                        <li><strong class="text-accent">March of the Monarchs:</strong> Protects your Tribute Summoned monsters from targeting and destruction by card effects.</li>
+                    </ul>
+                </div>
+                <!-- Opponent-Turn Disruption -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Opponent-Turn Disruption</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ehther-img-container" class="card-image-container card-placeholder">Ehther the Heavenly Monarch</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Ehther the Heavenly Monarch:</strong> Tribute Summons itself from the hand during the opponent's turn as a Quick Effect.</li>
+                        <li><strong class="text-accent">Kuraz the Light Monarch:</strong> Summoned by Ehther's effect, Kuraz can target and destroy up to two cards on the field for removal.</li>
+                        <li><strong class="text-accent">The Prime Monarch (in GY):</strong> Provides a recurring body for Tributes.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section (From DOCX Section 5) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths (Favorable Matchups)</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-ban"></i></span> <strong class="text-green-300">Extra Deck Reliant:</strong> Dominates decks that rely on their Extra Deck via the <strong class="text-accent">Domain</strong> lock.</li>
+                        <li><span class="pro-icon"><i class="fas fa-deaf"></i></span> <strong class="text-green-300">Monster Effect Reliant:</strong> Shuts down Main Deck combo starters with <strong class="text-accent">The Monarchs Erupt</strong>.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Targeting Protection:</strong> Very effective against monsters that rely on targeting or destruction.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses (Unfavorable Matchups)</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-300">Backrow-Heavy Decks:</strong> Struggles against control decks (like Labrynth) that can destroy <strong class="text-accent">Domain</strong> on summon.</li>
+                        <li><span class="con-icon"><i class="fas fa-gavel"></i></span> <strong class="text-red-300">Non-Extra Deck:</strong> Strategies that don't use the Extra Deck (like Floowandereeze) ignore the deck's main floodgate.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Spell/Trap Negation:</strong> A single negation on <strong class="text-accent">Pantheism</strong> or <strong class="text-accent">Domain</strong> can be turn-ending.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech Choices</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-user-slash"></i></span> <strong class="text-accent">Vanity's Fiend:</strong> A powerful floodgate that prevents both players from Special Summoning.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-user-shield"></i></span> <strong class="text-accent">Majesty's Fiend:</strong> Another floodgate that prevents all monster effects from being activated.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-accent">One for One:</strong> An additional way to get <strong class="text-accent">Edea</strong> onto the field from the deck.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section (Based on my verification) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">LIMITED IMPACT:</strong> The Monarch archetype has been "reigned in" by the TCG banlist, but its core engine remains largely intact.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Pantheism of the Monarchs</strong> - Key consistency spell</li>
+                            <li><strong class="text-yellow-300">The Monarchs Stormforth</strong> - Premier removal spell</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards (3 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All Main Deck Monarchs (Erebus, Ehther, etc.)</li>
+                            <li>Edea the Heavenly Squire & Eidos</li>
+                            <li>Domain of the True Monarchs</li>
+                            <li>Return of the Monarchs & Tenacity</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its most powerful consistency and removal tools limited, the deck is less explosive than at its peak. However, all of its core monster-based starters, extenders, and floodgates remain at full power, allowing it to function as a potent anti-meta strategy.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- MONARCH THRONE ROOM ANIMATION ---
+            const canvas = document.getElementById('throne-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 0.5 + 0.1; // Slow drift
+                        this.radius = Math.random() * 2 + 1;
+                        this.color = `rgba(250, 204, 21, ${Math.random() * 0.5 + 0.3})`; // Gold/Amber particles
+                    }
+                    update() {
+                        this.y -= this.speed; // Move up
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE LOADING ---
+            // Use the shared CardLoader to populate the image containers
+            CardLoader.loadCards({
+                'edea-img-container': 'Edea the Heavenly Squire',
+                'eidos-img-container': 'Eidos the Underworld Squire',
+                'erebus-img-container': 'Erebus the Underworld Monarch',
+                'domain-img-container': 'Domain of the True Monarchs',
+                'ehther-img-container': 'Ehther the Heavenly Monarch',
+                // This card is mentioned in the DOCX as the target for Ehther
+                'kuraz-img-container': 'Kuraz the Light Monarch' 
+            });
+        });
+    </script>
+</body>
+</html>

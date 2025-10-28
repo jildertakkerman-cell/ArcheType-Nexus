@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infernal Flame Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Make sure card-loader.js is in this path -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a0a00; /* Dark, fiery brown/black */
+            color: #ffeadb; /* Warm off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a1a1a; /* Dark red-brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #662200; /* Dark orange border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3b2a2a; /* Slightly lighter red-brown */
+            border: 1px solid #883300; /* Brighter orange border */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3b2a2a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b2a2a;
+            border: 1px dashed #883300;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ff6600; } /* Bright fire orange */
+        .arrow-color { color: #ff8800; } /* Lighter orange */
+        .heading-underline {
+            border-bottom: 2px solid #ff6600;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ff6600;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff6600;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ff6600;
+        }
+
+        /* --- NEW ANIMATED EMBER BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a0a00;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #662200;
+        }
+
+        #ember-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at bottom, rgba(26, 10, 0, 0.4) 0%, rgba(26, 10, 0, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(255, 102, 0, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', monospace;
+             font-size: 2.5rem;
+        }
+        .banner-header p {
+            font-size: 1.125rem;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+            .banner-header h1 { font-size: 2rem; }
+            .banner-header p { font-size: 1rem; }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 10, 0, 0.95); /* Dark fire-themed */
+            border: 1px solid #ff6600; /* Bright orange border */
+            border-radius: 0.75rem;
+            color: #ffeadb;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #ff6600; /* Bright fire orange */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #ff6600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="ember-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Infernal Flame</h1>
+            <p class="text-lg md:text-xl text-orange-200">A Strategic Analysis of a Fragmented Series</p>
+        </header>
+
+        <!-- Executive Summary Section (from Docx Intro) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: Deconstructing the "Infernal Flame" Series</h2>
+                <p class="text-orange-100">
+                    An analysis of the "Infernal Flame" cards is an exploration into the game's evolving design philosophy. It is crucial to establish that these cards do not constitute a functional "archetype." Rather, they are a 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Infernal%20Flame&stype=1" target="_blank" class="lore-link">thematically linked but mechanically disparate series</a>
+                    of monsters released over nearly two decades.
+                </p>
+                <p class="text-orange-100 mt-4">
+                    This distinction is fundamental; the cards share a name but lack the internal support or cohesive strategy that defines a true archetype. Their differing Monster Types (Fiend and Pyro) further underscore this separation. The series' history culminates in <strong class="text-accent font-bold">Infernal Flame Banshee</strong>, a card whose generic utility and power completely overshadow its namesakes, transforming it into a defining enabler for the entire Pyro monster type.
+                </p>
+            </div>
+        </section>
+
+        <!-- Legacy Cards Section (from Docx Part I) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Legacy Cards: A Historical Perspective</h2>
+            
+            <!-- NEW LAYOUT: Single column stack -->
+            <div class="grid grid-cols-1 gap-8 max-w-4xl mx-auto">
+
+                <!-- Legacy Card 1: Emperor -->
+                <div class="card p-6 flex flex-col md:flex-row gap-6 items-start transition-all duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-xl">
+                    <!-- Image -->
+                    <div class="w-full md:w-1/3 flex-shrink-0">
+                        <div id="emperor-img-container" class="card-image-container mx-auto card-placeholder">Infernal Flame Emperor</div>
+                    </div>
+                    <!-- Content -->
+                    <div class="w-full md:w-2/3">
+                        <span class="inline-block bg-red-800 text-red-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider opacity-80">Released: 2005</span>
+                        <h3 class="text-2xl font-bold text-accent mt-2 mb-3">Infernal Flame Emperor</h3>
+                        <p class="text-sm text-orange-100 flex-grow">
+                            A Level 9 Pyro monster and an archaic boss monster from Yu-Gi-Oh!'s early days. Its effect, which destroys Spells/Traps after a Tribute Summon, is a product of a bygone era. Critically, its text "This card cannot be Special Summoned" makes it fundamentally incompatible with modern FIRE and Pyro strategies (like Fire Kings) that rely on a constant loop of Special Summons from the Deck and GY.
+                        </p>
+                        <p class="text-xs text-orange-300 opacity-70 mt-3 italic">Source: Structure Deck: Blaze of Destruction</p>
+                    </div>
+                </div>
+
+                <!-- Legacy Card 2: Incinerator -->
+                <div class="card p-6 flex flex-col md:flex-row gap-6 items-start transition-all duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-xl">
+                    <!-- Image -->
+                    <div class="w-full md:w-1/3 flex-shrink-0">
+                        <div id="incinerator-img-container" class="card-image-container mx-auto card-placeholder">Infernal Incinerator</div>
+                    </div>
+                    <!-- Content -->
+                    <div class="w-full md:w-2/3">
+                        <span class="inline-block bg-red-800 text-red-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider opacity-80">Released: 2005</span>
+                        <h3 class="text-2xl font-bold text-accent mt-2 mb-3">Infernal Incinerator</h3>
+                        <p class="text-sm text-orange-100 flex-grow">
+                            A Level 6 FIRE Fiend monster that represents the high-risk, high-cost design of the *GX* era. To Normal Summon it, you must discard your *entire hand* and Tribute a 2000+ ATK monster. This complete loss of card advantage for a vulnerable beater makes it one of the most prohibitively costly monsters in the game's history, a relic of a failed design philosophy.
+                        </p>
+                         <p class="text-xs text-orange-300 opacity-70 mt-3 italic">Source: Elemental Energy</p>
+                    </div>
+                </div>
+
+                <!-- Legacy Card 3: Vixen -->
+                <div class="card p-6 flex flex-col md:flex-row gap-6 items-start transition-all duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-xl">
+                    <!-- Image -->
+                    <div class="w-full md:w-1/3 flex-shrink-0">
+                        <div id="vixen-img-container" class="card-image-container mx-auto card-placeholder">Infernal Flame Vixen</div>
+                    </div>
+                    <!-- Content -->
+                    <div class="w-full md:w-2/3">
+                        <span class="inline-block bg-red-800 text-red-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider opacity-80">Released: 2013</span>
+                        <h3 class="text-2xl font-bold text-accent mt-2 mb-3">Infernal Flame Vixen</h3>
+                        <p class="text-sm text-orange-100 flex-grow">
+                            A Rank 4 FIRE Pyro Xyz. This card is the direct evolutionary predecessor to Banshee, representing the first attempt at a generic Pyro Rank 4. However, its failures (restrictive materials, weak combat-oriented effect) informed the design successes of its modern counterpart. It was a non-factor upon release due to weak Pyro support and competition from far superior generic Rank 4 monsters.
+                        </p>
+                         <p class="text-xs text-orange-300 opacity-70 mt-3 italic">Source: Cosmo Blazer</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Modern Powerhouse Section (from Docx Part II) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Modern Powerhouse: Infernal Flame Banshee</h2>
+            <div class="card p-6">
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <div class="lg:w-1/3 flex-shrink-0 lg:self-start">
+                        <h3 class="text-2xl font-bold text-accent mb-4 text-center">Infernal Flame Banshee</h3>
+                        <div id="banshee-img-container" class="card-image-container mx-auto card-placeholder">Infernal Flame Banshee</div>
+                    </div>
+                    <div class="lg:w-2/3">
+                        <h4 class="text-xl font-bold text-white mb-2">Card Profile and Mechanical Breakdown</h4>
+                        <ul class="list-disc list-inside space-y-2 text-orange-100">
+                            <li><strong class="text-white">Summoning Condition:</strong> Requires "2 Level 4 monsters." This completely generic requirement is the key to its power, making it accessible to any deck that can field two Level 4 monsters.</li>
+                            <li><strong class="text-white">Primary Effect (The Toolbox):</strong> "You can detach 1 material from this card; take 1 Pyro monster from your Deck and either <strong class="text-accent">add it to your hand</strong> or <strong class="text-accent">send it to the GY</strong>".</li>
+                            <li><strong class="text-white">Secondary Effect (The Recurrence):</strong> If banished while you control a Pyro monster, it can Special Summon itself back. A valuable, though less-used, recursive ability.</li>
+                        </ul>
+                        <h4 class="text-xl font-bold text-white mt-6 mb-2">The Universal Pyro Toolbox</h4>
+                        <p class="text-orange-100 mb-4">Banshee's existence single-handedly elevated the entire Pyro type. It functions as a consistency engine and a bridge, allowing generic engines to access specific Pyro starters. Any powerful Pyro monster is now just one "Infernal Flame Banshee" summon away.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="combo-step-card p-3 rounded-lg">
+                                <p class="text-sm text-orange-100"><strong class="text-white">Target:</strong> Snake-Eye Ash</p>
+                                <p class="text-xs text-orange-200">Function: Combo Starter (Add to Hand)</p>
+                            </div>
+                            <div class="combo-step-card p-3 rounded-lg">
+                                <p class="text-sm text-orange-100"><strong class="text-white">Target:</strong> Legendary Fire King Ponix</p>
+                                <p class="text-xs text-orange-200">Function: Combo Starter / Recursion (Add to Hand)</p>
+                            </div>
+                            <div class="combo-step-card p-3 rounded-lg">
+                                <p class="text-sm text-orange-100"><strong class="text-white">Target:</strong> Priestess of the Ashened City</p>
+                                <p class="text-xs text-orange-200">Function: Combo Starter (Add to Hand)</p>
+                            </div>
+                            <div class="combo-step-card p-3 rounded-lg">
+                                <p class="text-sm text-orange-100"><strong class="text-white">Target:</strong> Volcanic Rimfire</p>
+                                <p class="text-xs text-orange-200">Function: GY Setup (Send to GY)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Combo Execution Section (from Docx Part III) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Combo Execution: Accessing Pyro Strategies</h2>
+            
+            <!-- Combo 1: Protos Lock (Historical) -->
+            <div class="mb-8">
+                <h3 class="text-xl font-bold text-white mb-4 text-center">Historical Combo: The Archnemeses Protos Lock</h3>
+                <div class="p-4 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500 mb-6">
+                    <p class="text-sm text-red-200"><strong class="font-bold">TCG BANLIST WARNING:</strong> This combo is no longer legal in TCG play. <strong class="font-bold">Archnemeses Protos</strong> is <strong class="font-bold">FORBIDDEN</strong> as of the October 2025 list.</p>
+                </div>
+                <div class="flex flex-col items-center gap-6">
+                    <!-- Step 1 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="banshee-combo1-img-container" class="card-image-container card-placeholder">Infernal Flame Banshee</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon Banshee</h3>
+                            </div>
+                            <p class="text-orange-100">Summon any two Level 4 monsters (e.g., from a Superheavy Samurai engine) and Xyz Summon <strong class="text-accent">Infernal Flame Banshee</strong>.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color"></i></div>
+                    <!-- Step 2 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="flag-img-container" class="card-image-container card-placeholder">Nemeses Flag</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Search the Enabler</h3>
+                            </div>
+                            <p class="text-orange-100">Activate Banshee's effect, detaching 1 material to add <strong class="text-accent">Nemeses Flag</strong> from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color"></i></div>
+                    <!-- Step 3 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="protos-img-container" class="card-image-container card-placeholder">Archnemeses Protos</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Execute the Lock</h3>
+                            </div>
+                            <p class="text-orange-100">Special Summon Flag, use its effect to search <strong class="text-accent">Archnemeses Protos</strong>. Summon Protos and activate its effect, declaring an Attribute (e.g., DARK) to lock your opponent out of the game.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Combo 2: Barrier Statue Lock (Historical) -->
+            <div class="mb-8">
+                <h3 class="text-xl font-bold text-white mb-4 text-center">Historical Combo: The Barrier Statue Lock</h3>
+                <div class="p-4 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500 mb-6">
+                    <p class="text-sm text-red-200"><strong class="font-bold">TCG BANLIST WARNING:</strong> This combo is also not legal. <strong class="font-bold">Barrier Statue of the Inferno</strong> is <strong class="font-bold">FORBIDDEN</strong> as of the October 2025 list.</p>
+                </div>
+                <div class="flex flex-col items-center gap-6">
+                    <!-- Step 1 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="banshee-combo2-img-container" class="card-image-container card-placeholder">Infernal Flame Banshee</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon & Send</h3>
+                            </div>
+                            <p class="text-orange-100">Summon <strong class="text-accent">Infernal Flame Banshee</strong>. Activate its effect, detaching 1 material to send <strong class="text-accent">Barrier Statue of the Inferno</strong> from Deck to GY.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color"></i></div>
+                    <!-- Step 2 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="statue-img-container" class="card-image-container card-placeholder">Barrier Statue of the Inferno</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Revive the Lock</h3>
+                            </div>
+                            <p class="text-orange-100">Use any monster revival card (e.g., <strong class="text-accent">Circle of the Fire Kings</strong>) to Special Summon the Barrier Statue from the GY, preventing the opponent from Special Summoning non-FIRE monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Combo 3: Fire King Bridge (Modern) -->
+            <div>
+                <h3 class="text-xl font-bold text-white mb-4 text-center">Modern Combo: The Fire King / Snake-Eye Bridge</h3>
+                <div class="flex flex-col items-center gap-6">
+                    <!-- Step 1 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="wakaushi-img-container" class="card-image-container card-placeholder">Superheavy Samurai Prodigy Wakaushi</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Generic Rank 4 Engine</h3>
+                            </div>
+                            <p class="text-orange-100">Use a generic engine (e.g., Superheavy Samurai) to place two Level 4 monsters on the field, such as <strong class="text-accent">Wakaushi</strong> and <strong class="text-accent">Soulgaia Booster</strong>.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color"></i></div>
+                    <!-- Step 2 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="banshee-combo3-img-container" class="card-image-container card-placeholder">Infernal Flame Banshee</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon & Search</h3>
+                            </div>
+                            <p class="text-orange-100">Overlay the two monsters to Xyz Summon <strong class="text-accent">Infernal Flame Banshee</strong>.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color"></i></div>
+                    <!-- Step 3 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ponix-combo-img-container" class="card-image-container card-placeholder">Legendary Fire King Ponix</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2a1a1a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Bridge to the Engine</h3>
+                            </div>
+                            <p class="text-orange-100">Activate Banshee's effect to add a core Pyro starter, like <strong class="text-accent">Legendary Fire King Ponix</strong> or <strong class="text-accent">Snake-Eye Ash</strong>, from Deck to hand, starting your main combo line.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard & Analysis Section (from Docx Part IV) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <!-- Endboard -->
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Synthesizing the Endboard (Modern)</h2>
+            <p class="text-orange-100 mb-8 text-center max-w-3xl mx-auto">
+                The goal of a Banshee combo is not to end on Banshee itself, but to use it as a bridge to a much more powerful board state.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Fire King / Snake-Eye Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Fire King / Snake-Eye Board</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ip-img-container" class="card-image-container card-placeholder">I:P Masquerena</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><strong class="text-accent">I:P Masquerena:</strong> Allows for a Link Summon during the opponent's turn for reactive disruption (e.g., S:P Little Knight).</li>
+                        <li><strong class="text-accent">Promethean Princess (in GY):</strong> Revives a FIRE monster and destroys a card.</li>
+                        <li><strong class="text-accent">Fire King Recursion:</strong> The looming threat of Garunix and other Fire Kings returning from the GY.</li>
+                    </ul>
+                </div>
+                <!-- Ashened Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Ashened Board</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="veidos-img-container" class="card-image-container card-placeholder">Veidos the Eruption Dragon of Extinction</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><strong class="text-accent">Veidos the Eruption Dragon:</strong> A powerful board wipe that triggers if sent from the field to the GY.</li>
+                        <li><strong class="text-accent">Ashened for Eternity (Trap):</strong> Provides recursion and monster-stealing capabilities.</li>
+                        <li><strong class="text-accent">Obsidim, the Ashened City:</strong> The Field Spell provides card advantage and recovery.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Competitive Analysis -->
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 mt-16 text-center heading-underline">Competitive Analysis & Chokepoints</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><span class="pro-icon"><i class="fas fa-search"></i></span> <strong class="text-green-300">Universal Searcher:</strong> Banshee provides unparalleled consistency to *any* Pyro deck, searching starters or GY setup.</li>
+                        <li><span class="pro-icon"><i class="fas fa-link"></i></span> <strong class="text-green-300">Engine Bridging:</strong> Allows powerful generic Rank 4 engines (like Superheavy Samurai) to function as starters for Pyro-based decks.</li>
+                        <li><span class="pro-icon"><i class="fas fa-random"></i></span> <strong class="text-green-300">Flexibility:</strong> The choice to "add to hand" or "send to GY" allows it to adapt to different game states and combo lines.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">The Chokepoint:</strong> The entire strategy *is* Banshee. A single <strong class="text-accent">Ash Blossom & Joyous Spring</strong> or <strong class="text-accent">Effect Veiler</strong> on Banshee's activation will end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Powerless Payoffs:</strong> The deck's most powerful, game-ending targets (Protos, Barrier Statue) are forbidden, reducing its ceiling.</li>
+                        <li><span class="con-icon"><i class="fas fa-users-slash"></i></span> <strong class="text-red-300">No Internal Synergy:</strong> As a fragmented series, the "Infernal Flame" cards have no synergy with each other. Banshee is the only playable card.</li>
+                    </ul>
+                </div>
+                <!-- Chokepoints -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">How to Stop It (Chokepoints)</h3>
+                    <ul class="list-disc list-inside space-y-2 text-orange-100">
+                        <li><span class="neutral-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-accent">Negate the Summon:</strong> Use <strong class="text-white">Solemn Judgment</strong> or similar to stop the Xyz Summon of Banshee itself.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-accent">Negate the Effect:</strong> The most common counter. Use <strong class="text-white">Ash Blossom & Joyous Spring</strong> when Banshee activates its effect.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-hand-rock"></i></span> <strong class="text-accent">Negate the Starter:</strong> If you see a generic Rank 4 engine starting, use <strong class="text-white">Infinite Impermanence</strong> on the first monster (e.g., Wakaushi) to prevent the second body from hitting the field.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">CRITICAL IMPACT:</strong> The "Infernal Flame" series itself is unrestricted, but its most powerful historical strategies are <strong class="text-red-400">FORBIDDEN</strong>.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards (The Payoffs)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Archnemeses Protos (0 copies)</strong> - Key floodgate</li>
+                            <li><strong class="text-red-400">Barrier Statue of the Inferno (0 copies)</strong> - Key floodgate</li>
+                            <li><strong class="text-red-400">Original Sinful Spoils - Snake-Eye (0 copies)</strong> - Key combo piece</li>
+                            <li><strong class="text-red-400">Apollousa, Bow of the Goddess (0 copies)</strong> - Common generic boss</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards (The Enablers)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Infernal Flame Banshee (3 copies)</strong> - The core enabler</li>
+                            <li>Infernal Flame Emperor (3 copies)</li>
+                            <li>Infernal Incinerator (3 copies)</li>
+                            <li>Infernal Flame Vixen (3 copies)</li>
+                            <li>Nemeses Flag (3 copies)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> This banlist reveals a clear balancing philosophy. The generic enabler, <strong class="text-accent">Infernal Flame Banshee</strong>, remains legal, but the game-ending, non-interactive floodgate monsters it searched (<strong class="text-red-400">Protos</strong>, <strong class="text-red-400">Barrier Statue</strong>) have been forbidden. This forces the card to be used for "fairer," engine-based strategies like 'Ashened' or 'Volcanic' rather than as a tool for "unfun" locks.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- EMBER BANNER ANIMATION ---
+            const canvas = document.getElementById('ember-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speed = Math.random() * 1.5 + 0.5; // Upward speed
+                        this.radius = Math.random() * 2 + 1;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                        this.color = `rgba(255, 102, 0, ${this.opacity})`; // Fire orange
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                // Legacy Cards
+                'emperor-img-container': 'Infernal Flame Emperor',
+                'incinerator-img-container': 'Infernal Incinerator',
+                'vixen-img-container': 'Infernal Flame Vixen',
+                // Banshee Section
+                'banshee-img-container': 'Infernal Flame Banshee',
+                // Combo 1 (Protos)
+                'banshee-combo1-img-container': 'Infernal Flame Banshee',
+                'flag-img-container': 'Nemeses Flag',
+                'protos-img-container': 'Archnemeses Protos',
+                // Combo 2 (Statue)
+                'banshee-combo2-img-container': 'Infernal Flame Banshee',
+                'statue-img-container': 'Barrier Statue of the Inferno',
+                // Combo 3 (Modern)
+                'wakaushi-img-container': 'Superheavy Samurai Prodigy Wakaushi',
+                'banshee-combo3-img-container': 'Infernal Flame Banshee',
+                'ponix-combo-img-container': 'Legendary Fire King Ponix',
+                // Endboard
+                'ip-img-container': 'I:P Masquerena',
+                'veidos-img-container': 'Veidos the Eruption Dragon of Extinction'
+            });
+        });
+    </script>
+</body>
+</html>
+
+

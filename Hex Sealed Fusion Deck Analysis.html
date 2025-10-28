@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hex-Sealed Fusion Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in 'assets/js/' based on other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Theme adapted from Adamancipator page for Rock-type synergy */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d121c; /* Dark cavern blue */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a2a3e; /* Dark slate blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a4a6b; /* Lighter slate blue border */
+        }
+        .combo-step-card {
+            background-color: #3b3b5c; /* Slightly lighter slate blue */
+            border: 1px solid #5c5c7d;
+        }
+        .pro-con-card {
+            background-color: #3b3b5c;
+            border: 1px solid #5c5c7d;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3b3b5c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b3b5c;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #c4b5fd; } /* Light violet for accents */
+        .arrow-color { color: #a78bfa; }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #c4b5fd; /* Light violet */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c4b5fd;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #c4b5fd;
+        }
+
+        /* --- NEW FUSION VORTEX BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d121c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a4a6b;
+        }
+
+        #vortex-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 18, 28, 0.4) 0%, rgba(13, 18, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(196, 181, 253, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', monospace;
+        }
+
+        /* --- Home Button Styles (from other pages) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        /* --- Card Popup Styles (from other pages) --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #c4b5fd;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #c4b5fd;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #c4b5fd;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            border: 1px solid #4a4a6b;
+            text-align: left;
+        }
+        th {
+            background-color: #3b3b5c;
+            color: #c4b5fd;
+            font-family: 'Roboto Mono', monospace;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #2a2a3e;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #2e2e44;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="vortex-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Hex-Sealed Fusions</h1>
+            <p class="text-lg md:text-xl text-violet-200">Unconventional Fusion Crafting</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Introduction: The Art of the Cheater's Fusion</h2>
+                <p class="text-blue-200">
+                    In the vast and ever-evolving card pool of the Yu-Gi-Oh! TCG, few groups of cards are as simultaneously niche and potent as the "Hex-Sealed Fusions." Comprised of three monsters—<strong class="text-accent">The Light</strong>, <strong class="text-accent">The Dark</strong>, and <strong class="text-accent">The Earth</strong>—they do not function as a traditional archetype. Instead, they operate as a unique engine of utility cards, offering duelists a powerful method of "rule-bending" to circumvent standard Fusion Summoning.
+                </p>
+                <p class="text-blue-200 mt-4">
+                    The mastery of these cards lies in understanding the critical dichotomy between their two functions: acting as a substitute material and performing their own innate, non-Fusion Special Summon. By leveraging modern searchability, a player can unlock potent, often unexpected, combo lines that can decisively alter a duel's outcome.
+                </p>
+                <p class="text-blue-200 mt-4">
+                    This report will analyze these monsters, deconstructing their foundational mechanics, support infrastructure, and most effective applications in modern strategies.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Foundational Mechanics</h2>
+            
+            <!-- The Triumvirate -->
+            <div class="card p-6 mb-8">
+                <h3 class="text-xl font-bold text-white mb-4">The Triumvirate: Card Profiles</h3>
+                <p class="text-blue-200 mb-6">The series consists of three functionally identical Level 3 Rock-Type monsters (1000 ATK / 1600 DEF), distinguished only by their Attribute and the Attribute of the Fusion Monster they can summon.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- The Light -->
+                    <div class="combo-step-card p-4 rounded-lg text-center">
+                        <div id="light-hex-img" class="card-image-container mx-auto card-placeholder">The Light - Hex-Sealed Fusion</div>
+                        <h4 class="text-lg font-bold text-accent mt-3">The Light - Hex-Sealed Fusion</h4>
+                    </div>
+                    <!-- The Dark -->
+                    <div class="combo-step-card p-4 rounded-lg text-center">
+                        <div id="dark-hex-img" class="card-image-container mx-auto card-placeholder">The Dark - Hex-Sealed Fusion</div>
+                        <h4 class="text-lg font-bold text-accent mt-3">The Dark - Hex-Sealed Fusion</h4>
+                    </div>
+                    <!-- The Earth -->
+                    <div class="combo-step-card p-4 rounded-lg text-center">
+                        <div id="earth-hex-img" class="card-image-container mx-auto card-placeholder">The Earth - Hex-Sealed Fusion</div>
+                        <h4 class="text-lg font-bold text-accent mt-3">The Earth - Hex-Sealed Fusion</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Two Effects -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Effect 1: The Law of Substitution</h3>
+                    <p class="text-blue-200 mb-4"><strong class="text-accent">Effect Text:</strong> "You can substitute this card for any 1 Fusion Material Monster, but the other Fusion Material Monster(s) must be correct."</p>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">The Golden Rule:</strong> Can <strong class="text-red-400">only</strong> be used to replace a material that is <strong class="text-accent">specifically named</strong> (e.g., "Dark Magician").</li>
+                        <li><strong class="text-accent">Invalid Use:</strong> <strong class="text-red-400">Cannot</strong> replace generic materials like "1 'Shaddoll' monster" or "2 DARK monsters".</li>
+                        <li><strong class="text-accent">Location:</strong> This effect is active in the <strong class="text-accent">Hand, Field, and GY</strong>. It is <strong class="text-red-400">not</strong> active in the Deck.</li>
+                    </ul>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Effect 2: The "Cheater's Fusion"</h3>
+                    <p class="text-blue-200 mb-4"><strong class="text-accent">Effect Text:</strong> "You can Tribute Fusion Material Monsters on the field, including this face-up card; Special Summon 1 corresponding Fusion Monster from your Extra Deck."</p>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Critical Ruling:</strong> This is a <strong class="text-red-400">Special Summon</strong>, <strong class="text-red-400">NOT</strong> a Fusion Summon.</li>
+                        <li><strong class="text-accent">Implication:</strong> Cannot summon monsters that "Must be Fusion Summoned" (e.g., most "Elemental HERO" fusions).</li>
+                        <li><strong class="text-accent">"Improperly Summoned":</strong> The summoned monster is not properly summoned, meaning it <strong class="text-red-400">cannot be revived</strong> from the Graveyard or banished pile.</li>
+                        <li><strong class="text-accent">Attribute Lock:</strong> The monster summoned <strong class="text-accent">must</strong> match the Attribute of the Hex-Sealed Fusion used.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Supply Chain Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Supply Chain: Accessing Your Components</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 mb-6">As Rock-type monsters, the Hex-Sealed Fusions benefit from some of the most powerful generic Type support in the game, turning them from "tech" cards into a searchable "engine."</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Gallant Granite -->
+                    <div class="combo-step-card p-4 rounded-lg flex flex-col sm:flex-row items-center gap-4">
+                        <div id="gallant-granite-img" class="card-image-container w-32 sm:w-40 flex-shrink-0 card-placeholder">Gallant Granite</div>
+                        <div>
+                            <h4 class="text-lg font-bold text-accent mb-2">Gallant Granite</h4>
+                            <p class="text-sm text-blue-200">The most direct searcher. This generic Rank 4 Xyz (2 Level 4 monsters) can detach a material to add any Rock monster from Deck to hand.</p>
+                        </div>
+                    </div>
+                    <!-- Adamancipator -->
+                    <div class="combo-step-card p-4 rounded-lg flex flex-col sm:flex-row items-center gap-4">
+                         <div id="researcher-img" class="card-image-container w-32 sm:w-40 flex-shrink-0 card-placeholder">Adamancipator Researcher</div>
+                        <div>
+                            <h4 class="text-lg font-bold text-accent mb-2">Adamancipator Engine</h4>
+                            <p class="text-sm text-blue-200">Tuners like <strong class="text-accent">Adamancipator Researcher</strong> can excavate and Special Summon a Hex-Sealed Fusion directly from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accessibility Matrix Table -->
+                <h3 class="text-lg font-bold text-white mb-2">Accessibility Matrix</h3>
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Card Name</th>
+                                <th>Method of Access</th>
+                                <th>Requirements</th>
+                                <th>Strategic Fit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong class="text-accent">Gallant Granite</strong></td>
+                                <td>Search from Deck to Hand</td>
+                                <td>2 Level 4 Monsters</td>
+                                <td>Generic Rank 4 Toolboxing.</td>
+                            </tr>
+                            <tr>
+                                <td><strong class="text-accent">Adamancipator Researcher</strong></td>
+                                <td>Special Summon from Deck</td>
+                                <td>Control a Rock monster</td>
+                                <td>Explosive Combo Extender.</td>
+                            </tr>
+                            <tr>
+                                <td><strong class="text-accent">Adamancipator Seeker</strong></td>
+                                <td>Special Summon from Deck</td>
+                                <td>Control an "Adamancipator"</td>
+                                <td>Synergistic Combo Extender.</td>
+                            </tr>
+                            <tr>
+                                <td><strong class="text-accent">Block Dragon</strong></td>
+                                <td>Search from Deck to Hand</td>
+                                <td>Block Dragon sent from field to GY</td>
+                                <td><strong class="text-red-400">BANNED IN TCG.</strong> (Historically, a high-value recursion tool).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategic Blueprints / End Boards Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Strategic Blueprints: Example End Boards</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">By integrating into specific archetypes, the Hex-Sealed engine unlocks powerful and unexpected end boards. Here are the most common applications.</p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Blueprint 1: Branded Dragoon -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Case Study 1: The Branded Dragoon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dragoon-img" class="card-image-container card-placeholder">Red-Eyes Dark Dragoon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong>Objective:</strong> Use <strong class="text-accent">Branded Fusion</strong> to summon <strong class="text-accent">Red-Eyes Dark Dragoon</strong>.</li>
+                        <li><strong>Step 1:</strong> Activate <strong class="text-accent">Branded Fusion</strong>, sending <strong class="text-accent">Fallen of Albaz</strong> + <strong class="text-accent">The Light - Hex-Sealed Fusion</strong> from Deck to GY.</li>
+                        <li><strong>Step 2:</strong> Summon <strong class="text-accent">Albion the Branded Dragon</strong>.</li>
+                        <li><strong>Step 3:</strong> Activate Albion's effect, banishing materials from GY to Fusion Summon.</li>
+                        <li><strong>Key Interaction:</strong> Banish <strong class="text-accent">Fallen of Albaz</strong> (as "1 Dragon Effect Monster") and the <strong class="text-accent">Light-Hex</strong> from your GY, using its active substitution effect to count as "Dark Magician".</li>
+                        <li><strong>Result:</strong> <strong class="text-accent">Red-Eyes Dark Dragoon</strong>.</li>
+                    </ul>
+                </div>
+
+                <!-- Blueprint 2: Cybernetic OTK -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Case Study 2: The Cybernetic OTK</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="cyber-twin-img" class="card-image-container card-placeholder">Cyber Twin Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong>Objective:</strong> Summon <strong class="text-accent">Cyber Twin Dragon</strong> for a quick OTK.</li>
+                        <li><strong>Step 1:</strong> Special Summon <strong class="text-accent">Cyber Dragon</strong> from hand.</li>
+                        <li><strong>Step 2:</strong> Normal Summon <strong class="text-accent">The Light - Hex-Sealed Fusion</strong>.</li>
+                        <li><strong>Step 3:</strong> Activate the <strong class="text-accent">Innate Summoning Effect (Effect 2)</strong> of Light-Hex.</li>
+                        <li><strong>Key Interaction:</strong> Tribute both <strong class="text-accent">Cyber Dragon</strong> and <strong class="text-accent">Light-Hex</strong> (which substitutes for the 2nd "Cyber Dragon").</li>
+                        <li><strong>Result:</strong> <strong class="text-accent">Cyber Twin Dragon</strong> (improperly summoned).</li>
+                    </ul>
+                </div>
+
+                <!-- Blueprint 3: Legacy Power Play -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Case Study 3: Legacy Power Play</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="slash-dragon-img" class="card-image-container card-placeholder">Red-Eyes Slash Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong>Objective:</strong> Give a Warrior deck access to <strong class="text-accent">Red-Eyes Slash Dragon</strong>.</li>
+                        <li><strong>Step 1:</strong> Summon any Warrior monster.</li>
+                        <li><strong>Step 2:</strong> Normal Summon <strong class="text-accent">The Dark - Hex-Sealed Fusion</strong>.</li>
+                        <li><strong>Step 3:</strong> Activate the <strong class="text-accent">Innate Summoning Effect (Effect 2)</strong> of Dark-Hex (as Slash Dragon is DARK).</li>
+                        <li><strong>Key Interaction:</strong> Tribute the Warrior monster and <strong class="text-accent">Dark-Hex</strong> (which substitutes for "Red-Eyes Black Dragon").</li>
+                        <li><strong>Result:</strong> <strong class="text-accent">Red-Eyes Slash Dragon</strong> (improperly summoned).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-surprise"></i></span> <strong class="text-green-300">Surprise Factor:</strong> Summons powerful boss monsters from outside a deck's primary archetype.</li>
+                        <li><span class="pro-icon"><i class="fas fa-box"></i></span> <strong class="text-green-300">Resource Efficiency:</strong> The innate summon (Effect 2) bypasses the need for a Fusion Spell, saving card advantage.</li>
+                        <li><span class="pro-icon"><i class="fas fa-file-archive"></i></span> <strong class="text-green-300">Engine Compactness:</strong> A small package (e.g., 1 Gallant Granite, 1 Light-Hex) can enable powerful plays.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Normal Summon Dependency:</strong> Many combos (like the OTK) rely on the turn's Normal Summon.</li>
+                        <li><span class="con-icon"><i class="fas fa-users"></i></span> <strong class="text-red-300">Field Presence Required:</strong> The innate summon (Effect 2) requires all materials to be face-up on the field.</li>
+                        <li><span class="con-icon"><i class="fas fa-ghost"></i></span> <strong class="text-red-300">"Improper Summon" Fragility:</strong> The summoned monster is a temporary threat that cannot be revived if destroyed.</li>
+                    </ul>
+                </div>
+                <!-- Counter-Play -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Counter-Play</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-ban"></i></span> <strong class="text-accent">Negating the Searcher:</strong> Using <strong class="text-accent">Ash Blossom</strong> on <strong class="text-accent">Gallant Granite</strong> stops the play.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-times"></i></span> <strong class="text-accent">Disrupting the Setup:</strong> Removing one of the monsters before the Hex-Sealed effect can be activated.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-stop-circle"></i></span> <strong class="text-accent">Effect Negation:</strong> <strong class="text-accent">Effect Veiler</strong> or <strong class="text-accent">Infinite Impermanence</strong> on the Hex-Sealed monster's activated effect.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The Hex-Sealed Fusion engine is heavily impacted by the banlist status of its key support cards:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Forbidden Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Block Dragon (0 copies)</strong> - A primary searcher for the engine is banned.</li>
+                        </ul>
+                    </div>
+                    <!-- Unrestricted Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All Hex-Sealed Fusion monsters (3 copies each)</li>
+                            <li><strong class="text-green-300">Branded Fusion (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Red-Eyes Dark Dragoon (3 copies)</strong></li>
+                            <li>Gallant Granite & Adamancipator monsters</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The "Branded Dragoon" combo is at full power. However, dedicated Rock-based strategies that historically used <strong class="text-accent">Block Dragon</strong> to search for the Hex-Sealed Fusions are no longer viable, as their main consistency tool is forbidden.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Conclusion: The Enduring Niche</h2>
+                <p class="text-blue-200">
+                    The Hex-Sealed Fusions occupy a unique space. They are not a meta-defining archetype but rather surgical tools for the discerning duelist—a set of keys that unlock powerful, unexpected plays. Their history illustrates how card viability can evolve, shifting from a GX-era novelty to a component of sophisticated, modern combos. They represent a "knowledge check," rewarding dedication and study of the game's intricate rulings.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- FUSION VORTEX ANIMATION ---
+            const canvas = document.getElementById('vortex-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 200;
+                let hue = 270; // Purple hue
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = canvas.width / 2;
+                        this.y = canvas.height / 2;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 4 + 1;
+                        this.radius = Math.random() * 2 + 1;
+                        this.distance = Math.random() * 50 + 20;
+                        this.life = Math.random() * 100 + 50;
+                        this.initialLife = this.life;
+                        this.color = `hsla(${hue + Math.random() * 60 - 30}, 100%, 70%, 1)`;
+                    }
+                    update() {
+                        this.distance += this.speed / 2;
+                        this.x = canvas.width / 2 + Math.cos(this.angle) * this.distance;
+                        this.y = canvas.height / 2 + Math.sin(this.angle) * this.distance;
+                        this.angle += this.speed * 0.02;
+                        this.life--;
+
+                        if (this.life <= 0 || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = (this.life / this.initialLife) * 0.7;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                    reset() {
+                        this.x = canvas.width / 2;
+                        this.y = canvas.height / 2;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 4 + 1;
+                        this.distance = Math.random() * 50 + 20;
+                        this.life = Math.random() * 100 + 50;
+                        this.initialLife = this.life;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    // Motion blur effect
+                    ctx.fillStyle = 'rgba(13, 18, 28, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.globalAlpha = 1;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    hue = (hue + 0.5) % 360; // Shift hue slowly
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // CardLoader.init() is called automatically by card-loader.js
+            CardLoader.loadCards({
+                'light-hex-img': 'The Light - Hex-Sealed Fusion',
+                'dark-hex-img': 'The Dark - Hex-Sealed Fusion',
+                'earth-hex-img': 'The Earth - Hex-Sealed Fusion',
+                'gallant-granite-img': 'Gallant Granite',
+                'researcher-img': 'Adamancipator Researcher',
+                'dragoon-img': 'Red-Eyes Dark Dragoon',
+                'cyber-twin-img': 'Cyber Twin Dragon',
+                'slash-dragon-img': 'Red-Eyes Slash Dragon'
+            });
+        });
+    </script>
+</body>
+</html>

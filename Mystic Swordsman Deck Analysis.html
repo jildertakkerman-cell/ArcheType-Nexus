@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystic Swordsman Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in 'assets/js/' relative to this file's location -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a100a; /* Dark earthy brown */
+            color: #f0e6d6; /* Light tan */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b1d13; /* Darker brown card */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #7a5f3f; /* Muted gold/bronze border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3c2a1d; /* Deeper brown */
+            border: 1px solid #8c6d4e; /* Lighter bronze border */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 150px; /* Reduced from 180px */
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3c2a1d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 220px; /* Reduced from 250px */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3c2a1d;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #c0a06c; } /* Muted gold */
+        .arrow-color { color: #c0a06c; }
+        .heading-underline {
+            border-bottom: 2px solid #c0a06c;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #c0a06c;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c0a06c;
+            transition: color 0.3s, text-shadow 0.3s;
+            cursor: pointer;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #c0a06c;
+        }
+        /* Hidden element to force CardLoader to fetch data for text popups */
+        .hidden-card-loader-trigger {
+            display: none;
+        }
+
+        /* --- NEW BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a100a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #7a5f3f;
+        }
+
+        #ink-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.2;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(43, 29, 19, 0.2) 0%, rgba(26, 16, 10, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Card Popup Styles (Themed) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 16, 10, 0.95); /* Dark brown */
+            border: 1px solid #c0a06c; /* Muted gold */
+            border-radius: 0.75rem;
+            color: #f0e6d6; /* Light tan */
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #c0a06c; /* Muted gold */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #c0a06c;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="ink-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">MYSTIC SWORDSMAN</h1>
+            <p class="text-lg md:text-xl text-yellow-100">The Way of the Blade</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">An Echo of a Bygone Era</h2>
+                <p class="text-yellow-100">
+                    Among the first "LV" monsters, the "Mystic Swordsman" series was built for one purpose: to punish face-down monsters. This made them a product of an era where battle was king and the mystery of a set monster was a central strategy. This report will provide an exhaustive analysis of the 
+                    <a class="lore-link" data-card-name="Mystic Swordsman LV2">"Mystic Swordsman" lineage</a>
+                    , deconstructing its core mechanics, strategic applications, and a fundamental design flaw that defines its identity.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Central Design Contradiction Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Central Design Contradiction</h2>
+            <div class="card p-6">
+                <p class="text-yellow-100">
+                    The archetype is built on a fundamental, self-sabotaging flaw. The core of the problem lies in the conflicting activation requirements of the monsters' two effects:
+                </p>
+                <ul class="list-disc list-inside space-y-3 mt-4 text-yellow-100">
+                    <li><strong class="text-accent font-bold">Signature Effect:</strong> Destroys a face-down monster it attacks <strong class="text-red-400">by card effect</strong> at the start of the Damage Step. This means no damage calculation occurs.</li>
+                    <li><strong class="text-accent font-bold">Progression Effect:</strong> The "LV" up effect only triggers if the monster "destroyed a monster <strong class="text-green-400">by battle</strong> this turn."</li>
+                </ul>
+                <p class="text-yellow-100 mt-4">
+                    This creates a paradox: the archetype's most iconic ability <strong class="text-red-400">actively prevents</strong> its own progression mechanic from triggering. To level up, a player must attack a face-up monster, forcing a counter-intuitive line of play that ignores the card's unique strength.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Swordsman's Lineage Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Swordsman's Lineage</h2>
+            
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
+
+                <!-- LV2 Card -->
+                <div class="card p-6 flex flex-col items-center text-center max-w-xs w-full">
+                    <h3 class="text-xl font-bold text-accent mb-4">Mystic Swordsman LV2</h3>
+                    <div id="ms-lv2-img-container" class="card-image-container card-placeholder mb-4" data-card-name="Mystic Swordsman LV2">Mystic Swordsman LV2</div>
+                    <p class="text-sm text-yellow-100"><strong class="text-white">ATK 900 / DEF 0</strong></p>
+                    <p class="text-sm text-yellow-100 mt-2 h-24">The only one that can be Normal Summoned. Destroys face-down monsters by effect. Must destroy by <strong class="text-green-400">battle</strong> to summon LV4 in the End Phase.</p>
+                </div>
+
+                <!-- Arrow 1 -->
+                <div class="flex-shrink-0 text-accent mx-4 hidden md:block">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </div>
+                <div class="flex-shrink-0 text-accent my-2 md:hidden">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+
+                <!-- LV4 Card -->
+                <div class="card p-6 flex flex-col items-center text-center max-w-xs w-full">
+                    <h3 class="text-xl font-bold text-accent mb-4">Mystic Swordsman LV4</h3>
+                    <div id="ms-lv4-img-container" class="card-image-container card-placeholder mb-4" data-card-name="Mystic Swordsman LV4">Mystic Swordsman LV4</div>
+                    <p class="text-sm text-yellow-100"><strong class="text-white">ATK 1900 / DEF 1600</strong></p>
+                    <p class="text-sm text-yellow-100 mt-2 h-24">Cannot be Normal Summoned. Destroys face-down monsters by effect. Must destroy by <strong class="text-green-400">battle</strong> to summon LV6 in the End Phase.</p>
+                </div>
+
+                <!-- Arrow 2 -->
+                <div class="flex-shrink-0 text-accent mx-4 hidden md:block">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </div>
+                 <div class="flex-shrink-0 text-accent my-2 md:hidden">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+
+                <!-- LV6 Card -->
+                <div class="card p-6 flex flex-col items-center text-center max-w-xs w-full">
+                    <h3 class="text-xl font-bold text-accent mb-4">Mystic Swordsman LV6</h3>
+                    <div id="ms-lv6-img-container" class="card-image-container card-placeholder mb-4" data-card-name="Mystic Swordsman LV6">Mystic Swordsman LV6</div>
+                    <p class="text-sm text-yellow-100"><strong class="text-white">ATK 2300 / DEF 1700</strong></p>
+                    <p class="text-sm text-yellow-100 mt-2 h-24">The boss monster. Cannot be Normal Summoned. When it destroys a face-down monster by effect, it places it on <strong class="text-red-400">top of the opponent's Deck</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Art of the Duel</h2>
+            
+            <!-- Flowchart A: The "Level Up!" Ascension -->
+            <h3 class="text-lg md:text-xl font-bold text-accent mb-4 text-center">Combo A: The "Level Up!" Ascension</h3>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">This is the deck's primary, accelerated path to its stronger forms, completely bypassing the flawed "battle" requirement.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ms-lv2-combo-img" class="card-image-container flex-shrink-0 card-placeholder" data-card-name="Mystic Swordsman LV2">Mystic Swordsman LV2</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b1d13] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon & Activate</h3>
+                            </div>
+                            <p class="text-yellow-100">Normal Summon <strong class="text-accent lore-link" data-card-name="Mystic Swordsman LV2">Mystic Swordsman LV2</strong>. Then, activate the Normal Spell <strong class="text-accent lore-link" data-card-name="Level Up!">Level Up!</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ms-lv4-combo-img" class="card-image-container flex-shrink-0 card-placeholder" data-card-name="Mystic Swordsman LV4">Mystic Swordsman LV4</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b1d13] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Ascend and Repeat</h3>
+                            </div>
+                            <p class="text-yellow-100">Send LV2 to the GY to Special Summon <strong class="text-accent lore-link" data-card-name="Mystic Swordsman LV4">Mystic Swordsman LV4</strong> from the deck. You can then use a second <strong class="text-accent lore-link" data-card-name="Level Up!">Level Up!</strong> to send LV4 and summon <strong class="text-accent lore-link" data-card-name="Mystic Swordsman LV6">Mystic Swordsman LV6</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flowchart B: The Subterfuge Strike -->
+            <h3 class="text-lg md:text-xl font-bold text-accent mb-4 mt-12 text-center">Combo B: The Subterfuge Strike</h3>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">This combo showcases the true control potential, turning the Swordsman into proactive removal against any face-up monster.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="book-of-moon-img" class="card-image-container flex-shrink-0 card-placeholder" data-card-name="Book of Moon">Book of Moon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b1d13] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Set the Target</h3>
+                            </div>
+                            <p class="text-yellow-100">Opponent controls a threatening face-up monster. In your Battle Phase, activate the Quick-Play Spell <strong class="text-accent lore-link" data-card-name="Book of Moon">Book of Moon</strong> to flip it face-down.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ms-lv4-strike-img" class="card-image-container flex-shrink-0 card-placeholder" data-card-name="Mystic Swordsman LV4">Mystic Swordsman LV4</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b1d13] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Strike and Remove</h3>
+                            </div>
+                            <p class="text-yellow-100">Declare an attack with your <strong class="text-accent lore-link" data-card-name="Mystic Swordsman LV4">Mystic Swordsman LV4</strong> on the new face-down monster. At the start of the Damage Step, the monster is destroyed by the Swordsman's effect, bypassing Flip Effects and battle.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Stance: Endboard</h2>
+            <div class="card p-6 max-w-2xl mx-auto">
+                <p class="text-yellow-100 mb-4 text-center">The typical endboard is a single, fragile <strong class="text-accent lore-link" data-card-name="Mystic Swordsman LV6">Mystic Swordsman LV6</strong>, supported by backrow.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Strengths -->
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <h4 class="font-bold text-green-400 mb-2">Strengths</h4>
+                        <ul class="list-disc list-inside space-y-2 text-sm text-yellow-100">
+                            <li><strong class="text-accent">Deck-Stacking:</strong> LV6's ability to place a destroyed monster on top of the deck is a powerful draw disruption.</li>
+                            <li><strong class="text-accent">Anti-Meta:</strong> Inherently counters Flip Effects and "recruiter" monsters common in retro formats.</li>
+                        </ul>
+                    </div>
+                    <!-- Weaknesses -->
+                    <div class="pro-con-card p-4 rounded-lg">
+                        <h4 class="font-bold text-red-400 mb-2">Weaknesses</h4>
+                        <ul class="list-disc list-inside space-y-2 text-sm text-yellow-100">
+                            <li><strong class="text-red-300">Extreme Vulnerability:</strong> Has no built-in protection. Can be destroyed by any effect or by battle with >2300 ATK.</li>
+                            <li><strong class="text-red-300">Low Ceiling:</strong> Provides no negations, no floodgates, and generates no card advantage.</li>
+                            <li><strong class="text-red-300">Obsolete:</strong> The gimmick is irrelevant in modern Yu-Gi-Oh!, where monsters are rarely set.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Allies in Arms: Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Powerful Removal:</strong> The ability to destroy face-down monsters without triggering their effects is very strong in the right context.</li>
+                        <li><span class="pro-icon"><i class="fas fa-tools"></i></span> <strong class="text-green-300">Warrior Toolbox:</strong> As EARTH Warriors, they have access to one of the best generic support pools in the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-book-open"></i></span> <strong class="text-green-300">Proactive Control:</strong> When combined with cards like <strong class="text-accent lore-link" data-card-name="Book of Moon">Book of Moon</strong>, the deck becomes a proactive removal engine.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">The Paradox:</strong> The deck's core mechanic actively fights against its own progression system.</li>
+                        <li><span class="con-icon"><i class="fas fa-tachometer-alt"></i></span> <strong class="text-red-300">Extremely Slow:</strong> Without <strong class="text-accent lore-link" data-card-name="Level Up!">Level Up!</strong>, the "natural" progression is too slow and unreliable to be viable.</li>
+                        <li><span class="con-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-red-300">Fragile:</strong> The boss monsters have no protection and are easily removed from the field.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Support Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-search"></i></span> <strong class="text-accent lore-link" data-card-name="Reinforcement of the Army">Reinforcement of the Army</strong>: The best starter, searching <strong class="text-accent lore-link" data-card-name="Mystic Swordsman LV2">Mystic Swordsman LV2</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-mouse"></i></span> <strong class="text-accent lore-link" data-card-name="Giant Rat">Giant Rat</strong>: A retro "recruiter" that can float into <strong class="text-accent lore-link" data-card-name="Mystic Swordsman LV2">Mystic Swordsman LV2</strong> when destroyed by battle.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-undo"></i></span> <strong class="text-accent lore-link" data-card-name="The Warrior Returning Alive">The Warrior Returning Alive</strong>: Recovers key Warrior pieces from the GY.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-accent lore-link" data-card-name="Nobleman of Crossout">Nobleman of Crossout</strong>: Synergizes with the anti-set theme by banishing face-down monsters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">PARTIALLY RESTRICTED:</strong> The core "Mystic Swordsman" archetype is unlimited, but its key consistency tool is Limited.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 per deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300 lore-link" data-card-name="Reinforcement of the Army">Reinforcement of the Army</strong> - The deck's primary searcher.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited Cards (3 per deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Mystic Swordsman" monsters (LV2, LV4, LV6)</li>
+                            <li><strong class="lore-link" data-card-name="Level Up!">Level Up!</strong></li>
+                            <li><strong class="lore-link" data-card-name="Book of Moon">Book of Moon</strong></li>
+                            <li><strong class="lore-link" data-card-name="Giant Rat">Giant Rat</strong></li>
+                            <li><strong class="lore-link" data-card-name="The Warrior Returning Alive">The Warrior Returning Alive</strong></li>
+                            <li><strong class="lore-link" data-card-name="Nobleman of Crossout">Nobleman of Crossout</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With <strong class="text-accent lore-link" data-card-name="Reinforcement of the Army">Reinforcement of the Army</strong> at 1, the deck loses significant consistency. It must rely more on drawing <strong class="text-accent lore-link" data-card-name="Mystic Swordsman LV2">Mystic Swordsman LV2</strong> naturally or using slower methods like <strong class="text-accent lore-link" data-card-name="Giant Rat">Giant Rat</strong>, hindering its ability to execute its core "Level Up!" combo reliably.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="hidden-card-triggers" class="hidden-card-loader-trigger">
+        <div id="level-up-img" data-card-name="Level Up!"></div>
+        <div id="rota-img" data-card-name="Reinforcement of the Army"></div>
+        <div id="giant-rat-img" data-card-name="Giant Rat"></div>
+        <div id="warrior-returning-img" data-card-name="The Warrior Returning Alive"></div>
+        <div id="nobleman-img" data-card-name="Nobleman of Crossout"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- INK WASH ANIMATION ---
+            const canvas = document.getElementById('ink-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let inkDrops = [];
+                const maxDrops = 20;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class InkDrop {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.radius = Math.random() * 30 + 20;
+                        this.maxRadius = Math.random() * 100 + 50;
+                        this.speed = Math.random() * 0.5 + 0.1;
+                        this.opacity = 1;
+                    }
+                    update() {
+                        this.radius += this.speed;
+                        this.opacity = 1 - (this.radius / this.maxRadius);
+                        if (this.opacity <= 0) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(192, 160, 108, ${this.opacity * 0.1})`; // Muted gold at low opacity
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.radius = Math.random() * 30 + 20;
+                        this.maxRadius = Math.random() * 100 + 50;
+                        this.speed = Math.random() * 0.5 + 0.1;
+                        this.opacity = 1;
+                    }
+                }
+
+                function initParticles() {
+                    inkDrops = [];
+                    for (let i = 0; i < maxDrops; i++) {
+                        inkDrops.push(new InkDrop());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    inkDrops.forEach(drop => {
+                        drop.update();
+                        drop.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // This relies on card-loader.js being loaded and the existence of the hidden div
+            if (typeof CardLoader !== 'undefined') {
+                // Load visible images and attach click listeners to their containers
+                const visibleCardsToLoad = {
+                    'ms-lv2-img-container': 'Mystic Swordsman LV2',
+                    'ms-lv4-img-container': 'Mystic Swordsman LV4',
+                    'ms-lv6-img-container': 'Mystic Swordsman LV6',
+                    'ms-lv2-combo-img': 'Mystic Swordsman LV2',
+                    'ms-lv4-combo-img': 'Mystic Swordsman LV4',
+                    'book-of-moon-img': 'Book of Moon',
+                    'ms-lv4-strike-img': 'Mystic Swordsman LV4',
+                };
+
+                // Load hidden data for text link popups
+                const hiddenCardsToLoad = {
+                    'level-up-img': 'Level Up!',
+                    'rota-img': 'Reinforcement of the Army',
+                    'giant-rat-img': 'Giant Rat',
+                    'warrior-returning-img': 'The Warrior Returning Alive',
+                    'nobleman-img': 'Nobleman of Crossout',
+                };
+                
+                // Combine and load all card data. The hidden containers will ensure the data is cached.
+                CardLoader.loadCards({...visibleCardsToLoad, ...hiddenCardsToLoad});
+
+                // --- Local Popup Logic for Text Links ---
+                const popup = document.getElementById('card-popup');
+                let activePopup = null;
+                let lastShown = 0;
+                let currentCard = null;
+
+                function hidePopup() {
+                    if (Date.now() - lastShown < 100) return;
+                    if (activePopup) {
+                        activePopup.style.opacity = 0;
+                        setTimeout(() => { 
+                            if (activePopup) activePopup.style.display = 'none'; 
+                        }, 200);
+                        activePopup = null;
+                        currentCard = null;
+                    }
+                }
+
+                function movePopup(event) {
+                    if (!popup) return;
+                    
+                    const popupWidth = popup.offsetWidth;
+                    const popupHeight = popup.offsetHeight;
+                    const cushion = 20;
+
+                    let x = event.clientX + cushion;
+                    let y = event.clientY + cushion;
+
+                    if (x + popupWidth > window.innerWidth) {
+                        x = event.clientX - popupWidth - cushion;
+                    }
+                    if (y + popupHeight > window.innerHeight) {
+                        y = event.clientY - popupHeight - cushion;
+                    }
+
+                    popup.style.left = `${x}px`;
+                    popup.style.top = `${y}px`;
+                }
+
+                function showTextPopup(event, cardName) {
+                    if (currentCard === cardName) {
+                        hidePopup();
+                        return;
+                    }
+                    
+                    hidePopup();
+                    if (!popup || typeof CardLoader === 'undefined') return;
+                    
+                    const cardInfo = CardLoader.getCachedCard(cardName);
+                    
+                    // If card data is still missing (shouldn't happen if CardLoader.loadCards finished),
+                    // try to preload it, and then call showTextPopup again.
+                    if (!cardInfo) {
+                        CardLoader.preloadCards([cardName]).then(() => {
+                            showTextPopup(event, cardName);
+                        });
+                        return;
+                    }
+
+                    // Build stats string
+                    let stats = '';
+                    let atkDef = [];
+                    if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                    if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+                    if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                    if (atkDef.length > 0) {
+                        stats = `<p id="card-popup-stats" class="mt-2 font-bold">${atkDef.join(' ')}</p>`;
+                    }
+                    
+                    const cardType = cardInfo.type.includes('Monster') 
+                        ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` 
+                        : `[${cardInfo.race} Card]`;
+
+                    popup.innerHTML = `
+                        <div>
+                            <h3>${cardInfo.name}</h3>
+                            <p class="text-xs text-yellow-100">${cardType}</p>
+                            <div class="w-full h-px bg-[#7a5f3f] my-2"></div>
+                            <p class="text-xs text-white">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                            ${stats}
+                        </div>
+                    `;
+                    
+                    movePopup(event);
+                    popup.style.display = 'block';
+                    setTimeout(() => { popup.style.opacity = 1; }, 10);
+                    activePopup = popup;
+                    lastShown = Date.now();
+                    currentCard = cardName;
+                }
+
+                document.querySelectorAll('.lore-link').forEach(link => {
+                    const cardName = link.getAttribute('data-card-name');
+                    if (cardName) {
+                        link.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            showTextPopup(event, cardName);
+                        });
+                    }
+                });
+
+                // Global click to hide
+                document.addEventListener('click', hidePopup);
+            }
+        });
+    </script>
+</body>
+</html>

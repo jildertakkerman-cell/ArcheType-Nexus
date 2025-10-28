@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost World Dinosaur Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/card-loader.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a1a1a; /* Dark Jungle Green / Teal */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a3b3b; /* Darker Teal/Slate */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2a5b5b; /* Teal border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a4b4b; /* Lighter Teal/Slate */
+            border: 1px solid #3a6b6b;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1a3b3b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a3b3b;
+            border: 1px dashed #3a6b6b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #2dd4bf; } /* Bright Cyan/Teal */
+        .arrow-color { color: #2dd4bf; }
+        .heading-underline {
+            border-bottom: 2px solid #2dd4bf;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #2dd4bf;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #2dd4bf;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #2dd4bf;
+        }
+
+        /* --- NEW DYNAMIC BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a1a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #2a5b5b;
+        }
+
+        #mist-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 26, 26, 0.4) 0%, rgba(10, 26, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(45, 212, 191, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Teko', sans-serif;
+             letter-spacing: 0.05em;
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 26, 26, 0.95); /* Dark Teal */
+            border: 1px solid #2dd4bf; /* Bright Teal border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Teko', sans-serif;
+            color: #2dd4bf;
+            font-weight: bold;
+            font-size: 1.25rem;
+            letter-spacing: 0.05em;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Teko', sans-serif;
+            color: #2dd4bf;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="mist-canvas"></canvas>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2">LOST WORLD</h1>
+            <p class="text-lg md:text-xl text-teal-200">A Strategic Analysis of the Dinosaur Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">The Prehistoric Playground</h2>
+                <p class="text-teal-100">
+                    The Dinosaur archetype, particularly the variant centered around the Field Spell <strong class="text-accent font-bold">Lost World</strong>, stands as a testament to strategic depth. Released in the *Dinosmasher's Fury* Structure Deck, Lost World is far more than a simple support card; it is the central nervous system of the entire strategy. It's a multi-faceted engine that dictates the flow of the game by providing protection, disruption, and unparalleled combo extension. To master this deck, one must first master the intricate mechanics of its namesake Field Spell.
+                </p>
+            </div>
+        </section>
+
+        <!-- Anatomy of a Field Spell Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Anatomy of a Field Spell</h2>
+            <div class="card p-6 flex flex-col md:flex-row items-center gap-6">
+                <div id="lost-world-img-container" class="card-image-container flex-shrink-0 card-placeholder">Lost World</div>
+                <div class="flex-1">
+                    <h3 class="text-2xl font-bold text-accent mb-4">Deconstructing Lost World</h3>
+                    <div class="space-y-3 text-teal-100">
+                        <p><strong class="text-white">1. Stat Manipulation:</strong> All non-Dinosaur monsters lose 500 ATK/DEF. This passive debuff alters critical battle calculations and applies constant pressure.</p>
+                        <p><strong class="text-white">2. Token Generation:</strong> Once per turn, if a Dinosaur is summoned, you can Special Summon 1 "Jurraegg Token" (Level 1, 0/0) to your opponent's field in Defense Position. This sets the stage for all other interactions.</p>
+                        <p><strong class="text-white">3. Targeting Protection:</strong> While your opponent controls a Token, they cannot target monsters on the field with card effects, except Tokens. This shields your key monsters like <strong class="text-accent">Souleating Oviraptor</strong> from common disruptions.</p>
+                        <p><strong class="text-white">4. Destruction Substitution:</strong> Once per turn, if a Normal Monster (the Token) would be destroyed, you can destroy 1 Dinosaur from your hand or Deck instead. This is the lynchpin of the entire strategy, turning a simple effect into a direct search from your deck.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Jurraegg Token Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Jurraegg Token: Asset & Combo Piece</h2>
+            <div class="card p-6">
+                <p class="text-teal-100 mb-4">
+                    The brilliance of Lost World lies in transforming a disadvantage—giving your opponent a monster—into a profound advantage. The "Jurraegg Token" is a multi-purpose tool:
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-teal-100">
+                    <li>It establishes the targeting protection vital for executing your combos without interruption.</li>
+                    <li>It occupies an opponent's Main Monster Zone, which can hinder strategies reliant on specific board configurations (like Sky Striker or Kashtira).</li>
+                    <li>Most importantly, it becomes the linchpin of your main combo. By using a card like <strong class="text-accent">Souleating Oviraptor</strong> to *target* the token for destruction, you trigger Lost World's substitution effect. This allows you to destroy a "baby" Dinosaur like <strong class="text-accent">Babycerasaurus</strong> or <strong class="text-accent">Petiteranodon</strong> directly from your Deck, which in turn triggers *its* effect to Special Summon another Dinosaur, all while the token remains safely on the field.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- The Dinosaur Core Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Dinosaur Core</h2>
+            <p class="text-teal-100 mb-8 text-center max-w-2xl mx-auto">
+                While Lost World sets the stage, the monsters execute the strategy. This <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=dinosaur&stype=1&ctype=1&sort=1" target="_blank" class="lore-link">prehistoric arsenal</a> defines the deck's powerful and consistent core.
+            </p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Playmakers -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">The Playmakers</h3>
+                    <div id="oviraptor-img-container" class="w-full h-40 card-placeholder mb-4 flex items-center justify-center text-lg">Souleating Oviraptor</div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100">
+                        <li><strong class="text-accent">Souleating Oviraptor:</strong> The deck's heart. Searches any Dinosaur on summon and its second effect (destroying a Level 4 or lower Dinosaur) is the primary trigger for the Lost World combo.</li>
+                        <li><strong class="text-accent">Animadorned Archosaur:</strong> Destroys a Dinosaur in hand/field to search an "Evolution Pill" spell, providing another way to trigger your "babies."</li>
+                        <li><strong class="text-accent">Miscellaneousaurus:</strong> The deck's ultimate protector. Its hand effect makes your Dinosaurs unaffected by activated effects for the Main Phase. Its GY effect banishes to summon from deck. **(Currently Limited)**</li>
+                    </ul>
+                </div>
+                <!-- Engines of Creation -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Engines of Creation (The "Babies")</h3>
+                    <div id="babycerasaurus-img-container" class="w-full h-40 card-placeholder mb-4 flex items-center justify-center text-lg">Babycerasaurus</div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100">
+                        <li><strong class="text-accent">Babycerasaurus:</strong> When destroyed by a card effect, Special Summons one Level 4 or lower Dinosaur from the Deck.</li>
+                        <li><strong class="text-accent">Petiteranodon:</strong> When destroyed by a card effect, Special Summons one Level 4 or *higher* Dinosaur from the Deck.</li>
+                        <li class="mt-4">These effects are **not once-per-turn**, allowing them to be looped multiple times to swarm the field.</li>
+                    </ul>
+                </div>
+                <!-- The Apex Predator -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">The Apex Predator</h3>
+                    <div id="uct-img-container" class="w-full h-40 card-placeholder mb-4 flex items-center justify-center text-lg">Ultimate Conductor Tyranno</div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100">
+                        <li><strong class="text-accent">Ultimate Conductor Tyranno:</strong> The iconic boss monster.
+                        <li>Summoned by banishing 2 Dinosaurs from the GY.</li>
+                        <li>A Quick Effect to destroy a monster in hand/field to flip all opposing monsters face-down.</li>
+                        <li>Can attack all monsters your opponent controls, once each.</li>
+                        <li>Sends Defense Position monsters to the GY and inflicts 1000 damage.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Combo: Oviraptor + Lost World</h2>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="oviraptor-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Souleating Oviraptor</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a3b3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon & Chain Block</h3>
+                            </div>
+                            <p class="text-teal-100">Activate <strong class="text-accent">Lost World</strong>. Normal Summon <strong class="text-accent">Souleating Oviraptor</strong>. Two effects trigger. Set Oviraptor as Chain Link 1 and Lost World as Chain Link 2. This "chain blocks" Oviraptor, preventing <strong class="text-accent">Ash Blossom</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="token-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Jurraegg Token</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a3b3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Resolve the Chain</h3>
+                            </div>
+                            <p class="text-teal-100">CL2 resolves: Summon a <strong class="text-accent">Jurraegg Token</strong> to the opponent's field. CL1 resolves: Search your deck for <strong class="text-accent">Miscellaneousaurus</strong> to protect your plays.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="baby-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Babycerasaurus</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a3b3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Trigger the Combo</h3>
+                            </div>
+                            <p class="text-teal-100">Activate Oviraptor's second effect, targeting the <strong class="text-accent">Token</strong>. Lost World's effect applies: instead of destroying the token, destroy <strong class="text-accent">Babycerasaurus</strong> from your Deck. Babycerasaurus now triggers, summoning another Dinosaur from your deck to continue the combo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historical Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Historical "Going First" Fortress</h2>
+            <div class="bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500 p-4 mb-6">
+                <h3 class="text-xl font-bold text-red-300 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>Banlist Warning</h3>
+                <p class="text-red-200">The end board described below was the deck's primary goal. However, its main components, <strong class="text-accent">Apollousa, Bow of the Goddess</strong> and <strong class="text-accent">Borreload Savage Dragon</strong>, are now **FORBIDDEN** in the TCG. This board is no longer competitively viable.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Apollousa -->
+                <div class="card p-6 pro-con-card opacity-50">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Apollousa, Bow of the Goddess <span class="text-red-400">(FORBIDDEN)</span></h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="apollousa-img-container" class="card-image-container card-placeholder">Apollousa, Bow of the Goddess</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100">
+                        <li>A Link-4 monster providing 3-4 monster effect negations.</li>
+                    </ul>
+                </div>
+                <!-- Borreload Savage -->
+                <div class="card p-6 pro-con-card opacity-50">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Borreload Savage Dragon <span class="text-red-400">(FORBIDDEN)</span></h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="savage-img-container" class="card-image-container card-placeholder">Borreload Savage Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100">
+                        <li>A Level 8 Synchro that equipped a Link monster to provide omni-negates.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Modern Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.7s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Modern "Going First" Board</h2>
+            <p class="text-teal-100 mb-8 text-center max-w-2xl mx-auto">
+                With its main negation tools banned, the modern "Going First" board is much simpler, focusing on the in-archetype "Evolzar" Xyz monsters for specific, high-impact negations.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Laggia -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Evolzar Laggia</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="laggia-img-container" class="card-image-container card-placeholder">Evolzar Laggia</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100">
+                        <li><strong class="text-accent">The "Solemn Judgment":</strong> By detaching 2 materials, Laggia can negate the Normal/Special Summon of a monster OR the activation of a Spell/Trap Card.</li>
+                    </ul>
+                </div>
+                <!-- Dolkka -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Evolzar Dolkka</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dolkka-img-container" class="card-image-container card-placeholder">Evolzar Dolkka</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100">
+                        <li><strong class="text-accent">The Monster Negator:</strong> By detaching 1 material, Dolkka can negate an activated monster effect and destroy it. This can be used twice per turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis & Vulnerabilities</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Chokepoints -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4"><i class="fas fa-exclamation-triangle mr-2"></i>Key Chokepoints</h3>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100">
+                        <li><strong class="text-accent">Miscellaneousaurus (GY Effect):</strong> This is the deck's single biggest chokepoint. Negating its GY activation with <strong class="text-white">Ash Blossom</strong> or <strong class="text-white">Called by the Grave</strong> will almost always end the Dinosaur player's turn.</li>
+                        <li><strong class="text-accent">The "Baby" Dinosaurs:</strong> Any effect that prevents cards from being sent to the GY (e.g., <strong class="text-white">Dimension Shifter</strong>) or activating in the GY (e.g., <strong class="text-white">Abyss Dweller</strong>) is devastating.</li>
+                         <li><strong class="text-accent">The Normal Summon:</strong> Negating <strong class="text-white">Souleating Oviraptor</strong>'s on-field effect can stop the combo, but this is risky as the opponent may have <strong class="text-white">Miscellaneousaurus</strong> in hand to protect it.</li>
+                    </ul>
+                </div>
+                <!-- Counter Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4"><i class="fas fa-shield-alt mr-2"></i>Effective Counters</h3>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100">
+                        <li><strong class="text-accent">Ash Blossom:</strong> Best used on <strong class="text-white">Miscellaneousaurus</strong>'s GY effect.</li>
+                        <li><strong class="text-accent">Artifact Lancea / D.D. Crow:</strong> Shuts off <strong class="text-white">Miscellaneousaurus</strong>, <strong class="text-white">Double Evolution Pill</strong>, and <strong class="text-white">UCT</strong>'s summon.</li>
+                        <li><strong class="text-accent">Abyss Dweller:</strong> Preemptively disables all GY effects for a turn, shutting down Misc and the "babies."</li>
+                        <li><strong class="text-accent">Dimension Shifter / Floodgates:</strong> <strong class="text-white">Dimension Shifter</strong> is a turn-ending card. <strong class="text-white">There Can Be Only One</strong> is also highly effective as most key monsters are Dinosaurs.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">CRITICAL IMPACT:</strong> The Dinosaur archetype has been severely impacted by multiple banlists, shifting it from a "Tier 0" contender to a "Going Second" rogue strategy.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden (0 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Apollousa, Bow of the Goddess</strong></li>
+                            <li><strong class="text-red-400">Borreload Savage Dragon</strong></li>
+                            <li><strong class="text-red-400">True King of All Calamities</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Miscellaneousaurus</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Unlimited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Souleating Oviraptor</strong></li>
+                            <li><strong class="text-green-300">Fossil Dig</strong></li>
+                            <li><strong class="text-green-300">Babycerasaurus</strong> & <strong class="text-green-300">Petiteranodon</strong></li>
+                            <li><strong class="text-green-300">Double Evolution Pill</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The deck has lost its most powerful "Going First" end boards. The limiting of <strong class="text-accent">Miscellaneousaurus</strong> critically wounds its consistency and protection from hand traps. The deck can no longer reliably build an unbreakable fortress and must instead rely on its powerful OTK potential with <strong class="text-accent">Ultimate Conductor Tyranno</strong> or simpler, more fragile boards using <strong class="text-accent">Evolzar Laggia/Dolkka</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- JUNGLE MIST ANIMATION ---
+            const canvas = document.getElementById('mist-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 70;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.vx = (Math.random() - 0.5) * 0.3; // Slow horizontal drift
+                        this.vy = (Math.random() - 0.5) * 0.3; // Slow vertical drift
+                        this.radius = Math.random() * 30 + 20;
+                        this.alpha = Math.random() * 0.1 + 0.05; // Very transparent
+                        this.color = `rgba(45, 212, 191, ${this.alpha})`;
+                    }
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        
+                        if (this.x < -this.radius) this.x = canvas.width + this.radius;
+                        if (this.x > canvas.width + this.radius) this.x = -this.radius;
+                        if (this.y < -this.radius) this.y = canvas.height + this.radius;
+                        if (this.y > canvas.height + this.radius) this.y = -this.radius;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        // Create a radial gradient for a "glowing spore" effect
+                        let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                        gradient.addColorStop(0, `rgba(45, 212, 191, ${this.alpha * 0.5})`);
+                        gradient.addColorStop(1, `rgba(45, 212, 191, 0)`);
+                        
+                        ctx.fillStyle = gradient;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'lost-world-img-container': 'Lost World',
+                'oviraptor-img-container': 'Souleating Oviraptor',
+                'babycerasaurus-img-container': 'Babycerasaurus',
+                'uct-img-container': 'Ultimate Conductor Tyranno',
+                'oviraptor-combo-img-container': 'Souleating Oviraptor',
+                'token-combo-img-container': 'Jurraegg Token',
+                'baby-combo-img-container': 'Babycerasaurus',
+                'apollousa-img-container': 'Apollousa, Bow of the Goddess',
+                'savage-img-container': 'Borreload Savage Dragon',
+                'laggia-img-container': 'Evolzar Laggia',
+                'dolkka-img-container': 'Evolzar Dolkka'
+            });
+        });
+    </script>
+</body>
+</html>

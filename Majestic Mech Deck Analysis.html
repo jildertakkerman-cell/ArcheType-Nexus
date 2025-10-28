@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Majestic Mech Series Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Make sure card-loader.js is in this path -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Dark Blue */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1e293b; /* Slate 800 */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #475569; /* Slate 600 */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #334155; /* Slate 700 */
+            border: 1px solid #64748b; /* Slate 500 */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1e293b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1e293b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Gold/Yellow */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0f172a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #475569;
+        }
+
+        #blueprint-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.75); /* Dark Blue overlay */
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        
+        .banner-header h1 {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* --- Card Popup Styles --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(15, 23, 42, 0.95); /* Dark Blue */
+            border: 1px solid #facc15; /* Gold */
+            border-radius: 0.75rem;
+            color: #e2e8f0;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="blueprint-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Majestic Mech</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Strategic Deep Dive into the GX-Era Relic</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-slate-300 mb-4">
+                    The <strong class="text-accent font-bold">"Majestic Mech"</strong> cards represent a fascinating artifact from a bygone era of Yu-Gi-Oh!. This small, thematic series embodies a design philosophy that prioritized standalone power over the intricate, synergistic engines that define modern archetypes. To fully understand them, one must distinguish them from other "Majestic" cards.
+                </p>
+                <p class="text-slate-300">
+                    This series consists of only three Main Deck monsters: <strong class="text-accent">Ohka</strong>, <strong class="text-accent">Goryu</strong>, and <strong class="text-accent">Senku</strong>. They are a "series," not an "archetype," and lack any internal support. They are not related to the
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Majestic%20Dragon&stype=1" target="_blank" class="lore-link">"Majestic Dragon"</a>
+                    archetype (e.g., Majestic Star Dragon), "Majespecters," or "Magistus." They are tools, not a self-contained deck.
+                </p>
+            </div>
+        </section>
+
+        <!-- Historical Context Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Historical Context: Enemy of Justice (2006)</h2>
+                <p class="text-slate-300">
+                    The "Majestic Mech" series debuted in <strong class="text-accent">Enemy of Justice (2006)</strong>. Gameplay then was slower and battle-oriented. The Normal Summon was the central play. Within this context, <strong class="text-accent">Ohka</strong> (2400 ATK for no tribute) and <strong class="text-accent">Goryu</strong> (2900 ATK for one tribute) were revolutionary tempo plays.
+                </p>
+                <p class="text-slate-300 mt-4">
+                    Viewed through a modern lens, these cards are primitive "extenders." They convert a single card from hand into immediate board presence to facilitate a larger goal, balanced by their shared drawback of self-removal during the End Phase.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Majestic Arsenal Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Majestic Arsenal</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Ohka -->
+                <div class="card p-6 combo-step-card">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Majestic Mech - Ohka</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ohka-img-container" class="card-image-container card-placeholder">Majestic Mech - Ohka</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300 text-sm">
+                        <li><strong class="text-white">Role:</strong> The Aggressor / Tempo Generator</li>
+                        <li><strong class="text-white">Effect:</strong> Can be Normal Summoned without Tributing.</li>
+                        <li><strong class="text-white">Stats:</strong> Level 6, 2400 ATK</li>
+                        <li><strong class="text-white">Use:</strong> Provides an instant 2400 ATK body or perfect fodder for a Tribute Summon (like Goryu).</li>
+                    </ul>
+                </div>
+                <!-- Goryu -->
+                <div class="card p-6 combo-step-card">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Majestic Mech - Goryu</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="goryu-img-container" class="card-image-container card-placeholder">Majestic Mech - Goryu</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300 text-sm">
+                        <li><strong class="text-white">Role:</strong> The Finisher / Boss Monster</li>
+                        <li><strong class="text-white">Effect:</strong> Can be Tribute Summoned with 1 Tribute. Inflicts piercing damage.</li>
+                        <li><strong class="text-white">Stats:</strong> Level 8, 2900 ATK</li>
+                        <li><strong class="text-white">Use:</strong> A high-reward boss monster to break boards and close games.</li>
+                    </ul>
+                </div>
+                <!-- Senku -->
+                <div class="card p-6 combo-step-card">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Majestic Mech - Senku</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="senku-img-container" class="card-image-container card-placeholder">Majestic Mech - Senku</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300 text-sm">
+                        <li><strong class="text-white">Role:</strong> The Utility Piece</li>
+                        <li><strong class="text-white">Effect:</strong> Draw 1 card when it inflicts battle damage by a direct attack.</li>
+                        <li><strong class="text-white">Stats:</strong> Level 4, 1000 ATK</li>
+                        <li><strong class="text-white">Use:</strong> Its value is its identity (Level 4, LIGHT, Fairy) for combo use.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- The 'End Board' / Flawed Engine Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The 'End Board': A Flawed Engine</h2>
+            <div class="card p-6">
+                <h3 class="text-xl md:text-2xl font-bold text-white mb-4">The Absence of Internal Synergy</h3>
+                <p class="text-slate-300 mb-4">
+                    A duelist looking for internal combo lines within the "Majestic Mech" series will find none. There are no Spell, Trap, or Extra Deck monsters that bear the "Majestic Mech" name. The monsters do not search, summon, or recover one another.
+                </p>
+                <p class="text-slate-300">
+                    Consequently, there is no "Majestic Mech combo" and no dedicated "Majestic Mech endboard." The end board resulting from their use is composed entirely of the cards they *enable* from other archetypes. They are always a means to an end, never the end itself. Their shared mechanic is a *negative* one: self-removal during the End Phase.
+                </p>
+            </div>
+        </section>
+
+        <!-- Mitigating the Drawback Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Taming the Mechs: Mitigating the Drawback</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">
+                Overcoming their self-removal effect ("Send to the Graveyard," not "Destroy") is the key to unlocking their potential.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Method 1: Rule Manipulation -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-accent mb-2">1. Rule Manipulation (Banishing)</h3>
+                    <p class="text-slate-300 text-sm mb-4">Create a game state where sending cards to the GY is impossible. The effect "sends" but cannot, so it resolves without consequence.</p>
+                    <div class="flex justify-center">
+                        <div id="macro-cosmos-img-container" class="w-32 flex-shrink-0 card-placeholder">Macro Cosmos</div>
+                    </div>
+                    <p class="text-slate-300 text-sm mt-2 text-center">e.g., <strong class="text-white">Macro Cosmos</strong>, <strong class="text-white">Dimensional Fissure</strong></p>
+                </div>
+                <!-- Method 2: Effect Negation -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-accent mb-2">2. Effect Negation</h3>
+                    <p class="text-slate-300 text-sm mb-4">Negate the monster's effect on the field, turning it into a powerful "vanilla" beater.</p>
+                    <div class="flex justify-center">
+                        <div id="skill-drain-img-container" class="w-32 flex-shrink-0 card-placeholder">Skill Drain</div>
+                    </div>
+                    <p class="text-slate-300 text-sm mt-2 text-center">e.g., <strong class="text-white">Skill Drain</strong>, <strong class="text-white">Light-Imprisoning Mirror</strong></p>
+                </div>
+                <!-- Method 3: Evasive Maneuvers -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-accent mb-2">3. Evasive Maneuvers (Bouncing)</h3>
+                    <p class="text-slate-300 text-sm mb-4">Embrace their temporary nature. Use a Quick-Play effect to return the Mech to the hand before the End Phase to "reset" it for another free summon.</p>
+                    <p class="text-slate-300 text-sm mt-2 text-center">e.g., <strong class="text-white">Compulsory Evacuation Device</strong></p>
+                </div>
+                <!-- Method 4: Resource Conversion -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-lg font-bold text-accent mb-2">4. Resource Conversion (Primary Strategy)</h3>
+                    <p class="text-slate-300 text-sm mb-4">The most practical modern strategy. Use the Mech as material for a Tribute, Synchro, Xyz, or Link Summon *before* the End Phase, making the drawback irrelevant.</p>
+                    <p class="text-slate-300 text-sm mt-2 text-center">e.g., <strong class="text-white">Tribute Ohka for a Monarch</strong></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Synergistic Alliances Section (The Real End Boards) -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Synergistic Alliances (The Real End Boards)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Tribute Engine -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Tribute Engine (Monarchs)</h3>
+                    <p class="text-slate-300 text-sm mb-4"><strong class="text-accent">Ohka</strong> is an exceptional enabler. Normal Summon Ohka (free), then Tribute it for a powerful Level 6 or 8 monster.</p>
+                    <div class="flex justify-center mb-2">
+                        <div id="majesty-fiend-img-container" class="card-image-container card-placeholder">Majesty's Fiend</div>
+                    </div>
+                    <p class="text-slate-300 text-sm text-center">Provides an instant body for <strong class="text-white">Majesty's Fiend</strong>, <strong class="text-white">Caius</strong>, or <strong class="text-white">Raiza</strong>.</p>
+                </div>
+                <!-- LIGHT Fairy Engine -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">LIGHT Fairy Engine</h3>
+                    <p class="text-slate-300 text-sm mb-4">All Mechs are LIGHT Fairy. They can be discard fodder for <strong class="text-white">Herald</strong> hand traps or fuel for Fairy-specific boss monsters.</p>
+                    <div class="flex justify-center mb-2">
+                        <div id="kristya-img-container" class="card-image-container card-placeholder">Archlord Kristya</div>
+                    </div>
+                    <p class="text-slate-300 text-sm text-center"><strong class="text-accent">Ohka</strong> provides a free LIGHT Fairy to help summon <strong class="text-white">Archlord Kristya</strong>.</p>
+                </div>
+                <!-- Extra Deck Engine -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Extra Deck Engine (Xyz/Link)</h3>
+                    <p class="text-slate-300 text-sm mb-4">The most straightforward use. Convert the temporary body into a permanent Extra Deck monster.</p>
+                    <div class="flex justify-center mb-2">
+                        <div id="beatrice-img-container" class="card-image-container card-placeholder">Beatrice, Lady of the Eternal</div>
+                    </div>
+                    <p class="text-slate-300 text-sm text-center"><strong class="text-accent">Ohka</strong> (Level 6) can be used for a Rank 6 Xyz Summon, or any Mech can be used as Link Material.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-slate-300 mb-4 text-center">
+                    The "Majestic Mech" series itself is completely unrestricted. However, its most powerful stun-based support cards are <strong class="text-yellow-400 font-bold">Limited</strong>, impacting the viability of negation-focused builds.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Unrestricted -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards (3 per deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-slate-300">
+                            <li><strong class="text-white">Majestic Mech - Ohka</strong></li>
+                            <li><strong class="text-white">Majestic Mech - Goryu</strong></li>
+                            <li><strong class="text-white">Majestic Mech - Senku</strong></li>
+                            <li>Majesty's Fiend</li>
+                            <li>Archlord Kristya</li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 per deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-slate-300">
+                            <li><strong class="text-white">Macro Cosmos</strong></li>
+                            <li><strong class="text-white">Dimensional Fissure</strong></li>
+                            <li><strong class="text-white">Skill Drain</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-400">
+                    <p class="text-sm text-slate-300"><strong>Meta Implications:</strong> While the core "Majestic Mech" engine is at full power, the strategies that best mitigate its drawback (banishing and effect negation) are heavily restricted. This pushes the series away from "stun" builds and reinforces its primary role as a niche, temporary extender for Tribute or Extra Deck-focused strategies.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Theoretical Legacy Support Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Theoretical Legacy Support</h2>
+                <p class="text-slate-300 mb-4">
+                    To address the series' core weaknesses (no searchability, severe drawback), modern support would likely introduce a central Field Spell or Link Monster.
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-slate-300">
+                    <li><strong class="text-accent">A Field Spell:</strong> e.g., "Majestic Mech Assembly Line." Could search a "Majestic Mech" on activation and have an effect to "return 1 'Majestic Mech' monster to the hand instead" of it being sent to the GY by its own effect, recycling Ohka.</li>
+                    <li><strong class="text-accent">A Link Monster:</strong> e.g., "Majestic Mech - Commander Unit." A Link-1 that, on summon, Special Summons another "Majestic Mech" from hand or GY, turning any one Mech into two bodies for further Extra Deck plays.</li>
+                </ul>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- BLUEPRINT BANNER ANIMATION ---
+            const canvas = document.getElementById('blueprint-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let lines = [];
+                const lineCount = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Line {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 0.2 + 0.1;
+                        this.len = Math.random() * 200 + 50;
+                        this.angle = Math.random() > 0.5 ? 0 : Math.PI / 2; // Only horizontal/vertical
+                        this.color = `rgba(250, 204, 21, ${Math.random() * 0.2 + 0.05})`; // Faint Gold
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < -this.len) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.angle);
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(this.len, 0);
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+
+                function init() {
+                    lines = [];
+                    for (let i = 0; i < lineCount; i++) {
+                        lines.push(new Line());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    lines.forEach(line => {
+                        line.update();
+                        line.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Assumes card-loader.js is loaded
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'ohka-img-container': 'Majestic Mech - Ohka',
+                    'goryu-img-container': 'Majestic Mech - Goryu',
+                    'senku-img-container': 'Majestic Mech - Senku',
+                    'macro-cosmos-img-container': 'Macro Cosmos',
+                    'skill-drain-img-container': 'Skill Drain',
+                    'majesty-fiend-img-container': 'Majesty\'s Fiend',
+                    'kristya-img-container': 'Archlord Kristya',
+                    'beatrice-img-container': 'Beatrice, Lady of the Eternal'
+                });
+            } else {
+                console.error('CardLoader script not found.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imperial Trap Card Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- This script is assumed to be in assets/js/card-loader.js as per other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Inter for body and Playfair Display for a regal header theme -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #110f22; /* Deep Royal Purple */
+            color: #e0e7ff; /* Light Lavender */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2c2a4a; /* Dark Violet */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4f4c7a; /* Violet Border */
+        }
+        .pro-con-card, .combo-step-card {
+            background-color: #211f3a;
+            border: 1px solid #4f4c7a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 200px;
+            flex-shrink: 0;
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) {
+            .card-image-container {
+                margin: 0;
+            }
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2c2a4a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2c2a4a;
+            border: 1px dashed #facc15; /* Gold Accent */
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Gold Accent */
+        .header-font {
+            font-family: 'Playfair Display', serif;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        /* Hint link style */
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- NEW ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: linear-gradient(135deg, #110f22 0%, #2c2a4a 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4f4c7a;
+        }
+        #regal-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(17, 15, 34, 0.4) 0%, rgba(17, 15, 34, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.7);
+        }
+
+        /* --- Home Button (from other files) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i { font-size: 22px; }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* --- Card Popup (themed) --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(17, 15, 34, 0.95); /* Deep purple */
+            border: 1px solid #facc15; /* Gold border */
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #facc15; /* Gold title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: #facc15; /* Gold stats */
+        }
+        .banlist-status {
+            font-weight: 700;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+        .status-forbidden { background-color: #ef4444; color: #fff; }
+        .status-limited { background-color: #f97316; color: #fff; }
+        .status-semi-limited { background-color: #eab308; color: #000; }
+        .status-unlimited { background-color: #22c55e; color: #fff; }
+        .status-loading { background-color: #6b7280; color: #fff; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="regal-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 header-font">The Imperial Edicts</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Strategic Analysis of Prohibitive Traps</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6 md:p-8">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 header-font">Introduction to the Imperial Mandate</h2>
+                <p class="text-indigo-200 leading-relaxed">
+                    Within the vast and ever-evolving card pool of the Yu-Gi-Oh! TCG, certain series are defined not by a shared monster type, but by a unifying design philosophy. The 
+                    <!-- This is the "hint link" requested by the user -->
+                    <a href="https://yugipedia.com/wiki/Imperial" target="_blank" class="lore-link">"Imperial" series of Trap Cards</a> 
+                    stands as a prime example, representing a collection of some of the most absolute and game-altering decrees ever printed. These cards do not merely interact with the game state; they fundamentally rewrite its rules.
+                </p>
+                <p class="text-indigo-200 leading-relaxed mt-4">
+                    This report will conduct a deep dive into the four most significant "Imperial" Trap Cards, analyzing their mechanical functions, strategic applications, historical context, and competitive legacy. The cards under examination are the legendary <strong class="text-accent">Imperial Order</strong>, the ubiquitous <strong class="text-accent">Imperial Iron Wall</strong>, the niche <strong class="text-accent">Imperial Custom</strong>, and the powerful <strong class="text-accent">Imperial Tombs of Necrovalley</strong>.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Summary Table ("End Board") Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center header-font heading-underline">Comparative Framework</h2>
+            <div class="card p-6 overflow-x-auto">
+                <table class="w-full min-w-max text-left">
+                    <thead>
+                        <tr class="border-b border-b-yellow-700">
+                            <th class="p-3 text-accent header-font text-lg">Card Name</th>
+                            <th class="p-3 text-accent header-font text-lg">Trap Type</th>
+                            <th class="p-3 text-accent header-font text-lg">Effect Summary</th>
+                            <th class="p-3 text-accent header-font text-lg">Current TCG Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        <tr>
+                            <td class="p-3 font-bold text-white">Imperial Order</td>
+                            <td class="p-3 text-indigo-200">Continuous</td>
+                            <td class="p-3 text-indigo-200">Negates all Spell effects on the field. Requires 700 LP payment each Standby Phase.</td>
+                            <td class="p-3">
+                                <span id="status-imperial-order" class="banlist-status status-loading">(Verifying...)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold text-white">Imperial Iron Wall</td>
+                            <td class="p-3 text-indigo-200">Continuous</td>
+                            <td class="p-3 text-indigo-200">Neither player can banish cards.</td>
+                            <td class="p-3">
+                                <span id="status-imperial-iron-wall" class="banlist-status status-loading">(Verifying...)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold text-white">Imperial Custom</td>
+                            <td class="p-3 text-indigo-200">Continuous</td>
+                            <td class="p-3 text-indigo-200">Face-up Continuous Trap Cards (except itself) cannot be destroyed.</td>
+                            <td class="p-3">
+                                <span id="status-imperial-custom" class="banlist-status status-loading">(Verifying...)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold text-white">Imperial Tombs of Necrovalley</td>
+                            <td class="p-3 text-indigo-200">Counter</td>
+                            <td class="p-3 text-indigo-200">Negates a Spell/Trap/monster effect if you control "Necrovalley" and a "Gravekeeper's" monster.</td>
+                            <td class="p-3">
+                                <span id="status-imperial-tombs" class="banlist-status status-loading">(Verifying...)</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Card Analysis Sections -->
+        <div class="space-y-12">
+            <!-- Imperial Order -->
+            <section class="card p-6 md:p-8 animate-fadeIn" style="animation-delay: 0.4s;">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="imperial-order-img" class="card-image-container card-placeholder">Loading Imperial Order...</div>
+                    <div class="flex-1">
+                        <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 header-font text-accent">Imperial Order: The Ultimate Spell Stopper</h2>
+                        <div class="space-y-4 text-indigo-200 leading-relaxed">
+                            <p><strong class="text-white">Card Profile:</strong> A Continuous Trap that negates all Spell effects on the field. This applies to all Spells, including Equip Spells. While Spells can be activated (to pay costs), their effects are negated upon resolution.</p>
+                            <p><strong class="text-white">Drawback:</strong> The modern errata makes the 700 LP payment mandatory during *each* player's Standby Phase. If the cost cannot be paid, Imperial Order is destroyed.</p>
+                            <p><strong class="text-white">Strategic Application:</strong> The quintessential floodgate. Its true strength is its self-protecting nature, as it negates common Spell-based removal like <strong class="text-yellow-300">Harpie's Feather Duster</strong>. It thrives in Trap-heavy decks (Eldlich, Labrynth) or as protection for an established combo board.</p>
+                            <p><strong class="text-white">Historical Impact:</strong> One of the most powerful cards ever printed, its history is a revolving door on the Forbidden & Limited list. Its 2017 errata attempted to balance it, but failed, as the core problem—negating its own counters—remained. Its status as a single "sacky" Limited card created non-games, leading to its current, and likely permanent, <strong class="text-red-400">Forbidden</strong> status.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Imperial Iron Wall -->
+            <section class="card p-6 md:p-8 animate-fadeIn" style="animation-delay: 0.5s;">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="imperial-iron-wall-img" class="card-image-container card-placeholder">Loading Imperial Iron Wall...</div>
+                    <div class="flex-1">
+                        <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 header-font text-accent">Imperial Iron Wall: The Banishment Barricade</h2>
+                        <div class="space-y-4 text-indigo-200 leading-relaxed">
+                            <p><strong class="text-white">Card Profile:</strong> A Continuous Trap with a simple, absolute effect: "Neither player can banish cards." This is an unclassified effect that is simply applied while face-up.</p>
+                            <p><strong class="text-white">Rulings:</strong> Cards that banish as a *cost* (e.g., <strong class="text-yellow-300">Allure of Darkness</strong>) cannot be activated. Cards that banish as an *effect* (e.g., <strong class="text-yellow-300">Bottomless Trap Hole</strong>) will resolve as much as possible (the monster is destroyed, but not banished).</p>
+                            <p><strong class="text-white">Strategic Application:</strong> The textbook side deck card. Its utility is entirely matchup-dependent, brought in to counter strategies reliant on the banished zone. Historically, it was a silver bullet against top-tier decks like <strong class="text-yellow-300">Dragon Rulers</strong>, <strong class="text-yellow-300">Kozmo</strong>, and <strong class="text-yellow-300">ABC-Dragon Buster</strong>.</p>
+                            <p><strong class="text-white">Historical Impact:</strong> Never Forbidden or Limited, its history is not as a format-definer, but as a format-reactor. The prevalence of Imperial Iron Wall in tournament side decks serves as a direct historical barometer for the dominance of banish-reliant strategies in any given metagame.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Imperial Tombs of Necrovalley -->
+            <section class="card p-6 md:p-8 animate-fadeIn" style="animation-delay: 0.6s;">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="imperial-tombs-img" class="card-image-container card-placeholder">Loading Imperial Tombs...</div>
+                    <div class="flex-1">
+                        <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 header-font text-accent">Imperial Tombs of Necrovalley: The Pharaoh's Decree</h2>
+                        <div class="space-y-4 text-indigo-200 leading-relaxed">
+                            <p><strong class="text-white">Card Profile:</strong> A Counter Trap (Spell Speed 3) that provides an "omni-negate" (negates a Spell, Trap, or monster effect) and destroys the card.</p>
+                            <p><strong class="text-white">Conditions:</strong> Can only be activated while you control both a "Gravekeeper's" monster and "Necrovalley". It is also a hard once-per-turn.</p>
+                            <p><strong class="text-white">Strategic Application:</strong> The ultimate defensive tool for the "Gravekeeper's" archetype. The deck's strategy is to establish a GY lock with <strong class="text-yellow-300">Necrovalley</strong>, and this card serves to protect that lock from the opponent's most impactful counter-play, be it a board wipe or a key monster effect.</p>
+                            <p><strong class="text-white">Historical Impact:</strong> A significant piece of modern support for one of the game's oldest archetypes. It is not a "win-more" card, but a "clinch-the-win" card, transforming a fragile board state into a nearly insurmountable checkmate position by negating the opponent's primary out.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Imperial Custom -->
+            <section class="card p-6 md:p-8 animate-fadeIn" style="animation-delay: 0.7s;">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="imperial-custom-img" class="card-image-container card-placeholder">Loading Imperial Custom...</div>
+                    <div class="flex-1">
+                        <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 header-font text-accent">Imperial Custom: The Unbreakable Formation</h2>
+                        <div class="space-y-4 text-indigo-200 leading-relaxed">
+                            <p><strong class="text-white">Card Profile:</strong> A Continuous Trap with a unique protective effect: "Face-up Continuous Trap Cards on the field not named Imperial Custom cannot be destroyed".</p>
+                            <p><strong class="text-white">Conditions:</strong> It does not protect itself. It only protects from *destruction*, not from being banished or returned to the hand. You can only control one.</p>
+                            <p><strong class="text-white">Strategic Application:</strong> Used in dedicated "Stun" decks to protect other powerful floodgates like <strong class="text-yellow-300">Skill Drain</strong>, <strong class="text-yellow-300">Gozen Match</strong>, or <strong class="text-yellow-300">Rivalry of Warlords</strong>. It forces the opponent to use non-destruction removal (like <strong class="text-yellow-300">Cosmic Cyclone</strong>) specifically on Imperial Custom before they can deal with the other threats.</p>
+                            <p><strong class="text-white">Historical Impact:</strong> A niche, high-risk, high-reward card. Its relevance can surge with new card releases. For example, it can be used in "Voiceless Voice" to prevent their trap, <strong class="text-yellow-300">Radiance of the Voiceless Voice</strong>, from destroying itself as part of its effect, thus negating its intended cost and balance.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Lesser Known & Legacy -->
+        <section class="mb-10 md:mb-16 mt-12 animate-fadeIn" style="animation-delay: 0.8s;">
+            <div class="card p-6 md:p-8">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 header-font">Lesser-Known Edicts & Comparative Legacy</h2>
+                <p class="text-indigo-200 leading-relaxed mb-4">
+                    Other cards like "Imperial Register" exist, but their underpowered and specific effects have kept them from competitive play. Their existence merely reinforces the "Imperial" theme of control.
+                </p>
+                <p class="text-indigo-200 leading-relaxed">
+                    Collectively, the "Imperial" series is the face of "floodgate" strategies, forcing a central debate: are they a necessary check on high-speed combo decks, or do they create non-interactive games decided by a single card flip?
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-indigo-200 mt-4">
+                    <li><strong class="text-accent">Imperial Order</strong>: Represents absolute, unbalanced power.</li>
+                    <li><strong class="text-accent">Imperial Iron Wall</strong>: The perfect reactive side deck tool.</li>
+                    <li><strong class="text-accent">Imperial Tombs</strong>: The ideal model for powerful, archetype-locked support.</li>
+                    <li><strong class="text-accent">Imperial Custom</strong>: The niche combo-enabler whose power evolves with new card releases.</li>
+                </ul>
+            </div>
+        </section>
+
+    </div>
+
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- REGAL BANNER ANIMATION ---
+            const canvas = document.getElementById('regal-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speed = Math.random() * 1.5 + 0.5;
+                        this.size = Math.random() * 2 + 1;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                        this.color = `rgba(250, 204, 21, ${this.opacity})`; // Gold color
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Assumes card-loader.js is loaded
+            
+                CardLoader.loadCards({
+                    'imperial-order-img': 'Imperial Order',
+                    'imperial-iron-wall-img': 'Imperial Iron Wall',
+                    'imperial-custom-img': 'Imperial Custom',
+                    'imperial-tombs-img': 'Imperial Tombs of Necrovalley'
+                });
+            
+
+            // --- BANLIST VERIFICATION SCRIPT ---
+            async function verifyBanlist() {
+                const cardMap = {
+                    "Imperial Order": "status-imperial-order",
+                    "Imperial Iron Wall": "status-imperial-iron-wall",
+                    "Imperial Custom": "status-imperial-custom",
+                    "Imperial Tombs of Necrovalley": "status-imperial-tombs"
+                };
+
+                const fallbackStatus = {
+                    "Imperial Order": { text: "Forbidden", class: "status-forbidden" },
+                    "Imperial Iron Wall": { text: "Unlimited", class: "status-unlimited" },
+                    "Imperial Custom": { text: "Unlimited", class: "status-unlimited" },
+                    "Imperial Tombs of Necrovalley": { text: "Unlimited", class: "status-unlimited" }
+                };
+
+                try {
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg&format=tcg');
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    
+                    const result = await response.json();
+                    const cardData = result.data;
+
+                    const statusMap = new Map();
+                    for (const card of cardData) {
+                        if (cardMap.hasOwnProperty(card.name)) {
+                            let statusText = "Unlimited";
+                            let statusClass = "status-unlimited";
+                            
+                            if (card.banlist_info && card.banlist_info.ban_tcg) {
+                                const banStatus = card.banlist_info.ban_tcg;
+                                if (banStatus === "Forbidden") {
+                                    statusText = "Forbidden";
+                                    statusClass = "status-forbidden";
+                                } else if (banStatus === "Limited") {
+                                    statusText = "Limited";
+                                    statusClass = "status-limited";
+                                } else if (banStatus === "Semi-Limited") {
+                                    statusText = "Semi-Limited";
+                                    statusClass = "status-semi-limited";
+                                }
+                            }
+                            statusMap.set(card.name, { text: statusText, class: statusClass });
+                        }
+                    }
+
+                    // Update UI for all cards
+                    for (const [cardName, elementId] of Object.entries(cardMap)) {
+                        const element = document.getElementById(elementId);
+                        if (element) {
+                            const status = statusMap.get(cardName) || fallbackStatus[cardName];
+                            element.textContent = status.text;
+                            element.className = `banlist-status ${status.class}`;
+                        }
+                    }
+
+                } catch (error) {
+                    console.error("Failed to verify banlist:", error);
+                    // On API fail, use the fallback statuses from the docx
+                    for (const [cardName, elementId] of Object.entries(cardMap)) {
+                        const element = document.getElementById(elementId);
+                        if (element) {
+                            const status = fallbackStatus[cardName];
+                            element.textContent = status.text;
+                            element.className = `banlist-status ${status.class}`;
+                            element.title = "Could not verify live status; using fallback.";
+                        }
+                    }
+                }
+            }
+
+            verifyBanlist();
+        });
+    </script>
+</body>
+</html>

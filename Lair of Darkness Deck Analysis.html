@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lair of Darkness Engine Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in /assets/js/ as per other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Dark, shadowy theme inspired by Lair of Darkness art */
+            background-color: #0d0a0d; /* Very dark purple/black */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a0000; /* Darker, more theatrical red-black */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d0000; /* Dark red border */
+        }
+        .combo-step-card {
+            background-color: #210000; /* Even darker red */
+            border: 1px solid #660000;
+        }
+        .pro-con-card {
+            background-color: #210000;
+            border: 1px solid #660000;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1a0000;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a0000;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #1a0000);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #b91c1c; } /* Crimson Red */
+        .arrow-color { color: #be185d; }
+        .heading-underline {
+            border-bottom: 2px solid #b91c1c;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fca5a5; /* Light red for links */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fca5a5;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* Banner styling from Abyss Actor, fits the theme */
+        .banner {
+            position: relative;
+            height: 120px;
+            background: #0a0a0a;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #4d0000;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: content-fade-in 1s ease-out 0.5s forwards;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 10, 10, 0.3);
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #dbeafe;
+        }
+        .spotlight {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(to bottom, rgba(200, 150, 150, 0.2), transparent); /* Dim red spotlight */
+            transform-origin: top center;
+            z-index: 1;
+            opacity: 0;
+            animation: spotlight-sweep 5s ease-in-out 0s infinite alternate;
+            border-radius: 50%;
+            filter: blur(20px);
+        }
+        @keyframes content-fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spotlight-sweep {
+            0% { transform: translateX(-50%) rotate(-30deg); opacity: 0.6; }
+            100% { transform: translateX(-50%) rotate(30deg); opacity: 0.8; }
+        }
+        @media (max-width: 768px) {
+            .banner { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i { font-size: 22px; }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #b91c1c; /* Crimson border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #b91c1c; /* Crimson title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats {
+            font-family: 'Playfair Display', serif;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="spotlight"></div>
+                <div class="banner-content">
+                    <h1 class="banner-title">Lair of Darkness</h1>
+                    <p class="banner-subtitle">The Shadow Throne: A Comprehensive Engine Analysis</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">"Lair of Darkness"</strong> series is not a conventional archetype. It operates as a self-contained, synergistic engine built around a unique and powerful game mechanic: the tributing of an opponent's monsters to pay for the costs of one's own effects. This engine is defined by key pillars whose interactions form the foundation of a potent control strategy. Understanding the precise function of each pillar is essential to mastering its complex and rewarding gameplay.
+                </p>
+            </div>
+        </section>
+
+        <!-- Pillars of the Lair Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Pillars of the Lair: Core Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-chess-king text-4xl text-red-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Architects & Sovereign</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Ahrima, the Wicked Warden</h4>
+                            <p class="text-sm text-blue-200">The main consistency tool. Discard to search <strong class="text-accent">Lair of Darkness</strong>. Can also Tribute a DARK monster (even an opponent's) to draw or search <strong class="text-accent">Darkest Diabolos</strong>.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Lilith, Lady of Lament</h4>
+                            <p class="text-sm text-blue-200">The premier disruption tool. As a Quick Effect, Tributes a DARK monster to reveal 3 Normal Traps (like "Virus" cards) from your Deck for your opponent to randomly pick one to Set.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Darkest Diabolos, Lord of the Lair</h4>
+                            <p class="text-sm text-blue-200">The boss monster. Cannot be Tributed or targeted by opponents. Special Summons itself from hand or GY when you Tribute a DARK monster. Can Tribute a DARK monster to make your opponent place a card from their hand on the top or bottom of their Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-red-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Keystone & The Plague</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Lair of Darkness (Field Spell)</h4>
+                            <p class="text-sm text-blue-200">The lynchpin of the entire strategy. Makes all monsters on the field DARK. Once per turn, allows you to Tribute one of your opponent's DARK monsters as the cost for one of your card effects. Generates "Torment Tokens" during the End Phase based on monsters Tributed.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">The "Virus" Traps</h4>
+                            <p class="text-sm text-blue-200">A series of powerful Normal Traps that <strong class="text-accent">Lilith</strong> can search. Cards like <strong class="text-accent">Eradicator Epidemic Virus</strong> Tribute a DARK monster (like an opponent's boss monster) to destroy all Spells *or* Traps your opponent controls and draws for 3 turns.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- The Virus Plague Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Virus Plague</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The most potent synergy within the strategy is its ability to weaponize the
+                <a href="https://yugipedia.com/wiki/Virus" target="_blank" class="lore-link">"Virus" series of Normal Traps</a>.
+                Historically, these traps were balanced by their high cost. "Lair of Darkness" solves this by allowing you to Tribute your opponent's strongest monster as the cost, turning their greatest asset into your most devastating weapon.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Eradicator Epidemic Virus -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="eradicator-img-container" class="card-image-container flex-shrink-0 card-placeholder">Eradicator Epidemic Virus</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Eradicator Epidemic Virus</h3>
+                            <p class="text-blue-200">Tribute a DARK monster with 2500+ ATK. Declare Spell or Trap. Your opponent destroys all cards of that type they control and draw for 3 turns. Lair lets you use your opponent's boss monster as the Tribute.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Deck Devastation Virus -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="deck-devastation-img-container" class="card-image-container flex-shrink-0 card-placeholder">Deck Devastation Virus</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Deck Devastation Virus</h3>
+                            <p class="text-blue-200">Tribute a DARK monster with 2000+ ATK. Your opponent destroys all monsters with 1500 or less ATK they control and draw for 3 turns. Devastating against decks reliant on small starters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Play Sequence</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">The core gameplay loop focuses on establishing a "soft lock" that systematically dismantles the opponent's resources.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="lair-img-container" class="card-image-container flex-shrink-0 card-placeholder">Lair of Darkness</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a0000] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Establish the Lair</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent">Lair of Darkness</strong>. This is the most crucial step, typically done by discarding <strong class="text-accent">Ahrima</strong> or activating <strong class="text-accent">Terraforming</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="lilith-img-container" class="card-image-container flex-shrink-0 card-placeholder">Lilith, Lady of Lament</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a0000] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Access the Toolbox</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon <strong class="text-accent">Lilith, Lady of Lament</strong> (or <strong class="text-accent">Tour Guide</strong> to summon Lilith from deck). This provides your main tribute outlet and trap searcher.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="diabolos-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Darkest Diabolos, Lord of the Lair</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a0000] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Disrupt & Summon</h3>
+                            </div>
+                            <p class="text-blue-200">On the opponent's turn, activate <strong class="text-accent">Lilith's</strong> Quick Effect. Tribute one of their key monsters as cost. This triggers <strong class="text-accent">Darkest Diabolos</strong>, Special Summoning it from your hand or GY.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ideal End Board</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                Unlike combo decks, a "Lair of Darkness" end board is a resource-denial setup designed for a long game of attrition.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The Core Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Recurring Threat</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="diabolos-end-img-container" class="card-image-container card-placeholder">Darkest Diabolos, Lord of the Lair</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Lair of Darkness:</strong> Active on the field, enabling all plays.</li>
+                        <li><strong class="text-accent">Darkest Diabolos:</strong> A 3000 ATK protected, recurring threat.</li>
+                        <li><strong class="text-accent">Lilith, Lady of Lament:</strong> Ready to tribute another opposing monster for advantage.</li>
+                    </ul>
+                </div>
+                <!-- The Payoff -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Crippling Plague</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="virus-end-img-container" class="card-image-container card-placeholder">Set Virus Trap</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Set Virus Trap:</strong> A face-down "Virus" trap (like <strong class="text-accent">Eradicator</strong>) set by <strong class="text-accent">Lilith</strong>.</li>
+                        <li><strong class="text-accent">Total Resource Denial:</strong> This board does not negate, it systematically strips the opponent of their field, hand, and future draws.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Bypasses Protection:</strong> Tributing as cost avoids most "cannot be targeted" or "cannot be destroyed" effects.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400 font-bold">War of Attrition:</strong> Excels at out-resourcing the opponent by turning their monsters into your fuel.</li>
+                        <li><span class="pro-icon"><i class="fas fa-toolbox"></i></span> <strong class="text-green-400 font-bold">Virus Toolbox:</strong> Unmatched ability to search and resolve the game-winning "Virus" traps.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Central Weakness:</strong> The entire engine collapses if <strong class="text-accent">Lair of Darkness</strong> is removed.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Search Dependency:</strong> Relies heavily on resolving <strong class="text-accent">Ahrima</strong> or <strong class="text-accent">Terraforming</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Tribute Immunity:</strong> Cannot deal with monsters that "cannot be Tributed," like those under <strong class="text-accent">Mask of Restrict</strong>.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-chess-rook"></i></span> <strong class="text-accent font-bold">Labrynth Engine:</strong> Both engines are DARK Fiend and trap-focused, creating a powerful feedback loop of disruption.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent font-bold">Infernoid Engine:</strong> "Lair" provides free Tributes for the costs of high-level "Infernoid" monster negates.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent font-bold">Unchained Engine:</strong> "Lair" provides non-destruction removal to complement the "Unchained" destruction-based plays.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">HEALTHY STATUS:</strong> The "Lair of Darkness" engine is almost entirely at full power, with only one generic hit.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Terraforming</strong> - A generic searcher for all Field Spells.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Lair of Darkness</strong></li>
+                            <li><strong class="text-green-300">Ahrima, the Wicked Warden</strong></li>
+                            <li><strong class="text-green-300">Lilith, Lady of Lament</strong></li>
+                            <li><strong class="text-green-300">Darkest Diabolos, Lord of the Lair</strong></li>
+                            <li><strong classD="text-green-300">All "Virus" Traps (Eradicator, Deck Devastation, etc.)</strong></li>
+                            <li><strong class="text-green-300">Tour Guide From the Underworld</strong> & <strong class="text-green-300">Trap Trick</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The engine is fully consistent and powerful. The limit on "Terraforming" is a minor hit, as the deck's primary searcher, "Ahrima," remains at three copies.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+            // Load all card images
+            CardLoader.loadCards({
+                'eradicator-img-container': 'Eradicator Epidemic Virus',
+                'deck-devastation-img-container': 'Deck Devastation Virus',
+                'lair-img-container': 'Lair of Darkness',
+                'lilith-img-container': 'Lilith, Lady of Lament',
+                'diabolos-img-container-combo': 'Darkest Diabolos, Lord of the Lair',
+                'diabolos-end-img-container': 'Darkest Diabolos, Lord of the Lair',
+                'virus-end-img-container': 'Eradicator Epidemic Virus'
+            });
+        });
+    </script>
+</body>
+</html>

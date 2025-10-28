@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trap Card Deep Dive: Horns vs. Labrynth</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- IMPORTANT: Assuming card-loader.js is in 'assets/js/' relative to this HTML file -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Inter for body and Playfair Display for a "gothic" heading font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark Gray-Blue */
+            color: #dbeafe; /* Light Blue-White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1f2937; /* Darker Gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #374151; /* Gray border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(31, 41, 55, 0.8);
+            border: 1px solid #4b5563;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 160px; /* Reduced from 180px */
+            flex-shrink: 0;
+            cursor: pointer; /* Hint that it's clickable */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #374151;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            /* height: 100%; */ /* Removed this conflicting style */
+            min-height: 233px; /* Adjusted from 250px to match 160px width aspect ratio */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #374151;
+            border: 1px dashed #6b7280;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f472b6; } /* Labrynth Pink/Magenta */
+        .arrow-color { color: #f472b6; }
+        .heading-underline {
+            font-family: 'Playfair Display', serif;
+            border-bottom: 2px solid #f472b6;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        /* This is the "hint" link style requested */
+        .lore-link {
+            color: #f472b6;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f472b6;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f472b6;
+        }
+
+        /* --- NEW LABRYNTH-THEMED ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #111827;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #374151;
+        }
+
+        #chain-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.4;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(17, 24, 39, 0.4) 0%, rgba(17, 24, 39, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(244, 114, 182, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles (Copied from other pages) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+        /* --- End Home Button Styles --- */
+
+        /* --- Card Popup Styles (Themed) --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(17, 24, 39, 0.95); /* Dark blue-gray */
+            border: 1px solid #f472b6; /* Accent color border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #f472b6; /* Accent color */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #f472b6;
+            font-weight: 600;
+        }
+        /* --- End Popup Styles --- */
+
+        /* --- Table Styles --- */
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            background-color: #1f2937;
+        }
+        .styled-table th, .styled-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+        }
+        .styled-table th {
+            background-color: #374151;
+            color: #f472b6;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.125rem;
+        }
+        .styled-table td {
+            color: #dbeafe;
+        }
+        .styled-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .styled-table .yes {
+            color: #34d399;
+            font-weight: 600;
+        }
+        .styled-table .no {
+            color: #ef4444;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="chain-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Trap Card Deep Dive</h1>
+            <p class="text-lg md:text-xl text-pink-200">Summon Negation: The "Horn of Heaven" Series vs. "Labrynth"</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-blue-200">
+                    This analysis dissects two opposing philosophies of Trap Card design. First, the <strong class="text-accent">"Horn of Heaven"</strong> series: a collection of standalone, reactive Counter Traps designed to negate summons. Second, the <strong class="text-accent">"Labrynth"</strong> archetype: a modern, proactive engine where traps are not just disruptions, but combo pieces that generate resources and build a recurring "end board."
+                </p>
+                <p class="text-blue-200 mt-4">
+                    The "Horns" are historical artifacts that teach fundamental game rules but are outclassed by modern, versatile negation. "Labrynth" exemplifies the modern design philosophy, turning simple trap activations into overwhelming card advantage. Understanding the strategic gap between them is key to mastering the evolution of Yu-Gi-Oh!
+                </p>
+            </div>
+        </section>
+
+        <!-- The "Horn of Heaven" Series Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">An Arsenal of Negation: The "Horn of Heaven" Series</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Horn of Heaven -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Horn of Heaven</h3>
+                    <div id="horn-heaven-img" class="card-image-container mx-auto mb-4 card-placeholder">Horn of Heaven</div>
+                    <p class="text-sm text-blue-200"><strong class="text-white">Cost:</strong> Tribute 1 monster.</p>
+                    <p class="text-sm text-blue-200 mt-2"><strong class="text-white">Function:</strong> Negates any Normal, Flip, or Special Summon. Its steep cost of Tributing a monster makes it prohibitive in the modern game, as it sacrifices board presence and tempo.</p>
+                </div>
+                <!-- Black Horn of Heaven -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Black Horn of Heaven</h3>
+                    <div id="black-horn-img" class="card-image-container mx-auto mb-4 card-placeholder">Black Horn of Heaven</div>
+                    <p class="text-sm text-blue-200"><strong class="text-white">Cost:</strong> None.</p>
+                    <p class="text-sm text-blue-200 mt-2"><strong class="text-white">Function:</strong> Negates the Special Summon of <strong class="text-white">exactly 1</strong> monster. This was a staple for countering singular boss monsters but was rendered obsolete by Pendulum Summoning.</p>
+                </div>
+                <!-- Grand Horn of Heaven -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">Grand Horn of Heaven</h3>
+                    <div id="grand-horn-img" class="card-image-container mx-auto mb-4 card-placeholder">Grand Horn of Heaven</div>
+                    <p class="text-sm text-blue-200"><strong class="text-white">Cost:</strong> Opponent draws 1 card.</p>
+                    <p class="text-sm text-blue-200 mt-2"><strong class="text-white">Function:</strong> Negates a Special Summon during the opponent's Main Phase, destroys the monster(s), and <strong class="text-white">ends the Main Phase</strong>. A powerful tempo tool, but giving the opponent a free card is a major drawback.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Summon Negation Window Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Mechanic: The Summon Negation Window</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The "Horns" can only be used during the "Summon Negation Window." This is a precise moment <strong class="text-white">after</strong> costs are paid (e.g., Tributes, Synchro Materials) but <strong class="text-white">before</strong> the monster is considered successfully on the field. Crucially, you <strong class="text-accent">cannot</strong> activate cards while a chain is resolving. This is why the "Horns" fail against summons from card effects.
+            </p>
+            <div class="overflow-x-auto">
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Summoning Method</th>
+                            <th>Starts a Chain?</th>
+                            <th>Can be Negated by "Horns"?</th>
+                            <th>Example(s)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Normal/Tribute Summon</td>
+                            <td class="no">No</td>
+                            <td class="yes">Yes (Horn of Heaven only)</td>
+                            <td>Tributing for Blue-Eyes White Dragon</td>
+                        </tr>
+                        <tr>
+                            <td>Synchro / Xyz / Link</td>
+                            <td class="no">No</td>
+                            <td class="yes">Yes</td>
+                            <td>Stardust Dragon, Knightmare Phoenix</td>
+                        </tr>
+                        <tr>
+                            <td>Pendulum Summon</td>
+                            <td class="no">No</td>
+                            <td class="yes">Yes (Black Horn fails if > 1)</td>
+                            <td>Summoning multiple "Performapal" monsters</td>
+                        </tr>
+                        <tr>
+                            <td>Inherent Special Summon</td>
+                            <td class="no">No</td>
+                            <td class="yes">Yes</td>
+                            <td>Cyber Dragon, Dark Armed Dragon</td>
+                        </tr>
+                        <tr>
+                            <td>Fusion Summon (Spell)</td>
+                            <td class="yes">Yes</td>
+                            <td class="no">No</td>
+                            <td>Polymerization, Fusion Destiny</td>
+                        </tr>
+                        <tr>
+                            <td>Ritual Summon (Spell)</td>
+                            <td class="yes">Yes</td>
+                            <td class="no">No</td>
+                            <td>Black Luster Soldier - Super Soldier</td>
+                        </tr>
+                        <tr>
+                            <td>Effect-based Summon</td>
+                            <td class="yes">Yes</td>
+                            <td class="no">No</td>
+                            <td>Monster Reborn, Tour Guide</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- The "Labrynth" Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Modern Trap Engine: "Labrynth"</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                Modern trap decks like "Labrynth" don't rely on simple negation. They create a recurring "advantage engine" where traps fuel their own plays. This strategy creates a dynamic end board that grinds the opponent out of resources.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Arianna -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">The Searcher</h3>
+                    <div id="arianna-img" class="card-image-container mx-auto mb-4 card-placeholder">Arianna the Labrynth Servant</div>
+                    <p class="text-sm text-blue-200"><strong class="text-white">Arianna the Labrynth Servant</strong> is the primary starter. On summon, she searches any "Labrynth" card, ensuring you can access your key engine pieces like the "Welcome" traps.</p>
+                </div>
+                <!-- Lady Labrynth -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">The Field General</h3>
+                    <div id="lady-labrynth-img" class="card-image-container mx-auto mb-4 card-placeholder">Lady Labrynth of the Silver Castle</div>
+                    <p class="text-sm text-blue-200"><strong class="text-white">Lady Labrynth</strong> can set any Normal Trap from the deck when another Normal Trap is activated. This turns one disruption into two and provides access to powerful "silver bullet" traps.</p>
+                </div>
+                <!-- Welcome Labrynth -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent mb-2">The Engine</h3>
+                    <div id="welcome-labrynth-img" class="card-image-container mx-auto mb-4 card-placeholder">Welcome Labrynth</div>
+                    <p class="text-sm text-blue-200"><strong class="text-white">"Welcome Labrynth"</strong> and <strong class="text-white">"Big Welcome Labrynth"</strong> are the core. They summon monsters from the deck, which in turn triggers all other "Labrynth" effects, creating a cascade of advantage.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- The "Labrynth" End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Labrynth" End Board: A Dynamic Web</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                A "Labrynth" end board isn't static; it's an interactive web of set traps and boss monsters waiting to react. Activating one "Welcome Labrynth" trap can trigger a chain reaction that summons monsters, destroys opponent's cards, and recycles resources from the Graveyard, all during the opponent's turn. The
+                <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=labrynth&stype=1" target="_blank" class="lore-link">entire Labrynth engine</a>
+                is designed to turn simple traps into a game-winning advantage loop.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Lovely Labrynth -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Payoff: Lovely Labrynth</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="lovely-labrynth-img" class="card-image-container card-placeholder">Lovely Labrynth of the Silver Castle</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Destruction:</strong> When a "Labrynth" effect activates, she can destroy a card on the field or in the opponent's hand.</li>
+                        <li><strong class="text-accent">Recursion:</strong> Recycles Normal Traps from your Graveyard.</li>
+                        <li><strong class="text-accent">Protection:</strong> Protects your Fiend monsters from battle.</li>
+                    </ul>
+                </div>
+                <!-- Modern Traps -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Modern Trap Arsenal</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="daruma-img" class="card-image-container card-placeholder">Destructive Daruma Karma Cannon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Dimensional Barrier:</strong> Proactively stops an entire summoning mechanic for the turn.</li>
+                        <li><strong class="text-accent">Destructive Daruma Karma Cannon:</strong> A devastating board wipe that bypasses most protection.</li>
+                        <li><strong class="text-accent">Transaction Rollback:</strong> Copies any Normal Trap in the Graveyard for incredible flexibility.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> Both the "Horn of Heaven" series and the "Labrynth" archetype operate at full power with no TCG restrictions.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">"Horn of Heaven" Series</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Horn of Heaven (3 copies)</li>
+                            <li>Black Horn of Heaven (3 copies)</li>
+                            <li>Grand Horn of Heaven (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">"Labrynth" & Modern Traps</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Labrynth" monsters and S/T (3 copies each)</li>
+                            <li>Dimensional Barrier (3 copies)</li>
+                            <li>Destructive Daruma Karma Cannon (3 copies)</li>
+                            <li>Ice Dragon's Prison (3 copies)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The irrelevance of the "Horn" series is not due to banlist restrictions, but purely due to being <strong class="text-white">power-crept</strong>. Modern, flexible, and engine-starting traps like those used by "Labrynth" are strategically superior in every way, offering far more utility and card advantage than the "Horns'" simple one-for-one (or worse) negations.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- LABRYNTH-THEMED BANNER ANIMATION ---
+            const canvas = document.getElementById('chain-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = Math.random() * 1.5 + 1;
+                        this.speedX = (Math.random() * 1 - 0.5);
+                        this.speedY = (Math.random() * 1 - 0.5);
+                        this.color = `rgba(244, 114, 182, ${Math.random() * 0.5 + 0.3})`; // Labrynth Pink
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.size > 0.1) this.size -= 0.02;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function handleParticles() {
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+                        if (particles[i].size <= 0.1) {
+                            particles.splice(i, 1);
+                            i--;
+                        }
+                    }
+                }
+
+                function connectParticles() {
+                    let opacity;
+                    for (let a = 0; a < particles.length; a++) {
+                        for (let b = a; b < particles.length; b++) {
+                            let distance = Math.sqrt(
+                                (particles[a].x - particles[b].x) ** 2 +
+                                (particles[a].y - particles[b].y) ** 2
+                            );
+                            if (distance < 100) {
+                                opacity = 1 - (distance / 100);
+                                ctx.strokeStyle = `rgba(244, 114, 182, ${opacity * 0.5})`; // Pink lines
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[a].x, particles[a].y);
+                                ctx.lineTo(particles[b].x, particles[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    if (particles.length < (canvas.width * canvas.height) / 10000) {
+                        particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+                    }
+                    handleParticles();
+                    connectParticles();
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    particles = []; // Reset on resize
+                });
+            }
+
+            // --- CARD LOADING ---
+            // This function is now defined in card-loader.js
+            // We just need to call it.
+            CardLoader.loadCards({
+                // Horn Series
+                'horn-heaven-img': 'Horn of Heaven',
+                'black-horn-img': 'Black Horn of Heaven',
+                'grand-horn-img': 'Grand Horn of Heaven',
+                // Labrynth Core
+                'arianna-img': 'Arianna the Labrynth Servant',
+                'lady-labrynth-img': 'Lady Labrynth of the Silver Castle',
+                'welcome-labrynth-img': 'Welcome Labrynth',
+                'lovely-labrynth-img': 'Lovely Labrynth of the Silver Castle',
+                // Modern Traps
+                'daruma-img': 'Destructive Daruma Karma Cannon'
+            });
+        });
+    </script>
+</body>
+</html>
+
+

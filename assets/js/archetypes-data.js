@@ -25991,7 +25991,498 @@ const archetypes = [
 </path>
 <text x="50" y="57" text-anchor="middle" font-size="12" fill="#000000" font-weight="bold">HELIOS</text>
 </svg>`
-                            }
+                            },
+                            {
+                                name: "Hex Sealed Fusion",
+                                description: "An archetype centered around Hex Sealed Fusion, utilizing fusion mechanics and hex-sealed monsters for powerful fusion summons and strategic control through sealed effects.",
+                                filepath: "Hex Sealed Fusion Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="hexGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#8b0000;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#dc143c;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#hexGrad)" stroke="#dc143c" stroke-width="2"/>
+<polygon points="50,25 62.5,37.5 62.5,62.5 50,75 37.5,62.5 37.5,37.5" fill="none" stroke="#dc143c" stroke-width="3" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</polygon>
+<text x="50" y="55" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">HEX SEALED</text>
+<text x="50" y="65" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">FUSION</text>
+</svg>`
+                            },
+                            {
+                                name: "Hunder",
+                                description: "A Thunder archetype centered around Hunder, utilizing level 4 Thunder monsters for beatdown strategies and Synchro support through electrical synergies.",
+                                filepath: "hunder Deck analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="hunderGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#ffff00;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#ff4500;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#hunderGrad)" stroke="#ffff00" stroke-width="2"/>
+<path d="M45 30 L50 45 L55 30 L50 55 Z" fill="none" stroke="#ffff00" stroke-width="3" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="57" text-anchor="middle" font-size="12" fill="#000000" font-weight="bold">HUNDER</text>
+</svg>`
+                            },
+                            {
+                                name: "Infernal Flame",
+                                description: "A Pyro-focused series that provides generic support and consistency for Pyro monster strategies, centered around the powerful Infernal Flame Banshee that enables access to key Pyro starters.",
+                                filepath: "Infernal Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="infernalGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#ff4500;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#8b0000;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#infernalGrad)" stroke="#ff4500" stroke-width="2"/>
+<path d="M45 60 Q50 40 55 60 Q50 35 45 60 Z" fill="none" stroke="#ff4500" stroke-width="4" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<path d="M42 65 Q50 45 58 65 Q50 40 42 65 Z" fill="none" stroke="#ff6600" stroke-width="3" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="2s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">INFERNAL</text>
+<text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">FLAME</text>
+</svg>`
+                            },
+                            {
+                                name: "Lair of Darkness",
+                                description: "A synergistic engine centered around the Lair of Darkness Field Spell, enabling control strategies by tributing opponent's monsters to fuel disruptive effects and resource denial for DARK attribute decks.",
+                                filepath: "Lair of Darkness Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="lairGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#2d1b69;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#0d0a0d;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#lairGrad)" stroke="#4d0000" stroke-width="2"/>
+<path d="M30 70 Q50 30 70 70 Q50 50 30 70 Z" fill="none" stroke="#660000" stroke-width="4" opacity="0.8">
+<animate attributeName="opacity" values="0.8;0.4;0.8" dur="3s" repeatCount="indefinite"/>
+</path>
+<path d="M35 75 Q50 35 65 75 Q50 55 35 75 Z" fill="none" stroke="#8b0000" stroke-width="3" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.3;0.6" dur="2.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LAIR OF</text>
+<text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">DARKNESS</text>
+</svg>`
+                            },
+                            {
+                                name: "Branded",
+                                description: "A Fusion-centric archetype revolving around Fallen of Albaz and Branded Fusion, enabling powerful Fusion summons and control strategies through synergistic support cards and graveyard manipulation.",
+                                filepath: "Branded Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="brandedGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#4f3a6a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1a1122;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#brandedGrad)" stroke="#f43f5e" stroke-width="2"/>
+<path d="M25 50 L50 25 L75 50 L50 75 Z" fill="none" stroke="#fde047" stroke-width="3" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M35 50 L50 35 L65 50 L50 65 Z" fill="none" stroke="#f43f5e" stroke-width="2" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">BRANDED</text>
+</svg>`
+                            },
+                            {
+                                name: "Ecclesia",
+                                description: "A versatile engine centered around Ecclesia monsters, providing powerful support and synergy across multiple strategies including Branded, Despia, and Swordsoul through resource generation, revival effects, and enabling unaffected boss monsters.",
+                                filepath: "Ecclesia Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="ecclesiaGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#1a2033;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#0a0e1a;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#ecclesiaGrad)" stroke="#a38a00" stroke-width="2"/>
+<path d="M50 20 L35 50 L50 80 L65 50 Z" fill="none" stroke="#ffd700" stroke-width="4" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M40 35 L50 25 L60 35 L50 45 Z" fill="none" stroke="#caa900" stroke-width="3" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">ECCLESIA</text>
+</svg>`
+                            },
+                            {
+                                name: "Inca",
+                                description: "A thematic Synchro series centered around Sun Dragon Inti and Moon Dragon Quilla, featuring a recursive loop between the two boss monsters for resilient, self-sustaining gameplay and celestial-themed strategies.",
+                                filepath: "Inca Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="incaGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#111827;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#incaGrad)" stroke="#ca8a04" stroke-width="2"/>
+<path d="M30 40 Q50 20 70 40 Q50 60 30 40 Z" fill="none" stroke="#eab308" stroke-width="4" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M30 60 Q50 80 70 60 Q50 40 30 60 Z" fill="none" stroke="#eab308" stroke-width="4" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">INCA</text>
+</svg>`
+                            },
+                            {
+                                name: "Imperial traps",
+                                description: "A series of powerful Trap Cards including Imperial Order, Imperial Iron Wall, Imperial Custom, and Imperial Tombs of Necrovalley, providing versatile control and disruption effects for various strategies.",
+                                filepath: "Imperial traps Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="imperialGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#2c2a4a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#110f22;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#imperialGrad)" stroke="#4f4c7a" stroke-width="2"/>
+<path d="M25 35 L50 20 L75 35 L50 50 Z" fill="none" stroke="#4f4c7a" stroke-width="4" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M35 45 L50 30 L65 45 L50 60 Z" fill="none" stroke="#6b46c1" stroke-width="3" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">IMPERIAL</text>
+<text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">TRAPS</text>
+</svg>`
+                            },
+                            {
+                                name: "Inpachi",
+                                description: "A thematic collection of Normal Monsters including Inpachi, Blazing Inpachi, Charcoal Inpachi, and Woodborg Inpachi, providing versatile support for generic engines through their EARTH/Machine and FIRE/Pyro attributes.",
+                                filepath: "Inpachi Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="inpachiGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#2b1d1d;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1a1a1a;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#inpachiGrad)" stroke="#4a2a2a" stroke-width="2"/>
+<path d="M30 35 L40 25 L50 35 L40 45 L30 35 Z" fill="none" stroke="#4a2a2a" stroke-width="3" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M50 35 L60 25 L70 35 L60 45 L50 35 Z" fill="none" stroke="#5a3a3a" stroke-width="3" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">INPACHI</text>
+</svg>`
+                            },
+                            {
+                                name: "Jar",
+                                description: "A thematic series of monsters with powerful Flip effects, centered around the infamous 'Empty Jar' deck-out strategy featuring Morphing Jar, Cyber Jar, and other jar-themed cards for explosive turn plays.",
+                                filepath: "Jar Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="jarGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#2b2518;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1a160d;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#jarGrad)" stroke="#4d432b" stroke-width="2"/>
+<path d="M35 30 Q50 20 65 30 L65 70 Q50 80 35 70 Z" fill="none" stroke="#4d432b" stroke-width="4" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M40 35 Q50 25 60 35 L60 65 Q50 75 40 65 Z" fill="none" stroke="#5a523a" stroke-width="3" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">JAR</text>
+</svg>`
+                            },
+                            {
+                                name: "Lightray",
+                                description: "A series of powerful LIGHT attribute boss monsters that require specific resource thresholds in the Graveyard or banished zone to summon, enabling control strategies when paired with engines like Lightsworn or Thunder Dragon.",
+                                filepath: "Lightray Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="lightrayGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#1a2340;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#0c142b;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#lightrayGrad)" stroke="#3b4c80" stroke-width="2"/>
+<path d="M50 20 L45 50 L50 80 L55 50 Z" fill="none" stroke="#dbeafe" stroke-width="4" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M35 35 L50 20 L65 35 L50 50 Z" fill="none" stroke="#4a5c9a" stroke-width="3" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">LIGHTRAY</text>
+</svg>`
+                            },
+                            {
+                                name: "Horn of Heaven",
+                                description: "A series of Counter Trap Cards focused on summon negation, including Horn of Heaven, Black Horn of Heaven, and Grand Horn of Heaven, providing reactive disruption against various summoning methods.",
+                                filepath: "Horn of Heaven Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="hornGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#111827;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#hornGrad)" stroke="#374151" stroke-width="2"/>
+<path d="M35 25 Q50 15 65 25 L60 45 Q50 55 40 45 Z" fill="none" stroke="#374151" stroke-width="4" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M40 30 Q50 20 60 30 L55 40 Q50 50 45 40 Z" fill="none" stroke="#4b5563" stroke-width="3" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">HORN OF</text>
+<text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">HEAVEN</text>
+</svg>`
+                            },
+                            {
+                                name: "Light and Darkness Dragon",
+                                description: "A Chaos Dragon archetype centered around Light and Darkness Dragon and its Fusion evolution Dragonlord, featuring powerful negation effects, revival mechanics, and LIGHT/DARK Dragon support for strategic control.",
+                                filepath: "Light and Darkness Dragon Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="dualityGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#0a0a10;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1c1a29;stop-opacity:1" />
+</radialGradient>
+<linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" style="stop-color:#f0e68c;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#bca0dc;stop-opacity:1" />
+</linearGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#dualityGrad)" stroke="#4a416d" stroke-width="2"/>
+<path d="M30 40 Q50 20 70 40 L65 60 Q50 75 35 60 Z" fill="url(#goldGrad)" stroke="#f0e68c" stroke-width="2" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+</path>
+<path d="M35 45 Q50 30 65 45 L60 55 Q50 65 40 55 Z" fill="none" stroke="#bca0dc" stroke-width="3" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="2s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LIGHT &amp;</text>
+<text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">DARKNESS</text>
+</svg>`
+                            },
+                            {
+                                name: "Majestic Mech",
+                                description: "A GX-era series of three powerful Main Deck monsters (Ohka, Goryu, Senku) that function as standalone Synchro tools rather than a cohesive archetype, featuring mechanical themes and high-level mechanics.",
+                                filepath: "Majestic Mech Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="mechGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#mechGrad)" stroke="#475569" stroke-width="2"/>
+<circle cx="50" cy="50" r="20" fill="none" stroke="#facc15" stroke-width="3" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</circle>
+<path d="M30 50 L50 30 L70 50 L50 70 Z" fill="none" stroke="#64748b" stroke-width="2" opacity="0.6">
+<animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="4s" repeatCount="indefinite"/>
+</path>
+<path d="M35 35 L65 35 L65 65 L35 65 Z" fill="none" stroke="#facc15" stroke-width="1" opacity="0.7">
+<animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">MAJESTIC</text>
+<text x="50" y="95" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">MECH</text>
+</svg>`
+                            },
+                            {
+                                name: "Madoor",
+                                description: "A series of thematically linked aquatic monsters (Aqua Madoor, Neo Aqua Madoor, Lightray Madoor, Glacier Aqua Madoor) spanning two decades, representing the evolution of Yu-Gi-Oh! card design from individual monsters to modern archetypes.",
+                                filepath: "Madoor Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="iceGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#0a121f;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#111c33;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#iceGrad)" stroke="#0e3a5f" stroke-width="2"/>
+<path d="M25 40 L50 20 L75 40 L50 60 Z" fill="none" stroke="#22d3ee" stroke-width="3" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2.5s" repeatCount="indefinite"/>
+</path>
+<path d="M35 45 L50 35 L65 45 L50 55 Z" fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.8s" repeatCount="indefinite"/>
+</path>
+<path d="M40 50 L50 45 L60 50 L50 55 Z" fill="#22d3ee" stroke="#e0f2fe" stroke-width="1" opacity="0.7">
+<animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">MADOOR</text>
+</svg>`
+                            },
+                            {
+                                name: "Maju",
+                                description: "A series of Fiend monsters focused on achieving overwhelming ATK values through banished card accumulation (Gren Maju Da Eiza) or tribute mechanics (Garzett variants), enabling OTK and beatdown strategies.",
+                                filepath: "Maju Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="fireGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#1a0a0a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#331a1a;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#fireGrad)" stroke="#803030" stroke-width="2"/>
+<path d="M30 60 Q50 30 70 60 L65 75 Q50 90 35 75 Z" fill="none" stroke="#ff6666" stroke-width="4" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M35 65 Q50 40 65 65 L60 75 Q50 85 40 75 Z" fill="none" stroke="#b34a4a" stroke-width="3" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<path d="M40 70 Q50 50 60 70 L55 80 Q50 85 45 80 Z" fill="#ff6666" stroke="#ffebcd" stroke-width="2" opacity="0.7">
+<animate attributeName="opacity" values="0.7;1;0.7" dur="1.8s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">MAJU</text>
+</svg>`
+                            },
+                            {
+                                name: "Mystic Swordsman",
+                                description: "An LV series of EARTH Warrior monsters (LV2, LV4, LV6) that excel at destroying face-down monsters but suffer from a design contradiction that hinders their progression mechanics.",
+                                filepath: "Mystic Swordsman Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="swordGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#1a100a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#2b1d13;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#swordGrad)" stroke="#7a5f3f" stroke-width="2"/>
+<path d="M35 25 L45 25 L45 35 L50 40 L55 35 L55 25 L65 25 L65 75 L55 75 L55 65 L50 70 L45 65 L45 75 L35 75 Z" fill="none" stroke="#c0a06c" stroke-width="3" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M40 30 L50 35 L60 30 L60 40 L50 45 L40 40 Z" fill="#c0a06c" stroke="#f0e6d6" stroke-width="1" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">MYSTIC</text>
+<text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">SWORDSMAN</text>
+</svg>`
+                            },
+                            {
+                                name: "Mirror Force",
+                                description: "A series of Trap Cards that destroy, bounce, or remove Attack Position monsters, evolving from the iconic Mirror Force to various specialized variants for different strategic purposes.",
+                                filepath: "Mirror Force Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="mirrorGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#0d121c;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1a1633;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#mirrorGrad)" stroke="#4c3d8e" stroke-width="2"/>
+<path d="M25 30 L50 20 L75 30 L50 80 Z" fill="none" stroke="#f472b6" stroke-width="3" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M25 70 L50 80 L75 70 L50 20 Z" fill="none" stroke="#dbeafe" stroke-width="2" opacity="0.6">
+<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+</path>
+<path d="M35 35 L50 30 L65 35 L50 70 Z" fill="#f472b6" stroke="#dbeafe" stroke-width="1" opacity="0.7">
+<animate attributeName="opacity" values="0.7;1;0.7" dur="1.8s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="85" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">MIRROR</text>
+<text x="50" y="95" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">FORCE</text>
+</svg>`                            
+                        },
+                        {
+                                name: "Mystical Elf",
+                                description: "A sophisticated Normal Monster control strategy centered around Mystical Elf - White Lightning, featuring powerful interaction effects and revival mechanics for strategic LIGHT Spellcaster support in a modern Yu-Gi-Oh! context.",
+                                filepath: "Mystical Elf Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="mysticalGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#0c142a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1a2a4d;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#mysticalGrad)" stroke="#4a6a9b" stroke-width="2"/>
+<path d="M30 25 Q50 15 70 25 Q80 35 70 45 Q50 55 30 45 Q20 35 30 25" fill="none" stroke="#60a5fa" stroke-width="3" opacity="0.8">
+<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M35 35 L50 45 L65 35" stroke="#93c5fd" stroke-width="2" fill="none"/>
+<circle cx="50" cy="40" r="3" fill="#dbeafe">
+<animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite"/>
+</circle>
+<text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">MYSTICAL ELF</text>
+</svg>`
+                        },
+                        {
+                                name: "Monarch",
+                                description: "A control-oriented strategy built upon Tribute Summoning mechanics, featuring powerful monarch monsters and support cards that transform tributing into advantage generation while invalidating opponents' Extra Deck access.",
+                                filepath: "Monarch Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="monarchGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#18181b;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#27272a;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#monarchGrad)" stroke="#a16207" stroke-width="2"/>
+<path d="M25 35 L50 20 L75 35 L70 45 L50 30 L30 45 Z" fill="#ca8a04" stroke="#d97706" stroke-width="2"/>
+<path d="M35 45 L50 55 L65 45" stroke="#f59e0b" stroke-width="3" fill="none"/>
+<circle cx="50" cy="50" r="8" fill="none" stroke="#fbbf24" stroke-width="2"/>
+<path d="M46 46 L54 54 M54 46 L46 54" stroke="#fbbf24" stroke-width="1"/>
+<text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">MONARCH</text>
+</svg>`
+                        },
+                        {
+                                name: "Legendary Planet",
+                                description: "A thematic series of ten formidable monsters representing celestial bodies from our solar system, functioning as individual boss monsters rather than a mechanically cohesive archetype, each requiring specialized external support engines to unlock their potential.",
+                                filepath: "Legendary Planet Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="cosmicGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#0c0a1a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1a1633;stop-opacity:1" />
+</radialGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#cosmicGrad)" stroke="#4c3d8e" stroke-width="2"/>
+<circle cx="50" cy="50" r="25" fill="none" stroke="#6a5acd" stroke-width="1"/>
+<circle cx="50" cy="50" r="15" fill="none" stroke="#9370db" stroke-width="1"/>
+<path d="M35 35 L50 25 L65 35 L50 65 Z" fill="#4c3d8e" stroke="#9370db" stroke-width="1"/>
+<circle cx="35" cy="35" r="2" fill="#ffffff">
+<animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+</circle>
+<circle cx="65" cy="35" r="2" fill="#ffffff">
+<animate attributeName="opacity" values="1;0.5;1" dur="1.5s" repeatCount="indefinite"/>
+</circle>
+<circle cx="50" cy="65" r="2" fill="#ffffff">
+<animate attributeName="opacity" values="1;0.5;1" dur="2.5s" repeatCount="indefinite"/>
+</circle>
+<text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LEGENDARY</text>
+<text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">PLANET</text>
+</svg>`
+                        },
+                        {
+                                name: "Lost World",
+                                description: "A Dinosaur archetype centered around the powerful Lost World Field Spell that creates tokens, provides targeting protection, and enables devastating combo chains through strategic destruction and revival mechanics.",
+                                filepath: "Lost World Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="jungleGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#0a1a1a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1a3b3b;stop-opacity:1" />
+</radialGradient>
+<linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#2dd4bf"/>
+<stop offset="100%" stop-color="#0a1a1a"/>
+</linearGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#jungleGrad)" stroke="#2dd4bf" stroke-width="2"/>
+<path d="M25 40 Q35 25 50 30 Q65 25 75 40 Q70 55 50 70 Q30 55 25 40 Z" fill="url(#leafGrad)" stroke="#2dd4bf" stroke-width="1"/>
+<path d="M35 45 Q40 35 50 40 Q60 35 65 45 Q60 55 50 60 Q40 55 35 45 Z" fill="#0a1a1a" stroke="#2dd4bf" stroke-width="1"/>
+<circle cx="45" cy="42" r="1.5" fill="#2dd4bf"/>
+<circle cx="55" cy="42" r="1.5" fill="#2dd4bf"/>
+<path d="M45 50 Q50 48 55 50" stroke="#2dd4bf" stroke-width="1" fill="none"/>
+<text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LOST</text>
+<text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">WORLD</text>
+</svg>`
+                        }
 ];// Export for use in main script
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = archetypes;

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jar Card Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in 'assets/js/' relative to this file -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a160d; /* Dark Earthy Brown */
+            color: #f0f0e6; /* Off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b2518; /* Darker Sandy Brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d432b; /* Olive-Brown Border */
+        }
+        .combo-step-card {
+            background-color: #3b3424; /* Lighter Sandy Brown */
+            border: 1px solid #5a523a;
+        }
+        .pro-con-card {
+            background-color: #3b3424;
+            border: 1px solid #5a523a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3b3424;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b3424;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #e6c96e; } /* Golden Sand */
+        .arrow-color { color: #e6c96e; }
+        .heading-underline {
+            border-bottom: 2px solid #e6c96e;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #e6c96e;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #e6c96e;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a160d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4d432b;
+        }
+
+        #jar-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(26, 22, 13, 0.75); /* Dark Brown overlay */
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            font-family: 'Playfair Display', serif;
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles (Copied from other files) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+            100% { text-shadow: 0 0 15px rgba(99, 102, 241, 1); }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* --- Card Popup Styles (Adapted) --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #e6c96e; /* Golden Sand */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #e6c96e; /* Golden Sand */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #e6c96e; /* Golden Sand */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="jar-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The "Jar" Collective</h1>
+            <p class="text-lg md:text-xl text-yellow-200">Unsealing an Unofficial Archetype of Chaos</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-yellow-100">
+                    In the vast card pool of the Yu-Gi-Oh! TCG, few groups of cards evoke as much nostalgia, infamy, and strategic debate as the "Jar" monsters. While not a formal, Konami-designated archetype, 
+                    <a href="https://yugipedia.com/wiki/Jar" target="_blank" class="lore-link">this thematic series</a>
+                    is unified by a shared naming convention and a potent design philosophy centered on game-altering Flip effects. Their history is linked to the Forbidden & Limited List, with key members spending years deemed too powerful for play. The journey of the "Jar" cards serves as a fascinating barometer for the game's pivot from slower, reactive strategies to proactive, combo-centric duels.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Engine Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Core Engine: Architects of "Empty Jar"</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                The notoriety of the "Jar" series is built upon a subset of monsters that form the engine for the infamous "Empty Jar" deck-out strategy. These monsters aim to deplete the opponent's deck in a single, explosive turn.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Morphing Jar -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="morphing-jar-img" class="card-image-container flex-shrink-0 card-placeholder">Morphing Jar</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Morphing Jar</h3>
+                            <p class="text-yellow-100 mb-2"><strong>FLIP:</strong> Both players discard their hands, then draw 5 cards.</p>
+                            <p class="text-yellow-100">The primary engine. It mills five cards from the opponent's deck and refreshes the user's hand with new spells to continue the loop.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Cyber Jar -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cyber-jar-img" class="card-image-container flex-shrink-0 card-placeholder">Cyber Jar</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Cyber Jar</h3>
+                            <p class="text-yellow-100 mb-2"><strong>FLIP:</strong> Destroy all monsters; both players reveal 5 cards, Special Summon Level 4 or lower monsters, and add the rest to hand.</p>
+                            <p class="text-yellow-100">Contributes to the deck-out plan by processing five cards. It can also clear a problematic board or summon another "Jar" face-down.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Morphing Jar #2 -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="morphing-jar-2-img" class="card-image-container flex-shrink-0 card-placeholder">Morphing Jar #2</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Morphing Jar #2</h3>
+                            <p class="text-yellow-100 mb-2"><strong>FLIP:</strong> Shuffle all monsters into the Deck. Both players excavate until they hit the same number of monsters, summoning LV 4 or lower ones face-down and milling the rest.</p>
+                            <p class="text-yellow-100">A disruptive tool and alternative mill engine that can send many non-monster cards to the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Needle Worm -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="needle-worm-img" class="card-image-container flex-shrink-0 card-placeholder">Needle Worm</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Needle Worm</h3>
+                            <p class="text-yellow-100 mb-2"><strong>FLIP:</strong> Send the top 5 cards of your opponent's Deck to the Graveyard.</p>
+                            <p class="text-yellow-100">A vital and straightforward finisher that mills the opponent without risking the user decking out.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The "Empty Jar" Strategy / Finisher Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Finisher: The Card Destruction Coup de Grâce</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                The singular win condition is to force the opponent to deck out. After thinning the opponent's deck by looping "Jar" effects with "Book" spells (like <strong class="text-accent">Book of Moon</strong> and <strong class="text-accent">Book of Taiyou</strong>), the player executes a final combo.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Card Destruction -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Card Destruction</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="card-destruction-img" class="card-image-container card-placeholder">Card Destruction</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent">Effect:</strong> Both players discard their entire hand and draw the same number of cards they discarded.</li>
+                        <li><strong class="text-accent">The Finisher:</strong> When the opponent has a large hand (from Morphing Jar) and a small deck, this forces them to draw more cards than they have, resulting in an immediate loss.</li>
+                    </ul>
+                </div>
+                <!-- Serial Spell -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Serial Spell Combo</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="serial-spell-img" class="card-image-container card-placeholder">Serial Spell</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent">Chain Link 1:</strong> Activate <strong class="text-accent">Card Destruction</strong>.</li>
+                        <li><strong class="text-accent">Chain Link 2:</strong> Chain <strong class="text-accent">Serial Spell</strong>, discarding your hand as cost.</li>
+                        <li><strong class="text-accent">Resolution:</strong> Serial Spell copies Card Destruction, forcing the opponent to discard and draw. Then, the original Card Destruction resolves, forcing the opponent to discard and draw *again*, all while you draw no cards and are safe from decking out.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Extended Family Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Extended Family: Other Notable Jars</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Fiber Jar (Full Width) -->
+                <div class="card p-6 pro-con-card md:col-span-2">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="fiber-jar-img" class="card-image-container flex-shrink-0 card-placeholder">Fiber Jar</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-red-400 mb-2">Fiber Jar (Forbidden)</h3>
+                            <p class="text-yellow-100 mb-2"><strong>FLIP:</strong> Each player shuffles all cards from their hand, field, and GY into the Deck, then draws 5 cards.</p>
+                            <p class="text-yellow-100">This card remains forbidden not just for its power, but for its fundamentally disruptive design. Its ability to completely nullify all progress in a duel can drastically prolong matches, creating logistical problems in tournaments.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Dice Jar -->
+                <div class="card p-6 pro-con-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="dice-jar-img" class="card-image-container flex-shrink-0 card-placeholder">Dice Jar</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Dice Jar</h3>
+                            <p class="text-yellow-100 mb-2"><strong>FLIP:</strong> Both players roll a die. The loser takes damage (opponent's roll x 500). If the winner rolls a 6, the loser takes 6000 damage.</p>
+                            <p class="text-yellow-100">A staple of casual "Gambling" decks, this card is pure luck, offering a small burn or a massive, game-ending blow.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pot of The Forbidden -->
+                <div class="card p-6 pro-con-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="pot-forbidden-img" class="card-image-container flex-shrink-0 card-placeholder">Pot of The Forbidden</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Pot of The Forbidden</h3>
+                            <p class="text-yellow-100 mb-2">A powerful Level 9 Flip monster offering a choice of four potent effects upon being flipped:
+                                <ul class="list-disc list-inside ml-4 mt-2 text-sm">
+                                    <li>Draw 2 cards.</li>
+                                    <li>Return all Spell/Traps to the hand.</li>
+                                    <li>Destroy all opponent's monsters.</li>
+                                    <li>Look at opponent's hand and shuffle 1 card back into their deck.</li>
+                                </ul>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis & Modern Context</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Unmatched Power (in a vacuum):</strong> The effects of Morphing Jar and Cyber Jar are incredibly potent, capable of resetting entire game states.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">FTK Potential:</strong> In older, slower formats (like Goat Format), the "Empty Jar" FTK was a legitimate and feared strategy.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Too Slow:</strong> The Flip mechanic is a massive liability in the modern game, easily removed before it can be used.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Hand Trap Vulnerability:</strong> The entire strategy is stopped by a single <strong class="text-accent">Ash Blossom & Joyous Spring</strong> or <strong class="text-accent">Droll & Lock Bird</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-undo"></i></span> <strong class="text-red-400 font-bold">Feeds the Opponent:</strong> Giving your opponent a fresh 5-card hand is a death sentence in an era of powerful hand traps and extenders.</li>
+                    </ul>
+                </div>
+                <!-- Modern Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Modern Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent">Prediction Princess:</strong> The best modern home, able to tutor and flip "Jar" monsters as part of a control strategy.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-gem"></i></span> <strong class="text-accent">Generic Rock Support:</strong> Most key Jars are Rock-type, making them searchable by <strong class="text-accent">Gallant Granite</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-300 font-bold">MIXED STATUS:</strong> The "Jar" collective's power is checked by the banlist, though many have returned to the game.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden (0 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Fiber Jar</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Cyber Jar</strong></li>
+                            <li><strong class="text-yellow-400">Card Destruction</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Unlimited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Morphing Jar</strong></li>
+                            <li><strong class="text-green-300">Morphing Jar #2</strong></li>
+                            <li><strong class="text-green-300">Needle Worm</strong></li>
+                            <li><strong class="text-green-300">Dice Jar</strong></li>
+                            <li><strong class="text-green-300">Pot of The Forbidden</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While most "Jars" are unlimited, the strategy's most disruptive tool (<strong class="text-red-400">Fiber Jar</strong>) remains banned, and its key extenders (<strong class="text-yellow-400">Cyber Jar</strong>, <strong class="text-yellow-400">Card Destruction</strong>) are limited. The deck's primary weakness, however, is not the banlist but the modern game's speed and prevalence of hand traps, relegating it to a "meme" or casual status.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- JAR SWIRLING SAND ANIMATION ---
+            const canvas = document.getElementById('jar-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = (Math.random() * 1 - 0.5);
+                        this.speedY = (Math.random() * 1 - 0.5);
+                        this.color = `rgba(230, 201, 110, ${Math.random() * 0.5 + 0.2})`; // Golden Sand color
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        // Add a swirling motion
+                        this.speedX += (Math.random() - 0.5) * 0.1;
+                        this.speedY += (Math.random() - 0.5) * 0.1;
+
+                        // Reset particle
+                        if (this.size <= 0.2 || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.size = Math.random() * 2 + 1;
+                            this.speedX = (Math.random() * 1 - 0.5);
+                            this.speedY = (Math.random() * 1 - 0.5);
+                        }
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.fillStyle = 'rgba(26, 22, 13, 0.15)'; // Fading effect
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'morphing-jar-img': 'Morphing Jar',
+                'cyber-jar-img': 'Cyber Jar',
+                'morphing-jar-2-img': 'Morphing Jar #2',
+                'needle-worm-img': 'Needle Worm',
+                'card-destruction-img': 'Card Destruction',
+                'serial-spell-img': 'Serial Spell',
+                'fiber-jar-img': 'Fiber Jar',
+                'dice-jar-img': 'Dice Jar',
+                'pot-forbidden-img': 'Pot of The Forbidden'
+            });
+        });
+    </script>
+</body>
+</html>
+

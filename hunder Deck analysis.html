@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunder Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      NOTE: The card-loader.js file should be in the same directory as this HTML file, 
+      or you will need to adjust the path.
+    -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Dark Slate Blue */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1e293b; /* Slate 800 */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155; /* Slate 700 */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #1e293b; /* Slate 800 */
+            border: 1px solid #475569; /* Slate 600 */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #334155; /* Slate 700 */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #334155;
+            border: 1px dashed #64748b; /* Slate 500 */
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #334155);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Amber 400 - for LIGHT/Thunder */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- Hunder Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0f172a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #334155;
+        }
+
+        #lightning-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.7;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+        
+        @media (max-width: 768px) {
+            .banner-header { min-height: 120px; }
+            .banner-header h1 { font-size: 2rem; }
+            .banner-header p { font-size: 0.875rem; }
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(15, 23, 42, 0.95); /* Slate 900 base */
+            border: 1px solid #facc15; /* Amber 400 */
+            border-radius: 0.75rem;
+            color: #e2e8f0; /* Slate 200 */
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #facc15; /* Amber 400 */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="banner-header text-center">
+            <canvas id="lightning-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">HUNDER FAMILY</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Classic Rank 4 Thunder Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-slate-300">
+                    The <strong class="text-accent font-bold">"Hunder Family"</strong> is not a formal archetype but a synergistic engine of Level 4 LIGHT Thunder monsters. Its strategic function is to leverage a unique mechanic—stacking additional Normal Summons—to generate card advantage and rapidly deploy multiple monsters. This board presence is then immediately converted into powerful Rank 4 Xyz Summons, making the Hunder engine a delivery system for the versatile threats residing in the <a href='https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&stype=1&ctype=11&rank=4' target='_blank' class='lore-link'>Extra Deck toolbox</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Three Pillars of Hunder Strategy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-search text-2xl text-accent mr-3"></i>
+                        <h3 class="text-xl font-bold text-white">Consistency</h3>
+                    </div>
+                    <p class="text-slate-300">Achieved through powerful searchers. <strong class="text-accent">Thunder Sea Horse</strong> searches two core monsters, while <strong class="text-accent">Brohunder</strong> converts a Normal Summon into a combo piece from the deck.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-bolt text-2xl text-accent mr-3"></i>
+                        <h3 class="text-xl font-bold text-white">Speed</h3>
+                    </div>
+                    <p class="text-slate-300"><strong class="text-accent">Mahunder</strong> and <strong class="text-accent">Pahunder</strong> provide additional Normal Summons, allowing the player to chain summons together and swarm the field for an Xyz play in a single turn.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-hand-holding-box text-2xl text-accent mr-3"></i>
+                        <h3 class="text-xl font-bold text-white">Advantage</h3>
+                    </div>
+                    <p class="text-slate-300">The deck aims to maintain hand size. <strong class="text-accent">Sishunder</strong> and <strong class="text-accent">Recycling Batteries</strong> recover key monsters from the Graveyard, establishing resource loops for a longer game.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Family Roster Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Family Roster: Core Components</h2>
+            <div class="space-y-8">
+                <!-- Thunder Sea Horse -->
+                <div class="card p-6 flex flex-col md:flex-row items-center gap-6">
+                    <!-- Image -->
+                    <div id="thunder-sea-horse-img-container" class="card-image-container w-full md:w-1/3 card-placeholder" style="max-width: 220px;">Thunder Sea Horse</div>
+                    <!-- Content -->
+                    <div class="md:w-2/3">
+                        <h3 class="text-2xl font-bold text-accent mb-2">Thunder Sea Horse</h3>
+                        <p class="text-slate-300">The premier engine starter. Discard it to add 2 Level 4 LIGHT Thunder monsters with 1600 or less ATK from Deck to hand. This is a crucial setup play but prevents you from Special Summoning that turn.</p>
+                    </div>
+                </div>
+                
+                <!-- Mahunder -->
+                <div class="card p-6 flex flex-col md:flex-row-reverse items-center gap-6">
+                    <!-- Image -->
+                    <div id="mahunder-img-container" class="card-image-container w-full md:w-1/3 card-placeholder" style="max-width: 220px;">Mahunder</div>
+                    <!-- Content -->
+                    <div class="md:w-2/3">
+                        <h3 class="text-2xl font-bold text-accent mb-2">Mahunder</h3>
+                        <p class="text-slate-300">One of the "Hunder Parents." Once per turn, allows an additional Normal Summon of a Level 4 LIGHT Thunder monster. This effect is an Ignition Effect, allowing it to be "stacked" with Pahunder.</p>
+                    </div>
+                </div>
+
+                <!-- Pahunder -->
+                <div class="card p-6 flex flex-col md:flex-row items-center gap-6">
+                    <!-- Image -->
+                    <div id="pahunder-img-container" class="card-image-container w-full md:w-1/3 card-placeholder" style="max-width: 220px;">Pahunder</div>
+                    <!-- Content -->
+                    <div class="md:w-2/3">
+                        <h3 class="text-2xl font-bold text-accent mb-2">Pahunder</h3>
+                        <p class="text-slate-300">Functionally identical to Mahunder, acting as the second "Hunder Parent." Having both in hand allows for an instant Rank 4 Xyz Summon by Normal Summoning one, then using its effect to Normal Summon the other.</p>
+                    </div>
+                </div>
+
+                <!-- Brohunder -->
+                <div class="card p-6 flex flex-col md:flex-row-reverse items-center gap-6">
+                    <!-- Image -->
+                    <div id="brohunder-img-container" class="card-image-container w-full md:w-1/3 card-placeholder" style="max-width: 220px;">Brohunder</div>
+                    <!-- Content -->
+                    <div class="md:w-2/3">
+                        <h3 class="text-2xl font-bold text-accent mb-2">Brohunder</h3>
+                        <p class="text-slate-300">The on-field searcher. When Normal Summoned, it adds 1 Level 4 LIGHT Thunder monster from your Deck to your hand, typically grabbing Mahunder or Pahunder to extend your plays.</p>
+                    </div>
+                </div>
+
+                <!-- Sishunder -->
+                <div class="card p-6 flex flex-col md:flex-row items-center gap-6">
+                    <!-- Image -->
+                    <div id="sishunder-img-container" class="card-image-container w-full md:w-1/3 card-placeholder" style="max-width: 220px;">Sishunder</div>
+                    <!-- Content -->
+                    <div class="md:w-2/3">
+                        <h3 class="text-2xl font-bold text-accent mb-2">Sishunder</h3>
+                        <p class="text-slate-300">The key recycler. When Normal Summoned, it banishes a target from the GY, which then returns to your hand during the End Phase. This is used to loop <strong class="text-accent">Thunder Sea Horse</strong>.</p>
+                    </div>
+                </div>
+
+                <!-- Recycling Batteries -->
+                <div class="card p-6 flex flex-col md:flex-row-reverse items-center gap-6">
+                    <!-- Image -->
+                    <div id="recycling-batteries-img-container" class="card-image-container w-full md:w-1/3 card-placeholder" style="max-width: 220px;">Recycling Batteries</div>
+                    <!-- Content -->
+                    <div class="md:w-2/3">
+                        <h3 class="text-2xl font-bold text-accent mb-2">Recycling Batteries</h3>
+                        <p class="text-slate-300">A simple Normal Spell that provides a direct +1 in card advantage by adding 2 Thunder monsters with 1500 or less ATK from your GY to your hand, refueling your engine for another push.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: "Hunder Parents" Instant Xyz</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">This is the deck's primary aggressive line, converting two "Hunder Parents" in hand into an immediate Rank 4 Xyz monster.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="pahunder-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Pahunder</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#334155] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The First Summon</h3>
+                            </div>
+                            <p class="text-slate-300">Perform your standard Normal Summon for the turn, summoning <strong class="text-accent">Pahunder</strong> (or <strong class="text-accent">Mahunder</strong>) from your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="mahunder-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mahunder</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#334155] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Stack the Summon</h3>
+                            </div>
+                            <p class="text-slate-300">Activate the Ignition Effect of the on-field <strong class="text-accent">Pahunder</strong>. This allows you to immediately perform an additional Normal Summon, playing <strong class="text-accent">Mahunder</strong> from your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="bagooska-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Number 41: Bagooska</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#334155] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Assemble the Payoff</h3>
+                            </div>
+                            <p class="text-slate-300">With two Level 4 monsters on the field, overlay both to Xyz Summon your Rank 4 monster of choice, such as <strong class="text-accent">Bagooska</strong> for control or <strong class="text-accent">Utopia the Lightning</strong> for offense.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Endboard: The Rank 4 Toolbox</h2>
+            <p class="text-slate-300 mb-8 text-center max-w-3xl mx-auto">
+                The Hunder engine's end board is not a fixed field but rather a versatile set of options from the generic Rank 4 Xyz pool, chosen to counter the opponent's strategy.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Disruption & Control -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Disruption & Control</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="bagooska-img-container" class="w-24 flex-shrink-0 card-placeholder">Bagooska</div>
+                            <div>
+                                <h4 class="font-bold text-white">Number 41: Bagooska</h4>
+                                <p class="text-sm text-slate-300">A premier Turn 1 play. Forces all monsters into Defense Position and negates their activated effects.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="dweller-img-container" class="w-24 flex-shrink-0 card-placeholder">Abyss Dweller</div>
+                            <div>
+                                <h4 class="font-bold text-white">Abyss Dweller</h4>
+                                <p class="text-sm text-slate-300">A Quick Effect that prevents the opponent from activating any card effects in their Graveyard for the turn.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Offense & Removal -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Offense & Removal</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="utopia-lightning-img-container" class="w-24 flex-shrink-0 card-placeholder">Utopia the Lightning</div>
+                            <div>
+                                <h4 class="font-bold text-white">Number S39: Utopia the Lightning</h4>
+                                <p class="text-sm text-slate-300">The primary game-finisher. Attacks with 5000 ATK and prevents the opponent from responding during the battle.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="castel-img-container" class="w-24 flex-shrink-0 card-placeholder">Castel</div>
+                            <div>
+                                <h4 class="font-bold text-white">Castel, the Skyblaster Musketeer</h4>
+                                <p class="text-sm text-slate-300">The ultimate problem-solver. Detaches 2 materials to shuffle any face-up card on the field back into the Deck.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Consistency:</strong> Multiple searchers ensure reliable access to combo pieces.</li>
+                        <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-green-400 font-bold">Resource Loops:</strong> Can easily recycle its own engine pieces for a strong grind game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400 font-bold">Flexible Engine:</strong> Easily hybridizes with other LIGHT or Thunder archetypes like "Watt" or "Batteryman".</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Normal Summon Reliant:</strong> The entire combo chain begins with a Normal Summon, making it a critical choke point for hand traps.</li>
+                        <li><span class="con-icon"><i class="fas fa-stop-circle"></i></span> <strong class="text-red-400 font-bold">Low Individual Power:</strong> The Hunder monsters themselves are weak and have no inherent protection, relying on the Extra Deck.</li>
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400 font-bold">"Thunder Sea Horse" Lock:</strong> The best setup card, <strong class="text-accent">Thunder Sea Horse</strong>, prevents you from Special Summoning, slowing your tempo.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Tech Cards & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li><span class="neutral-icon"><i class="fas fa-user-shield"></i></span> <strong class="text-accent">Denko Sekka:</strong> A powerful Thunder monster that locks down all Set Spells/Traps, protecting your combo.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-charging-station"></i></span> <strong class="text-accent">Batteryman Solar:</strong> An excellent extender that provides a Token for Link Summons and sets up the GY.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-sun"></i></span> <strong class="text-accent">Honest:</strong> A classic hand trap for any LIGHT-based strategy, protecting your weak monsters in battle.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-slate-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">FULL POWER:</strong> The Hunder Family engine itself is entirely unrestricted, though some of its historical payoffs are banned.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-slate-300">
+                            <li><strong class="text-green-300">Thunder Sea Horse (3 copies)</strong> - Full consistency.</li>
+                            <li><strong class="text-green-300">Mahunder / Pahunder (3 copies each)</strong> - Full swarming.</li>
+                            <li><strong class="text-green-300">Brohunder / Sishunder (3 copies each)</strong> - Full searching/recursion.</li>
+                            <li>All modern generic Rank 4 Xyz monsters are available.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Historical Bans</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-slate-300">
+                            <li><strong class="text-red-400">Number 16: Shock Master (0 copies)</strong> - Banned.</li>
+                            <li><strong class="text-red-400">Lavalval Chain (0 copies)</strong> - Banned.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-slate-300"><strong>Meta Implications:</strong> The Hunder engine is at full power and completely consistent. While its original, game-ending boss monsters (Shock Master, Lavalval Chain) are forbidden, the modern generic Rank 4 toolbox (Bagooska, Dweller, Utopia) provides more than enough power for the deck to function as intended.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- HUNDER LIGHTNING BANNER ANIMATION ---
+            const canvas = document.getElementById('lightning-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let width, height;
+                let lightningBolts = [];
+
+                const setCanvasSize = () => {
+                    width = canvas.width = canvas.offsetWidth;
+                    height = canvas.height = canvas.offsetHeight;
+                };
+
+                class LightningBolt {
+                    constructor(x, y, segments, speed, life, color) {
+                        this.x = x;
+                        this.y = y;
+                        this.segments = segments;
+                        this.speed = speed;
+                        this.life = this.initialLife = life;
+                        this.color = color;
+                        this.points = this.createPoints();
+                    }
+
+                    createPoints() {
+                        let points = [{ x: this.x, y: this.y }];
+                        let lastX = this.x;
+                        let lastY = this.y;
+                        for (let i = 0; i < this.segments; i++) {
+                            let newX = lastX + (Math.random() - 0.5) * 40;
+                            let newY = lastY + (Math.random() * 20) + 10; // Tend downwards
+                            points.push({ x: newX, y: newY });
+                            lastX = newX;
+                            lastY = newY;
+                        }
+                        return points;
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.moveTo(this.points[0].x, this.points[0].y);
+                        for (let i = 1; i < this.points.length; i++) {
+                            ctx.lineTo(this.points[i].x, this.points[i].y);
+                        }
+                        ctx.strokeStyle = `rgba(${this.color}, ${this.life / this.initialLife})`;
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+
+                    update() {
+                        this.life -= this.speed;
+                        if (this.life <= 0) {
+                            this.reset();
+                        }
+                        this.draw();
+                    }
+
+                    reset() {
+                        this.x = Math.random() * width;
+                        this.y = 0;
+                        this.life = this.initialLife = Math.random() * 50 + 20;
+                        this.points = this.createPoints();
+                    }
+                }
+
+                function init() {
+                    lightningBolts = [];
+                    for (let i = 0; i < 3; i++) {
+                        lightningBolts.push(new LightningBolt(
+                            Math.random() * width,
+                            0,
+                            Math.floor(Math.random() * 10) + 15,
+                            Math.random() * 2 + 1,
+                            Math.random() * 50 + 20,
+                            '250, 204, 21' // Amber color (facc15)
+                        ));
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, width, height);
+                    lightningBolts.forEach(bolt => bolt.update());
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // This function assumes 'card-loader.js' is loaded and CardLoader is in the global scope.
+            try {
+                 if (typeof CardLoader !== 'undefined') {
+                    CardLoader.loadCards({
+                        'thunder-sea-horse-img-container': 'Thunder Sea Horse',
+                        'mahunder-img-container': 'Mahunder',
+                        'pahunder-img-container': 'Pahunder',
+                        'brohunder-img-container': 'Brohunder',
+                        'sishunder-img-container': 'Sishunder',
+                        'recycling-batteries-img-container': 'Recycling Batteries',
+                        'pahunder-combo-img-container': 'Pahunder',
+                        'mahunder-combo-img-container': 'Mahunder',
+                        'bagooska-combo-img-container': 'Number 41: Bagooska the Terribly Tired Tapir',
+                        'bagooska-img-container': 'Number 41: Bagooska the Terribly Tired Tapir',
+                        'dweller-img-container': 'Abyss Dweller',
+                        'utopia-lightning-img-container': 'Number S39: Utopia the Lightning',
+                        'castel-img-container': 'Castel, the Skyblaster Musketeer'
+                    });
+                 } else {
+                    console.error("CardLoader is not defined. Make sure card-loader.js is loaded correctly.");
+                 }
+            } catch (error) {
+                console.error("Error loading cards:", error);
+            }
+        });
+    </script>
+</body>
+</html>
+

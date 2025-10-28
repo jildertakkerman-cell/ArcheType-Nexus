@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mirror Force Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!--
+        NOTE: The 'card-loader.js' file is loaded from 'assets/js/card-loader.js'.
+        Ensure this file is in the correct directory for the card images to load.
+    -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Roboto Mono for the tactical/trap feel, and Inter for body text -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d121c; /* Deep dark blue */
+            color: #dbeafe; /* Light blue/white text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        /* Card styling inspired by Trap Cards (purple/magenta) and other pages */
+        .card {
+            background-color: #1a1633; /* Dark purple/slate */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4c3d8e; /* Lighter purple border */
+        }
+        .combo-step-card, .pro-con-card, .banlist-card {
+            background-color: #2a2457; /* Slightly lighter purple/slate */
+            border: 1px solid #6a5acd;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 128px; /* Reduced from 144px */
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        /* Card placeholder styling */
+        .card-placeholder {
+            background-color: #2a2457;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.65rem;
+            line-height: 0.9rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 180px;
+            max-height: 180px; /* Match min and max for consistent height */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2457;
+            border: 1px dashed #6a5acd;
+            overflow: hidden; /* Prevent text overflow */
+        }
+        .small-placeholder {
+            min-height: 150px;
+            height: 100%;
+            width: 100%;
+            max-width: 100px;
+        }
+        /* Icon and accent colors */
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f472b6; } /* Bright magenta/pink accent */
+        .arrow-color { color: #f472b6; }
+        .heading-underline {
+            border-bottom: 2px solid #f472b6;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f472b6;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f472b6;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f472b6;
+        }
+
+        /* --- NEW MIRROR FORCE ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            height: 120px; /* Reduced height */
+            background-color: #0d121c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c3d8e;
+        }
+
+        #reflection-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 18, 28, 0.4) 0%, rgba(13, 18, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(244, 114, 182, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', monospace;
+             font-size: 2.5rem;
+        }
+         .banner-header p {
+            font-size: 1rem;
+        }
+        @media (max-width: 768px) {
+            .banner-header { height: 100px; }
+            .banner-header h1 { font-size: 2rem; }
+            .banner-header p { font-size: 0.875rem; }
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #f472b6; /* Accent color border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #f472b6; /* Accent color */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #f472b6;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="reflection-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Mirror Force</h1>
+            <p class="text-lg md:text-xl text-pink-200">Reflecting the Meta: A Strategic Deep Dive</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The "Mirror Force" series represents one of the most iconic and enduring legacies within the Yu-Gi-Oh! Trading Card Game. Originating as a single, game-altering Normal Trap, it has since evolved into a 
+                    <!-- This is the "hint" link requested by the user -->
+                    <a href="#arsenal" class="lore-link">diverse family of cards</a>,
+                    each reflecting the changing dynamics of monster design and game mechanics. This analysis charts the progression from straightforward destruction to more sophisticated forms of non-destruction removal, a trajectory that mirrors the escalating power and resilience of modern monsters.
+                </p>
+            </div>
+        </section>
+
+        <!-- The "Mirror Force" Arsenal Section (NEW) -->
+        <section id="arsenal" class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The "Mirror Force" Arsenal</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                A visual breakdown of the "Mirror Force" variants, from the progenitor to its most modern iterations. Each serves a distinct tactical purpose.
+            </p>
+            <!-- REDESIGNED GRID: 
+                - Changed grid columns to be more responsive and robust (lg:grid-cols-3 md:grid-cols-2)
+                - Changed card structure to stack content vertically (image, title, description)
+                - Added hover effects for better interactivity
+            -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Mirror Force -->
+                <div class="card p-4 flex flex-col items-center text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-pink-500/20 hover:-translate-y-1">
+                    <div id="mf-original-img" class="card-image-container card-placeholder mb-4">Mirror Force</div>
+                    <h3 class="text-xl font-bold text-white">Mirror Force</h3>
+                    <p class="text-sm text-blue-200 mt-2 flex-grow">Destroys all Attack Position monsters.</p>
+                </div>
+                <!-- Storming Mirror Force -->
+                <div class="card p-4 flex flex-col items-center text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-pink-500/20 hover:-translate-y-1">
+                    <div id="mf-storming-img" class="card-image-container card-placeholder mb-4">Storming Mirror Force</div>
+                    <h3 class="text-xl font-bold text-white">Storming</h3>
+                    <p class="text-sm text-blue-200 mt-2 flex-grow">Returns all Attack Position monsters to the hand.</p>
+                </div>
+                <!-- Drowning Mirror Force -->
+                <div class="card p-4 flex flex-col items-center text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-pink-500/20 hover:-translate-y-1">
+                    <div id="mf-drowning-img" class="card-image-container card-placeholder mb-4">Drowning Mirror Force</div>
+                    <h3 class="text-xl font-bold text-white">Drowning</h3>
+                    <p class="text-sm text-blue-200 mt-2 flex-grow">Shuffles all Attack Position monsters into the Deck.</p>
+                </div>
+                <!-- Quaking Mirror Force -->
+                <div class="card p-4 flex flex-col items-center text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-pink-500/20 hover:-translate-y-1">
+                    <div id="mf-quaking-img" class="card-image-container card-placeholder mb-4">Quaking Mirror Force</div>
+                    <h3 class="text-xl font-bold text-white">Quaking</h3>
+                    <p class="text-sm text-blue-200 mt-2 flex-grow">Flips all Attack Position monsters face-down.</p>
+                </div>
+                <!-- Blazing Mirror Force -->
+                <div class="card p-4 flex flex-col items-center text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-pink-500/20 hover:-translate-y-1">
+                    <div id="mf-blazing-img" class="card-image-container card-placeholder mb-4">Blazing Mirror Force</div>
+                    <h3 class="text-xl font-bold text-white">Blazing</h3>
+                    <p class="text-sm text-blue-200 mt-2 flex-grow">Destroys and inflicts burn damage to both players.</p>
+                </div>
+                <!-- Radiant Mirror Force -->
+                <div class="card p-4 flex flex-col items-center text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-pink-500/20 hover:-translate-y-1">
+                    <div id="mf-radiant-img" class="card-image-container card-placeholder mb-4">Radiant Mirror Force</div>
+                    <h3 class="text-xl font-bold text-white">Radiant</h3>
+                    <p class="text-sm text-blue-200 mt-2 flex-grow">Destroys all, but requires 3+ monsters to activate.</p>
+                </div>
+                <!-- Dark Mirror Force -->
+                <div class="card p-4 flex flex-col items-center text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-pink-500/20 hover:-translate-y-1">
+                    <div id="mf-dark-img" class="card-image-container card-placeholder mb-4">Dark Mirror Force</div>
+                    <h3 class="text-xl font-bold text-white">Dark</h3>
+                    <p class="text-sm text-blue-200 mt-2 flex-grow">Banishes all Defense Position monsters.</p>
+                </div>
+                <!-- Mirage Mirror Force -->
+                <div class="card p-4 flex flex-col items-center text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-pink-500/20 hover:-translate-y-1">
+                    <div id="mf-mirage-img" class="card-image-container card-placeholder mb-4">Mirage Mirror Force</div>
+                    <h3 class="text-xl font-bold text-white">Mirage</h3>
+                    <p class="text-sm text-blue-200 mt-2 flex-grow">For Illusion decks; summons from GY and bounces 1.</p>
+                </div>
+                <!-- Dark Magic Mirror Force -->
+                <div class="card p-4 flex flex-col items-center text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-pink-500/20 hover:-translate-y-1">
+                    <div id="mf-darkmagic-img" class="card-image-container card-placeholder mb-4">Dark Magic Mirror Force</div>
+                    <h3 class="text-xl font-bold text-white">Dark Magic</h3>
+                    <p class="text-sm text-blue-200 mt-2 flex-grow">For "Dark Magician" decks; destroys and burns.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tactical Breakdown Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">A Tactical Breakdown</h2>
+            <div class="card p-6">
+                <!-- 1.1 The Progenitor -->
+                <h3 class="text-xl font-bold text-accent mb-2">The Progenitor: The Original Mirror Force</h3>
+                <p class="text-blue-200 mb-4">
+                    Its effect is simple: "When an opponent's monster declares an attack: Destroy all your opponent's Attack Position monsters." In the early days, "Mirror Force" was the ultimate check against aggressive overextension. However, the modern metagame, filled with monsters immune to destruction or that "float" (trigger effects upon destruction), has relegated it from a staple to a piece of history.
+                </p>
+                
+                <!-- 1.2 Escalation through Destruction -->
+                <h3 class="text-xl font-bold text-accent mb-2 mt-6">Escalation through Destruction: Radiant and Blazing</h3>
+                <p class="text-blue-200 mb-4">
+                    <strong class="text-white">"Radiant Mirror Force"</strong> is widely regarded as the weakest, requiring the opponent to control 3 or more Attack Position monsters to activate. <strong class="text-white">"Blazing Mirror Force"</strong> is a high-risk, high-reward burn tool: it destroys all opposing Attack Position monsters, then inflicts damage equal to half their combined original ATK to *both* players. This can be a game-ender or a self-destruct button, depending on Life Point totals.
+                </p>
+
+                <!-- 1.3 Adapting to Indestructibility -->
+                <h3 class="text-xl font-bold text-accent mb-2 mt-6">Adapting to Indestructibility: Non-Destruction Removal</h3>
+                <p class="text-blue-200 mb-4 space-y-3">
+                    <strong class="text-white">"Storming Mirror Force"</strong> was a critical evolutionary step, returning all opposing Attack Position monsters to the hand. This bypasses destruction immunity and is devastating against Extra Deck monsters, which return to the Extra Deck.
+                </p>
+                <p class="text-blue-200">
+                    <strong class="text-white">"Drowning Mirror Force"</strong> offers the strongest removal: shuffling all Attack Position monsters into the Deck. This prevents nearly all forms of recovery. Its significant drawback is its activation condition: it can only be used in response to a *direct attack*, making it purely defensive.
+                </p>
+                <p class="text-blue-200">
+                    <strong class="text-white">"Quaking Mirror Force"</strong> provides permanent control by changing all Attack Position monsters to face-down Defense Position, where they "cannot change their battle positions." This neutralizes their effects, but it is useless against Link Monsters, which cannot exist in Defense Position.
+                </p>
+            </div>
+        </section>
+
+        <!-- Comparative Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Comparative Analysis of "Mirror Force" Variants</h2>
+            <div class="card p-4 md:p-6 overflow-x-auto">
+                <table class="w-full min-w-[800px] text-left">
+                    <thead>
+                        <tr class="border-b border-pink-700">
+                            <th class="p-3 text-accent">Card Name</th>
+                            <th class="p-3 text-accent">Activation Trigger</th>
+                            <th class="p-3 text-accent">Effect Type</th>
+                            <th class="p-3 text-accent">Strategic Niche</th>
+                            <th class="p-3 text-accent">Viability Score (1-5)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-blue-200">
+                        <tr class="border-b border-gray-700">
+                            <td class="p-3 font-bold text-white">Mirror Force</td>
+                            <td class="p-3">Any attack</td>
+                            <td class="p-3">Destruction</td>
+                            <td class="p-3">Punishing overextension in casual formats.</td>
+                            <td class="p-3 text-center text-red-400 font-bold">1</td>
+                        </tr>
+                        <tr class="border-b border-gray-700 bg-black bg-opacity-10">
+                            <td class="p-3 font-bold text-white">Radiant Mirror Force</td>
+                            <td class="p-3">Attack (Opp. controls 3+)</td>
+                            <td class="p-3">Destruction</td>
+                            <td class="p-3">None; strictly worse than original.</td>
+                            <td class="p-3 text-center text-red-400 font-bold">1</td>
+                        </tr>
+                        <tr class="border-b border-gray-700">
+                            <td class="p-3 font-bold text-white">Blazing Mirror Force</td>
+                            <td class="p-3">Any attack</td>
+                            <td class="p-3">Destruction & Burn</td>
+                            <td class="p-3">High-risk, high-reward OTK/burn decks.</td>
+                            <td class="p-3 text-center text-yellow-400 font-bold">2</td>
+                        </tr>
+                        <tr class="border-b border-gray-700 bg-black bg-opacity-10">
+                            <td class="p-3 font-bold text-white">Storming Mirror Force</td>
+                            <td class="p-3">Any attack</td>
+                            <td class="p-3">Non-Destruction (Bounce)</td>
+                            <td class="p-3">Bypassing destruction immunity; removing Extra Deck monsters.</td>
+                            <td class="p-3 text-center text-green-400 font-bold">4</td>
+                        </tr>
+                        <tr class="border-b border-gray-700">
+                            <td class="p-3 font-bold text-white">Drowning Mirror Force</td>
+                            <td class="p-3">Direct attack</td>
+                            <td class="p-3">Non-Destruction (Shuffle)</td>
+                            <td class="p-3">Ultimate removal in "open field" decks (e.g., Yosenju).</td>
+                            <td class="p-3 text-center text-green-400 font-bold">4</td>
+                        </tr>
+                        <tr class="border-b border-gray-700 bg-black bg-opacity-10">
+                            <td class="p-3 font-bold text-white">Quaking Mirror Force</td>
+                            <td class="p-3">Any attack</td>
+                            <td class="p-3">Non-Destruction (Flip)</td>
+                            <td class="p-3">Permanently neutralizing non-Link monsters.</td>
+                            <td class="p-3 text-center text-yellow-400 font-bold">3</td>
+                        </tr>
+                        <tr class="border-b border-gray-700">
+                            <td class="p-3 font-bold text-white">Dark Mirror Force</td>
+                            <td class="p-3">Any attack</td>
+                            <td class="p-3">Banishment</td>
+                            <td class="p-3">Niche combo piece (targets Defense Position).</td>
+                            <td class="p-3 text-center text-red-400 font-bold">1</td>
+                        </tr>
+                        <tr class="border-b border-gray-700 bg-black bg-opacity-10">
+                            <td class="p-3 font-bold text-white">Mirage Mirror Force</td>
+                            <td class="p-3">Any attack</td>
+                            <td class="p-3">Bounce & Summon</td>
+                            <td class="p-3">Illusion archetype support.</td>
+                            <td class="p-3 text-center text-yellow-400 font-bold">2 (5 in Illusion)</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold text-white">Dark Magic Mirror Force</td>
+                            <td class="p-3">Attack or Effect</td>
+                            <td class="p-3">Destruction & Burn</td>
+                            <td class="p-3">"Dark Magician" archetype support.</td>
+                            <td class="p-3 text-center text-red-400 font-bold">1 (4 in its deck)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Support & Logistics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Support & Logistics</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The effectiveness of any trap is linked to its accessibility. While "Mirror Force" has dedicated support, generic trap tutors are far more effective.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Dedicated but Flawed -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4">Dedicated but Flawed</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row items-center gap-4">
+                            <div id="mf-launcher-img" class="card-image-container small-placeholder card-placeholder">Mirror Force Launcher</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-white mb-1">Mirror Force Launcher</h4>
+                                <p class="text-sm text-blue-200">A Continuous Trap that can discard a monster to search "Mirror Force". Its critical flaw: it can *only* search the original, weakest "Mirror Force", not its variants.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row items-center gap-4">
+                            <div id="mf-dragon-img" class="card-image-container small-placeholder card-placeholder">Mirror Force Dragon</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-white mb-1">Mirror Force Dragon</h4>
+                                <p class="text-sm text-blue-200">A powerful Fusion boss monster summoned with "The Fang of Critias" and "Mirror Force". It can destroy all cards your opponent controls when a monster you control is targeted. However, it's highly inconsistent, relying on unsearchable combo pieces.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Modern Toolkit -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4">The Modern Toolkit</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row items-center gap-4">
+                            <div id="trap-trick-img" class="card-image-container small-placeholder card-placeholder">Trap Trick</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-white mb-1">Trap Trick</h4>
+                                <p class="text-sm text-blue-200">The most direct searcher. It banishes one Normal Trap from your deck to Set another copy of the same name, which can be activated that turn. This provides immediate access to the *correct* "Mirror Force" variant for any situation.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row items-center gap-4">
+                            <div id="lilith-img" class="card-image-container small-placeholder card-placeholder">Lilith, Lady of Lament</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-white mb-1">Lilith, Lady of Lament</h4>
+                                <p class="text-sm text-blue-200">Can Tribute a DARK monster to reveal 3 Normal Traps, letting your opponent randomly pick one to Set. This "random" factor is negated by revealing 3 copies of the same card (e.g., 3 "Storming Mirror Force").
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The "Mirror Force" Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The "Mirror Force" Endboard</h2>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-accent mb-2">A Paradigm of Control</h3>
+                <p class="text-blue-200 mb-4">
+                    A "Mirror Force" endboard is not a field of monsters; it's a reactive state of control. The win condition is an ambush. The goal is to encourage the opponent to commit their resources, lure them into a false sense of security, and then activate a card like <strong class="text-white">"Storming Mirror Force"</strong> or <strong class="text-white">"Drowning Mirror Force"</strong> upon their attack declaration. This single activation aims to generate a massive swing in card advantage, trading one trap for the opponent's entire board.
+                </p>
+                
+                <h3 class="text-xl font-bold text-accent mb-2 mt-6">Prime Synergy: The Labrynth Archetype</h3>
+                <p class="text-blue-200 mb-6">
+                    The <strong class="text-white">Labrynth</strong> archetype is the premier home for "Mirror Force" cards. The entire engine triggers "If a monster(s) leaves the field by your Normal Trap effect." This turns "Mirror Force" from a simple defensive trade into a devastating engine starter. Activating "Storming Mirror Force" can trigger <strong class="text-white">"Lovely Labrynth"</strong> to rip a card from the opponent's hand and <strong class="text-white">"Arianna"</strong> to draw a card, all while <strong class="text-white">"Lady Labrynth"</strong> can Set another "Mirror Force" directly from the deck.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">Conceptual Endboard</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="mf-storming-end-img" class="card-image-container card-placeholder">Storming Mirror Force</div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-blue-200">
+                            <li><strong class="text-accent">The Ambush:</strong> A Set "Storming" or "Drowning Mirror Force" ready to activate.</li>
+                            <li><strong class="text-accent">The Threat:</strong> A single, unidentified Set card forces the opponent to play cautiously, fearing a board wipe.</li>
+                        </ul>
+                    </div>
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">Labrynth Synergy</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="lady-labrynth-img" class="card-image-container card-placeholder">Lady Labrynth of the Silver Castle</div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-blue-200">
+                            <li><strong class="text-accent">The Engine:</strong> "Lady Labrynth" on field, able to Set a "Mirror Force" from the deck.</li>
+                            <li><strong class="text-accent">The Payoff:</strong> "Mirror Force" activation triggers all Labrynth effects, generating massive advantage.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section (NEW) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.7s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 mb-6 text-center">
+                    This section dynamically verifies the TCG banlist status for the "Mirror Force" series. As of the last check, the entire archetype family remains fully unrestricted, allowing duelists to use three copies of any variant.
+                </p>
+                <div id="banlist-status-container" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- This content will be populated by JavaScript -->
+                    <div class="text-center p-3 banlist-card rounded-lg">
+                        <i class="fas fa-spinner fa-spin text-2xl text-accent"></i>
+                        <p class="text-white font-bold mt-2">Loading Status...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Conclusion: The Reflected Verdict</h2>
+                <p class="text-blue-200 mb-4">
+                    The "Mirror Force" series has transitioned from a ubiquitous symbol of power to a specialized toolkit. The fundamental handicap of all battle traps—their inherent slowness in a game dominated by Main Phase combos—is a barrier that most variants can no longer overcome. However, within synergistic frameworks like Labrynth, their power is magnified to a competitive level.
+                </p>
+                <h3 class="text-xl font-bold text-accent mb-3">The Tiered Arsenal: A Final Ranking</h3>
+                <ul class="list-none space-y-3 text-blue-200">
+                    <li><strong class="text-green-400 font-bold">Tier 1 (Viable Tech):</strong> "Storming Mirror Force", "Drowning Mirror Force". Their non-destruction removal remains potent.</li>
+                    <li><strong class="text-yellow-400 font-bold">Tier 2 (Niche/Synergy):</strong> "Quaking Mirror Force", "Blazing Mirror Force". Powerful, but with significant caveats (useless vs. Links, high-risk burn).</li>
+                    <li><strong class="text-red-400 font-bold">Tier 3 (Outclassed/Casual):</strong> "Mirror Force", "Dark Mirror Force", "Radiant Mirror Force". Their effects are too situational or too easily countered by modern decks.</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- NEW BANNER ANIMATION ---
+            const canvas = document.getElementById('reflection-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 70;
+                const colors = ['#f472b6', '#ec4899', '#db2777', '#a21caf', '#c026d3', '#ffffff', '#e0e7ff'];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedX = (Math.random() * 1) - 0.5;
+                        this.speedY = (Math.random() * 1) - 0.5;
+                        this.size = Math.random() * 2 + 1;
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = this.opacity;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    
+                    // Connect lines for a "shattered" look
+                    ctx.globalAlpha = 0.1;
+                    for (let a = 0; a < particles.length; a++) {
+                        for (let b = a + 1; b < particles.length; b++) {
+                            let distance = Math.sqrt(
+                                Math.pow(particles[a].x - particles[b].x, 2) +
+                                Math.pow(particles[a].y - particles[b].y, 2)
+                            );
+                            if (distance < 100) {
+                                ctx.strokeStyle = particles[a].color;
+                                ctx.lineWidth = 0.5;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[a].x, particles[a].y);
+                                ctx.lineTo(particles[b].x, particles[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                    ctx.globalAlpha = 1;
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADER SCRIPT ---
+            // This function is defined in card-loader.js
+            // We just need to call it with our card map.
+            CardLoader.loadCards({
+                // Arsenal
+                'mf-original-img': 'Mirror Force',
+                'mf-storming-img': 'Storming Mirror Force',
+                'mf-drowning-img': 'Drowning Mirror Force',
+                'mf-quaking-img': 'Quaking Mirror Force',
+                'mf-blazing-img': 'Blazing Mirror Force',
+                'mf-radiant-img': 'Radiant Mirror Force',
+                'mf-dark-img': 'Dark Mirror Force',
+                'mf-mirage-img': 'Mirage Mirror Force',
+                'mf-darkmagic-img': 'Dark Magic Mirror Force',
+                // Support
+                'mf-launcher-img': 'Mirror Force Launcher',
+                'mf-dragon-img': 'Mirror Force Dragon',
+                'trap-trick-img': 'Trap Trick',
+                'lilith-img': 'Lilith, Lady of Lament',
+                // Endboard
+                'mf-storming-end-img': 'Storming Mirror Force',
+                'lady-labrynth-img': 'Lady Labrynth of the Silver Castle'
+            });
+
+            // --- DYNAMIC BANLIST CHECKER ---
+            async function fetchBanlistData() {
+                const container = document.getElementById('banlist-status-container');
+                const cardNames = [
+                    'Mirror Force', 'Radiant Mirror Force', 'Blazing Mirror Force',
+                    'Storming Mirror Force', 'Drowning Mirror Force', 'Quaking Mirror Force',
+                    'Dark Mirror Force', 'Mirage Mirror Force', 'Dark Magic Mirror Force',
+                    'Mirror Force Launcher', 'Mirror Force Dragon'
+                ];
+                
+                try {
+                    // Fetch all TCG banlist data at once
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    
+                    container.innerHTML = ''; // Clear loading spinner
+
+                    // Create a map of card names to their banlist status
+                    const banlistMap = new Map();
+                    if (data && data.data) {
+                        data.data.forEach(card => {
+                            if (card.banlist_info && card.banlist_info.ban_tcg) {
+                                banlistMap.set(card.name, card.banlist_info.ban_tcg);
+                            }
+                        });
+                    }
+
+                    // Display status for all Mirror Force cards
+                    cardNames.forEach(name => {
+                        const status = banlistMap.get(name) || 'Unlimited';
+                        let statusColor = 'text-green-400'; // Unlimited
+                        let statusText = `Unlimited (3)`;
+
+                        if (status === 'Limited') {
+                            statusColor = 'text-yellow-400';
+                            statusText = `Limited (1)`;
+                        } else if (status === 'Semi-Limited') {
+                            statusColor = 'text-yellow-400';
+                            statusText = `Semi-Limited (2)`;
+                        } else if (status === 'Banned' || status === 'Forbidden') {
+                            statusColor = 'text-red-400';
+                            statusText = `Forbidden (0)`;
+                        }
+
+                        const cardHtml = `
+                            <div class="banlist-card p-4 rounded-lg text-center">
+                                <h4 class="text-white font-bold text-sm truncate" title="${name}">${name}</h4>
+                                <p class="text-lg font-bold ${statusColor} mt-1">${statusText}</p>
+                            </div>
+                        `;
+                        container.innerHTML += cardHtml;
+                    });
+
+                } catch (error) {
+                    console.error('Failed to fetch banlist data:', error);
+                    container.innerHTML = `<p class="text-red-400 col-span-full text-center">Failed to load banlist data. Please check your network connection.</p>`;
+                }
+            }
+
+            // Run the banlist check
+            fetchBanlistData();
+        });
+    </script>
+</body>
+</html>
+
+
+
+

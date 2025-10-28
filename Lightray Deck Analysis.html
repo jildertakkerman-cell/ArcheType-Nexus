@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightray Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- This path assumes card-loader.js is in an 'assets/js' folder relative to this file -->
+    <!-- If this file is in the same directory, change src to "card-loader.js" -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c142b; /* Deep blue/black */
+            color: #dbeafe; /* Light blue-white text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a2340; /* Darker blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3b4c80; /* Lighter blue border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #26345e; /* Mid-tone blue */
+            border: 1px solid #4a5c9a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #26345e;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #26345e;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #facc15);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Bright Gold */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- New Lightray Animated Banner --- */
+        .banner {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(45deg, #0c142b, #1a2340);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #3b4c80;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: content-fade-in 1s ease-out 0.5s forwards;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: #fffbeb; /* Light yellow/white */
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.5), 0 0 20px rgba(250, 204, 21, 0.3);
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #dbeafe;
+        }
+        .light-mote {
+            position: absolute;
+            background: #fde047;
+            border-radius: 50%;
+            opacity: 0;
+            animation: light-motes 10s infinite linear;
+            box-shadow: 0 0 5px #fde047, 0 0 10px #fde047;
+        }
+        .light-mote.m1 { width: 3px; height: 3px; left: 10%; animation-duration: 12s; animation-delay: 0s; }
+        .light-mote.m2 { width: 2px; height: 2px; left: 25%; animation-duration: 8s; animation-delay: 2s; }
+        .light-mote.m3 { width: 4px; height: 4px; left: 40%; animation-duration: 15s; animation-delay: 1s; }
+        .light-mote.m4 { width: 3px; height: 3px; left: 60%; animation-duration: 10s; animation-delay: 4s; }
+        .light-mote.m5 { width: 2px; height: 2px; left: 80%; animation-duration: 13s; animation-delay: 3s; }
+        .light-mote.m6 { width: 1px; height: 1px; left: 90%; animation-duration: 7s; animation-delay: 5s; }
+
+        @keyframes content-fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes light-motes {
+            0% { bottom: -20px; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { bottom: 120px; opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(12, 20, 43, 0.95); /* Dark blue */
+            border: 1px solid #facc15; /* Gold border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #facc15; /* Gold title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Playfair Display', serif;
+            color: #facc15;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="light-mote m1"></div>
+                <div class="light-mote m2"></div>
+                <div class="light-mote m3"></div>
+                <div class="light-mote m4"></div>
+                <div class="light-mote m5"></div>
+                <div class="light-mote m6"></div>
+                <div class="banner-content">
+                    <h1 class="banner-title">Lightray</h1>
+                    <p class="banner-subtitle">A Strategic Deep Dive into the Lightray Series</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">"Lightray"</strong> series represents a unique design philosophy. Unlike conventional archetypes, "Lightray" is better understood as a mechanical concept: a collection of powerful, independent LIGHT attribute boss monsters. Each is united by a common theme: their summoning conditions are tied to achieving specific 
+                    <a href="https://yugipedia.com/wiki/Lightray" target="_blank" class="lore-link">resource thresholds within either the Graveyard (GY) or the banished zone.</a>
+                </p>
+                <p class="text-blue-200 mt-4">
+                    This design makes the "Lightray" strategy fundamentally opportunistic and engine-reliant. The duelist's primary objective is to select and operate a powerful external engine—such as Lightsworn or Thunder Dragon—to rapidly meet the demanding summoning conditions of the "Lightray" monsters and leverage their game-altering effects to establish control.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Mechanics: The Core Tension</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                A central strategic challenge is the fundamental tension between its members. This dichotomy forces a duelist to make critical decisions about resource allocation, creating a complex and rewarding deck-building puzzle.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-database text-2xl text-accent mr-3"></i>
+                        <h3 class="text-xl font-bold text-white">Graveyard-Reliant</h3>
+                    </div>
+                    <p class="text-blue-200">Monsters like <strong class="text-accent">Lightray Diabolos</strong> and <strong class="text-accent">Lightray Daedalus</strong> demand a high volume of LIGHT monsters (often with different names) in the Graveyard to be summoned.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-wind text-2xl text-accent mr-3"></i>
+                        <h3 class="text-xl font-bold text-white">Banish-Reliant</h3>
+                    </div>
+                    <p class="text-blue-200">Monsters like <strong class="text-accent">Lightray Sorcerer</strong> and <strong class="text-accent">Lightray Madoor</strong> require a significant number of LIGHT monsters to be banished to be summoned.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Lightray Arsenal Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Lightray Arsenal: Core Cards</h2>
+            
+            <!-- Lightray Grepher -->
+            <div class="card p-6 mb-6">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="grepher-img-container" class="card-image-container card-placeholder">Lightray Grepher</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-accent mb-2">Lightray Grepher: The Strategic Pivot</h3>
+                        <p class="text-blue-200 mb-2">
+                            Arguably the most important monster, Grepher is the central engine that resolves the archetype's core tension.
+                        </p>
+                        <ul class="list-disc list-inside space-y-2 text-blue-200">
+                            <li><strong class="text-white">Extender:</strong> Can Special Summon itself by discarding a Level 5 or higher LIGHT monster.</li>
+                            <li><strong class="text-white">Dual-Enabler:</strong> Its main effect discards 1 LIGHT monster (fueling the GY) to banish 1 LIGHT monster from the Deck (fueling the banish zone).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boss Monsters Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Lightray Diabolos -->
+                <div class="card p-6">
+                    <div class="flex flex-col items-center gap-4">
+                        <div id="diabolos-img-container" class="card-image-container card-placeholder">Lightray Diabolos</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Lightray Diabolos</h3>
+                            <p class="text-sm text-blue-200">
+                                <strong class="text-white">Requirement:</strong> 5+ LIGHT monsters with different names in GY.<br>
+                                <strong class="text-white">Effect:</strong> Once per turn, can banish 1 LIGHT from GY to target an opponent's Set card and place it on the top or bottom of their Deck. This non-destruction removal is incredibly powerful for control.
+                            </p>
+                            <p class="text-sm text-blue-200 mt-2">
+                                Synergizes well with cards that flip monsters face-down, like the <span class="text-red-400 font-bold">(Forbidden)</span> <strong class="text-accent">Fairy Tail - Snow</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lightray Sorcerer -->
+                <div class="card p-6">
+                    <div class="flex flex-col items-center gap-4">
+                        <div id="sorcerer-img-container" class="card-image-container card-placeholder">Lightray Sorcerer</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Lightray Sorcerer</h3>
+                            <p class="text-sm text-blue-200">
+                                <strong class="text-white">Requirement:</strong> 3+ banished LIGHT monsters.<br>
+                                <strong class="text-white">Effect:</strong> Once per turn, shuffles 1 of your banished LIGHT monsters into the Deck to banish 1 face-up monster on the field. This recycles resources while providing strong removal, but it cannot attack the turn it uses this effect.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lightray Daedalus -->
+                <div class="card p-6">
+                    <div class="flex flex-col items-center gap-4">
+                        <div id="daedalus-img-container" class="card-image-container card-placeholder">Lightray Daedalus</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Lightray Daedalus</h3>
+                            <p class="text-sm text-blue-200">
+                                <strong class="text-white">Requirement:</strong> 4+ LIGHT monsters in GY (easier than Diabolos).<br>
+                                <strong class="text-white">Effect:</strong> Once per turn, can target 1 Field Spell and 2 other cards on the field and destroy them. A massive board-wipe that makes it a powerful Side Deck card against Field Spell-reliant decks.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lightray Gearfried -->
+                <div class="card p-6">
+                    <div class="flex flex-col items-center gap-4">
+                        <div id="gearfried-img-container" class="card-image-container card-placeholder">Lightray Gearfried</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Lightray Gearfried</h3>
+                            <p class="text-sm text-blue-200">
+                                <strong class="text-white">Requirement:</strong> 5+ LIGHT monsters with different names in GY.<br>
+                                <strong class="text-white">Effect:</strong> A Quick Effect Spell/Trap negate by banishing 1 Warrior from the GY. However, it requires all your monsters to be Warriors, making it extremely niche and rarely used outside of dedicated LIGHT Warrior builds.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Setup Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Setup: The "Grepher" Opening</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how <strong class="text-accent font-bold">Lightray Grepher</strong> sets up both of the deck's win conditions simultaneously.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="grepher-combo-1" class="card-image-container card-placeholder">Lightray Grepher</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a2340] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Special Summon & Load GY</h3>
+                        </div>
+                        <p class="text-blue-200">Discard 1 Level 5+ LIGHT monster (like <strong class="text-accent">Lightray Diabolos</strong>) to Special Summon <strong class="text-accent">Lightray Grepher</strong> from your hand.
+                        <br><strong>Result:</strong> 1 LIGHT monster in GY.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="grepher-combo-2" class="card-image-container card-placeholder">Lightray Grepher</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a2340] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Activate Effect (Load GY & Banish)</h3>
+                        </div>
+                        <p class="text-blue-200">Activate Grepher's effect, discarding another LIGHT monster. This fuels the GY. Then, the effect resolves, banishing 1 LIGHT monster from your Deck (like <strong class="text-accent">Eclipse Wyvern</strong> or a <strong class="text-accent">Thunder Dragon</strong>).
+                        <br><strong>Result:</strong> 2 LIGHTs in GY, 1 LIGHT banished.</p>
+                    </div>
+                </div>
+                 <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <h3 class="text-lg font-bold text-center">Resulting Position</h3>
+                    <p class="text-blue-200 text-center">In one turn, using one monster, you have made significant progress toward summoning <strong class="text-accent">Diabolos</strong>, <strong class="text-accent">Daedalus</strong>, AND <strong class="text-accent">Sorcerer</strong>, opening up all of the deck's strategic options.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The "Lightray" End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Lightray" End Board: A Realistic Assessment</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                A "Lightray" end board is not a static field of omni-negates. Its strength lies in a combination of one or two powerful "Lightray" bosses, the board presence from its engine, and a well-stocked Graveyard that promises strong follow-up plays.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Lightsworn Variant -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Example: Lightsworn Variant</h3>
+                    <div class="flex justify-center gap-4 mb-4">
+                        <div id="diabolos-end-img" class="card-image-container card-placeholder" style="max-width: 140px;"></div>
+                        <div id="michael-end-img" class="card-image-container card-placeholder" style="max-width: 140px;"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Lightray Diabolos:</strong> Provides non-destruction removal to spin a Set card.</li>
+                        <li><strong class="text-accent">Michael, the Arch-Lightsworn:</strong> Offers targeted banishing removal during your turn.</li>
+                        <li><strong class="text-white">Follow-up:</strong> A massive GY full of resources for next turn.</li>
+                    </ul>
+                </div>
+                <!-- Chaos Variant -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Example: Chaos Variant</h3>
+                    <div class="flex justify-center gap-4 mb-4">
+                        <div id="sorcerer-end-img" class="card-image-container card-placeholder" style="max-width: 140px;"></div>
+                        <div id="bls-end-img" class="card-image-container card-placeholder" style="max-width: 140px;"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Lightray Sorcerer:</strong> Provides targeted banishing removal.</li>
+                        <li><strong class="text-accent">Black Luster Soldier - Envoy of the Beginning:</strong> Another powerful banishing effect or a double attacker.</li>
+                        <li><strong class="text-accent">PSY-Framelord Omega </strong> <span class="text-yellow-400 font-bold">(Limited)</span><strong>:</strong> Can provide hand disruption and resource recycling.</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="text-blue-200 mt-4 text-center max-w-3xl mx-auto">
+                The Extra Deck is often filled with generic bosses like <strong class="text-accent">Accesscode Talker</strong> or <strong class="text-accent">Chaos Angel</strong>, as <strong class="text-accent">Baronne de Fleur</strong> is <span class="text-red-400 font-bold">(Forbidden)</span>.
+            </p>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-star"></i></span> <strong class="text-green-400 font-bold">High Ceiling:</strong> Can surprise and overwhelm opponents with explosive, high-ATK boss monsters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400 font-bold">Resource Loop:</strong> <strong class="text-accent">Lightray Sorcerer</strong> can create a sustainable loop of removal.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">Flexible:</strong> Can be hybridized with many different LIGHT or Chaos-based engines.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-anchor"></i></span> <strong class="text-red-400 font-bold">Engine Reliant:</strong> The "Lightray" monsters are completely inert ("bricks") without a functional engine.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">GY Hate:</strong> Extremely vulnerable to cards like <strong class="text-accent">Bystial</strong> monsters or <strong class="text-accent">Dimension Shifter</strong>.</li>
+                         <li><span class="con-icon"><i class="fas fa-dice"></i></span> <strong class="text-red-400 font-bold">High Variance:</strong> "Lightsworn" builds rely on a "mill lottery" and can fail due to bad luck.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergistic Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-book-dead"></i></span> <strong class="text-accent">Lightsworn:</strong> The classic pairing. Mills aggressively to fuel the GY-reliant bosses.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-adjust"></i></span> <strong class="text-accent">Chaos:</strong> Adds DARK monsters to access powerful bosses like <strong class="text-accent">BLS</strong> and <strong class="text-accent">Levianeer</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-bolt"></i></span> <strong class="text-accent">Thunder Dragon:</strong> A potent banish-focused engine where banishing for <strong class="text-accent">Lightray Sorcerer</strong> triggers Thunder Dragon effects for card advantage.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The "Lightray" archetype itself is completely unrestricted. However, its supporting engines and generic boss monsters have been <strong class="text-red-400 font-bold">significantly impacted</strong> by the TCG Forbidden & Limited List.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Unrestricted -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Lightray" monsters</li>
+                            <li>Charge of the Light Brigade</li>
+                            <li>Solar Recharge</li>
+                            <li>Judgment Dragon</li>
+                            <li>Black Luster Soldier - Envoy of the Beginning</li>
+                            <li>Chaos Dragon Levianeer</li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>PSY-Framelord Omega</li>
+                        </ul>
+                    </div>
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden (0 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Fairy Tail - Snow</li>
+                            <li>Chaos Ruler, the Chaotic Magical Dragon</li>
+                            <li>Baronne de Fleur</li>
+                            <li>Block Dragon</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The loss of <strong class="text-accent">Fairy Tail - Snow</strong> and <strong class="text-accent">Chaos Ruler</strong> severely weakens the deck's milling and GY setup. Furthermore, the ban of <strong class="text-accent">Baronne de Fleur</strong> removes a key generic Synchro boss monster, forcing the deck to rely on other, often less powerful, alternatives.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check if CardLoader is available
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    // Arsenal
+                    'grepher-img-container': 'Lightray Grepher',
+                    'diabolos-img-container': 'Lightray Diabolos',
+                    'daedalus-img-container': 'Lightray Daedalus',
+                    'sorcerer-img-container': 'Lightray Sorcerer',
+                    'gearfried-img-container': 'Lightray Gearfried',
+                    
+                    // Combo
+                    'grepher-combo-1': 'Lightray Grepher',
+                    'grepher-combo-2': 'Lightray Grepher',
+                    
+                    // End Board
+                    'diabolos-end-img': 'Lightray Diabolos',
+                    'michael-end-img': 'Michael, the Arch-Lightsworn',
+                    'sorcerer-end-img': 'Lightray Sorcerer',
+                    'bls-end-img': 'Black Luster Soldier - Envoy of the Beginning'
+                });
+            } else {
+                console.error('CardLoader script not found. Please ensure assets/js/card-loader.js is loaded correctly.');
+            }
+        });
+    </script>
+</body>
+</html>

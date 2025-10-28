@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legendary Planet Analysis</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- card-loader.js (assuming it's in the same directory) -->
+    <script src="assets/js/card-loader.js" defer></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a1a; /* Deep cosmic purple */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a1633; /* Darker purple/blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4c3d8e; /* Lighter purple border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(26, 22, 51, 0.8);
+            border: 1px solid #6a5acd;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2457;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2457;
+            border: 1px dashed #6a5acd;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a5b4fc; } /* Celestial Light Blue/Indigo */
+        .text-accent-danger { color: #f87171; } /* Red for forbidden cards */
+        .arrow-color { color: #a5b4fc; }
+        .heading-underline {
+            border-bottom: 2px solid #a5b4fc;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #a5b4fc;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a5b4fc;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #a5b4fc;
+        }
+
+        /* --- Card Popup Styling --- */
+        #card-popup {
+            position: fixed;
+            z-index: 50;
+            background-color: #1a1633;
+            border: 2px solid #4c3d8e;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5);
+            max-width: 20rem;
+            max-height: 24rem;
+            overflow-y: auto;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            pointer-events: none;
+        }
+
+        /* --- Celestial Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c0a1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c3d8e;
+        }
+
+        #starfield-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 10, 26, 0.4) 0%, rgba(12, 10, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(165, 180, 252, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Home Button (from other files) */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="starfield-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Legendary Planets</h1>
+            <p class="text-lg md:text-xl text-indigo-200">Celestial Chaos: A Strategic Deep-Dive</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Introduction: The Disconnected Cosmos</h2>
+                <p class="text-indigo-200">
+                    Originating from the Yu-Gi-Oh! GX manga, the "Legendary Planet" series is a collection of ten formidable monsters, each representing a 
+                    <a href="https://yugipedia.com/wiki/Legendary_Planet" target="_blank" class="lore-link">celestial body</a>
+                    from our solar system. This report's thesis is that the "Legendary Planets" are a <strong class="text-accent font-bold">thematic series, not a mechanically cohesive archetype.</strong>
+                </p>
+                <p class="text-indigo-200 mt-4">
+                    They possess wildly disparate Attributes, Types, and lack any shared support. This is a reflection of their origin: each Planet was a boss monster for a different character, designed to complement unique decks, not each other. Therefore, this analysis will dissect each Planet as an individual "boss monster" or potential "win condition," exploring the external engines required to unlock its potential.
+                </p>
+            </div>
+        </section>
+
+        <!-- In-Depth Analysis of Celestial Bodies Section -->
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">In-Depth Analysis of the Celestial Bodies</h2>
+
+        <!-- The Tyrant Neptune -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-accent-danger mb-4">The Tyrant Neptune: The Forbidden King</h3>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="the-tyrant-neptune-img" class="card-image-container card-placeholder">The Tyrant Neptune</div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-2">Profile & Mechanics</h4>
+                        <p class="text-indigo-200">A Level 10 WATER Reptile that can be Tribute Summoned with one Tribute. It gains the original ATK/DEF of the tributed monster(s) and, crucially, <strong class="text-accent font-bold">copies the name and effects</strong> of one tributed Effect Monster from the Graveyard.</p>
+                        
+                        <h4 class="text-lg font-bold text-white mt-4 mb-2">The Game-Breaking Combo (FTK/OTK)</h4>
+                        <p class="text-indigo-200">Neptune's forbidden status is due to its combo with <strong class="text-accent font-bold">Lyrilusc - Independent Nightingale</strong>.</p>
+                        <ol class="list-decimal list-inside text-indigo-200 space-y-2 mt-2">
+                            <li>Activate <strong class="text-accent font-bold">Instant Fusion</strong> to summon Nightingale (Level 1).</li>
+                            <li>Tribute Nightingale to summon <strong class="text-accent-danger font-bold">The Tyrant Neptune</strong>.</li>
+                            <li>Neptune copies Nightingale's name and effects.</li>
+                            <li>The effects now scale with Neptune's Level 10, granting it <strong class="text-accent font-bold">5000 ATK</strong>, immunity to card effects, and the ability to inflict <strong class="text-accent font-bold">5000 burn damage</strong>.</li>
+                        </ol>
+                    </div>
+                    <div id="lyrilusc-independent-nightingale-img" class="card-image-container card-placeholder">Lyrilusc - Independent Nightingale</div>
+                </div>
+                <div class="mt-4 p-4 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <h4 class="text-lg font-bold text-red-300 mb-2">Banlist Justification</h4>
+                    <p class="text-sm text-red-200">This card exemplifies a fundamentally unstable design: generic effect copying. It bypasses the inherent balancing factors (like low Level/stats) of cards like Nightingale, creating a monster far more powerful than intended. It is unlikely to ever be unbanned without a significant errata.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Despair Uranus -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-accent mb-4">The Despair Uranus: The Bastion of Control</h3>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="the-despair-uranus-img" class="card-image-container card-placeholder">The Despair Uranus</div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-2">Profile & Mechanics</h4>
+                        <p class="text-indigo-200">A Level 8 LIGHT Rock (2900 ATK). When Tribute Summoned with no Spells/Traps, your opponent declares "Continuous Spell" or "Continuous Trap," and you Set one card of that type from your Deck. It also <strong class="text-accent font-bold">protects all face-up Spells/Traps from destruction by card effects.</strong></p>
+                        
+                        <h4 class="text-lg font-bold text-white mt-4 mb-2">Strategy: The Indestructible Lock</h4>
+                        <p class="text-indigo-200">Uranus's ideal home is in a <strong class="text-accent font-bold">Monarch</strong> deck, using <strong class="text-accent font-bold">Edea</strong> and <strong class="text-accent font-bold">Eidos</strong> for an easy summon. The strategy is to:</p>
+                        <ol class="list-decimal list-inside text-indigo-200 space-y-2 mt-2">
+                            <li>Tribute Summon <strong class="text-accent font-bold">The Despair Uranus</strong>.</li>
+                            <li>Use its effect to Set <strong class="text-accent font-bold">March of the Monarchs</strong> from the Deck.</li>
+                            <li>This creates a lock: Uranus makes "March" indestructible by card effects. In turn, "March" makes the Tribute Summoned Uranus <strong class="text-accent font-bold">untargetable and indestructible by card effects.</strong></li>
+                        </ol>
+                    </div>
+                    <div id="march-of-the-monarchs-img" class="card-image-container card-placeholder">March of the Monarchs</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Blazing Mars -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-accent mb-4">The Blazing Mars: The Graveyard-Fueled Finisher</h3>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="the-blazing-mars-img" class="card-image-container card-placeholder">The Blazing Mars</div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-2">Profile & Mechanics</h4>
+                        <p class="text-indigo-200">A Level 8 FIRE Pyro (2600 ATK). It can Special Summon itself from the hand or Graveyard by <strong class="text-accent font-bold">banishing 3 other monsters from your Graveyard</strong> (but you cannot Special Summon other monsters that turn). It can also send all other monsters you control to the GY to inflict <strong class="text-accent font-bold">500 damage for each.</strong></p>
+                        
+                        <h4 class="text-lg font-bold text-white mt-4 mb-2">Strategy: The "Plan B" Win Condition</h4>
+                        <p class="text-indigo-200">Mars fits perfectly into decks that rapidly fill the Graveyard, like <strong class="text-accent font-bold">Lightsworn</strong> or <strong class="text-accent font-bold">Danger!</strong>. Its modern function is not as a persistent attacker, but as a game-closing finisher. After a primary assault (e.g., making Rank 8 Xyz monsters) fails, Mars provides an alternative path to victory by converting a stalled board directly into game-ending burn damage.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Other Planets Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Rest of the Solar System</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- The Tripper Mercury -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="the-tripper-mercury-img" class="card-image-container card-placeholder">The Tripper Mercury</div>
+                        <div class="flex-1">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Tripper Mercury</h4>
+                            <p class="text-sm text-indigo-200">An OTK enabler. When Tribute Summoned with 3 monsters, it <strong class="text-accent font-bold">reduces all opponent's monsters' ATK to 0</strong> and can attack twice. A high-risk, "glass cannon" strategy using token generators.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Suppression Pluto -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="the-suppression-pluto-img" class="card-image-container card-placeholder">The Suppression Pluto</div>
+                        <div class="flex-1">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Suppression Pluto</h4>
+                            <p class="text-sm text-indigo-200">A hand-control tool. Once per turn, declare a card name. If your opponent has it, you can <strong class="text-accent font-bold">steal an opponent's monster or Spell/Trap</strong>. Relies heavily on hand-knowledge tools like <strong class="text-accent font-bold">Dragged Down into the Grave</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Grand Jupiter -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="the-grand-jupiter-img" class="card-image-container card-placeholder">The Grand Jupiter</div>
+                        <div class="flex-1">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Grand Jupiter</h4>
+                            <p class="text-sm text-indigo-200">A resource thief. By <strong class="text-accent font-bold">discarding 2 cards</strong>, it can equip an opponent's monster, gain its ATK, and then Special Summon it during the End Phase. The steep discard cost makes it impractical for most decks.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Forgotten -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex items-center gap-4">
+                        <i class="fas fa-trash-alt text-4xl text-gray-500"></i>
+                        <div class="flex-1">
+                            <h4 class="text-lg font-bold text-gray-400 mb-1">The Forgotten</h4>
+                            <p class="text-sm text-indigo-200"><strong class="text-gray-400">The Supremacy Sun</strong>, <strong class="text-gray-400">The Big Saturn</strong>, and <strong class="text-gray-400">Elemental HERO Terra Firma</strong> are largely outclassed by the modern card pool due to high costs, detrimental effects, or being power-crept by their own archetypes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deck Skeletons / Endboards Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Celestial Endboards: Deck Skeletons</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                These are not true "endboards" in the modern combo sense, but rather the strategic goals for each Planet-centric deck.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Uranus Monarch Control -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Uranus Monarch Control</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="uranus-endboard-img" class="card-image-container card-placeholder">The Despair Uranus</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Core Cards:</strong> 3x The Despair Uranus, 3x Edea, 3x Eidos, 3x Pantheism, 3x Domain, 3x March of the Monarchs.</li>
+                        <li><strong class="text-accent">Endboard Goal:</strong> A field of <strong class="text-accent font-bold">Uranus + March of the Monarchs + Domain of the True Monarchs</strong>.</li>
+                        <li><strong class="text-accent">The Lock:</strong> Uranus protects March/Domain; March protects Uranus. Domain locks the opponent's Extra Deck.</li>
+                    </ul>
+                </div>
+                <!-- Danger! Mars Finisher -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Danger! Mars Finisher</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="mars-endboard-img" class="card-image-container card-placeholder">The Blazing Mars</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Core Cards:</strong> 2-3x The Blazing Mars, a full Danger! engine, 3x Gizmek Orochi, 1x Foolish Burial.</li>
+                        <li><strong class="text-accent">Endboard Goal:</strong> A powerful Rank 8 Xyz (like <strong class="text-accent font-bold">Hope Harbinger</strong>) with a fully loaded Graveyard.</li>
+                        <li><strong class="text-accent">The Finisher:</strong> When the Xyz is dealt with, <strong class="text-accent font-bold">The Blazing Mars</strong> is summoned from the GY as a recurring threat or to use its burn effect for the win.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    Verifying Legendary Planet status against the live TCG Forbidden & Limited list...
+                </p>
+                <div id="banlist-status-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden</h4>
+                        <ul id="forbidden-list" class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Loading...</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited</h4>
+                        <ul id="limited-list" class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Loading...</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted</h4>
+                        <ul id="unrestricted-list" class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Loading...</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="banlist-summary" class="mt-4 p-3 bg-gray-900 bg-opacity-30 rounded border-l-4 border-gray-500">
+                    <p class="text-sm text-gray-300">Loading summary...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.4s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Conclusion: A Constellation of Individual Stars</h2>
+                <p class="text-indigo-200">
+                    The "Legendary Planet" series is a fascinating case study. It is a <strong class="text-accent font-bold">constellation of individual stars rather than a unified galaxy</strong>. Their power is not found in unity but in highly specialized, individual applications within carefully constructed external support shells.
+                </p>
+                <p class="text-indigo-200 mt-4">
+                    Ultimately, they offer a rewarding challenge for the dedicated duelist and creative deck builder—a puzzle box of powerful, lore-rich effects waiting for the right combination of support to unlock their potential.
+                </p>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Starfield Animation ---
+            const canvas = document.getElementById('starfield-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 200;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 0.5 + 0.1; // Slower speed
+                        this.radius = Math.random() * 1.5 + 0.5; // Smaller radius
+                        this.color = `rgba(224, 231, 255, ${Math.random() * 0.5 + 0.5})`; // Lavender white
+                    }
+                    update() {
+                        this.x += this.speed;
+                        if (this.x > canvas.width) {
+                            this.x = 0;
+                            this.y = Math.random() * canvas.height;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- Card Image Loader ---
+            // Ensure CardLoader is initialized (it should be by card-loader.js)
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'the-tyrant-neptune-img': 'The Tyrant Neptune',
+                    'lyrilusc-independent-nightingale-img': 'Lyrilusc - Independent Nightingale',
+                    'the-despair-uranus-img': 'The Despair Uranus',
+                    'march-of-the-monarchs-img': 'March of the Monarchs',
+                    'the-blazing-mars-img': 'The Blazing Mars',
+                    'the-tripper-mercury-img': 'The Tripper Mercury',
+                    'the-suppression-pluto-img': 'The Suppression Pluto',
+                    'the-grand-jupiter-img': 'The Grand Jupiter',
+                    'uranus-endboard-img': 'The Despair Uranus',
+                    'mars-endboard-img': 'The Blazing Mars'
+                });
+            } else {
+                console.error("CardLoader is not defined. Make sure card-loader.js is loaded correctly.");
+            }
+
+            // --- Banlist Fetcher ---
+            async function fetchBanlistStatus() {
+                const planetCards = [
+                    "The Tyrant Neptune",
+                    "The Despair Uranus",
+                    "The Blazing Mars",
+                    "The Tripper Mercury",
+                    "The Suppression Pluto",
+                    "The Grand Jupiter",
+                    "The Supremacy Sun",
+                    "The Big Saturn",
+                    "Elemental HERO Terra Firma"
+                ];
+
+                const forbiddenListEl = document.getElementById('forbidden-list');
+                const limitedListEl = document.getElementById('limited-list');
+                const unrestrictedListEl = document.getElementById('unrestricted-list');
+                const summaryEl = document.getElementById('banlist-summary');
+
+                // Clear loading text
+                forbiddenListEl.innerHTML = '';
+                limitedListEl.innerHTML = '';
+                unrestrictedListEl.innerHTML = '';
+
+                let forbiddenCount = 0;
+                let limitedCount = 0;
+                let hasError = false;
+
+                try {
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
+                    if (!response.ok) throw new Error(`Network response was not ok (${response.status})`);
+                    const data = await response.json();
+                    
+                    // Check if data.data exists and is an array
+                    if (!data || !Array.isArray(data.data)) {
+                        throw new Error("Invalid API response structure");
+                    }
+
+                    const banlistData = data.data;
+
+                    const banlistMap = new Map();
+                    for (const card of banlistData) {
+                        if (card.banlist_info && card.banlist_info.ban_tcg) {
+                            banlistMap.set(card.name, card.banlist_info.ban_tcg);
+                        }
+                    }
+
+                    for (const cardName of planetCards) {
+                        const status = banlistMap.get(cardName);
+                        const li = document.createElement('li');
+                        li.textContent = cardName;
+
+                        if (status === 'Banned') {
+                            li.className = 'text-red-400 font-bold';
+                            forbiddenListEl.appendChild(li);
+                            forbiddenCount++;
+                        } else if (status === 'Limited') {
+                            li.className = 'text-yellow-400 font-bold';
+                            limitedListEl.appendChild(li);
+                            limitedCount++;
+                        } else {
+                            unrestrictedListEl.appendChild(li);
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to fetch banlist:', error);
+                    hasError = true;
+                }
+
+                // Final summary generation
+                if (hasError) {
+                    forbiddenListEl.innerHTML = '<li>Error loading status</li>';
+                    limitedListEl.innerHTML = '<li>Error loading status</li>';
+                    unrestrictedListEl.innerHTML = '<li>Error loading status</li>';
+                    summaryEl.className = 'mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500';
+                    summaryEl.innerHTML = `<p class="text-sm text-red-400"><strong>Error:</strong> Failed to load live banlist data. Please check the connection or API status.</p>`;
+                } else {
+                    if (forbiddenListEl.innerHTML === '') forbiddenListEl.innerHTML = '<li>None</li>';
+                    if (limitedListEl.innerHTML === '') limitedListEl.innerHTML = '<li>None</li>';
+                    if (unrestrictedListEl.innerHTML === '') unrestrictedListEl.innerHTML = '<li>None</li>';
+
+                    let summaryText = '';
+                    if (forbiddenCount > 0) {
+                        summaryEl.className = 'mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500';
+                        summaryText = `<strong>Meta Implications:</strong> The series is critically impacted by the ban of "The Tyrant Neptune," which removes its most infamous and powerful combo. The other planets remain fully unrestricted and can be used as individual boss monsters in their respective strategies.`;
+                    } else {
+                        summaryEl.className = 'mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500';
+                        summaryText = `<strong>Meta Implications:</strong> With all "Legendary Planet" cards unrestricted, the series can be explored to its full, albeit fragmented, potential. Each planet can be used as a unique boss monster for its dedicated strategy without limitation.`;
+                    }
+                    summaryEl.innerHTML = `<p class="text-sm text-gray-300">${summaryText}</p>`;
+                }
+            }
+
+            // Run the banlist fetcher
+            fetchBanlistStatus();
+        });
+    </script>
+</body>
+</html>
