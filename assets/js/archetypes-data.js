@@ -26482,6 +26482,59 @@ const archetypes = [
 <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LOST</text>
 <text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">WORLD</text>
 </svg>`
+                        },
+                        {
+                                name: "Mudragon",
+                                description: "A versatile series of three monsters that serve as strategic enablers bridging different summoning mechanics, featuring a Tuner, Synchro conduit, and powerful Fusion boss monster with Attribute manipulation effects.",
+                                filepath: "Mudragon Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="swampGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#0a141a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1a2c3a;stop-opacity:1" />
+</radialGradient>
+<linearGradient id="mudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#2dd4bf"/>
+<stop offset="100%" stop-color="#0a141a"/>
+</linearGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#swampGrad)" stroke="#2dd4bf" stroke-width="2"/>
+<path d="M20 50 Q30 35 50 40 Q70 35 80 50 Q75 65 50 75 Q25 65 20 50 Z" fill="url(#mudGrad)" stroke="#2dd4bf" stroke-width="1"/>
+<path d="M30 55 Q35 45 50 50 Q65 45 70 55 Q65 70 50 75 Q35 70 30 55 Z" fill="#0a141a" stroke="#2dd4bf" stroke-width="1"/>
+<circle cx="40" cy="52" r="1.5" fill="#2dd4bf"/>
+<circle cx="60" cy="52" r="1.5" fill="#2dd4bf"/>
+<path d="M40 60 Q50 58 60 60" stroke="#2dd4bf" stroke-width="1" fill="none"/>
+<path d="M35 45 Q40 40 45 45" stroke="#2dd4bf" stroke-width="1" fill="none"/>
+<path d="M55 45 Q60 40 65 45" stroke="#2dd4bf" stroke-width="1" fill="none"/>
+<text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">MUDRAGON</text>
+</svg>`
+                        },
+                        {
+                                name: "Kaiser Glider",
+                                description: "A series of retrained monsters featuring the powerful Kaiser Glider - Golden Burst, a high-skill disruption tool that can remove protected monsters by tributing them as cost, bypassing targeting and destruction immunities.",
+                                filepath: "Kaiser Glider Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="imperialGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#0a0d1f;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#1c1941;stop-opacity:1" />
+</radialGradient>
+<linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#facc15"/>
+<stop offset="100%" stop-color="#d97706"/>
+</linearGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#imperialGrad)" stroke="#7c66d6" stroke-width="2"/>
+<path d="M25 35 Q50 20 75 35 Q60 50 75 65 Q50 80 25 65 Q40 50 25 35 Z" fill="url(#goldGrad)" stroke="#facc15" stroke-width="1"/>
+<path d="M35 45 Q40 35 50 40 Q60 35 65 45 Q60 55 50 60 Q40 55 35 45 Z" fill="#0a0d1f" stroke="#facc15" stroke-width="1"/>
+<circle cx="45" cy="42" r="1.5" fill="#facc15"/>
+<circle cx="55" cy="42" r="1.5" fill="#facc15"/>
+<path d="M45 50 Q50 48 55 50" stroke="#facc15" stroke-width="1" fill="none"/>
+<path d="M40 35 Q45 30 50 35" stroke="#facc15" stroke-width="1" fill="none"/>
+<path d="M50 35 Q55 30 60 35" stroke="#facc15" stroke-width="1" fill="none"/>
+<text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">KAISER</text>
+<text x="50" y="95" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">GLIDER</text>
+</svg>`
                         }
 ];// Export for use in main script
 if (typeof module !== 'undefined' && module.exports) {

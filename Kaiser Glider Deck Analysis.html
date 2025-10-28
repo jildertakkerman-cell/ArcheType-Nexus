@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaiser Glider Series Analysis</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Card Loader Script -->
+    <script src="card-loader.js"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Base Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0d1f; /* Deep Blue/Black */
+            color: #dbeafe; /* Light Blue/White Text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .font-title {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Card & Accent Styles */
+        .card {
+            background-color: #1c1941; /* Dark Indigo/Purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #7c66d6; /* Muted Purple Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(42, 38, 95, 0.8); /* Lighter Indigo with transparency */
+            border: 1px solid #a78bfa; /* Light Violet Border */
+            backdrop-filter: blur(5px);
+        }
+        .text-accent {
+            color: #facc15; /* Bright Gold */
+        }
+        .arrow-color {
+            color: #facc15;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* Card Placeholder */
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-placeholder {
+            background-color: #2a265f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 80px; /* Compact size for lineage section */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a265f;
+            border: 1px dashed #a78bfa;
+        }
+
+        /* Banner */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a0d1f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #7c66d6;
+        }
+        #golden-burst-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 13, 31, 0.4) 0%, rgba(10, 13, 31, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
+        }
+
+        /* Home Button (Copied from other files) */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 13, 31, 0.95);
+            border: 1px solid #facc15; /* Gold border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #facc15; /* Gold title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            font-weight: bold;
+            color: #facc15;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+
+        /* --- NEW STYLES FOR REDESIGN --- */
+        .lineage-container {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            gap: 1.5rem; /* Tailwind gap-6 is 1.5rem */
+            padding-top: 2.5rem; /* Increased padding to make room for the badge */
+            padding-bottom: 2.5rem;
+        }
+        .lineage-item {
+            position: relative;
+            z-index: 10;
+            flex-grow: 1;
+        }
+        .status-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px; /* full rounded */
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+        }
+        .status-legacy { background-color: #a5b4fc; color: #1e3a8a; } /* Light Blue/Gray */
+        .status-flawed { background-color: #fca5a5; color: #7f1d1d; } /* Light Red/Salmon */
+        .status-apex { background-color: #facc15; color: #78350f; } /* Bright Gold/Yellow */
+
+        /* Connecting Line/Arrow */
+        .lineage-line {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background: linear-gradient(to right, #a5b4fc, #fca5a5, #facc15);
+            z-index: 5;
+            transform: translateY(-50%);
+        }
+
+        @media (max-width: 768px) {
+            .lineage-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .lineage-item {
+                max-width: 100%;
+                width: 100%; /* Full width for mobile items */
+                margin-bottom: 3rem;
+            }
+            /* Vertical line for mobile view */
+            .lineage-line {
+                display: none; /* Hide horizontal line */
+            }
+            .lineage-container::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 3px;
+                height: 100%;
+                background: linear-gradient(to bottom, #a5b4fc, #facc15);
+                z-index: 5;
+            }
+        }
+        /* --- END OF NEW STYLES --- */
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="golden-burst-canvas"></canvas>
+            <h1 class="font-title text-3xl md:text-5xl font-extrabold text-accent mb-2">Kaiser Glider Series</h1>
+            <p class="text-lg md:text-xl text-blue-200">From Legacy Monster to Niche Powerhouse</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Deconstructing the "Kaiser Glider" Legacy</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">"Kaiser Glider"</strong> series presents a unique case study. These cards do not form a cohesive, synergistic archetype in the modern sense. Instead, they represent an evolutionary line of "retrains"—modern reinterpretations of a classic monster wielded by Seto Kaiba.
+                </p>
+                <p class="text-blue-200 mt-4">
+                    This analysis is that this series serves as a perfect microcosm of Yu-Gi-Oh!'s design evolution, tracing a path from simple, battle-oriented effects to complex, high-skill interactions. By dissecting each card's individual mechanics, this report will provide a comprehensive understanding of the <a href="https://yugipedia.com/wiki/Kaiser_Glider" target="_blank" class="lore-link">unique and often misunderstood series of cards</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Kaiser Glider Lineage Section (Redesigned) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Evolutionary Lineage</h2>
+            
+            <div class="lineage-container max-w-5xl mx-auto">
+                <div class="lineage-line hidden md:block"></div> <!-- Horizontal Line for Desktop -->
+                
+                <!-- 1. Original: Legacy -->
+                <div class="lineage-item flex flex-col items-center w-full">
+                    <span class="status-badge status-legacy">1. LEGACY (2003)</span>
+                    <div class="card p-4 flex flex-col items-center w-full h-full">
+                        <h3 class="font-title text-lg font-bold text-white mb-3 mt-4">Kaiser Glider</h3>
+                        <div id="kaiser-glider-img" class="card-placeholder mb-4 w-24 h-16 flex-shrink-0">Kaiser Glider</div>
+                        <p class="text-xs text-blue-300 text-center">
+                            <strong class="text-white">Role: Battle Floater</strong>
+                        </p>
+                        <p class="text-sm text-blue-200 mt-2 text-center">
+                            A relic of a bygone era. Its mandatory float effect and battle protection are too slow and predictable for modern standards.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 2. Neo: Flawed -->
+                <div class="lineage-item flex flex-col items-center w-full">
+                    <span class="status-badge status-flawed">2. FLAWED (2019)</span>
+                    <div class="card p-4 flex flex-col items-center w-full h-full">
+                        <h3 class="font-title text-lg font-bold text-white mb-3 mt-4">Neo Kaiser Glider</h3>
+                        <div id="neo-kaiser-glider-img" class="card-placeholder mb-4 w-24 h-16 flex-shrink-0">Neo Kaiser Glider</div>
+                        <p class="text-xs text-blue-300 text-center">
+                            <strong class="text-white">Role: Costly Revival</strong>
+                        </p>
+                        <p class="text-sm text-blue-200 mt-2 text-center">
+                            Thematically correct for "Blue-Eyes," but strategically defunct. Its revival effect is an inherent **-1 in card advantage**, making it unplayable.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 3. Golden Burst: Apex -->
+                <div class="lineage-item flex flex-col items-center w-full">
+                    <span class="status-badge status-apex">3. APEX (2022)</span>
+                    <div class="card p-4 flex flex-col items-center w-full h-full">
+                        <h3 class="font-title text-lg font-bold text-white mb-3 mt-4">Golden Burst</h3>
+                        <div id="golden-burst-img" class="card-placeholder mb-4 w-24 h-16 flex-shrink-0">Kaiser Glider - Golden Burst</div>
+                        <p class="text-xs text-blue-300 text-center">
+                            <strong class="text-white">Role: Interactive Disruption</strong>
+                        </p>
+                        <p class="text-sm text-blue-200 mt-2 text-center">
+                            The definitive modern retrain. Its strength is derived from **Tributing as cost** on the opponent's turn, bypassing protection and enabling combos.
+                        </p>
+                    </div>
+                </div>
+        </section>
+
+        <!-- Core Combo: Lair of Darkness -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Primary Combo: The "Lair of Darkness" Removal</h2>
+             <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                This is Golden Burst's most potent application, turning it into one of the game's best forms of removal. The key is Tributing an opponent's monster <strong class="text-accent">as cost</strong>, meaning the monster is gone *before* it can respond.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="lair-img" class="card-image-container card-placeholder">Lair of Darkness</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1941] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Establish the Field</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent">Lair of Darkness</strong>. Its effect makes all monsters on the field DARK, and allows you to Tribute an opponent's DARK monster for your card effects.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="borrelend-img" class="card-image-container card-placeholder">Borrelend Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1941] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Opponent Summons Threat</h3>
+                            </div>
+                            <p class="text-blue-200">Your opponent summons a powerful monster, like <strong class="text-accent">Borrelend Dragon</strong>, which cannot be targeted or destroyed by card effects.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="golden-burst-combo-img" class="card-image-container card-placeholder">Kaiser Glider - Golden Burst</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1941] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Activate Golden Burst</h3>
+                            </div>
+                            <p class="text-blue-200">Chain Golden Burst's <strong class="text-accent">(Quick Effect)</strong> from your hand. To pay the cost, you Tribute the opponent's <strong class="text-accent">Borrelend Dragon</strong>. Because Tributing for cost is a game mechanic and *not* an effect that targets or destroys, it bypasses all of Borrelend's protections.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Secondary Combo: Hieratic Seal -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Secondary Combo: "Hieratic Seal" Extension</h2>
+             <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                Golden Burst can also be used to trigger your own "Tributed" effects during the opponent's turn for powerful extensions.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="hieratic-seal-img" class="card-image-container card-placeholder">Hieratic Seal of the Heavenly Spheres</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1941] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Opponent's Turn</h3>
+                            </div>
+                            <p class="text-blue-200">You control <strong class="text-accent">Hieratic Seal of the Heavenly Spheres</strong>. Your opponent enters their Main Phase.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="golden-burst-hieratic-img" class="card-image-container card-placeholder">Kaiser Glider - Golden Burst</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1941] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Tribute for Cost</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent">Golden Burst</strong> from hand, Tributing your own <strong class="text-accent">Hieratic Seal</strong> as cost. Golden Burst summons itself.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div class="card-image-container card-placeholder flex items-center justify-center"><i class="fas fa-dragon text-6xl text-white"></i></div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1941] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Trigger and Resolve</h3>
+                            </div>
+                            <p class="text-blue-200">Because <strong class="text-accent">Hieratic Seal</strong> was Tributed, its effect triggers on a new chain, allowing you to Special Summon any Dragon from your Deck (like <strong class="text-accent">Bystial Magnamhut</strong>) to continue your plays.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Threat Neutralization Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Threat Neutralization Matrix (w/ Lair of Darkness)</h2>
+            <div class="card p-6 overflow-x-auto">
+                <table class="w-full min-w-max text-left">
+                    <thead>
+                        <tr class="border-b border-b-accent">
+                            <th class="p-2 font-title text-accent">Opponent's Monster</th>
+                            <th class="p-2 font-title text-accent">Protection</th>
+                            <th class="p-2 font-title text-accent">How Golden Burst + Lair Beats It</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-blue-200">
+                        <tr class="border-b border-gray-700">
+                            <td class="p-2 align-top">
+                                <div class="flex items-center gap-2">
+                                    <div id="baronne-img-matrix" class="w-16 h-24 card-placeholder text-xs">Baronne</div>
+                                    <span class="font-bold">Baronne de Fleur <strong classclass="text-red-500">(FORBIDDEN)</strong></span>
+                                </div>
+                            </td>
+                            <td class="p-2 align-top">Quick Effect Omni-Negate</td>
+                            <td class="p-2 align-top">Tributed for <strong class="text-accent">cost</strong>. Baronne is removed from the field *before* its negation effect can be activated.</td>
+                        </tr>
+                        <tr class="border-b border-gray-700">
+                            <td class="p-2 align-top">
+                                <div class="flex items-center gap-2">
+                                    <div id="apollousa-img-matrix" class="w-16 h-24 card-placeholder text-xs">Apollousa</div>
+                                    <span class="font-bold">Apollousa <strong classclass="text-red-500">(FORBIDDEN)</strong></span>
+                                </div>
+                            </td>
+                            <td class="p-2 align-top">Multiple Monster Effect Negates</td>
+                            <td class="p-2 align-top">Tributed for <strong class="text-accent">cost</strong>. Apollousa is removed before it can chain its negation.</td>
+                        </tr>
+                        <tr class="border-b border-gray-700">
+                            <td class="p-2 align-top">
+                                <div class="flex items-center gap-2">
+                                    <div id="borrelend-img-matrix" class="w-16 h-24 card-placeholder text-xs">Borrelend</div>
+                                    <span class="font-bold">Borrelend Dragon</span>
+                                </div>
+                            </td>
+                            <td class="p-2 align-top">Cannot be Targeted or Destroyed by Card Effects</td>
+                            <td class="p-2 align-top">Tributing does not <strong class="text-accent">target</strong> or <strong class="text-accent">destroy</strong>, bypassing both forms of protection.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-2 align-top">
+                                <div class="flex items-center gap-2">
+                                    <div id="unaffected-monster-img-matrix" class="w-16 h-24 card-placeholder text-xs">Arrival</div>
+                                    <span class="font-bold">"Unaffected" Monsters</span>
+                                </div>
+                            </td>
+                            <td class="p-2 align-top">Unaffected by other card effects</td>
+                            <td class="p-2 align-top">Tributing for cost is a <strong class="text-accent">game mechanic</strong>, not a card effect that *affects* the monster. It can remove "unaffected" monsters.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 mb-4 text-center">
+                    A key part of this series' analysis is understanding the status of its powerful combo targets. As of the current TCG Forbidden & Limited List, several generic boss monsters have been <strong class="text-red-500 font-bold">Forbidden</strong>, impacting the historical power of these combos.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Forbidden Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li><strong class="text-red-400">Baronne de Fleur (0 copies)</strong> - No longer a legal target.</li>
+                            <li><strong class="text-red-400">Apollousa, Bow of the Goddess (0 copies)</strong> - No longer a legal target.</li>
+                        </ul>
+                    </div>
+                    <!-- Unrestricted Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li><strong class="text-green-300">Kaiser Glider (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Neo Kaiser Glider (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Kaiser Glider - Golden Burst (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Lair of Darkness (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Hieratic Seal of the Heavenly Spheres (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Borrelend Dragon (3 copies)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
+                    <p class="text-sm text-blue-200"><strong>Meta Implications:</strong> While the loss of `Baronne` and `Apollousa` hurts many decks, the core `Golden Burst + Lair` combo remains fully intact and exceptionally powerful for removing other threats like `Borrelend Dragon` or "unaffected" monsters. The `Hieratic Seal` combo is also fully legal and a potent extension tool.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Golden Burst Canvas Animation ---
+            const canvas = document.getElementById('golden-burst-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 1 + 0.5;
+                        this.radius = Math.random() * 1.5 + 1;
+                        this.color = `rgba(250, 204, 21, ${Math.random() * 0.5 + 0.3})`; // Gold color
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- Card Loader ---
+            // Ensure CardLoader is available, then load cards
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'kaiser-glider-img': 'Kaiser Glider',
+                    'neo-kaiser-glider-img': 'Neo Kaiser Glider',
+                    'golden-burst-img': 'Kaiser Glider - Golden Burst',
+                    'lair-img': 'Lair of Darkness',
+                    'borrelend-img': 'Borrelend Dragon',
+                    'golden-burst-combo-img': 'Kaiser Glider - Golden Burst',
+                    'hieratic-seal-img': 'Hieratic Seal of the Heavenly Spheres',
+                    'golden-burst-hieratic-img': 'Kaiser Glider - Golden Burst',
+                    'baronne-img-matrix': 'Baronne de Fleur',
+                    'apollousa-img-matrix': 'Apollousa, Bow of the Goddess',
+                    'borrelend-img-matrix': 'Borrelend Dragon',
+                    'unaffected-monster-img-matrix': 'The Arrival Cyberse @Ignister'
+                });
+            } else {
+                console.error("CardLoader script not found or loaded.");
+            }
+        });
+    </script>
+</body>
+</html>

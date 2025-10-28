@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mudragon Series Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      NOTE: This page assumes 'card-loader.js' is in the same directory.
+      If it's in 'assets/js/', please change the src to 'assets/js/card-loader.js'
+    -->
+    <script src="card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a141a; /* Dark teal/blue */
+            color: #e0f2f1; /* Light cyan */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a2c3a; /* Dark slate blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a5f7e; /* Deep sea blue border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a4b60; /* Darker teal */
+            border: 1px solid #3a5f7e;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Add cursor pointer for card loader */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a4b60;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a4b60;
+            border: 1px dashed #3a5f7e;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #2dd4bf; } /* Teal/Cyan */
+        .arrow-color { color: #2dd4bf; }
+        .heading-underline {
+            border-bottom: 2px solid #2dd4bf;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #2dd4bf;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #2dd4bf;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #2dd4bf;
+        }
+
+        /* --- NEW Mudragon Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a141a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3a5f7e;
+        }
+
+        #swamp-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 20, 26, 0.4) 0%, rgba(10, 20, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(45, 212, 191, 0.7);
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles (from card-loader.js) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 20, 26, 0.95); /* Theme color */
+            border: 1px solid #2dd4bf; /* Accent color */
+            border-radius: 0.75rem;
+            color: #e0f2f1;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            color: #2dd4bf;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            color: #2dd4bf;
+        }
+
+        /* Table Styles for Super Poly Matrix */
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            background-color: #1a2c3a;
+        }
+        .styled-table thead tr {
+            background-color: #2dd4bf;
+            color: #0a141a;
+            text-align: left;
+            font-weight: bold;
+        }
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+        }
+        .styled-table tbody tr {
+            border-bottom: 1px solid #2a4b60;
+        }
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #223c4e;
+        }
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid #2dd4bf;
+        }
+        .styled-table tbody tr:hover {
+            background-color: #2a4b60;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="swamp-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Mudragon Series</h1>
+            <p class="text-lg md:text-xl text-cyan-200">A Trio of Strategic Enablers</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-cyan-100">
+                    In the vast card pool of the Yu-Gi-Oh! TCG, the "Mudragon" series is a prime example of a non-traditional archetype. Comprising three distinct monsters—<strong class="text-accent font-bold">Mudragon of the Swamp</strong>, <strong class="text-accent font-bold">Muddy Mudragon</strong>, and <strong class="text-accent font-bold">Baby Mudragon</strong>—this series operates not as a cohesive deck but as a highly versatile toolkit. These cards serve as strategic enablers, designed to bridge different summoning mechanics and provide generic, high-impact utility. Their design shows a clear evolution: <strong class="text-accent font-bold">Baby</strong> (Tuner) enables <strong class="text-accent font-bold">Muddy</strong> (Synchro), which in turn enables a Fusion Summon, often into a powerhouse like
+                    <a href="https" target="_blank" class="lore-link">the Attribute-guarding Mudragon of the Swamp</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Mudragon Trio Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Mudragon Trio</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Mudragon of the Swamp -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Mudragon of the Swamp</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="mudragon-swamp-img" class="card-image-container card-placeholder">Mudragon of the Swamp</div>
+                    </div>
+                    <p class="text-sm text-cyan-100 flex-grow">
+                        <strong class="text-white">Role: The Attribute Guardian & Board Breaker</strong><br>
+                        A Level 4 WATER Fusion monster. Its materials (2 monsters with the same Attribute but different Types) make it the premier target for <strong class="text-accent">Super Polymerization</strong>, allowing you to remove two of your opponent's monsters. On field, it protects all monsters that share its Attribute from targeting, and it can change its own Attribute as a Quick Effect.
+                    </p>
+                </div>
+                <!-- Muddy Mudragon -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Muddy Mudragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="muddy-mudragon-img" class="card-image-container card-placeholder">Muddy Mudragon</div>
+                    </div>
+                    <p class="text-sm text-cyan-100 flex-grow">
+                        <strong class="text-white">Role: The Synchro-to-Fusion Conduit</strong><br>
+                        A Level 6 DARK Synchro monster. Its value comes from two effects: it can substitute for any 1 specifically named Fusion Material, and it can perform a Fusion Summon using itself and other monsters you control. This makes it a pivotal "combo bridge" to access powerful Fusions from non-Fusion archetypes.
+                    </p>
+                </div>
+                <!-- Baby Mudragon -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Baby Mudragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="baby-mudragon-img" class="card-image-container card-placeholder">Baby Mudragon</div>
+                    </div>
+                    <p class="text-sm text-cyan-100 flex-grow">
+                        <strong class="text-white">Role: The Versatile Synchro Component</strong><br>
+                        A Level 1 DARK Tuner. It has two flexible effects: it can be treated as a non-Tuner for a Synchro Summon (allowing for unconventional plays), and when sent to the GY as Synchro Material, it can change the Type or Attribute of a Synchro Monster you control, "fixing" it for further combo plays.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Archetypal Integration Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Archetypal Integration: Advanced Strategies</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-2xl mx-auto">
+                The true power of the "Mudragon" toolkit is realized when it's integrated into established archetypes to unlock new, devastating combo lines.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Branded Symbiosis -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Branded Symbiosis: Forging Dragoon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dragoon-img-container" class="card-image-container card-placeholder">Red-Eyes Dark Dragoon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><strong class="text-accent">Goal:</strong> Summon <strong class="text-accent">Red-Eyes Dark Dragoon</strong> without its main deck bricks.</li>
+                        <li><strong class="text-white">Step 1:</strong> Synchro Summon <strong class="text-accent">Muddy Mudragon</strong> (Level 6).</li>
+                        <li><strong class="text-white">Step 2:</strong> Use <strong class="text-accent">Muddy Mudragon</strong>'s effect to fuse itself (substituting for <strong class="text-accent">Fallen of Albaz</strong>) and a LIGHT monster into <strong class="text-accent">Albion the Branded Dragon</strong>.</li>
+                        <li><strong class="text-white">Step 3:</strong> Activate <strong class="text-accent">Albion</strong>'s effect, banishing <strong class="text-accent">Albion</strong> (as a Dragon) and <strong class="text-accent">Muddy Mudragon</strong> from the GY (substituting for <strong class="text-accent">Dark Magician</strong>).</li>
+                        <li><strong class="text-white">Result:</strong> A <strong class="text-accent">Red-Eyes Dark Dragoon</strong> is summoned, providing an omni-negate.</li>
+                    </ul>
+                </div>
+                <!-- Virtual World Lock -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Virtual World: The Caliga Lock</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="caliga-img-container" class="card-image-container card-placeholder">Invoked Caliga</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><strong class="text-accent">Goal:</strong> Establish an oppressive "lock" on top of a standard Virtual World board.</li>
+                        <li><strong class="text-white">Step 1:</strong> During a standard VW combo, easily Synchro Summon the Level 6 <strong class="text-accent">Muddy Mudragon</strong>.</li>
+                        <li><strong class="text-white">Step 2:</strong> Continue the combo to summon another DARK monster, such as <strong class="text-accent">Ultimaya Tzolkin</strong>.</li>
+                        <li><strong class="text-white">Step 3:</strong> Activate <strong class="text-accent">Muddy Mudragon</strong>'s effect to fuse itself (substituting for <strong class="text-accent">Aleister the Invoker</strong>) and the other DARK monster.</li>
+                        <li><strong class="text-white">Result:</strong> <strong class="text-accent">Invoked Caliga</strong> is summoned, restricting each player to one monster effect and one attack per turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section: Super Poly Matrix -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Super Polymerization Matrix</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-2xl mx-auto">
+                The primary role of <strong class="text-accent">Mudragon of the Swamp</strong> is as a reactive, unchainable board-breaker. Mastering its use means knowing what to summon against common opponent board states.
+            </p>
+            <div class="card p-6 overflow-x-auto">
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Opponent's Board Contains...</th>
+                            <th>Optimal Super Poly Target</th>
+                            <th>Key Archetypes Countered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2+ DARK Monsters</td>
+                            <td><div id="starving-venom-img" class="card-placeholder w-24 h-32 text-xs p-1">Starving Venom Fusion Dragon</div></td>
+                            <td>Branded, Labrynth, Orcust</td>
+                        </tr>
+                        <tr>
+                            <td>2 Monsters with same Type & Attribute</td>
+                            <td><div id="garura-img" class="card-placeholder w-24 h-32 text-xs p-1">Garura, Wings of Resonant Life</div></td>
+                            <td>Swordsoul (Wyrm/WIND), Spright (Thunder/DARK)</td>
+                        </tr>
+                        <tr>
+                            <td class="text-accent font-bold">2 Monsters with same Attribute, different Types</td>
+                            <td><div id="mudragon-swamp-matrix-img" class="card-placeholder w-24 h-32 text-xs p-1">Mudragon of the Swamp</div></td>
+                            <td class="text-accent font-bold">Branded (Fiend/Dragon), Kashtira (Psychic/Wyrm)</td>
+                        </tr>
+                        <tr>
+                            <td>3 DARK Monsters</td>
+                            <td><div id="triphyoverutum-img" class="card-placeholder w-24 h-32 text-xs p-1">Predaplant Triphyoverutum</div></td>
+                            <td>Any DARK-heavy combo deck</td>
+                        </tr>
+                        <tr>
+                            <td>1 Fusion Monster + 1 DARK Monster</td>
+                            <td><div id="dragostapelia-img" class="card-placeholder w-24 h-32 text-xs p-1">Predaplant Dragostapelia</div></td>
+                            <td>Branded, Tearlaments, Chimera</td>
+                        </tr>
+                        <tr>
+                            <td>2 Zombie Monsters (or Zombie World)</td>
+                            <td><div id="dragonecro-img" class="card-placeholder w-24 h-32 text-xs p-1">Dragonecro Nethersoul Dragon</div></td>
+                            <td>Eldlich, Zombie World variants</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The "Mudragon" toolkit itself is fully unrestricted. However, its power is tied to the availability of the cards it enables or interacts with.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Unrestricted -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted (3 per deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Mudragon of the Swamp</li>
+                            <li>Muddy Mudragon</li>
+                            <li>Baby Mudragon</li>
+                            <li>Red-Eyes Dark Dragoon</li>
+                            <li>Cherubini, Ebon Angel</li>
+                            <li>Invoked Caliga</li>
+                            <li>All Super Poly targets listed</li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 per deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Super Polymerization</li>
+                            <li>Tour Guide From the Underworld</li>
+                            <li>Bahamut Shark</li>
+                        </ul>
+                    </div>
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden (0 per deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Crystron Halqifibrax</li>
+                            <li>Toadally Awesome</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-cyan-900 bg-opacity-30 rounded border-l-4 border-cyan-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The core Mudragon cards are at full power. The Branded-Dragoon and Virtual World-Caliga combos are <strong class="text-white">fully legal and functional</strong>. The limitation of <strong class="text-yellow-400">Super Polymerization</strong> makes <strong class="text-white">Mudragon of the Swamp</strong> a high-impact, one-shot board breaker. The banning of <strong class="text-red-400">Toadally Awesome</strong> makes the Tearlaments/Xyz synergy mentioned in the document obsolete, but the primary Synchro-Fusion lines remain potent.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Murky Swamp Banner Animation ---
+            const canvas = document.getElementById('swamp-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 70;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 3 + 1;
+                        this.speedY = Math.random() * 0.5 + 0.2;
+                        this.color = `rgba(45, 212, 191, ${Math.random() * 0.3 + 0.1})`;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- Card Loading ---
+            // We use the CardLoader.loadCards function to fetch and display images
+            // for all elements with the specified IDs.
+            CardLoader.loadCards({
+                'mudragon-swamp-img': 'Mudragon of the Swamp',
+                'muddy-mudragon-img': 'Muddy Mudragon',
+                'baby-mudragon-img': 'Baby Mudragon',
+                'dragoon-img-container': 'Red-Eyes Dark Dragoon',
+                'caliga-img-container': 'Invoked Caliga',
+                'starving-venom-img': 'Starving Venom Fusion Dragon',
+                'garura-img': 'Garura, Wings of Resonant Life',
+                'mudragon-swamp-matrix-img': 'Mudragon of the Swamp',
+                'triphyoverutum-img': 'Predaplant Triphyoverutum',
+                'dragostapelia-img': 'Predaplant Dragostapelia',
+                'dragonecro-img': 'Dragonecro Nethersoul Dragon'
+            });
+        });
+    </script>
+</body>
+</html>
