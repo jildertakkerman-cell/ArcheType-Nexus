@@ -5,6 +5,25 @@
 
 const archetypes = [
     {
+        name: 'D.D.',
+        description: 'A thematic series of cards that pioneered banishing mechanics, featuring powerful hand traps like D.D. Crow and recurring monsters like D.D. Survivor that interact with the Different Dimension (banish zone).',
+        filepath: 'D.D. Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="ddDotGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#f472b6;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0f0f23;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#ddDotGrad)" stroke="#f472b6" stroke-width="2"/>
+                        <path d="M25 35 Q35 25 50 30 Q65 25 75 35 Q70 45 75 55 Q65 65 50 60 Q35 65 25 55 Q30 45 25 35 Z" fill="none" stroke="#f472b6" stroke-width="3"/>
+                        <circle cx="40" cy="40" r="3" fill="#f472b6"/>
+                        <circle cx="60" cy="40" r="3" fill="#f472b6"/>
+                        <circle cx="50" cy="55" r="4" fill="#f472b6"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">D.D.</text>
+                    </svg>`
+    },
+    {
         name: 'D/D',
         description: 'A complex archetype that utilizes all Extra Deck mechanics through contracts with different dimensions.',
         filepath: 'D_D Deck Analysis.html',
@@ -265,6 +284,45 @@ const archetypes = [
                     </svg>`
     },
     {
+        name: 'Dark Lucius',
+        description: 'An EARTH Fiend archetype built around the legacy LV mechanic, featuring level progression from LV4 to LV8, now used as a specialized package within modern Fiend engines.',
+        filepath: 'Dark Lucius Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="darkLuciusGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#dc2626;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a120b;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#darkLuciusGrad)" stroke="#dc2626" stroke-width="2"/>
+                        <path d="M25 35 L35 35 L35 25 L45 25 L45 35 L55 35 L55 45 L45 45 L45 55 L35 55 L35 45 L25 45 Z" fill="none" stroke="#dc2626" stroke-width="3"/>
+                        <path d="M60 30 L70 30 L70 40 L60 40 Z" fill="none" stroke="#dc2626" stroke-width="2"/>
+                        <path d="M60 50 L70 50 L70 60 L60 60 Z" fill="none" stroke="#dc2626" stroke-width="2"/>
+                        <circle cx="50" cy="40" r="3" fill="#dc2626"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">DARK</text>
+                        <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LUCIUS</text>
+                    </svg>`
+    },
+    {
+        name: 'Dark Blade',
+        description: 'A DARK Warrior archetype that evolved from a fragile legacy strategy to the modern Memento engine, featuring Mementotlan Dark Blade as a Graveyard-centric combo piece with self-destruction loops.',
+        filepath: 'Dark Blade Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="darkBladeGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#67e8f9;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#darkBladeGrad)" stroke="#67e8f9" stroke-width="2"/>
+                        <path d="M25 40 L75 40 L70 35 L75 30 L80 35 L75 40 L75 60 L70 65 L75 70 L80 65 L75 60 Z" fill="none" stroke="#67e8f9" stroke-width="3"/>
+                        <path d="M35 45 L45 45 L45 55 L35 55 Z" fill="none" stroke="#67e8f9" stroke-width="2"/>
+                        <circle cx="50" cy="35" r="3" fill="#67e8f9"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">DARK</text>
+                        <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">BLADE</text>
+                    </svg>`
+    },
+    {
         name: 'Duston',
         description: 'A series of tiny LIGHT Fiend monsters that focus on filling both players\' fields with 0 ATK/DEF monsters that cannot be Tributed.',
         filepath: 'Duston Deck Analysis.html',
@@ -273,6 +331,26 @@ const archetypes = [
                         <path d="M40 40 L60 60 M60 40 L40 60" stroke="#e76f51" stroke-width="3"/>
                         <path d="M30 30 L35 35 M65 35 L70 30 M30 70 L35 65 M70 70 L65 65" stroke="#e76f51" stroke-width="2"/>
                         <circle cx="50" cy="50" r="8" fill="#e76f51"/>
+                    </svg>`
+    },
+    {
+        name: 'Duel Dragon',
+        description: 'The legendary Synchro Monsters from the Yu-Gi-Oh! 5D\'s manga that serve as narrative counterparts to the Signer Dragons, featuring powerful boss monsters like Stardust Spark Dragon and Hot Red Dragon Archfiend.',
+        filepath: 'Duel Dragon Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="duelDragonGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#111827;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#duelDragonGrad)" stroke="#fbbf24" stroke-width="2"/>
+                        <path d="M25 40 Q35 25 50 30 Q65 25 75 40 Q70 55 75 70 Q50 85 25 70 Q30 55 25 40 Z" fill="none" stroke="#fbbf24" stroke-width="3"/>
+                        <path d="M35 45 Q45 40 50 45 Q55 40 65 45" stroke="#fbbf24" stroke-width="2"/>
+                        <circle cx="42" cy="35" r="3" fill="#fbbf24"/>
+                        <circle cx="58" cy="35" r="3" fill="#fbbf24"/>
+                        <text x="50" y="70" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">DUEL</text>
+                        <text x="50" y="82" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">DRAGON</text>
                     </svg>`
     },
     {
@@ -401,6 +479,26 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.3;0.7;0.3" dur="4s" repeatCount="indefinite"/>
                             <animate attributeName="r" values="47;49;47" dur="4s" repeatCount="indefinite"/>
                         </circle>
+                    </svg>`
+    },
+    {
+        name: 'Egyptian God',
+        description: 'The divine Egyptian God cards (Slifer, Obelisk, Ra) and their complex support systems, featuring overwhelming power balanced by demanding tribute requirements and hybrid strategies.',
+        filepath: 'Egyptian God Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="egyptianGodGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#fcd34d;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a160a;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#egyptianGodGrad)" stroke="#fcd34d" stroke-width="2"/>
+                        <path d="M25 35 L45 35 L45 25 L55 25 L55 35 L75 35 L75 45 L55 45 L55 55 L45 55 L45 45 L25 45 Z" fill="none" stroke="#fcd34d" stroke-width="3"/>
+                        <path d="M35 40 Q45 35 50 40 Q55 35 65 40" stroke="#fcd34d" stroke-width="2"/>
+                        <circle cx="50" cy="45" r="3" fill="#fcd34d"/>
+                        <path d="M40 60 L50 50 L60 60" fill="none" stroke="#fcd34d" stroke-width="2"/>
+                        <text x="50" y="80" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">EGYPTIAN</text>
+                        <text x="50" y="90" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">GOD</text>
                     </svg>`
     },
 
@@ -752,6 +850,67 @@ const archetypes = [
                                         transform-origin="50 35"/>
                     </path>
                 </svg>`
+    },
+    {
+        name: 'Entity',
+        description: 'A cosmic archetype that manipulates the Extra Deck through powerful Synchro and Xyz monsters, featuring entities that transcend dimensions and manipulate reality itself.',
+        filepath: 'Entity Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="entityGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#6a5acd;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0c0a1a;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#entityGrad)" stroke="#6a5acd" stroke-width="2"/>
+                        <path d="M30 40 Q50 20 70 40 Q80 50 70 60 Q50 80 30 60 Q20 50 30 40 Z" fill="none" stroke="#c77dff" stroke-width="3"/>
+                        <circle cx="50" cy="50" r="8" fill="#e0aaff"/>
+                        <circle cx="35" cy="35" r="2" fill="#6a5acd"/>
+                        <circle cx="65" cy="35" r="2" fill="#6a5acd"/>
+                        <circle cx="35" cy="65" r="2" fill="#6a5acd"/>
+                        <circle cx="65" cy="65" r="2" fill="#6a5acd"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">ENTITY</text>
+                    </svg>`
+    },
+    {
+        name: 'Engine Token',
+        description: 'A Machine archetype that generates "Engine Tokens" through various effects, featuring Fiendish Engine Ω and Motor monsters that create resources when leaving the field.',
+        filepath: 'Engine Token Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="engineTokenGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#67e8f9;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0a0e1a;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#engineTokenGrad)" stroke="#67e8f9" stroke-width="2"/>
+                        <path d="M25 35 L35 35 L35 25 L45 25 L45 35 L55 35 L55 45 L45 45 L45 55 L35 55 L35 45 L25 45 Z" fill="none" stroke="#67e8f9" stroke-width="3"/>
+                        <circle cx="40" cy="40" r="3" fill="#67e8f9"/>
+                        <circle cx="60" cy="40" r="3" fill="#67e8f9"/>
+                        <circle cx="50" cy="55" r="4" fill="#67e8f9"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">ENGINE</text>
+                        <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">TOKEN</text>
+                    </svg>`
+    },
+    {
+        name: 'End of the World',
+        description: 'The Demise and Ruin Ritual archetype featuring apocalyptic board-clearing effects and OTK potential through overwhelming offensive power.',
+        filepath: 'End of the World Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="endOfWorldGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#f87171;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a0f0f;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#endOfWorldGrad)" stroke="#f87171" stroke-width="2"/>
+                        <path d="M25 35 L45 35 L45 25 L55 25 L55 35 L75 35 L75 45 L55 45 L55 55 L45 55 L45 45 L25 45 Z" fill="none" stroke="#f87171" stroke-width="3"/>
+                        <path d="M35 40 Q45 35 50 40 Q55 35 65 40" stroke="#f87171" stroke-width="2"/>
+                        <circle cx="50" cy="45" r="3" fill="#f87171"/>
+                        <path d="M40 60 L50 50 L60 60" fill="none" stroke="#f87171" stroke-width="2"/>
+                        <text x="50" y="80" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">END OF</text>
+                        <text x="50" y="90" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">WORLD</text>
+                    </svg>`
     },
     {
         name: 'Endymion',
@@ -5426,6 +5585,24 @@ const archetypes = [
                 </svg>`
     },
     {
+        name: 'Cyclone',
+        description: 'An evolutionary family of powerful Spell & Trap removal tools originating from Mystical Space Typhoon, including Cosmic Cyclone and Twin Twisters for modern backrow control.',
+        filepath: 'Cyclone deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="cycloneGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#4ade80;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#111827;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#cycloneGrad)" stroke="#4ade80" stroke-width="2"/>
+                        <path d="M25 35 Q35 25 50 30 Q65 25 75 35 Q70 45 75 55 Q65 65 50 60 Q35 65 25 55 Q30 45 25 35 Z" fill="none" stroke="#4ade80" stroke-width="3"/>
+                        <path d="M35 40 Q45 35 50 40 Q55 35 65 40" stroke="#4ade80" stroke-width="2"/>
+                        <circle cx="50" cy="45" r="3" fill="#4ade80"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">CYCLONE</text>
+                    </svg>`
+    },
+    {
         name: 'Cyber Girl',
         description: 'A versatile LIGHT Warrior strategy that combines athletic agility with cybernetic enhancement for consistent damage output.',
         filepath: 'Cyber Girl Deck Analysis.html',
@@ -6007,6 +6184,23 @@ const archetypes = [
                         <path d="M30 50 L70 50" stroke="#fff" stroke-width="2" stroke-dasharray="4 2"/>
                     </svg>`
     },
+    {
+        name: 'Designator',
+        description: 'A design philosophy rather than a traditional archetype, featuring powerful unrelated cards united by precise card name declaration mechanics for proactive and reactive control.',
+        filepath: 'Designator Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="designatorGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#AC1A2F;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0A0A0F;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#designatorGrad)" stroke="#AC1A2F" stroke-width="2"/>
+                        <path d="M25 35 L45 35 L45 25 L55 25 L55 35 L75 35 L75 45 L55 45 L55 55 L45 55 L45 45 L25 45 Z" fill="none" stroke="#f87171" stroke-width="3"/>
+                        <circle cx="50" cy="30" r="4" fill="#f87171"/>
+                        <text x="50" y="70" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">DESIGNATOR</text>
+                    </svg>`
+    },
 
     {
         name: 'Destiny HERO',
@@ -6125,6 +6319,25 @@ const archetypes = [
                         
                         <!-- Vigilante Mask Effect -->
                         <path d="M40 45 Q50 40 60 45 Q58 48 50 49 Q42 48 40 45 Z" fill="#1e1b4b" opacity="0.8" stroke="#7c3aed" stroke-width="1"/>
+                    </svg>`
+    },
+    {
+        name: 'Deep Sea',
+        description: 'A WATER attribute engine that synergizes with Mermail and Atlantean strategies, providing hand knowledge, disruption, and explosive combo extension through discard mechanics.',
+        filepath: 'Deep Sea Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="deepSeaGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0b192f;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#deepSeaGrad)" stroke="#3b82f6" stroke-width="2"/>
+                        <path d="M20 40 Q30 30 40 35 Q50 25 60 35 Q70 30 80 40 Q75 50 80 60 Q70 70 60 65 Q50 75 40 65 Q30 70 20 60 Q25 50 20 40 Z" fill="none" stroke="#60a5fa" stroke-width="3"/>
+                        <circle cx="35" cy="45" r="3" fill="#93c5fd"/>
+                        <circle cx="65" cy="45" r="3" fill="#93c5fd"/>
+                        <circle cx="50" cy="60" r="4" fill="#60a5fa"/>
+                        <text x="50" y="85" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">DEEP SEA</text>
                     </svg>`
     },
 
@@ -26534,6 +26747,117 @@ const archetypes = [
 <path d="M50 35 Q55 30 60 35" stroke="#facc15" stroke-width="1" fill="none"/>
 <text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">KAISER</text>
 <text x="50" y="95" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">GLIDER</text>
+</svg>`
+                        },
+                        {
+                                name: "Die Roll",
+                                description: "A unique strategy centered around dice-rolling mechanics, featuring cards like Dice Dungeon and Dimension Dice that create explosive, unpredictable game states through calculated probability and risk management.",
+                                filepath: "Die Roll Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="casinoGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#3d2c2c;stop-opacity:1" />
+</radialGradient>
+<linearGradient id="diceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#ffd700"/>
+<stop offset="100%" stop-color="#b89b74"/>
+</linearGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#casinoGrad)" stroke="#b89b74" stroke-width="2"/>
+<rect x="30" y="30" width="40" height="40" rx="8" fill="url(#diceGrad)" stroke="#ffd700" stroke-width="1"/>
+<circle cx="40" cy="40" r="2" fill="#1a1a1a"/>
+<circle cx="50" cy="40" r="2" fill="#1a1a1a"/>
+<circle cx="60" cy="40" r="2" fill="#1a1a1a"/>
+<circle cx="40" cy="50" r="2" fill="#1a1a1a"/>
+<circle cx="60" cy="50" r="2" fill="#1a1a1a"/>
+<circle cx="40" cy="60" r="2" fill="#1a1a1a"/>
+<circle cx="50" cy="60" r="2" fill="#1a1a1a"/>
+<circle cx="60" cy="60" r="2" fill="#1a1a1a"/>
+<path d="M35 35 Q45 25 55 35" stroke="#ffd700" stroke-width="1" fill="none"/>
+<path d="M45 65 Q55 55 65 65" stroke="#ffd700" stroke-width="1" fill="none"/>
+<text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">DIE ROLL</text>
+</svg>`
+                        },
+                        {
+                                name: "Digital Bug",
+                                description: "A LIGHT Insect-Type archetype that manipulates battle positions to generate advantage and swarm the field for Xyz Summons, featuring a xenophobic system where monsters can only be used for Insect-Type Xyz Summons.",
+                                filepath: "Digital Bug Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="digitalGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#020617;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#0c4a6e;stop-opacity:1" />
+</radialGradient>
+<linearGradient id="circuitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#67e8f9"/>
+<stop offset="100%" stop-color="#0ea5e9"/>
+</linearGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#digitalGrad)" stroke="#0ea5e9" stroke-width="2"/>
+<path d="M25 40 Q35 30 45 35 Q55 30 65 35 Q75 30 85 40 Q80 50 75 55 Q65 50 55 55 Q45 50 35 55 Q25 50 25 40 Z" fill="url(#circuitGrad)" stroke="#67e8f9" stroke-width="1"/>
+<path d="M35 45 Q40 40 45 45 Q50 40 55 45 Q60 40 65 45" stroke="#67e8f9" stroke-width="1" fill="none"/>
+<path d="M40 35 Q45 30 50 35" stroke="#67e8f9" stroke-width="1" fill="none"/>
+<path d="M50 35 Q55 30 60 35" stroke="#67e8f9" stroke-width="1" fill="none"/>
+<circle cx="42" cy="42" r="1.5" fill="#67e8f9"/>
+<circle cx="58" cy="42" r="1.5" fill="#67e8f9"/>
+<circle cx="50" cy="52" r="1.5" fill="#67e8f9"/>
+<text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">DIGITAL</text>
+<text x="50" y="95" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">BUG</text>
+</svg>`
+                        },
+                        {
+                                name: "Doriado",
+                                description: "An elemental-themed archetype centered around Ritual Summoning and attribute manipulation, featuring powerful cards like Elemental Mistress Doriado that count as all four main attributes to enable devastating trap effects.",
+                                filepath: "Doriado Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="elementalGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#2d3748;stop-opacity:1" />
+</radialGradient>
+<linearGradient id="runeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#9f7aea"/>
+<stop offset="100%" stop-color="#4a5568"/>
+</linearGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#elementalGrad)" stroke="#4a5568" stroke-width="2"/>
+<path d="M30 35 Q50 25 70 35 Q60 45 70 55 Q50 65 30 55 Q40 45 30 35 Z" fill="url(#runeGrad)" stroke="#9f7aea" stroke-width="1"/>
+<path d="M40 40 Q45 35 50 40 Q55 35 60 40" stroke="#9f7aea" stroke-width="1" fill="none"/>
+<path d="M35 50 Q45 45 55 50" stroke="#9f7aea" stroke-width="1" fill="none"/>
+<circle cx="45" cy="42" r="1.5" fill="#9f7aea"/>
+<circle cx="55" cy="42" r="1.5" fill="#9f7aea"/>
+<circle cx="50" cy="52" r="1.5" fill="#9f7aea"/>
+<path d="M42 35 Q47 30 52 35" stroke="#9f7aea" stroke-width="1" fill="none"/>
+<path d="M48 35 Q53 30 58 35" stroke="#9f7aea" stroke-width="1" fill="none"/>
+<text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">DORIADO</text>
+</svg>`
+                        },
+                        {
+                                name: "Diabolos",
+                                description: "A DARK monster archetype centered around tributing mechanics and the Lair of Darkness field spell, featuring powerful disruption and hand control through strategic monster tributes and token generation.",
+                                filepath: "Diabolos Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="demonicGrad" cx="50%" cy="50%" r="50%">
+<stop offset="0%" style="stop-color:#110f1b;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#2e2649;stop-opacity:1" />
+</radialGradient>
+<linearGradient id="hornGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#f472b6"/>
+<stop offset="100%" stop-color="#5a3c8a"/>
+</linearGradient>
+</defs>
+<circle cx="50" cy="50" r="45" fill="url(#demonicGrad)" stroke="#5a3c8a" stroke-width="2"/>
+<path d="M25 45 Q35 30 50 35 Q65 30 75 45 Q70 60 50 70 Q30 60 25 45 Z" fill="url(#hornGrad)" stroke="#f472b6" stroke-width="1"/>
+<path d="M35 50 Q40 45 45 50 Q50 45 55 50 Q60 45 65 50" stroke="#f472b6" stroke-width="1" fill="none"/>
+<path d="M40 40 Q45 35 50 40" stroke="#f472b6" stroke-width="1" fill="none"/>
+<path d="M50 40 Q55 35 60 40" stroke="#f472b6" stroke-width="1" fill="none"/>
+<circle cx="45" cy="47" r="1.5" fill="#f472b6"/>
+<circle cx="55" cy="47" r="1.5" fill="#f472b6"/>
+<path d="M42 35 Q47 30 52 35" stroke="#f472b6" stroke-width="1" fill="none"/>
+<path d="M48 35 Q53 30 58 35" stroke="#f472b6" stroke-width="1" fill="none"/>
+<text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">DIABOLOS</text>
 </svg>`
                         }
 ];// Export for use in main script
