@@ -1,43 +1,46 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Constellar Archetype Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in assets/js/ as per other files -->
     <script src="assets/js/card-loader.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <!-- Using Orbitron for the celestial/sci-fi theme, and Inter for body -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0a192f; /* Deep space blue */
-            color: #e2e8f0; /* Light slate/off-white */
+            background-color: #0a0f1e; /* Deep night blue */
+            color: #e0e7ff; /* Light lavender/white */
         }
         .container {
             max-width: 1024px;
         }
         .card {
-            background-color: #1e293b; /* Dark slate */
+            background-color: #161e33; /* Darker blue-slate */
             border-radius: 1rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            border: 1px solid #475569; /* Lighter slate border */
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(252, 211, 77, 0.2);
+            border: 1px solid #3a5a9e; /* Celestial blue border */
+            backdrop-filter: blur(10px);
         }
         .combo-step-card, .pro-con-card {
-            background-color: #334155; /* Mid slate */
-            border: 1px solid #64748b;
+            background-color: rgba(22, 30, 51, 0.8); /*Slightly transparent card bg*/
+            border: 1px solid #5a7edc; /* Lighter celestial blue */
         }
         .card-image-container {
             width: 100%;
             max-width: 180px;
             flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -47,43 +50,64 @@
             animation: fadeIn 0.5s ease-in-out forwards;
         }
         .card-placeholder {
-            background-color: #0f172a;
-            color: #94a3b8;
+            background-color: #161e33;
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
-            font-size: 0.875rem;
-            line-height: 1.25rem;
+            font-size: 0.75rem;
+            line-height: 1rem;
             font-weight: bold;
             height: 100%;
-            min-height: 250px; 
+            min-height: 250px;
             border-radius: 0.5rem;
             padding: 0.5rem;
-            border: 2px dashed #334155;
-            cursor: pointer;
+            box-shadow: 0 0 10px #161e33;
+            border: 1px dashed #5a7edc;
         }
-        .pro-icon { color: #4ade80; } /* Bright green */
-        .con-icon { color: #f87171; } /* Bright red */
-        .neutral-icon { color: #60a5fa; } /* Bright blue */
-        .text-accent { color: #fcd34d; } /* Gold/Amber */
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ffd700; } /* Gold accent */
+        .arrow-color { color: #ffd700; }
+        .heading-underline {
+            border-bottom: 2px solid #ffd700;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ffd700;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffd700;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ffd700;
+        }
+        .banner-title {
+            font-family: 'Orbitron', sans-serif;
+        }
 
-        /* --- Constellar Animated Banner Styles --- */
+        /* --- CONSTELLAR ANIMATED BANNER --- */
         .banner-header {
             position: relative;
-            height: 140px;
-            background-color: #0a192f;
+            min-height: 160px;
+            background-color: #0a0f1e;
             border-radius: 1rem;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 1rem;
+            padding: 2rem;
             margin-bottom: 2.5rem;
-            border: 1px solid #475569;
+            border: 1px solid #3a5a9e;
         }
-        #star-banner {
+
+        #star-canvas {
             position: absolute;
             top: 0;
             left: 0;
@@ -91,35 +115,22 @@
             height: 100%;
             z-index: 1;
         }
+
         .banner-header::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(ellipse at center, rgba(10, 25, 47, 0.1) 0%, rgba(10, 25, 47, 0.8) 100%);
+            background: radial-gradient(ellipse at center, rgba(10, 15, 30, 0.4) 0%, rgba(10, 15, 30, 0.9) 100%);
             z-index: 2;
         }
-        .banner-content {
+
+        .banner-header h1, .banner-header p {
             position: relative;
             z-index: 3;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-        }
-        .banner-title {
-            font-family: 'Cinzel', serif;
-            font-size: 2.8rem;
-            color: #fcd34d;
-            letter-spacing: 0.1em;
-        }
-        .banner-subtitle {
-            font-size: 1rem;
-            color: #cbd5e1;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
         }
 
-        @media (max-width: 768px) {
-            .banner-header { height: 120px; }
-            .banner-title { font-size: 2.2rem; }
-            .banner-subtitle { font-size: 0.875rem; }
-        }
-                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        /* --- Yu-Gi-Oh! Themed Home Button Styles (Copied from other files) --- */
         .ygo-home-button {
             position: fixed;
             top: 20px;
@@ -142,21 +153,6 @@
             text-decoration: none;
             overflow: hidden;
         }
-        
-        .ygo-home-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
-            animation: ygoButtonPulse 3s ease-in-out infinite;
-            pointer-events: none;
-        }
-        
         .ygo-home-button:hover {
             transform: translateY(-3px) scale(1.05);
             box-shadow: 
@@ -165,273 +161,322 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
             border-color: #8b5cf6;
         }
-        
-        .ygo-home-button:active {
-            transform: translateY(-1px) scale(1.02);
-        }
-        
         .ygo-home-button i {
             font-size: 22px;
             position: relative;
             z-index: 2;
             text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
-            animation: ygoIconGlow 2s ease-in-out infinite alternate;
         }
         
-        .ygo-home-button .ygo-home-text {
-            position: absolute;
-            bottom: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            font-weight: 600;
-            color: #a5b4fc;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            white-space: nowrap;
-            pointer-events: none;
-        }
-        
-        .ygo-home-button:hover .ygo-home-text {
-            opacity: 1;
-        }
-        
-        @keyframes ygoButtonPulse {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
-        }
-        
-        @keyframes ygoIconGlow {
-            0% { 
-                text-shadow: 
-                    0 0 10px rgba(99, 102, 241, 0.8),
-                    0 0 20px rgba(139, 92, 246, 0.4);
-            }
-            100% { 
-                text-shadow: 
-                    0 0 15px rgba(99, 102, 241, 1),
-                    0 0 30px rgba(139, 92, 246, 0.6),
-                    0 0 40px rgba(59, 130, 246, 0.3);
-            }
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .ygo-home-button {
-                width: 50px;
-                height: 50px;
-                top: 15px;
-                left: 15px;
-            }
-            
-            .ygo-home-button i {
-                font-size: 18px;
-            }
-        }
-        /* --- POPUP STYLES --- */
+        /* Card Popup Styles */
         #card-popup {
-            background-color: #1e293b;
-            color: #e2e8f0;
-            border-color: #475569;
-            font-family: 'Inter', sans-serif;
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 15, 30, 0.95); /* Night blue popup */
+            border: 1px solid #ffd700; /* Gold border */
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
         }
         #card-popup h3 {
-            color: #fbbf24;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
+            font-family: 'Orbitron', sans-serif;
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.125rem;
         }
         #card-popup p {
-            margin: 0;
+            margin-top: 0.5rem;
         }
         #card-popup-stats {
-            color: #60a5fa;
-            font-weight: 600;
+            font-family: 'Orbitron', sans-serif;
+            color: #ffd700;
         }
     </style>
 </head>
 <body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    
     <!-- Yu-Gi-Oh! Themed Home Button -->
     <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
         <i class="fas fa-home"></i>
-        <span class="ygo-home-text">NEXUS</span>
     </a>
 
-<div class="container mx-auto">
-        <!-- Banner Section -->
+    <div class="container mx-auto">
+        <!-- Title Section -->
         <header class="banner-header text-center">
-            <canvas id="star-banner"></canvas>
-            <div class="banner-content">
-                <h1 class="banner-title">Constellar</h1>
-                <p class="banner-subtitle">A Strategic Analysis of the Knights of the Stars</p>
-            </div>
+            <canvas id="star-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 banner-title">CONSTELLAR</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Celestial Convergence</p>
         </header>
 
         <!-- Executive Summary Section -->
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+        <section class="mb-10 md:mb-16 animate-fadeIn">
             <div class="card p-6">
                 <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
-                <p class="text-slate-300">
-                    The <strong class="text-accent font-bold">Constellar</strong> archetype is an Xyz-focused strategy of LIGHT monsters, thematically based on constellations and divine warriors. Rooted in the Duel Terminal story, they are the heroes destined to oppose the <a href="https://yugipedia.com/wiki/Duel_Terminal_Storyline_I" target="_blank" class="text-red-400 hover:text-red-300 underline font-bold transition-colors">Evilswarm threat</a>. The deck excels at manipulating monster Levels to rapidly summon a variety of Xyz monsters, primarily ranging from Rank 4 to Rank 6. Modern support has fused the archetype with its <strong class="text-accent font-bold">Tellarknight</strong> brethren, solving historical consistency issues and transforming it into a resilient, combo-oriented engine capable of generating significant card advantage from a single starter.
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Constellar</strong> archetype is a series of LIGHT monsters themed after the 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=constellar&stype=1" target="_blank" class="lore-link">stars and constellations</a>.
+                    Their core strategy revolves around rapidly summoning multiple members to facilitate Xyz Summons, primarily focusing on Rank 4 and Rank 5. While a versatile multi-Rank strategy was intended, competitive builds quickly focused on the Level 4 core to summon the deck's most powerful Xyz monsters, especially the disruptive <strong class="text-accent font-bold">Constellar Pleiades</strong>.
                 </p>
             </div>
         </section>
 
-        <!-- Core Mechanics Section -->
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Foundational Mechanics</h2>
+        <!-- The Constellar Arsenal Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Foundational Constellation</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Main Deck Engine -->
                 <div class="card p-6">
-                    <h3 class="text-xl font-bold text-white mb-2">Level & Rank Manipulation</h3>
-                    <p class="text-slate-300">The core of the Constellar strategy is its ability to alter the Levels of its monsters on the field, most notably with <strong class="text-accent font-bold">Constellar Kaus</strong>. This allows the deck to pivot from standard Rank 4 plays into powerful Rank 5 and 6 boss monsters with ease, creating a flexible and unpredictable Xyz toolkit.</p>
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Main Deck Engine</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Constellar Pollux</h4>
+                            <p class="text-sm text-indigo-200">The premier starter. Grants an additional Normal Summon of a "Constellar" monster, and this effect does not activate, making it resilient.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Constellar Kaus</h4>
+                            <p class="text-sm text-indigo-200">The lynchpin. Can target a "Constellar" monster and increase or decrease its Level by 1, enabling Rank 5 (and other) plays.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Constellar Sombre</h4>
+                            <p class="text-sm text-indigo-200">The recursion engine. Banishes a "Constellar" from GY to add another from GY to hand, and grants an additional Normal Summon.</p>
+                        </div>
+                    </div>
                 </div>
+                <!-- Extra Deck Toolbox -->
                 <div class="card p-6">
-                    <h3 class="text-xl font-bold text-white mb-2">Layered Searching</h3>
-                    <p class="text-slate-300">Modern Constellar combos are a masterclass in resource generation. A single starter like <strong class="text-accent font-bold">Tellarknight Cygnian</strong> can trigger a cascade of searches, converting one monster into multiple extenders and powerful Continuous Spells like <strong class="text-accent font-bold">Constellar Tellarknights</strong>, ensuring both a strong opening play and sustained advantage.</p>
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-meteor text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Extra Deck Toolbox</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Constellar Pleiades</h4>
+                            <p class="text-sm text-indigo-200">The (Rank 5) premier boss monster. A Quick Effect to detach 1 material to bounce any card on the field back to the hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Constellar Omega</h4>
+                            <p class="text-sm text-indigo-200">The (Rank 4) protective shield. A Quick Effect makes all "Constellar" monsters unaffected by Spell/Trap effects for the turn.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Constellar Ptolemy M7</h4>
+                            <p class="text-sm text-indigo-200">The (Rank 6) recovery tool. Can be Xyz Summoned using one "Constellar" Xyz monster. Detaches 1 to return a monster from field or GY to hand.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- 1-Card Combo Walkthrough Section -->
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The 1-Card "Turn Skip"</h2>
-            <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how a single starter like <strong class="text-accent font-bold">Satellarknight Castor</strong> can generate massive advantage and establish a formidable board.</p>
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Kaus Pivot: Reaching for Rank 5</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                This sequence is the central combo of the classic deck, as it's the primary method to summon its main boss monster, <strong class="text-accent">Constellar Pleiades</strong>.
+            </p>
             <div class="flex flex-col items-center gap-6">
                 <!-- Step 1 -->
                 <div class="card p-6 combo-step-card w-full max-w-lg">
-                    <div class="flex flex-col md:flex-row items-center gap-4">
-                        <div id="castor-img-container" class="card-image-container card-placeholder">Satellarknight Castor</div>
-                        <div class="flex-1">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="pollux-img-container" class="card-image-container flex-shrink-0 card-placeholder">Constellar Pollux</div>
+                        <div>
                             <div class="flex items-center mb-2">
-                                <span class="bg-slate-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
-                                <h3 class="text-lg font-bold">Initiate the Combo</h3>
+                                <span class="bg-[#161e33] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Establish Two Monsters</h3>
                             </div>
-                            <p class="text-slate-300">Normal Summon <strong class="text-accent font-bold">Satellarknight Castor</strong>, which grants an additional Normal Summon. Use this to summon <strong class="text-accent font-bold">Tellarknight Cygnian</strong>, whose effect searches for <strong class="text-accent font-bold">Constellar Caduceus</strong>.</p>
+                            <p class="text-indigo-200">Normal Summon <strong class="text-accent">Constellar Pollux</strong>. Use its effect to immediately Normal Summon <strong class="text-accent">Constellar Kaus</strong> from your hand.</p>
                         </div>
                     </div>
                 </div>
                 <!-- Arrow -->
                 <div class="w-full flex justify-center">
-                    <i class="fas fa-arrow-down text-amber-400 text-3xl my-2"></i>
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
                 </div>
                 <!-- Step 2 -->
                 <div class="card p-6 combo-step-card w-full max-w-lg">
-                    <div class="flex flex-col md:flex-row items-center gap-4">
-                        <div id="caduceus-img-container" class="card-image-container card-placeholder">Constellar Caduceus</div>
-                         <div class="flex-1">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="kaus-img-container" class="card-image-container flex-shrink-0 card-placeholder">Constellar Kaus</div>
+                        <div>
                             <div class="flex items-center mb-2">
-                                <span class="bg-slate-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
-                                <h3 class="text-lg font-bold">Extend and Search</h3>
+                                <span class="bg-[#161e33] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Modulate Levels</h3>
                             </div>
-                            <p class="text-slate-300">Special Summon the searched <strong class="text-accent font-bold">Constellar Caduceus</strong>. Its effect triggers, allowing you to search for the crucial Continuous Spell, <strong class="text-accent font-bold">Constellar Tellarknights</strong>.</p>
+                            <p class="text-indigo-200">Activate the effect of <strong class="text-accent">Kaus</strong> twice: target itself to become Level 5, then target <strong class="text-accent">Pollux</strong> to become Level 5.</p>
                         </div>
                     </div>
                 </div>
                 <!-- Arrow -->
                 <div class="w-full flex justify-center">
-                     <i class="fas fa-arrow-down text-amber-400 text-3xl my-2"></i>
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
                 </div>
                 <!-- Step 3 -->
-                 <div class="card p-6 combo-step-card w-full max-w-lg">
-                    <div class="flex flex-col md:flex-row items-center gap-4">
-                        <div id="delteros-img-container" class="card-image-container card-placeholder">Tellarknight Constellar Delteros</div>
-                         <div class="flex-1">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="pleiades-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Constellar Pleiades</div>
+                        <div>
                             <div class="flex items-center mb-2">
-                                <span class="bg-slate-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
-                                <h3 class="text-lg font-bold">First Xyz & Resource Gain</h3>
+                                <span class="bg-[#161e33] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Summon the Boss</h3>
                             </div>
-                            <p class="text-slate-300">Xyz Summon <strong class="text-accent font-bold">Tellarknight Constellar Delteros</strong> using your two monsters. Activate its effect by detaching a material to search for another monster, extending your resources for the next turn.</p>
+                            <p class="text-indigo-200">With two Level 5 monsters on the field, overlay them to Xyz Summon <strong class="text-accent">Constellar Pleiades</strong>, ending your turn with a powerful disruption.</p>
                         </div>
                     </div>
                 </div>
-                <!-- Arrow -->
-                <div class="w-full flex justify-center">
-                     <i class="fas fa-arrow-down text-amber-400 text-3xl my-2"></i>
-                </div>
-                <!-- Step 4 -->
-                 <div class="card p-6 combo-step-card w-full max-w-lg">
-                    <div class="flex flex-col md:flex-row items-center gap-4">
-                        <div id="pleiades-combo-img-container" class="card-image-container card-placeholder">Constellar Pleiades</div>
-                         <div class="flex-1">
-                            <div class="flex items-center mb-2">
-                                <span class="bg-slate-800 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
-                                <h3 class="text-lg font-bold">Summon the Boss Monster</h3>
-                            </div>
-                            <p class="text-slate-300">Activate <strong class="text-accent font-bold">Constellar Tellarknights</strong>. Use its effect, targeting Delteros, to Xyz Summon the primary disruption monster, <strong class="text-accent font-bold">Constellar Pleiades</strong>, on top of it.</p>
-                        </div>
+            </div>
+        </section>
+
+        <!-- A Converging Cosmos: The Tellarknight Synergy -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">A Converging Cosmos</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                Recent support fundamentally transformed the deck by fusing it with its lore counterparts, the <strong class="text-accent">"Tellarknights."</strong> This convergence patched every major weakness, providing recursion, one-card starters, and flexible combo paths that shift the deck from a "glass cannon" to a resilient toolbox engine.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Tellarknight Constellar Caduceus -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Tellarknight Constellar Caduceus</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="tk-caduceus-img-container" class="card-image-container card-placeholder">Tellarknight Constellar Caduceus</div>
                     </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Resource Recovery:</strong> On Xyz Summon, adds up to 2 "Tellarknight" and/or "Constellar" cards from GY to hand.</li>
+                        <li><strong class="text-accent">Effect Copying:</strong> Can banish a "Tellarknight" or "Constellar" monster from hand/Deck to copy its on-summon effect.</li>
+                    </ul>
+                </div>
+                <!-- Stellarknight Constellar Diamond -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Stellarknight Constellar Diamond</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="sk-diamond-img-container" class="card-image-container card-placeholder">Stellarknight Constellar Diamond</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">GY Floodgate:</strong> Prevents both players from sending cards from the Deck to the GY.</li>
+                        <li><strong class="text-accent">DARK Negation:</strong> A Quick Effect to detach 1 material to negate a DARK monster's effect and destroy it.</li>
+                    </ul>
                 </div>
             </div>
         </section>
 
         <!-- Endboard Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Celestial Endboard</h2>
-             <p class="text-slate-300 mb-8 text-center max-w-2xl mx-auto">The goal of the Constellar strategy is a layered board that provides multiple points of disruption during the opponent's turn.</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto max-w-5xl">
-                <!-- Constellar Pleiades -->
-                <div class="card p-6 pro-con-card flex flex-col items-center text-center">
-                    <div id="pleiades-img-container" class="w-40 mb-4 card-placeholder">Constellar Pleiades</div>
-                    <h3 class="text-xl font-bold text-accent mb-2">Constellar Pleiades</h3>
-                    <p class="text-slate-300">The star player. A Rank 5 monster that provides a powerful Quick Effect to bounce any card on the field back to the hand, disrupting combos without destroying.</p>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Typical End Boards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Classic End Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Classic End Board</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="pleiades-img-container" class="card-image-container card-placeholder">Constellar Pleiades</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Constellar Pleiades:</strong> The core disruption, providing a Quick Effect bounce to interrupt the opponent's main play.</li>
+                        <li><strong class="text-accent">Constellar Omega:</strong> Often summoned alongside Pleiades to protect the board from Spell & Trap removal like Raigeki or Lightning Storm.</li>
+                    </ul>
                 </div>
-                <!-- Constellar Ptolemy M7 -->
-                 <div class="card p-6 pro-con-card flex flex-col items-center text-center">
-                    <div id="m7-img-container" class="w-40 mb-4 card-placeholder">Constellar Ptolemy M7</div>
-                    <h3 class="text-xl font-bold text-accent mb-2">Constellar Ptolemy M7</h3>
-                    <p class="text-slate-300">The primary recursion tool. This Rank 6 can return cards from either player's Graveyard to the hand, recycling your key monsters or disrupting opponent's GY setup.</p>
-                </div>
-                <!-- Constellar Omega -->
-                <div class="card p-6 pro-con-card flex flex-col items-center text-center">
-                    <div id="omega-img-container" class="w-40 mb-4 card-placeholder">Constellar Omega</div>
-                    <h3 class="text-xl font-bold text-accent mb-2">Constellar Omega</h3>
-                    <p class="text-slate-300">The defensive shield. A Rank 4 that offers a Quick Effect to make all "Constellar" monsters unaffected by Spell/Trap effects for the turn, protecting your board from blowouts.</p>
+                <!-- Modern End Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Modern "Tellarknight" Board</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="sk-diamond-img-container-end" class="card-image-container card-placeholder">Stellarknight Constellar Diamond</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Stellarknight Constellar Diamond:</strong> A powerful floodgate that shuts down GY-reliant decks and negates DARK monsters.</li>
+                        <li><strong class="text-accent">Constellar Pleiades:</strong> Summoned alongside Diamond to provide targeted bouncing, creating two layers of disruption.</li>
+                    </ul>
                 </div>
             </div>
         </section>
 
         <!-- Competitive Analysis Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Strengths -->
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
                 <div class="card p-6 pro-con-card">
                     <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
-                    <ul class="list-disc list-inside space-y-2 text-slate-300">
-                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Consistency:</strong> Numerous 1-card starters make the core combo incredibly reliable.</li>
-                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400">Resource Loops:</strong> The deck excels at converting one card into many, ending with more resources than it started with.</li>
-                         <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Flexible Disruption:</strong> Non-destruction removal from Pleiades is highly effective in the modern game.</li>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Resilient Engine:</strong> Modern support provides one-card starters and strong resource recursion.</li>
+                        <li><span class="pro-icon"><i class="fas fa-tools"></i></span> <strong class="text-green-300">Flexible Toolbox:</strong> Can easily summon powerful Rank 4 and 5 Xyz monsters to answer different threats.</li>
+                        <li><span class="pro-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-green-300">Potent Floodgate:</strong> Stellarknight Constellar Diamond single-handedly wins games against GY-focused and DARK-based decks.</li>
                     </ul>
                 </div>
-                <!-- Weaknesses -->
+                <!-- Weaknesses Card -->
                 <div class="card p-6 pro-con-card">
                     <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
-                    <ul class="list-disc list-inside space-y-2 text-slate-300">
-                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Floodgate Vulnerability:</strong> Cards like <strong class="text-amber-300">Light-Imprisoning Mirror</strong> and <strong class="text-amber-300">Rivalry of Warlords</strong> can shut down the entire engine.</li>
-                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Starter Interruption:</strong> While resilient, a well-timed negate on the initial Normal Summon or key searcher can significantly weaken the end board.</li>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Normal Summon Choke Point:</strong> The entire engine can still be stopped by a well-timed negate on the first Normal Summon.</li>
+                        <li><span class="con-icon"><i class="fas fa-book-dead"></i></span> <strong class="text-red-300">GY Disruption:</strong> While resilient, cards like D.D. Crow or Bystials can banish key targets for Sombre or Caduceus.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Floodgate Vulnerability:</strong> Highly weak to cards like Skill Drain, Light-Imprisoning Mirror, and Dimensional Barrier.</li>
                     </ul>
                 </div>
-                <!-- Key Cards -->
-                 <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-white mb-4">Key Engine Pieces</h3>
-                    <ul class="list-disc list-inside space-y-2 text-slate-300">
-                        <li><span class="neutral-icon"><i class="fas fa-star"></i></span> <strong class="text-accent">Tellarknight Cygnian:</strong> The deck's universal 1-card starter.</li>
-                        <li><span class="neutral-icon"><i class="fas fa-book-open"></i></span> <strong class="text-accent">Constellar Caduceus:</strong> The bridge that converts monster presence into Spell/Trap resources.</li>
-                        <li><span class="neutral-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-accent">Constellar Tellarknights:</strong> The Continuous Spell that enables easy Xyz climbing into your boss monsters.</li>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech Choices</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-search"></i></span> <strong class="text-accent">Reinforcement of the Army:</strong> Searches Pollux, Castor, and the Warrior "Tellarknight" monsters.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent">Fire Formation - Tenki:</strong> A continuous searcher for the pivotal Beast-Warrior, Constellar Kaus.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-plus-circle"></i></span> <strong class="text-accent">Generic Level 4 Extenders:</strong> Cards like Sakitama or Performage Hat Tricker help play through disruption.</li>
                     </ul>
                 </div>
             </div>
         </section>
 
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The Constellar archetype and its "Tellarknight" support operate at full power in the current TCG format.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Constellar Pollux (3 copies)</strong> - Core starter</li>
+                            <li><strong class="text-green-300">Constellar Kaus (3 copies)</strong> - Key level modulator</li>
+                            <li><strong class="text-green-300">Constellar Sombre (3 copies)</strong> - Main recursion</li>
+                            <li><strong class="text-green-300">Constellar Pleiades (3 copies)</strong> - Main boss monster</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Modern Support</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Constellar Castor (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Tellarknight Constellar Caduceus (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Stellarknight Constellar Diamond (3 copies)</strong></li>
+                            <li>All "Tellarknight" hybrid monsters</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With zero restrictions on its core engine or modern support, the Constellar/Tellarknight hybrid deck can execute its most powerful and consistent combos, making it a highly competent rogue strategy.</p>
+                </div>
+            </div>
+        </section>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- Star Banner Animation ---
-            const canvas = document.getElementById('star-banner');
+            // --- CONSTELLAR STARRY SKY ANIMATION ---
+            const canvas = document.getElementById('star-canvas');
             if (canvas) {
                 const ctx = canvas.getContext('2d');
-                let stars;
-                let shootingStars;
+                let stars = [];
+                const numStars = 200;
 
                 const setCanvasSize = () => {
                     canvas.width = canvas.offsetWidth;
@@ -439,119 +484,73 @@
                 };
 
                 class Star {
-                    constructor(x, y, radius, alpha) {
-                        this.x = x;
-                        this.y = y;
-                        this.radius = radius;
-                        this.alpha = alpha;
-                        this.dAlpha = Math.random() * 0.02 - 0.01;
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.speed = Math.random() * 0.2 + 0.1;
+                        this.opacity = Math.random() * 0.5 + 0.5;
+                        this.twinkleSpeed = (Math.random() - 0.5) * 0.05;
+                    }
+                    update() {
+                        this.x -= this.speed;
+                        if (this.x < 0) {
+                            this.x = canvas.width;
+                            this.y = Math.random() * canvas.height;
+                        }
+                        
+                        this.opacity += this.twinkleSpeed;
+                        if (this.opacity > 1 || this.opacity < 0.3) {
+                            this.twinkleSpeed = -this.twinkleSpeed;
+                        }
                     }
                     draw() {
                         ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(252, 211, 77, ${this.alpha})`;
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 215, 0, ${this.opacity})`; // Gold stars
                         ctx.fill();
-                    }
-                    update() {
-                        this.alpha += this.dAlpha;
-                        if (this.alpha > 1 || this.alpha < 0.1) {
-                            this.dAlpha *= -1;
-                        }
-                        this.draw();
-                    }
-                }
-                
-                class ShootingStar {
-                    constructor() {
-                        this.reset();
-                    }
-                    reset() {
-                        this.x = Math.random() * canvas.width;
-                        this.y = 0;
-                        this.len = Math.random() * 80 + 10;
-                        this.speed = Math.random() * 10 + 6;
-                        this.size = Math.random() * 1 + 0.1;
-                        this.waitTime = new Date().getTime() + Math.random() * 3000 + 500;
-                        this.active = false;
-                    }
-                    update() {
-                        if (this.active) {
-                            this.x -= this.speed;
-                            this.y += this.speed;
-                            if (this.x < 0 || this.y >= canvas.height) {
-                                this.reset();
-                            }
-                        } else {
-                            if (this.waitTime < new Date().getTime()) {
-                                this.active = true;
-                            }
-                        }
-                    }
-                    draw() {
-                        if (this.active) {
-                            ctx.beginPath();
-                            ctx.moveTo(this.x, this.y);
-                            ctx.lineTo(this.x + this.len, this.y - this.len);
-                            ctx.strokeStyle = `rgba(252, 211, 77, 1)`;
-                            ctx.lineWidth = this.size;
-                            ctx.stroke();
-                        }
+                        ctx.closePath();
                     }
                 }
 
-                function init() {
+                function initStars() {
                     stars = [];
-                    shootingStars = [];
-                    const starCount = (canvas.width * canvas.height) / 8000;
-                    for (let i = 0; i < starCount; i++) {
-                        const x = Math.random() * canvas.width;
-                        const y = Math.random() * canvas.height;
-                        const radius = Math.random() * 1.5;
-                        const alpha = Math.random() * 0.5 + 0.1;
-                        stars.push(new Star(x, y, radius, alpha));
-                    }
-                     for(let i = 0; i < 3; i++) {
-                        shootingStars.push(new ShootingStar());
+                    for (let i = 0; i < numStars; i++) {
+                        stars.push(new Star());
                     }
                 }
 
                 function animate() {
-                    requestAnimationFrame(animate);
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    stars.forEach(s => s.update());
-                    shootingStars.forEach(s => {
+                    stars.forEach(s => {
                         s.update();
                         s.draw();
                     });
+                    requestAnimationFrame(animate);
                 }
-                
+
                 setCanvasSize();
-                init();
+                initStars();
                 animate();
 
                 window.addEventListener('resize', () => {
                     setCanvasSize();
-                    init();
+                    initStars();
                 });
             }
 
-            // Load card images using CardLoader
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            // This assumes CardLoader.js is loaded from assets/js/card-loader.js
             CardLoader.loadCards({
-                'castor-img-container': 'Satellarknight Castor',
-                'caduceus-img-container': 'Constellar Caduceus',
-                'delteros-img-container': 'Tellarknight Constellar Delteros',
-                'pleiades-combo-img-container': 'Constellar Pleiades',
+                'pollux-img-container': 'Constellar Pollux',
+                'kaus-img-container': 'Constellar Kaus',
+                'pleiades-img-container-combo': 'Constellar Pleiades',
+                'tk-caduceus-img-container': 'Tellarknight Constellar Caduceus',
+                'sk-diamond-img-container': 'Stellarknight Constellar Diamond',
                 'pleiades-img-container': 'Constellar Pleiades',
-                'm7-img-container': 'Constellar Ptolemy M7',
-                'omega-img-container': 'Constellar Omega'
+                'sk-diamond-img-container-end': 'Stellarknight Constellar Diamond',
             });
         });
     </script>
-    <div id="card-popup" class="fixed z-50 bg-gray-800 text-white p-4 rounded-lg shadow-lg border-2 border-[#475569] max-w-xs max-h-96 overflow-y-auto pointer-events-none opacity-0 transition-opacity duration-200"></div>
 </body>
 </html>
-
-
-
-
-
