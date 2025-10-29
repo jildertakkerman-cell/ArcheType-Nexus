@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skilled Magician Series</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Make sure this path is correct for your project structure -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d051c; /* Deep dark purple */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1e1b4b; /* Indigo/dark blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a3b8e; /* Purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a2357; /* Slightly lighter purple */
+            border: 1px solid #a78bfa; /* Lavender border */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #2a2357;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2357;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fcd34d; } /* Gold */
+        .arrow-color { color: #fcd34d; }
+        .heading-underline {
+            border-bottom: 2px solid #fcd34d;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fcd34d; /* Gold */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fcd34d;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #fcd34d;
+        }
+
+        /* --- New Skilled Magician Animated Banner --- */
+        .banner {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(45deg, #0d051c, #1e1b4b);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #4a3b8e;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: content-appear 1s ease-out 0.5s forwards;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            color: #e0e7ff;
+            text-shadow: 0 0 8px rgba(252, 211, 77, 0.5), 0 0 15px rgba(252, 211, 77, 0.3);
+            letter-spacing: 0.1em;
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #c7d2fe;
+        }
+        .spell-counter {
+            position: absolute;
+            background: #fcd34d;
+            border-radius: 50%;
+            opacity: 0;
+            animation: float 10s infinite linear;
+            box-shadow: 0 0 10px #fcd34d, 0 0 20px #fcd34d;
+        }
+        .spell-counter.c1 { width: 15px; height: 15px; left: 10%; animation-duration: 12s; animation-delay: 0s; }
+        .spell-counter.c2 { width: 10px; height: 10px; left: 25%; animation-duration: 8s; animation-delay: 2s; background: #a78bfa; box-shadow: 0 0 10px #a78bfa, 0 0 20px #a78bfa; }
+        .spell-counter.c3 { width: 20px; height: 20px; left: 40%; animation-duration: 15s; animation-delay: 1s; }
+        .spell-counter.c4 { width: 12px; height: 12px; left: 60%; animation-duration: 10s; animation-delay: 4s; }
+        .spell-counter.c5 { width: 18px; height: 18px; left: 80%; animation-duration: 13s; animation-delay: 3s; background: #a78bfa; box-shadow: 0 0 10px #a78bfa, 0 0 20px #a78bfa; }
+        .spell-counter.c6 { width: 8px; height: 8px; left: 90%; animation-duration: 7s; animation-delay: 5s; }
+
+        @keyframes content-appear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes float {
+            0% { bottom: -50px; opacity: 0; transform: rotate(0deg); }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { bottom: 120px; opacity: 0; transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+            .banner { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 5, 28, 0.95); /* Dark purple popup */
+            border: 1px solid #fcd34d; /* Gold border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #fcd34d; /* Gold title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Cinzel', serif;
+            color: #fcd34d;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="spell-counter c1"></div>
+                <div class="spell-counter c2"></div>
+                <div class="spell-counter c3"></div>
+                <div class="spell-counter c4"></div>
+                <div class="spell-counter c5"></div>
+                <div class="spell-counter c6"></div>
+                <div class="banner-content">
+                    <h1 class="banner-title">Skilled Magician Series</h1>
+                    <p class="banner-subtitle">A Comprehensive Strategic Analysis</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <strong class="text-accent font-bold">"Skilled Magician"</strong> cards represent a unique and historically significant series within the Yu-Gi-Oh! Trading Card Game. They are not a self-contained, synergistic archetype in the modern sense, but rather a collection of support monsters bound by a shared mechanical identity. Their core function is to act as tutors in disguise, converting the abstract resource of Spell Card activations into a tangible, powerful monster on the field. This design philosophy offers a fascinating window into an earlier era of game development, one that prioritized thematic, multi-step processes over the immediate, high-velocity plays that define the contemporary game.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Principle Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Principle: Tutors in Disguise</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 mb-4">
+                    The fundamental gameplay loop of the "Skilled Magician" engine is consistent across its primary members: a player Normal Summons one of the Level 4 Spellcaster monsters, activates three separate Spell Cards to <a href="#spell-counter-mechanic" class="lore-link">accumulate the requisite three Spell Counters</a>, and then Tributes the fully-powered magician. This action triggers its effect, allowing the player to Special Summon a specific high-level "boss" monster directly from their hand, Deck, or Graveyard. This mechanic effectively transforms the Skilled Magician into a delayed, on-field searcher that bypasses the need to draw the target monster naturally.
+                </p>
+                <p class="text-blue-200">
+                    This design stands in stark contrast to modern legacy support. Contemporary support cards, such as <strong class="text-accent font-bold">Magician's Rod</strong> for the Dark Magician archetype, provide their value—typically a search for a key Spell or Trap card—immediately upon being Normal Summoned. This represents a significant leap in efficiency and a lower susceptibility to disruption. The "Skilled Magician" engine, by requiring a minimum of four cards to resolve (the magician itself and three Spells), is a multi-turn, resource-intensive setup.
+                </p>
+            </div>
+        </section>
+
+        <!-- Spell Counter Mechanic Section -->
+        <section id="spell-counter-mechanic" class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Spell Counter Mechanic</h2>
+            <div class="card p-6">
+                <p class="text-blue-200">
+                    Spell Counters are the central resource system that fuels the "Skilled Magician" engine. A counter is placed on a Skilled Magician each time a Spell Card is activated and successfully resolves. The primary strategic challenge inherent in this mechanic is the need to activate three Spell Cards in a timely manner without generating significant card disadvantage or conceding too much tempo to the opponent. This built-in slowness is the engine's single greatest weakness.
+                </p>
+                <p class="text-blue-200 mt-4">
+                    The success of any strategy centered on these cards can be measured by its "Spell Velocity"—the rate at which the deck can play Spell Cards efficiently. Decks must be constructed with an unusually high density of Spells, prioritizing those that replace themselves (cantrips), search for other cards, or offer immediate utility to mitigate the inherent cost of accumulating counters.
+                </p>
+            </div>
+        </section>
+
+        <!-- Roster Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Roster Analysis: The Five Apprentices</h2>
+            <div class="card p-6 overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-700">
+                    <thead class="bg-gray-800">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Card Name</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Attribute</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ATK/DEF</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Primary Effect Target</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Secondary Effect</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-gray-900 divide-y divide-gray-700">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">Skilled Dark Magician</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">DARK</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">1900 / 1700</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">"Dark Magician"</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">None</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">Skilled White Magician</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">LIGHT</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">1700 / 1900</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">"Buster Blader"</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">None</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">Skilled Blue Magician</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">LIGHT</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">1800 / 1800</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">"Gaia The Fierce Knight" monster</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">(GY Effect) Banish to place 1 Spell Counter.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">Skilled Red Magician</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">DARK</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">1600 / 1600</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">"Archfiend" monster</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">(GY Effect) Banish to place 1 Spell Counter.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">Skilled Brown Magician</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">DARK</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">300 / 200</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">(No Summon)</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Remove 1 counter to boost self or search "Kuriboh".</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Core Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Skilled Magician Arsenal</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">A detailed overview of each card's individual role and effects.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Skilled Dark Magician -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Skilled Dark Magician</h3>
+                    <p class="text-blue-200 mb-2"><strong>Monster/Effect</strong></p>
+                    <p class="text-blue-200">The 1900 ATK progenitor. Tributes with 3 counters to summon <strong class="text-accent">"Dark Magician"</strong> (and only the original) from hand, Deck, or GY. A high-risk, high-reward card with no secondary effect.</p>
+                </div>
+                <!-- Skilled White Magician -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Skilled White Magician</h3>
+                    <p class="text-blue-200 mb-2"><strong>Monster/Effect</strong></p>
+                    <p class="text-blue-200">The defense-oriented original. Tributes with 3 counters to summon <strong class="text-accent">"Buster Blader"</strong> from hand, Deck, or GY. Like its dark counterpart, it's an all-or-nothing play.</p>
+                </div>
+                <!-- Skilled Blue Magician -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Skilled Blue Magician</h3>
+                    <p class="text-blue-200 mb-2"><strong>Monster/Effect</strong></p>
+                    <p class="text-blue-200">A modern update. Summons any <strong class="text-accent">"Gaia The Fierce Knight" monster</strong>, offering flexibility. Crucially, it can be banished from the GY to place a Spell Counter on a card you control.</p>
+                </div>
+                <!-- Skilled Red Magician -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Skilled Red Magician</h3>
+                    <p class="text-blue-200 mb-2"><strong>Monster/Effect</strong></p>
+                    <p class="text-blue-200">Another modern update. Summons any <strong class="text-accent">"Archfiend" monster</strong>, making it a versatile toolbox. Also shares the vital GY effect to place a Spell Counter.</p>
+                </div>
+                <!-- Skilled Brown Magician -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Skilled Brown Magician</h3>
+                    <p class="text-blue-200 mb-2"><strong>Monster/Effect</strong></p>
+                    <p class="text-blue-200">The anomaly. Does not summon a boss monster. Instead, removes counters one by one to either boost its own ATK or to search for <strong class="text-accent">"Kuriboh"</strong> or <strong class="text-accent">"Multiply"</strong>.</p>
+                </div>
+                <!-- Magical Citadel of Endymion -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Magical Citadel of Endymion</h3>
+                    <p class="text-blue-200 mb-2"><strong>Field Spell</strong></p>
+                    <p class="text-blue-200">The central battery for any Spell Counter deck. Gains a counter for every Spell activated and protects counters on destroyed cards by transferring them to itself.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Foundational Combo Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Combo: Path to the Boss</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the classic, straightforward combo to summon "Dark Magician."</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="skilled-dark-img" class="card-image-container flex-shrink-0 card-placeholder">Skilled Dark Magician</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Setup</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon <strong class="text-accent">Skilled Dark Magician</strong>. This is your on-field "battery" waiting to be charged.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="spg-img" class="card-image-container flex-shrink-0 card-placeholder">Spell Power Grasp</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Gather Power (1-3)</h3>
+                            </div>
+                            <p class="text-blue-200">Activate Spell Cards to gather counters. <strong class="text-accent">"Upstart Goblin"</strong> draws a card and adds 1 counter. <strong class="text-accent">"Spell Power Grasp"</strong> adds a counter and searches another copy, which can be activated for the third counter.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="dark-magician-img" class="card-image-container flex-shrink-0 card-placeholder">Dark Magician</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Payoff</h3>
+                            </div>
+                            <p class="text-blue-200">Once <strong class="text-accent">Skilled Dark Magician</strong> has 3 counters, activate its effect. Tribute it to Special Summon <strong class="text-accent">"Dark Magician"</strong> directly from your Deck, hand, or Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Evolving Endboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Historical Board -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Historical Endboard (Circa 2015)</h3>
+                    <p class="text-blue-200 mb-4 text-center">The goal was a "Toolbox" of powerful Xyz monsters.</p>
+                    <div class="space-y-4">
+                        <!-- Big Eye -->
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="big-eye-img" class="w-24 flex-shrink-0 card-placeholder">Number 11: Big Eye</div>
+                            <div>
+                                <h4 class="font-bold text-white">Rank 7 Toolbox</h4>
+                                <p class="text-sm text-blue-200">Use "Dark Magician" and "Buster Blader" to Xyz Summon <strong class="text-accent">Number 11: Big Eye</strong> or <strong class="text-accent">Mecha Phantom Beast Dracossack</strong>.</p>
+                            </div>
+                        </div>
+                        <!-- Rank 4s -->
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="castel-img" class="w-24 flex-shrink-0 card-placeholder">Castel, the Skyblaster Musketeer</div>
+                            <div>
+                                <h4 class="font-bold text-white">Rank 4 Toolbox</h4>
+                                <p class="text-sm text-blue-200">Use the Skilled Magicians and <strong class="text-accent">Summoner Monk</strong> to make generic Rank 4s like <strong class="text-accent">Castel</strong> for removal.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modern Board -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Modern Potential Endboard</h3>
+                    <p class="text-blue-200 mb-4 text-center">The Skilled Magicians become combo extenders, not the end goal.</p>
+                    <div class="space-y-4">
+                        <!-- Selene -->
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="selene-img" class="w-24 flex-shrink-0 card-placeholder">Selene, Queen of the Master Magicians</div>
+                            <div>
+                                <h4 class="font-bold text-white">Link Climbing</h4>
+                                <p class="text-sm text-blue-200">Use <strong class="text-accent">Skilled Blue Magician</strong> + its "Gaia" target to Link Summon <strong class="text-accent">Selene, Queen of the Master Magicians</strong>.</p>
+                            </div>
+                        </div>
+                        <!-- GY Effect -->
+                        <div class="flex items-center gap-4 p-3 combo-step-card rounded-lg">
+                            <div id="skilled-blue-img" class="w-24 flex-shrink-0 card-placeholder">Skilled Blue Magician</div>
+                            <div>
+                                <h4 class="font-bold text-white">GY Extension</h4>
+                                <p class="text-sm text-blue-200">Banish <strong class="text-accent">Skilled Blue Magician</strong> from the GY to place a crucial Spell Counter on <strong class="text-accent">Selene</strong>, enabling her revival effect to extend your plays further.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros & Cons Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-book-sparkles"></i></span> <strong class="text-green-400">Thematic Identity:</strong> Strong, nostalgic link to iconic boss monsters like "Dark Magician" and "Buster Blader".</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-400">Modern Utility:</strong> The modernized Blue and Red Magicians have valuable GY effects for Spell Counter decks.</li>
+                        <li><span class="pro-icon"><i class="fas fa-boxes"></i></span> <strong class="text-green-400">Toolbox Access:</strong> "Skilled Red Magician" (for Archfiends) and "Skilled Blue Magician" (for Gaias) offer flexible summoning.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-snail"></i></span> <strong class="text-red-400">Extremely Slow:</strong> Requiring 3 Spells is a resource-intensive, multi-turn setup in a high-speed game.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Vulnerable:</strong> The entire combo is easily stopped by a single "Effect Veiler," "Infinite Impermanence," or removal card.</li>
+                        <li><span class="con-icon"><i class="fas fa-thumbs-down"></i></span> <strong class="text-red-400">Outclassed:</strong> Modern support (e.g., "Magician's Rod") summons boss monsters and builds boards far more efficiently.</li>
+                    </ul>
+                </div>
+                <!-- Integration -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Modern Integration</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-atom"></i></span> <strong class="text-accent">Endymion Engine:</strong> The best home for Blue/Red Magicians. Use them as Link material for <strong class="text-accent">Selene</strong>, then banish for a free Spell Counter.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-paw"></i></span> <strong class="text-accent">Mythical Beasts:</strong> The GY effect can also be used to fuel "Mythical Beast" monsters like <strong class="text-accent">Jackal King</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-monastery"></i></span> <strong class="text-accent">Spellcaster Support:</strong> Can be summoned by <strong class="text-accent">Summoner Monk</strong> and help enable <strong class="text-accent">Secret Village of the Spellcasters</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">LARGELY UNRESTRICTED:</strong> The "Skilled Magician" series itself is not competitively restricted. However, its generic Spell-based support cards have seen regulation.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Lavalval Chain (0 copies)</strong> - A key historical Rank 4 enabler, now banned.</li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Terraforming (1 copy)</strong> - Limits access to "Magical Citadel of Endymion."</li>
+                        </ul>
+                    </div>
+                    <!-- Unrestricted -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Skilled Magician" monsters</li>
+                            <li>"Upstart Goblin", "Pot of Duality"</li>
+                            <li>"Summoner Monk", "Selene"</li>
+                            <li>"Number 11: Big Eye"</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The core archetype is at full power. The limitation of <strong class="text-accent">Terraforming</strong> slightly hinders consistency for "Magical Citadel," but the deck's primary challenges are its slow pace and vulnerability, not banlist restrictions.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- NEW SCRIPT FOR DYNAMIC BANNER ---
+            const canvas = document.querySelector('.banner');
+            if (canvas) {
+                // The floating animation is done via CSS (@keyframes float)
+                // and the .spell-counter elements. No additional JS needed for the banner.
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                // Roster
+                'skilled-dark-img': 'Skilled Dark Magician',
+                'skilled-white-img': 'Skilled White Magician',
+                'skilled-blue-img': 'Skilled Blue Magician',
+                'skilled-red-img': 'Skilled Red Magician',
+                'skilled-brown-img': 'Skilled Brown Magician',
+                'citadel-img': 'Magical Citadel of Endymion',
+                // Combo
+                'spg-img': 'Spell Power Grasp',
+                'dark-magician-img': 'Dark Magician',
+                // Endboard
+                'big-eye-img': 'Number 11: Big Eye',
+                'castel-img': 'Castel, the Skyblaster Musketeer',
+                'selene-img': 'Selene, Queen of the Master Magicians',
+                // Other mentions
+                'rod-img': "Magician's Rod",
+                'souls-img': "Magicians' Souls",
+                'whelp-img': 'Buster Whelp of the Destruction Swordsman',
+                'emblem-img': 'Emblem of Dragon Destroyer',
+                'endymion-mighty-master-img': 'Endymion, the Mighty Master of Magic',
+                'summoner-monk-img': 'Summoner Monk'
+            });
+        });
+    </script>
+</body>
+</html>

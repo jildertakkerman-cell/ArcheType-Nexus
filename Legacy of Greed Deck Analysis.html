@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Legacy of Greed</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Card Loader (Assumed to be in assets/js/card-loader.js) -->
+    <script src="assets/js/card-loader.js" defer></script>
+
+    <style>
+        /* "Of Greed" Theme */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Dark, earthy brown/green background */
+            background-color: #1f1d16; 
+            /* Light beige text */
+            color: #f0f0e6;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            /* Lighter, warm brown for cards */
+            background-color: #2f2b21; 
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            /* Mid-tone brown/gold border */
+            border: 1px solid #5f5a43;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3a3529;
+            border: 1px solid #706a53;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3a3529;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3a3529;
+            border: 1px dashed #706a53;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        
+        /* THEME ACCENT COLOR: "Pot of Greed" Green */
+        .text-accent {
+            color: #a3e635; /* Bright lime green */
+        }
+        .arrow-color {
+            color: #a3e635;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #a3e635;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #a3e635;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a3e635;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #a3e635;
+        }
+
+        /* --- "Of Greed" Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1f1d16;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #5f5a43;
+        }
+
+        #aura-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            /* Darken the edges to focus the center */
+            background: radial-gradient(ellipse at center, rgba(31, 29, 22, 0.4) 0%, rgba(31, 29, 22, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(163, 230, 53, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+        }
+        
+        /* --- Home Button (Copied from other files) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i { font-size: 22px; }
+        
+        /* --- Card Popup (Adapted for "Greed" theme) --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(31, 29, 22, 0.95); /* Dark brown */
+            border: 1px solid #a3e635; /* Green border */
+            border-radius: 0.75rem;
+            color: #f0f0e6;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #a3e635; /* Green title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Playfair Display', serif;
+            color: #a3e635;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="aura-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Legacy of Greed</h1>
+            <p class="text-lg md:text-xl text-green-200">A Strategic Analysis of Card Advantage</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class->
+                    In the history of the Yu-Gi-Oh! TCG, few cards command the same level of infamy and power as <strong class="text-accent font-bold">Pot of Greed</strong>. Its simple effect, "Draw 2 cards," is the absolute benchmark for card advantage—the principle that the player with more options is more likely to win. This one card created an entire design philosophy. To understand the
+                    <!-- This is the "hint" link the user requested -->
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=pot%20of&stype=1" target="_blank" class="lore-link">
+                        sprawling family of "Greed" cards
+                    </a>
+                    , one must first deconstruct the progenitor. This series is not a formal archetype, but a collection of the game's most powerful draw spells, all balanced by increasingly severe costs and restrictions in an attempt to recapture the "costless +1" of the original.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanic Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Foundational Mechanic: Card Advantage</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- The Progenitor -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="pot-of-greed-img-container" class="card-image-container flex-shrink-0 card-placeholder">Pot of Greed</div>
+                        <div class="flex-grow">
+                            <h3 class="text-xl font-bold text-white mb-2">The Costless "+1"</h3>
+                            <p class="text-gray-300">
+                                <strong class="text-accent">Pot of Greed</strong> provides a net "+1" in card advantage. You play one card (a -1) to draw two cards (a +2), for a total gain of one card. This simple math is the source of its immense power. It increases consistency, facilitates recovery, and helps find answers, all for zero cost. Its Forbidden status is a permanent acknowledgment that a free "+1" is too powerful for the modern game.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Heirs -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="pot-of-desires-img-container" class="card-image-container flex-shrink-0 card-placeholder">Pot of Desires</div>
+                        <div class="flex-grow">
+                            <h3 class="text-xl font-bold text-white mb-2">The Modern Heirs: Power with a Price</h3>
+                            <p class="text-gray-300">
+                                All modern "Pot" cards are balanced by introducing a significant cost. <strong class="text-accent">Pot of Desires</strong> banishes 10 cards from the Main Deck. <strong class="text-accent">Pot of Prosperity</strong> banishes 3 or 6 from the Extra Deck and halves battle damage. These costs force players to make strategic trade-offs, exchanging one resource (Deck, Extra Deck, Battle Phase) for another (card advantage or consistency).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo / Synergy Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Synergy: The "Jar" Loop</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">While not a competitive combo, the "Greed" family has its own thematic synergies. The most notable is the interaction between `Jar of Greed` and `Jar Turtle`, which transforms a slow draw card into a reusable engine.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="jar-turtle-img-container" class="card-image-container flex-shrink-0 card-placeholder">Jar Turtle</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2f2b21] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Establish the Engine</h3>
+                            </div>
+                            <p class="text-gray-300">Have <strong class="text-accent">Jar Turtle</strong> face-up on the field. Its Continuous Effect is now active: "Each time 'Jar of Greed' is activated, draw 1 card".</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="jar-of-greed-img-container" class="card-image-container flex-shrink-0 card-placeholder">Jar of Greed</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2f2b21] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Activate the Trap</h3>
+                            </div>
+                            <p class="text-gray-300">Activate a set <strong class="text-accent">Jar of Greed</strong>. Its effect ("Draw 1 card") resolves. This triggers Jar Turtle's effect.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="pot-of-greed-img-container-2" class="card-image-container flex-shrink-0 card-placeholder">Pot of Greed</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2f2b21] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The "Pot of Greed" Trap</h3>
+                            </div>
+                            <p class="text-gray-300"><strong class="text-accent">Jar Turtle</strong>'s effect resolves, allowing you to draw a *second* card. This two-card combination turns the slow, "+0" `Jar of Greed` into a trap-speed "Draw 2"—a `Pot of Greed` that can be activated on the opponent's turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Greed" End Board: Maximize Hand Size</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+                A casual "Greed" deck's win condition is not a board of negates, but to weaponize card advantage itself. The goal is to assemble a massive hand and win with a single, devastating attack from <strong class="text-accent">Muka Muka</strong>.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The Beatstick -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Weapon: (Enraged) Muka Muka</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="muka-muka-img-container" class="card-image-container card-placeholder">Muka Muka</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent">Muka Muka:</strong> Gains 300 ATK/DEF for each card in your hand.</li>
+                        <li><strong class="text-accent">Enraged Muka Muka:</strong> Gains 400 ATK/DEF for each card in your hand.</li>
+                        <li><strong class="text-accent">The Goal:</strong> With a 15-card hand, `Enraged Muka Muka` becomes a 6000 ATK monstrosity.</li>
+                    </ul>
+                </div>
+                <!-- The Enablers -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Engine: Infinite Draw</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="infinite-cards-img-container" class="card-image-container card-placeholder">Infinite Cards</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent">Infinite Cards:</strong> Removes the hand size limit, allowing you to hoard resources.</li>
+                        <li><strong class="text-accent">Draw Engine:</strong> Use all "Pot" and "Jar" cards (`Shard of Greed`, `Reckless Greed`, etc.) to draw relentlessly.</li>
+                        <li><strong class="text-accent">Solemn Wishes:</strong> A casual tech card that gains you 500 LP for every card you draw, making you immune to burn damage while you build your hand.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The "Greed" family's power is defined by the TCG Forbidden & Limited List. The status of these cards dictates the entire metagame of card advantage.
+                    <br><em class="text-sm text-gray-400">(Card statuses are fetched live from the API. Last checked: Oct 2025)</em>
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- This list will be populated by the fetchBanlist() script -->
+                    <ul class="list-inside space-y-2 text-gray-300">
+                        <li>Pot of Greed: <span id="pot-of-greed-status" class="text-gray-400 font-bold">Loading...</span></li>
+                        <li>Pot of Avarice: <span id="pot-of-avarice-status" class="text-gray-400 font-bold">Loading...</span></li>
+                        <li>Pot of Prosperity: <span id="pot-of-prosperity-status" class="text-gray-400 font-bold">Loading...</span></li>
+                        <li>Pot of Extravagance: <span id="pot-of-extravagance-status" class="text-gray-400 font-bold">Loading...</span></li>
+                        <li>Pot of Desires: <span id="pot-of-desires-status" class="text-gray-400 font-bold">Loading...</span></li>
+                    </ul>
+                    <ul class="list-inside space-y-2 text-gray-300">
+                        <li>Pot of Dichotomy: <span id="pot-of-dichotomy-status" class="text-gray-400 font-bold">Loading...</span></li>
+                        <li>Pot of Riches: <span id="pot-of-riches-status" class="text-gray-400 font-bold">Loading...</span></li>
+                        <li>Pot of Duality: <span id="pot-of-duality-status" class="text-gray-400 font-bold">Loading...</span></li>
+                        <li>Reckless Greed: <span id="reckless-greed-status" class="text-gray-400 font-bold">Loading...</span></li>
+                        <li>Jar of Greed: <span id="jar-of-greed-status" class="text-gray-400 font-bold">Loading...</span></li>
+                    </ul>
+                </div>
+                <div id="banlist-implications" class="mt-4 p-3 bg-opacity-30 rounded border-l-4">
+                    <!-- This will be dynamically set based on Pot of Greed's status -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Unmatched Consistency:</strong> Cards like <strong class="text-accent">Prosperity</strong> let you dig 6 cards deep for a specific starter or "silver bullet."</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">Raw Draw Power:</strong> <strong class="text-accent">Extravagance</strong> and <strong class="text-accent">Desires</strong> provide a "+1" in card advantage, which is rare and powerful.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Resource Recovery:</strong> <strong class="text-accent">Pot of Avarice</strong> recycles key monsters (including from the Extra Deck) while also drawing 2 cards.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">High-Risk Costs:</strong> <strong class="text-accent">Desires</strong> can banish all copies of a key card. <strong class="text-accent">Extravagance</strong> can banish a needed Extra Deck monster.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Heavy Restrictions:</strong> Most "Pot" cards prevent you from drawing more cards (e.g., <strong class="text-accent">Prosperity</strong>, <strong class="text-accent">Extravagance</strong>) or from Special Summoning (<strong class="text-accent">Duality</strong>).</li>
+                         <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">"Ashable":</strong> All "Pot" cards that draw or search are extremely vulnerable to <strong class="text-accent">Ash Blossom & Joyous Spring</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Thematic Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><span class="neutral-icon"><i class="fas fa-hourglass-half"></i></span> <strong class="text-accent">Shard of Greed:</strong> A "Pot of Greed" on a two-turn delay. Too slow for competitive play, but highly thematic.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-hand-rock"></i></span> <strong class="text-accent">Goblin of Greed:</strong> A floodgate monster that stops both players from discarding for cost, mechanically "hoarding" cards.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-water"></i></span> <strong class="text-accent">Moray of Greed:</strong> A hand-fixing card for WATER decks that shuffles 2 to draw 3, acting as a powerful consistency tool.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Greed" Lineage: Key Cards</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-2xl mx-auto">A detailed overview of the direct support and thematic cards related to the "Greed" series.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Spirit of the Pot of Greed</h3>
+                    <p class="text-gray-300 mb-2"><strong>LIGHT Fairy / Effect</strong></p>
+                    <p class="text-gray-300">If a player activates 'Pot of Greed', this face-up card allows them to draw 1 additional card, turning the "Draw 2" into a "Draw 3".</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Avatar of The Pot</h3>
+                    <p class="text-gray-300 mb-2"><strong>EARTH Rock / Effect</strong></p>
+                    <p class="text-gray-300">By sending 1 'Pot of Greed' from your hand to the GY, this card lets you draw 3 cards. A different way to get a "+1" that digs deeper.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Jar Robber</h3>
+                    <p class="text-gray-300 mb-2"><strong>Quick-Play Spell</strong></p>
+                    <p class="text-gray-300">A direct counter that can only be chained to 'Pot of Greed'. It negates the effect and lets you draw 1 card instead.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Goblin of Greed</h3>
+                    <p class="text-gray-300 mb-2"><strong>DARK Fiend / Effect</strong></POST>
+                    <p class="text-gray-300">This monster acts as a floodgate, preventing either player from activating effects by discarding from their hand, forcing everyone to be "greedy."</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- "Of Greed" Banner Animation ---
+            const canvas = document.getElementById('aura-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = -(Math.random() * 1 + 0.5); // Move upwards
+                        this.radius = Math.random() * 2 + 1;
+                        this.color = `rgba(163, 230, 53, ${Math.random() * 0.5 + 0.2})`; // #a3e635
+                    }
+                    update() {
+                        this.y += this.speed;
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- Card Loader ---
+            // Assumes card-loader.js is loaded and CardLoader is available
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'pot-of-greed-img-container': 'Pot of Greed',
+                    'pot-of-desires-img-container': 'Pot of Desires',
+                    'jar-turtle-img-container': 'Jar Turtle',
+                    'jar-of-greed-img-container': 'Jar of Greed',
+                    'pot-of-greed-img-container-2': 'Pot of Greed', // Re-using for visual cue
+                    'muka-muka-img-container': 'Enraged Muka Muka', // Showcasing the stronger one
+                    'infinite-cards-img-container': 'Infinite Cards'
+                });
+            } else {
+                console.error("CardLoader is not defined. Make sure card-loader.js is loaded correctly.");
+            }
+
+            // --- Banlist Fetcher ---
+            const fetchBanlist = async () => {
+                const cardsToTrack = [
+                    'Pot of Greed', 'Pot of Avarice', 'Pot of Dichotomy', 
+                    'Pot of Extravagance', 'Pot of Prosperity', 'Pot of Desires', 
+                    'Pot of Riches', 'Pot of Duality', 'Jar of Greed', 'Reckless Greed'
+                ];
+                
+                const apiUrl = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG';
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    
+                    // Create a Map for efficient lookups
+                    const banlistMap = new Map(data.data.map(card => [card.name, card.banlist_info?.ban_tcg || 'Unlimited']));
+
+                    cardsToTrack.forEach(cardName => {
+                        const status = banlistMap.get(cardName) || 'Unlimited';
+                        const elementId = cardName.toLowerCase().replace(/ /g, '-').replace(/'/g, '') + '-status';
+                        const el = document.getElementById(elementId);
+
+                        if (el) {
+                            el.textContent = status;
+                            if (status === 'Forbidden') {
+                                el.className = 'text-red-400 font-bold';
+                            } else if (status === 'Limited') {
+                                el.className = 'text-yellow-400 font-bold';
+                            } else if (status === 'Semi-Limited') {
+                                el.className = 'text-blue-400 font-bold';
+                            } else {
+                                el.className = 'text-green-400 font-bold';
+                            }
+                        }
+                    });
+
+                    // Update the implications box
+                    const pogStatus = banlistMap.get('Pot of Greed') || 'Unlimited';
+                    const implicationsBox = document.getElementById('banlist-implications');
+                    if (implicationsBox) {
+                        if (pogStatus === 'Forbidden') {
+                            implicationsBox.className = 'mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500';
+                            implicationsBox.innerHTML = `<p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With <strong class="text-red-400">Pot of Greed</strong> forbidden, the game relies on its "heir" cards. Strategies must now pay a heavy cost (Deck, Extra Deck, or restrictions) to gain the card advantage that was once free.</p>`;
+                        } else {
+                            implicationsBox.className = 'mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500';
+                            implicationsBox.innerHTML = `<p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With <strong class="text-green-400">Pot of Greed</strong> available, it is the single best card in the game and a mandatory inclusion in every deck, defining the entire format.</p>`;
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('Failed to fetch banlist:', error);
+                    // Handle error state in UI
+                    cardsToTrack.forEach(cardName => {
+                        const elementId = cardName.toLowerCase().replace(/ /g, '-').replace(/'/g, '') + '-status';
+                        const el = document.getElementById(elementId);
+                        if (el) {
+                            el.textContent = 'Error';
+                            el.className = 'text-red-500 font-bold';
+                        }
+                    });
+                }
+            };
+
+            fetchBanlist();
+        });
+    </script>
+</body>
+</html>

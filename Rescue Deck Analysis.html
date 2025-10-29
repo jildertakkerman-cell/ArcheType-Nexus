@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project RESCUE: The Progenitors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in assets/js/ as per other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d121c; /* Dark Blue-Gray */
+            color: #dbeafe; /* Light Blue-White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #172a4d; /* Medium Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2b4984; /* Lighter Blue Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(33, 60, 107, 0.8);
+            border: 1px solid #335ca3;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1a305f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a305f;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Bright Yellow */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- PROJECT RESCUE ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d121c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #2b4984;
+        }
+
+        #blueprint-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 18, 28, 0.4) 0%, rgba(13, 18, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', monospace;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #facc15;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="blueprint-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">PROJECT: RESCUE</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Strategic Deconstruction of the Progenitor Series</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The "Rescue" name, prior to any modern archetype, was associated with a 
+                    <a href="https://yugipedia.com/wiki/Rescue" target="_blank" class="lore-link">series of powerful, generic monsters</a>. 
+                    These progenitors shared a core design philosophy: converting a single on-field monster into multiple resources summoned directly from the Main Deck. This concept of explosive board presence has shaped different eras of the TCG, with each card reflecting the mechanics of its time—from the Xyz-focused <strong class="text-accent font-bold">Rescue Rabbit</strong> to the Synchro-enabling <strong class="text-accent font-bold">Rescue Cat</strong>. Their evolution charts a course from powerful, generic staples to more conditional, mechanic-dependent extenders.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 1: The Progenitors -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Progenitors: A Legacy of Board Presence</h2>
+            
+            <!-- 1.1 Rescue Rabbit -->
+            <div class="card mb-8">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6 p-6">
+                    <div id="rabbit-img-container" class="card-image-container flex-shrink-0 card-placeholder">Rescue Rabbit</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-accent mb-3">Rescue Rabbit: The Architect of Xyz</h3>
+                        <p class="text-blue-200 mb-4">
+                            A landmark card from the ZEXAL era, its effect to summon two Level 4 Normal Monsters from the Deck was a revolutionary, one-card engine. It single-handedly established the "Dino Rabbit" metagame, a strategy centered on summoning two Normal Monsters to immediately Xyz Summon oppressive bosses like <strong class="text-white">Evolzar Laggia</strong> and <strong class="text-white">Evolzar Dolkka</strong>.
+                        </p>
+                        <p class="text-blue-200">
+                            The card's critical restriction, <strong class="text-accent">"You cannot Special Summon monsters from the Extra Deck, except Xyz Monsters, the turn you activate this effect,"</strong> has caused its relevance to plummet. In a game reliant on Link Summoning, this Xyz-lock is a crippling constraint, as is its reliance on running Normal Monsters (or "bricks") in the Main Deck.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1.2 Rescue Cat -->
+            <div class="card">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6 p-6">
+                    <div id="cat-img-container" class="card-image-container flex-shrink-0 card-placeholder">Rescue Cat</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-accent mb-3">Rescue Cat: The Combo Catalyst</h3>
+                        <p class="text-blue-200 mb-4">
+                            A product of the 5D's era, Rescue Cat's original text had far fewer restrictions, allowing it to summon two Level 3 or lower Beasts with their effects intact. This made it one of the most powerful combo enablers in history, facilitating "Synchro Cat" and numerous FTKs.
+                        </p>
+                        <p class="text-blue-200">
+                            Its power was so problematic that it received an official errata. The modern <strong class="text-white">Rescue Cat</strong> now negates the summoned monsters' effects and, crucially, <strong class="text-accent">"you can only Special Summon monsters from the Extra Deck once for the rest of this turn."</strong> Despite this, it maintains a niche in Beast decks (like Tri-Brigade) as a one-card starter for a Link-2, such as <strong class="text-white">Tri-Brigade Ferrijit the Barren Blossom</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 1.3: Link-Era Reinforcements -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Link-Era Reinforcements</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                Designed during the ARC-V and VRAINS eras, these "Rescue" cards are mechanically tied to the dominant summoning methods of their time: Pendulum and Link Summoning.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Rescue Ferret -->
+                <div class="card p-6">
+                    <div class="flex flex-col items-center">
+                        <div id="ferret-img-container" class="card-image-container mb-4 card-placeholder">Rescue Ferret</div>
+                        <h3 class="text-xl font-bold text-accent mb-2">Rescue Ferret</h3>
+                        <p class="text-blue-200 text-center">
+                            Its effect to summon from the Deck is contingent on it being pointed to by a Link Monster, scaling with that monster's Link Rating.
+                        </p>
+                    </div>
+                </div>
+                <!-- Rescue Hamster -->
+                <div class="card p-6">
+                    <div class="flex flex-col items-center">
+                        <div id="hamster-img-container" class="card-image-container mb-4 card-placeholder">Rescue Hamster</div>
+                        <h3 class="text-xl font-bold text-accent mb-2">Rescue Hamster</h3>
+                        <p class="text-blue-200 text-center">
+                            A Pendulum Monster whose effects function from the Pendulum Zone or upon being summoned.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 mt-6">
+                <h3 class="text-xl font-bold text-white mb-2 text-center">Analysis: Extenders, Not Starters</h3>
+                <p class="text-blue-200">
+                    This design approach is a significant departure from their predecessors. Unlike Rabbit and Cat, which are potent starters, Ferret and Hamster are "win-more" extenders. They require an already established board (a Link Monster or Pendulum Scales) to function. This situational dependency makes them far less consistent and impactful, which is why they have seen virtually no competitive play.
+                </p>
+            </div>
+        </section>
+
+        <!-- Historical "End Boards" Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Historical "End Boards"</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The "Rescue" progenitors were not boss monsters themselves, but engines designed to summon the powerful, meta-defining threats of their era.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-5xl">
+                <!-- Laggia -->
+                <div class="card p-6 pro-con-card text-center">
+                    <h3 class="text-xl font-bold text-white mb-4">Evolzar Laggia</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="laggia-img-container" class="card-image-container card-placeholder">Evolzar Laggia</div>
+                    </div>
+                    <p class="text-blue-200">The primary payoff for <strong class="text-accent">Rescue Rabbit</strong>. A Rank 4 Xyz that could negate a Normal/Special Summon or a Spell/Trap Card.</p>
+                </div>
+                <!-- Dolkka -->
+                <div class="card p-6 pro-con-card text-center">
+                    <h3 class="text-xl font-bold text-white mb-4">Evolzar Dolkka</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dolkka-img-container" class="card-image-container card-placeholder">Evolzar Dolkka</div>
+                    </div>
+                    <p class="text-blue-200">The other "Dino Rabbit" boss. A Rank 4 Xyz that provided two monster effect negations.</p>
+                </div>
+                <!-- Synchro Example -->
+                <div class="card p-6 pro-con-card text-center">
+                    <h3 class="text-xl font-bold text-white mb-4">Classic Synchros</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="brionac-img-container" class="card-image-container card-placeholder">Brionac, Dragon of the Ice Barrier</div>
+                    </div>
+                    <p class="text-blue-200"><strong class="text-accent">Rescue Cat</strong> enabled explosive Synchro plays, summoning classic bosses like <strong class="text-white">Brionac</strong> or <strong class="text-white">Goyo Guardian</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">One-Card Starters:</strong> Rabbit and Cat (pre-errata) were the definition of high-impact, low-commitment starters.</li>
+                        <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-green-300">Resource Generation:</strong> All cards adhere to the "1-for-2" design, generating immediate board presence from the Deck.</li>
+                        <li><span class="pro-icon"><i class="fas fa-crown"></i></span> <strong class="text-green-300">Metagame Defining:</strong> "Dino Rabbit" and "Synchro Cat" were dominant, Tier 0/Tier 1 strategies in their prime.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-lock"></i></span> <strong class="text-red-300">Crippling Restrictions:</strong> Rabbit's Xyz-lock makes it unplayable in the Link era.</li>
+                        <li><span class="con-icon"><i class="fas fa-edit"></i></span> <strong class="text-red-300">Power-Crept by Errata:</strong> Cat's errata (negated effects, 1 Extra Deck summon) reduced it to a niche starter.</li>
+                        <li><span class="con-icon"><i class="fas fa-question-circle"></i></span> <strong class="text-red-300">Situational Design:</strong> Ferret and Hamster are extenders that require setup, making them too conditional.</li>
+                    </ul>
+                </div>
+                <!-- Tech / Payoffs -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Payoffs</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Evolzar Laggia / Dolkka:</strong> The original "Dino Rabbit" boss monsters, providing powerful negation.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-project-diagram"></i></span> <strong class="text-accent">Link-2 Enablers:</strong> The modern use for Rescue Cat, summoning cards like <strong class="text-white">Tri-Brigade Ferrijit</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-star-of-life"></i></span> <strong class="text-accent">Synchro Summons:</strong> The historical purpose of Rescue Cat, enabling powerful Synchro monsters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">FULL POWER (WITH ERRATA):</strong> All "Rescue" progenitor cards are currently unrestricted in the TCG.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited Cards (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Rescue Rabbit</strong></li>
+                            <li><strong class="text-green-300">Rescue Cat</strong> (with errata)</li>
+                            <li><strong class="text-green-300">Rescue Ferret</strong></li>
+                            <li><strong class="text-green-300">Rescue Hamster</strong></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-white mb-2">Historical Context</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-accent">Rescue Cat</strong> was previously <strong class="text-red-400">Forbidden</strong> for many years due to its original, unrestricted effect.</li>
+                            <li>It was moved to <strong class="text-green-400">Unlimited</strong> only after receiving an errata that heavily restricted its combo potential.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While all cards are legal, their modern restrictions (erratas, Xyz-locks) and conditional effects (Ferret/Hamster) prevent them from having the meta-defining impact they once did. They exist as historical examples of game design and niche engine pieces.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Concluding Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Concluding Analysis: An Evolving Design Philosophy</h2>
+                <p class="text-blue-200 mb-4">
+                    The evolution of the "Rescue" cards serves as a compelling microcosm of the Yu-Gi-Oh! TCG's own design trajectory. It charts a course from an era defined by powerful, generic staples to one that favors more conditional, mechanic-dependent effects.
+                </p>
+                <p class="text-blue-200 mb-4">
+                    The journey begins with <strong class="text-accent">Rescue Rabbit</strong> and <strong class="text-accent">Rescue Cat</strong>, cards designed as generic tools to facilitate the dominant summoning mechanics of their respective eras. Rabbit was a purpose-built Xyz engine, a one-card starter that defined an entire metagame. Cat was an even less restricted combo piece for Synchro Summons, whose power grew so uncontrollably that it eventually required a fundamental revision to its text. They represent a design philosophy where individual, splashable cards could form the entire backbone of a strategy.
+                </p>
+                <p class="text-blue-200">
+                    In contrast, <strong class="text-accent">Rescue Ferret</strong> and <strong class="text-accent">Rescue Hamster</strong> embody a more modern, cautious design approach. Tied intrinsically to the Link and Pendulum mechanics, they are not starters but extenders. Their effects are conditional, requiring a pre-existing board state to function. This shift highlights a broader trend in game design away from universally powerful, generic enablers toward cards that function within more specific, established game states.
+                </p>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- BLUEPRINT GRID ANIMATION ---
+            const canvas = document.getElementById('blueprint-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let time = 0;
+                const gridSize = 30;
+                const gridColor = 'rgba(56, 104, 192, 0.2)'; // Faint blue
+                const highlightColor = 'rgba(250, 204, 21, 0.7)'; // Accent yellow
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw grid
+                    ctx.strokeStyle = gridColor;
+                    ctx.lineWidth = 0.5;
+                    for (let x = 0; x <= canvas.width; x += gridSize) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, canvas.height);
+                        ctx.stroke();
+                    }
+                    for (let y = 0; y <= canvas.height; y += gridSize) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(canvas.width, y);
+                        ctx.stroke();
+                    }
+
+                    // Draw scanning line
+                    const lineX = (time * 50) % (canvas.width + 100) - 50; // Sweeping line
+                    ctx.strokeStyle = highlightColor;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(lineX, 0);
+                    ctx.lineTo(lineX, canvas.height);
+                    ctx.stroke();
+
+                    // Draw a "target"
+                    const targetX = (Math.sin(time * 0.5) * (canvas.width / 3)) + (canvas.width / 2);
+                    const targetY = (Math.cos(time * 0.3) * (canvas.height / 3)) + (canvas.height / 2);
+                    ctx.strokeStyle = 'rgba(250, 204, 21, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(targetX, targetY, gridSize, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(targetX - gridSize / 2, targetY);
+                    ctx.lineTo(targetX + gridSize / 2, targetY);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(targetX, targetY - gridSize / 2);
+                    ctx.lineTo(targetX, targetY + gridSize / 2);
+                    ctx.stroke();
+
+                    time += 0.016;
+                    requestAnimationFrame(draw);
+                }
+
+                setCanvasSize();
+                draw();
+                window.addEventListener('resize', setCanvasSize);
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            // Assumes card-loader.js is loaded
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'rabbit-img-container': 'Rescue Rabbit',
+                    'cat-img-container': 'Rescue Cat',
+                    'ferret-img-container': 'Rescue Ferret',
+                    'hamster-img-container': 'Rescue Hamster',
+                    'laggia-img-container': 'Evolzar Laggia',
+                    'dolkka-img-container': 'Evolzar Dolkka',
+                    'brionac-img-container': 'Brionac, Dragon of the Ice Barrier'
+                });
+            } else {
+                console.error('CardLoader is not defined. Make sure card-loader.js is loaded correctly.');
+            }
+        });
+    </script>
+</body>
+</html>

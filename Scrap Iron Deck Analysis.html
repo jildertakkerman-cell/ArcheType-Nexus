@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrap & Scrap-Iron Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Note: Assuming card-loader.js is in this path based on other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Inter for body and Roboto Mono for headings, fitting the industrial theme -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #171717; /* Dark neutral 900 */
+            color: #e5e5e5; /* Neutral 200 */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        /* Card styling with a dark metal and rust theme */
+        .card {
+            background-color: #262626; /* Dark neutral 800 */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #b45309; /* Amber 700 (rust) */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #404040; /* Dark neutral 700 */
+            border: 1px solid #f59e0b; /* Amber 500 (brighter rust) */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        /* Placeholder for card images */
+        .card-placeholder {
+            background-color: #262626;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #171717;
+            border: 1px dashed #f59e0b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f59e0b; } /* Amber 500 */
+        .arrow-color { color: #f59e0b; }
+        .heading-underline {
+            border-bottom: 2px solid #f59e0b;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        /* Link style for the "hint" */
+        .lore-link {
+            color: #f59e0b;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f59e0b;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f59e0b;
+        }
+
+        /* --- NEW SCRAP-THEME ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #171717;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #b45309;
+        }
+
+        #scrap-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(23, 23, 23, 0.4) 0%, rgba(23, 23, 23, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(245, 158, 11, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', monospace;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* --- Card Popup --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(23, 23, 23, 0.95); /* neutral-900 */
+            border: 1px solid #f59e0b; /* amber-500 */
+            border-radius: 0.75rem;
+            color: #e5e5e5;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #f59e0b;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #f59e0b;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="scrap-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Scrap & Scrap-Iron</h1>
+            <p class="text-lg md:text-xl text-amber-200">An Analysis of Destruction and Recursion</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: Deconstructing a Legacy</h2>
+                <p class="text-neutral-200">
+                    An analysis of "Scrap-Iron" and "Scrap" requires an immediate clarification: these are two functionally distinct, though thematically related, groups.
+                </p>
+                <ul class="list-disc list-inside mt-4 space-y-2 text-neutral-300">
+                    <li>The <strong class="text-accent font-bold">"Scrap-Iron" series</strong> is a small collection of Trap Cards known for their recursive, self-setting abilities, providing sustained but slow disruption.</li>
+                    <li>The <strong class="text-accent font-bold">"Scrap" archetype</strong> is a 
+                        <!-- This link fulfills the user request for a "hint to the cards" -->
+                        <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Scrap&stype=1" target="_blank" class="lore-link">makeshift legion</a>
+                        of EARTH monsters centered on a formidable engine of strategic self-destruction to generate advantage and build powerful boards.
+                    </li>
+                </ul>
+                <p class="text-neutral-200 mt-4">
+                    Both share a "junkyard" aesthetic, but their in-game mechanics do not directly overlap. This report analyzes both, detailing their individual functions and combined strategic potential in modern play.
+                </p>
+            </div>
+        </section>
+
+        <!-- Part I: The "Scrap-Iron" Series -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Part I: The "Scrap-Iron" Series – Recursive Disruption</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Scrap-Iron Scarecrow -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="scarecrow-img-container" class="card-image-container flex-shrink-0 card-placeholder">Scrap-Iron Scarecrow</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Scrap-Iron Scarecrow</h3>
+                            <p class="text-sm text-neutral-200">The original recursive trap. It negates an opponent's monster's attack and then Sets itself instead of going to the GY. While iconic, it's generally too slow for modern play, as it only responds to the Battle Phase.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Scrap-Iron Statue -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="statue-img-container" class="card-image-container flex-shrink-0 card-placeholder">Scrap-Iron Statue</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Scrap-Iron Statue</h3>
+                            <p class="text-sm text-neutral-200">A niche counter to face-up Spells/Traps (like Pendulums or Field Spells), destroying them when they activate. Its secondary effect is highly relevant, Special Summoning a "Junk" monster from the GY if this card is sent to the GY, providing synergy with Synchron decks.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Scrap-Iron Signal -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="signal-img-container" class="card-image-container flex-shrink-0 card-placeholder">Scrap-Iron Signal</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Scrap-Iron Signal</h3>
+                            <p class="text-sm text-neutral-200">A Counter Trap that provides recurring monster effect negation. Its high-cost activation requirement (controlling an "Accel Synchro" monster) limits it to dedicated Synchro decks, but the recurring negation is powerful there.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Scrap-Iron Sacred Statue -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sacred-statue-img-container" class="card-image-container flex-shrink-0 card-placeholder">Scrap-Iron Sacred Statue</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">Scrap-Iron Sacred Statue</h3>
+                            <p class="text-sm text-neutral-200">The modern powerhouse of the series. It's a recurring extender, Special Summoning a Level 7 or 8 Dragon Synchro from the GY/banished. Its second effect, summoning `The Crimson Dragon` from the Extra Deck if destroyed by an opponent, makes it a core combo piece in modern Synchro strategies.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part II: The "Scrap" Archetype -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Part II: The "Scrap" Archetype – The Art of Self-Destruction</h2>
+            <p class="text-neutral-200 mb-8 text-center max-w-2xl mx-auto">Distinct from the "Scrap-Iron" Traps, the "Scrap" archetype is a cohesive engine that thrives on strategic self-destruction. Cards are designed to destroy their own "Scrap" monsters, which then trigger powerful Graveyard effects to generate card advantage, extend combos, and build an overwhelming board.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Column 1: Core Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-amber-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Scrap Heap: Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Scrap Raptor</h4>
+                            <p class="text-sm text-neutral-200">The primary one-card starter. Destroys itself for an extra Normal Summon, and searches a non-Tuner "Scrap" when destroyed by a "Scrap" card's effect.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Scrap Chimera</h4>
+                            <p class="text-sm text-neutral-200">The key extender. When Normal Summoned, it revives a "Scrap" Tuner (like Raptor) from the GY, immediately setting up a Link-2 (Wyvern) or Synchro play.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Scrap Golem</h4>
+                            <p class="text-sm text-neutral-200">A powerful extender that revives a Level 4 or lower "Scrap" from the GY once per turn. It's a key search target from Raptor to continue combos.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Scrap Recycler</h4>
+                            <p class="text-sm text-neutral-200">An alternative starter. On summon, it sends any Machine monster from Deck to GY, setting up plays for "Scrap" or other Machine-based decks like Orcust.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Column 2: Engine Hub -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-industry text-4xl text-amber-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Assembly Line: Engine Hub</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Scrap Wyvern</h4>
+                            <p class="text-sm text-neutral-200">The Link-2 engine hub. It revives a "Scrap" and then destroys a card you control, triggering your "Scrap" effects and enabling the entire self-destruction loop.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Scrap Factory</h4>
+                            <p class="text-sm text-neutral-200">The Field Spell payoff. When a "Scrap" is destroyed by a card effect, it lets you Special Summon another "Scrap" from the Deck, fueling the engine's advantage.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Scrapyard</h4>
+                            <p class="text-sm text-neutral-200">The primary searcher spell. Adds 1 "Scrap" Tuner (usually Raptor) from the Deck to the hand, acting as additional copies of your starter.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Scrapstorm</h4>
+                            <p class="text-sm text-neutral-200">A Quick-Play Spell that targets a "Scrap", sends another from Deck to GY, draws 1, then destroys the target. An excellent combo and disruption tool.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The Scrap Raptor Assembly Line</h2>
+            <p class="text-neutral-200 mb-8 text-center max-w-2xl mx-auto">This one-card combo demonstrates the engine's power, turning `Scrap Raptor` into a full board.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="raptor-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Scrap Raptor</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#171717] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate & Search</h3>
+                            </div>
+                            <p class="text-neutral-200">Normal Summon <strong class="text-accent">Scrap Raptor</strong>. Activate its effect, destroying itself to gain an additional "Scrap" Normal Summon. Since it was destroyed by a "Scrap" effect, its GY effect triggers, adding <strong class="text-accent">Scrap Chimera</strong> from Deck to hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="chimera-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Scrap Chimera</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#171717] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Extend & Link</h3>
+                            </div>
+                            <p class="text-neutral-200">Use your additional Normal Summon on <strong class="text-accent">Scrap Chimera</strong>. Its effect triggers, Special Summoning <strong class="text-accent">Scrap Raptor</strong> from the GY. Immediately Link Summon <strong class="text-accent">Scrap Wyvern</strong> using both monsters.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="wyvern-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Scrap Wyvern</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#171717] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Start the Loop</h3>
+                            </div>
+                            <p class="text-neutral-200">Activate <strong class="text-accent">Scrap Wyvern</strong>'s first effect, reviving <strong class="text-accent">Scrap Raptor</strong> and then destroying it. This triggers Raptor's GY effect again, adding <strong class="text-accent">Scrap Golem</strong> from Deck to hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 4 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="golem-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Scrap Golem</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#171717] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                <h3 class="text-lg font-bold">Flood the Field</h3>
+                            </div>
+                            <p class="text-neutral-200">Wyvern's second effect now triggers (since a "Scrap" was revived to its zone), Special Summoning <strong class="text-accent">Scrap Golem</strong> from hand. You can now use Golem's effect to revive <strong class="text-accent">Scrap Raptor</strong>, resulting in 3 monsters on field (Wyvern, Golem, Raptor) and a path to powerful Synchro/Link bosses.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Final Assembly: Endboards & Hybrid Strategies</h2>
+            <p class="text-neutral-200 mb-8 text-center max-w-3xl mx-auto">
+                The "Scrap" engine's true power is its flexibility, enabling generic boss monsters or integrating into other powerful archetypes.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Standard Endboard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Standard "Scrap" Endboard</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="apollousa-img-container" class="card-image-container card-placeholder">Apollousa, Bow of the Goddess</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-neutral-200">
+                        <li><strong class="text-accent">Apollousa, Bow of the Goddess:</strong> Provides multiple monster effect negations.</li>
+                        <li><strong class="text-accent">Borreload Savage Dragon:</strong> An omni-negate, often equipped with Scrap Wyvern.</li>
+                        <li><strong class="text-accent">I:P Masquerena:</strong> Allows for reactive Link Summons (like Knightmare Unicorn) on the opponent's turn.</li>
+                    </ul>
+                </div>
+                <!-- Scrap-Dino Hybrid -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Scrap-Dino Hybrid</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="babycerasaurus-img-container" class="card-image-container card-placeholder">Babycerasaurus</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-neutral-200">
+                        <li><strong class="text-accent">Unrivaled Synergy:</strong> `Scrap Wyvern`'s effect can target and destroy `Babycerasaurus` or `Petiteranodon`.</li>
+                        <li><strong class="text-accent">Explosive Summons:</strong> This triggers their effects to Special Summon more Dinosaurs from the Deck, leading to overwhelming boards.</li>
+                    </ul>
+                </div>
+                <!-- Scrap-Orcust Hybrid -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Scrap-Orcust Hybrid</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="lib-img-container" class="card-image-container card-placeholder">Lib the World Key Blademaster</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-neutral-200">
+                        <li><strong class="text-accent">Grave Setup:</strong> `Scrap Recycler` sends `Orcust Knightmare` or other Machines to the GY.</li>
+                        <li><strong class="text-accent">Crescendo Set:</strong> The combo can end on `Lib the World Key Blademaster` to Set the powerful omni-negate Counter Trap `Orcust Crescendo`.</li>
+                    </ul>
+                </div>
+                <!-- Crimson Dragon Synergy -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">"Scrap-Iron" Synergy</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="crimson-dragon-img-container" class="card-image-container card-placeholder">The Crimson Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-neutral-200">
+                        <li><strong class="text-accent">Modern Combo:</strong> `Scrap-Iron Sacred Statue` is a key part of "Crimson Dragon" combos.</li>
+                        <li><strong class="text-accent">Resilient Loop:</strong> `The Crimson Dragon` can search `Sacred Statue`, which revives it, and `Sacred Statue` replaces itself with another `Crimson Dragon` if destroyed by the opponent.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-neutral-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Efficiency:</strong> The "Scrap" engine (Raptor/Chimera/Wyvern) is a compact one-card combo.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Highly Splashable:</strong> The engine requires few main deck slots and enhances many other strategies (Dino, Orcust).</li>
+                        <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-green-300">Flexible Endboards:</strong> Can easily build into generic Link/Synchro boss monsters or facilitate archetype-specific plays.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-neutral-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Key Choke Points:</strong> `Ash Blossom` on the first `Scrap Raptor` GY effect is devastating, ending the combo.</li>
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">Negation Vulnerability:</strong> `Infinite Impermanence` or `Effect Veiler` on the Normal Summoned Raptor also stops the combo cold.</li>
+                        <li><span class="con-icon"><i class="fas fa-meteor"></i></span> <strong class="text-red-300">Nibiru, the Primal Being:</strong> The combo summons 5+ monsters very quickly, making it highly vulnerable to Nibiru.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-neutral-200">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Dinosaur:</strong> The engine's ability to destroy `Babycerasaurus` is its most famous and powerful application.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-robot"></i></span> <strong class="text-accent">Orcust:</strong> `Scrap Recycler` and `Scrap Wyvern` (a Machine) fit perfectly into Orcust strategies.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-accent">Synchron:</strong> `Scrap-Iron Statue`'s GY effect provides resilience and extension for "Junk" decks.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section (Dynamic) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <!-- This container will be populated by the fetchAndDisplayBanlist() function -->
+            <div id="banlist-container" class="card p-6">
+                <p class="text-center text-accent">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>
+                    Fetching current TCG banlist data from YGOPRODeck API...
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- WELDING SPARK BANNER ANIMATION ---
+            const canvas = document.getElementById('scrap-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const gravity = 0.08;
+                const sparkChance = 0.1;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Spark {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.vx = (Math.random() - 0.5) * 4;
+                        this.vy = (Math.random() - 0.5) * 4;
+                        this.opacity = 1;
+                        this.color = Math.random() > 0.5 ? '#f59e0b' : '#fdba74'; // Amber 500 & 400
+                    }
+
+                    update() {
+                        this.vy += gravity;
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        this.opacity -= 0.02;
+                    }
+
+                    draw() {
+                        ctx.globalAlpha = this.opacity;
+                        ctx.fillStyle = this.color;
+                        ctx.fillRect(this.x, this.y, 2, 2);
+                    }
+                }
+
+                function animate() {
+                    ctx.globalAlpha = 0.1; // Motion blur
+                    ctx.fillStyle = '#171717';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+
+                    if (Math.random() < sparkChance) {
+                        particles.push(new Spark(Math.random() * canvas.width, Math.random() * canvas.height));
+                    }
+
+                    for (let i = particles.length - 1; i >= 0; i--) {
+                        const p = particles[i];
+                        p.update();
+                        p.draw();
+                        if (p.opacity <= 0) {
+                            particles.splice(i, 1);
+                        }
+                    }
+
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                animate();
+                window.addEventListener('resize', setCanvasSize);
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'scarecrow-img-container': 'Scrap-Iron Scarecrow',
+                'statue-img-container': 'Scrap-Iron Statue',
+                'signal-img-container': 'Scrap-Iron Signal',
+                'sacred-statue-img-container': 'Scrap-Iron Sacred Statue',
+                'raptor-combo-img': 'Scrap Raptor',
+                'chimera-combo-img': 'Scrap Chimera',
+                'wyvern-combo-img': 'Scrap Wyvern',
+                'golem-combo-img': 'Scrap Golem',
+                'apollousa-img-container': 'Apollousa, Bow of the Goddess',
+                'babycerasaurus-img-container': 'Babycerasaurus',
+                'lib-img-container': 'Lib the World Key Blademaster',
+                'crimson-dragon-img-container': 'The Crimson Dragon'
+            });
+
+            // --- DYNAMIC BANLIST FETCHER ---
+            async function fetchAndDisplayBanlist() {
+                const container = document.getElementById('banlist-container');
+                
+                // Key cards mentioned in the DOCX or relevant to the strategy
+                const cardsToCheck = [
+                    // Scrap & Scrap-Iron
+                    'Scrap-Iron Scarecrow',
+                    'Scrap-Iron Statue',
+                    'Scrap-Iron Signal',
+                    'Scrap-Iron Sacred Statue',
+                    'Scrap Raptor',
+                    'Scrap Recycler',
+                    'Scrap Chimera',
+                    'Scrap Golem',
+                    'Scrap Wyvern',
+                    'Scrapyard',
+                    'Scrap Factory',
+                    // Key Synergies & Bosses
+                    'The Crimson Dragon',
+                    'Apollousa, Bow of the Goddess',
+                    'Borreload Savage Dragon',
+                    'I:P Masquerena',
+                    'Lib the World Key Blademaster',
+                    'Orcust Crescendo',
+                    'Babycerasaurus',
+                    'Petiteranodon',
+                    // Banned cards mentioned in DOCX
+                    'Block Dragon',
+                    'Spright Elf' 
+                ];
+
+                try {
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    
+                    const banlistData = data.data;
+                    const cardStatus = new Map(cardsToCheck.map(name => [name, 'unlimited']));
+
+                    // Process the fetched banlist data
+                    for (const card of banlistData) {
+                        if (cardStatus.has(card.name) && card.banlist_info && card.banlist_info.ban_tcg) {
+                            const status = card.banlist_info.ban_tcg.toLowerCase();
+                            if (status === 'banned') {
+                                cardStatus.set(card.name, 'forbidden');
+                            } else if (status === 'limited') {
+                                cardStatus.set(card.name, 'limited');
+                            } else if (status === 'semi-limited') {
+                                cardStatus.set(card.name, 'semiLimited');
+                            }
+                        }
+                    }
+
+                    // Build HTML
+                    const lists = {
+                        forbidden: [],
+                        limited: [],
+                        semiLimited: [],
+                        unlimited: []
+                    };
+
+                    for (const [name, status] of cardStatus.entries()) {
+                        lists[status].push(name);
+                    }
+
+                    // Helper to build HTML for each list
+                    const buildListHTML = (title, cards, colorClass, copies) => {
+                        if (cards.length === 0) {
+                            return `
+                                <div class="card combo-step-card p-4">
+                                    <h4 class="text-lg font-bold ${colorClass} mb-2">${title}</h4>
+                                    <ul class="list-disc list-inside space-y-1 text-sm text-neutral-300">
+                                        <li>None of these key cards are currently ${title.toLowerCase()}.</li>
+                                    </ul>
+                                </div>`;
+                        }
+                        return `
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold ${colorClass} mb-2">${title}</h4>
+                                <ul class="list-disc list-inside space-y-1 text-sm text-neutral-300">
+                                    ${cards.sort().map(name => `<li><strong class="${colorClass}">${name} (${copies})</strong></li>`).join('')}
+                                </ul>
+                            </div>`;
+                    };
+
+                    const forbiddenHTML = buildListHTML('Forbidden', lists.forbidden, 'text-red-400', '0 copies');
+                    const limitedHTML = buildListHTML('Limited', lists.limited, 'text-yellow-400', '1 copy');
+                    const semiLimitedHTML = buildListHTML('Semi-Limited', lists.semiLimited, 'text-blue-400', '2 copies');
+                    const unlimitedHTML = buildListHTML('Unrestricted', lists.unlimited, 'text-green-400', '3 copies');
+
+                    // Update the container
+                    container.innerHTML = `
+                        <p class="text-neutral-300 mb-4 text-center">
+                            Live TCG banlist status for key "Scrap" cards and related synergies (Last Checked: ${new Date().toLocaleDateString()}):
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${forbiddenHTML}
+                            ${limitedHTML}
+                            ${semiLimitedHTML}
+                            ${unlimitedHTML}
+                        </div>
+                        <div class="mt-4 p-3 bg-neutral-900 bg-opacity-30 rounded border-l-4 border-amber-500">
+                            <p class="text-sm text-neutral-300"><strong>Meta Implications:</strong> As confirmed, <strong class="text-red-400">Block Dragon</strong> and <strong class="text-red-400">Spright Elf</strong> are <strong class="text-red-400">Forbidden</strong>, removing the "Scrap" engine's most broken partners. However, the core "Scrap" archetype and its "Dino" synergies remain at full power, making it a potent and resilient engine.</p>
+                        </div>
+                    `;
+
+                } catch (error) {
+                    console.error('Failed to fetch banlist data:', error);
+                    container.innerHTML = `
+                        <p class="text-center text-red-500">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Failed to fetch TCG banlist data.
+                        </p>
+                        <p class="text-center text-neutral-400 text-sm">${error.message}</p>
+                    `;
+                }
+            }
+
+            // Initial load calls
+            fetchAndDisplayBanlist();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>"Solemn" Series Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Playfair Display for a stately, "divine" heading and Inter for body text -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2a; /* Dark Navy Blue */
+            color: #f3f4f6; /* Light off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a2a4a; /* Lighter Navy/Purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a4a7a; /* Medium purple-blue border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(42, 42, 74, 0.8); /* Slightly transparent card */
+            border: 1px solid #a08b3c; /* Gold border */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2a4a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2a4a;
+            border: 1px dashed #a08b3c;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fde047; } /* Bright Gold */
+        .arrow-color { color: #fde047; }
+        .heading-underline {
+            border-bottom: 2px solid #fde047;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fde047;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #fde047;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* --- "SOLEMN" ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a2a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #a08b3c;
+        }
+
+        #divine-light-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 26, 42, 0.4) 0%, rgba(26, 26, 42, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(253, 224, 71, 0.7);
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 26, 42, 0.95); /* Dark Navy */
+            border: 1px solid #fde047; /* Gold border */
+            border-radius: 0.75rem;
+            color: #f3f4f6;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #fde047; /* Gold */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            font-weight: bold;
+            color: #fde047;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="divine-light-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">THE "SOLEMN" SERIES</h1>
+            <p class="text-lg md:text-xl text-yellow-200">The Art of Saying "No"</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The <strong class="text-accent font-bold">"Solemn"</strong> series is a pillar of competitive play, a suite of high-impact, high-cost Counter Traps. Their philosophy is a fundamental transaction: trade your own Life Points for the absolute, Spell Speed 3 power to negate an opponent's critical action. This high-risk, high-reward dynamic has made the series iconic, representing the apex of reactive gameplay that can single-handedly decide the outcome of a duel.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Pillars of Negation Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Pillars of Negation</h2>
+            <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+                The series is composed of four principal Counter Traps, each with a distinct cost, activation condition, and strategic purpose. Mastering the timing of this
+                <a href="https://yugipedia.com/wiki/Solemn" target="_blank" class="lore-link">divine judgment</a>
+                is the first step toward mastering their collective power.
+            </p>
+            <div class="space-y-8">
+                <!-- Solemn Judgment -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div id="judgment-img" class="card-image-container card-placeholder">Solemn Judgment</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-accent mb-2">Solemn Judgment</h3>
+                            <p class="text-gray-400 text-sm font-bold mb-3">COST: Pay half your LP</p>
+                            <p class="text-gray-300 mb-4">
+                                <strong class="text-white">Negates:</strong> The Summon of a monster(s) OR the activation of a Spell/Trap Card.
+                            </p>
+                            <p class="text-gray-300">
+                                <strong class="text-white">Analysis:</strong> The original omni-negate for Summons and backrow. Its unique cost makes it <strong class="text-accent">always activatable</strong>, whether you have 8000 LP or 100 LP. Its primary drawback in the modern game is its inability to negate monster effects, but it remains the ultimate protection against board-wiping Spells like Evenly Matched or Lightning Storm.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solemn Warning -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div id="warning-img" class="card-image-container card-placeholder">Solemn Warning</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-accent mb-2">Solemn Warning</h3>
+                            <p class="text-gray-400 text-sm font-bold mb-3">COST: Pay 2000 LP</p>
+                            <p class="text-gray-300 mb-4">
+                                <strong class="text-white">Negates:</strong> The Summon of a monster(s) OR a Spell/Trap/monster effect that <strong class="text-accent">includes an effect that Special Summons</strong> a monster(s).
+                            </p>
+                            <p class="text-gray-300">
+                                <strong class="text-white">Analysis:</strong> A more focused iteration, specializing in stopping monsters from hitting the field. Its key strength is negating <strong class="text-accent">effects</strong> that summon (like *Branded Fusion* or *Monster Reborn*), something *Judgment* cannot do. Its 2000 LP cost can make it a dead card in the late game.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solemn Strike -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div id="strike-img" class="card-image-container card-placeholder">Solemn Strike</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-accent mb-2">Solemn Strike</h3>
+                            <p class="text-gray-400 text-sm font-bold mb-3">COST: Pay 1500 LP</p>
+                            <p class="text-gray-300 mb-4">
+                                <strong class="text-white">Negates:</strong> The Special Summon of a monster(s) OR the activation of a <strong class="text-accent">monster effect</strong>.
+                            </p>
+                            <p class="text-gray-300">
+                                <strong class="text-white">Analysis:</strong> Arguably the most impactful of the series in the modern, monster-centric metagame. Its ability to negate <strong class="text-accent">any monster effect</strong> at a low 1500 LP cost makes it incredibly versatile for disrupting combos. Its main weakness is its total inability to interact with Spells or Traps.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solemn Scolding -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div id="scolding-img" class="card-image-container card-placeholder">Solemn Scolding</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-accent mb-2">Solemn Scolding</h3>
+                            <p class="text-gray-400 text-sm font-bold mb-3">COST: Pay 3000 LP</p>
+                            <p class="text-gray-300 mb-4">
+                                <strong class="text-white">Negates:</strong> The Summon of a monster(s) OR the activation of <strong class="text-accent">any Spell Card, Trap Card, or monster effect</strong>.
+                            </p>
+                            <p class="text-gray-300">
+                                <strong class="text-white">Analysis:</strong> The ultimate omni-negate, but with the highest cost and a severe restriction: it must be the <strong class="text-accent">only Set card in your Spell & Trap Zone</strong> to activate. This makes it a high-risk, high-reward choice, often used in combo decks that end on a big monster board with just one card Set for protection.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Philosophy of the End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Philosophy of the End Board</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-6">
+                    In modern Yu-Gi-Oh!, a Set "Solemn" card provides a crucial layer of <strong class="text-accent">Spell Speed 3 disruption</strong>. A typical end board of monster-based negates (like *Baronne de Fleur* or *Apollousa*) is extremely vulnerable to "board breaker" Spells like <strong class="text-white">Dark Ruler No More</strong> or <strong class="text-white">Evenly Matched</strong>. Because those are Spell/Trap cards, the monster negates cannot respond to them.
+                </p>
+                <p class="text-gray-300">
+                    A Set <strong class="text-accent">Solemn Judgment</strong>, however, <strong class="text-accent">can</strong> be chained to negate *Dark Ruler No More*, protecting your entire monster board and often winning you the game on the spot. This makes "Solemn" traps the ultimate form of protection for an established board.
+                </p>
+            </div>
+        </section>
+
+        <!-- Synergies & Support Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Synergies & Support</h2>
+            <div classs="space-y-8">
+                <!-- Guiding Ariadne -->
+                <div class="card p-6 mb-8">
+                    <h3 class="text-2xl font-bold text-white mb-4 text-center">The Primary Enabler: Counter Fairies</h3>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div id="ariadne-img" class="card-image-container card-placeholder">Guiding Ariadne</div>
+                        <div>
+                            <h4 class="text-xl font-bold text-accent mb-2">Guiding Ariadne</h4>
+                            <p class="text-gray-300 mb-4">
+                                <strong class="text-white">Pendulum Effect:</strong> You do not pay LP or discard to activate Counter Trap Cards.
+                            </p>
+                            <p class="text-gray-300">
+                                <strong class="text-white">Analysis:</strong> This card single-handedly removes the only drawback of the "Solemn" series. When combined with <strong class="text-accent">Bountiful Artemis</strong> (which draws a card every time a Counter Trap is activated), this combo creates a powerful, cost-free negation engine that generates card advantage.
+                            </p>
+                        </div>
+                        <div id="artemis-img" class="card-image-container card-placeholder hidden md:block">Bountiful Artemis</div>
+                    </div>
+                </div>
+
+                <!-- Archetypal Synergies -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-6 pro-con-card">
+                        <div class="flex justify-center mb-4">
+                            <div id="rexterm-img" class="card-image-container card-placeholder">Dinomorphia Rexterm</div>
+                        </div>
+                        <h4 class="text-xl font-bold text-accent mb-2">Dinomorphia</h4>
+                        <p class="text-gray-300">This archetype's entire strategy revolves around <strong class="text-accent">paying LP</strong> to activate powerful Traps. For *Dinomorphia*, the high LP costs of the "Solemn" cards are not a drawback but an <strong class="text-white">enabler</strong>, helping them quickly reach the low-LP threshold needed for their boss monsters.
+                        </p>
+                    </div>
+                    <div class="card p-6 pro-con-card">
+                        <div class="flex justify-center mb-4">
+                            <div id="lady-labrynth-img" class="card-image-container card-placeholder">Lady Labrynth</div>
+                        </div>
+                        <h4 class="text-xl font-bold text-accent mb-2">Labrynth & Traptrix</h4>
+                        <p class="text-gray-300">
+                            As trap-heavy control decks, *Labrynth* and *Traptrix* naturally incorporate "Solemn" cards. They provide generic, powerful negation that the archetypes' own traps might not cover, and serve as essential protection against backrow removal like *Harpie's Feather Duster*.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 'Solemn Johnson' Anomaly Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Solemn Johnson" Anomaly</h2>
+            <div class="card p-6">
+                <p class="text-gray-300">
+                    Players will often encounter the name <strong class="text-accent">"Solemn Johnson"</strong> when discussing these cards. It is important to clarify that this is <strong class="text-white">not an official card or archetype</strong>. "Solemn Johnson" is a popular fan-created nickname and meme for the aged, god-like figure depicted in the artwork of all four "Solemn" cards. While there is much fan speculation about his lore, he currently exists only within community discussions.
+                </p>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status (Live)</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-6 text-center">
+                    The following status is fetched <strong class="text-accent">live</strong> from the YGOPRODeck API and reflects the current TCG banlist.
+                </p>
+                <!-- This container will be filled dynamically by JavaScript -->
+                <div id="banlist-status-container">
+                    <p class="text-center text-accent">Fetching banlist data...</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Load the shared card-loader.js -->
+    <!-- Assuming card-loader.js is in the root, as uploaded -->
+    <script src="card-loader.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- "SOLEMN" DIVINE LIGHT ANIMATION ---
+            const canvas = document.getElementById('divine-light-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 70;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 100; // Start below screen
+                        this.speed = Math.random() * 1 + 0.5; // Slow upward speed
+                        this.radius = Math.random() * 2 + 1;
+                        this.color = `rgba(253, 224, 71, ${Math.random() * 0.5 + 0.3})`; // Golden color
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < -10) { // Reset when off-screen
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalCompositeOperation = 'lighter';
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- BANLIST FETCHER SCRIPT ---
+            async function fetchBanlistStatus() {
+                const container = document.getElementById('banlist-status-container');
+                if (!container) return;
+
+                const cardNames = [
+                    'Solemn Judgment', 
+                    'Solemn Warning', 
+                    'Solemn Strike', 
+                    'Solemn Scolding', 
+                    'Guiding Ariadne'
+                ];
+                const query = cardNames.join('|');
+                const url = `https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG&name=${encodeURIComponent(query)}`;
+
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    
+                    const data = await response.json();
+                    
+                    if (!data.data) {
+                        container.innerHTML = '<p class="text-center text-red-400">Could not find banlist data for these cards.</p>';
+                        return;
+                    }
+
+                    let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+                    
+                    cardNames.forEach(name => {
+                        const card = data.data.find(c => c.name === name);
+                        let status = 'Unlimited';
+                        let color = 'text-green-400';
+                        let copies = '3 copies';
+
+                        // Check if banlist_info and ban_tcg exist
+                        if (card && card.banlist_info && card.banlist_info.ban_tcg) {
+                            const banStatus = card.banlist_info.ban_tcg;
+                            if (banStatus === 'Banned') {
+                                status = 'Forbidden';
+                                color = 'text-red-500';
+                                copies = '0 copies';
+                            } else if (banStatus === 'Limited') {
+                                status = 'Limited';
+                                color = 'text-yellow-400';
+                                copies = '1 copy';
+                            } else if (banStatus === 'Semi-Limited') {
+                                status = 'Semi-Limited';
+                                color = 'text-blue-400';
+                                copies = '2 copies';
+                            }
+                        }
+                        
+                        html += `
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold ${color} mb-1">${name}</h4>
+                                <p class="text-sm text-gray-300">${status} (${copies})</p>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    container.innerHTML = html;
+
+                } catch (error) {
+                    console.error('Failed to fetch banlist data:', error);
+                    container.innerHTML = '<p class="text-center text-red-400">Error loading banlist data. Please check the console.</p>';
+                }
+            }
+
+            // --- CARD LOADER SCRIPT ---
+            // Ensure CardLoader is available before calling it
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'judgment-img': 'Solemn Judgment',
+                    'warning-img': 'Solemn Warning',
+                    'strike-img': 'Solemn Strike',
+                    'scolding-img': 'Solemn Scolding',
+                    'ariadne-img': 'Guiding Ariadne',
+                    'artemis-img': 'Bountiful Artemis',
+                    'rexterm-img': 'Dinomorphia Rexterm',
+                    'lady-labrynth-img': 'Lady Labrynth of the Silver Castle'
+                });
+            } else {
+                console.error('CardLoader is not defined. Make sure card-loader.js is loaded correctly.');
+            }
+
+            // Fetch banlist data on load
+            fetchBanlistStatus();
+        });
+    </script>
+</body>
+</html>

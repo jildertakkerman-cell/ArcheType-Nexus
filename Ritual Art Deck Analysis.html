@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ritual Art Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- We'll use the card-loader.js from the root, as seen in your other files -->
+    <script src="card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d121c; /* Dark Blue-Black */
+            color: #dbeafe; /* Light Blue */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1e293b; /* Dark Slate Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3b82f6; /* Bright Blue Border */
+        }
+        .combo-step-card {
+            background-color: #334155; /* Lighter Slate */
+            border: 1px solid #60a5fa;
+        }
+        .pro-con-card {
+            background-color: #334155;
+            border: 1px solid #60a5fa;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1e293b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1e293b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #60a5fa; } /* Light Blue Accent */
+        .arrow-color { color: #3b82f6; }
+        .heading-underline {
+            border-bottom: 2px solid #3b82f6;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #60a5fa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #60a5fa;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW RITUAL ART ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d121c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #3b82f6;
+        }
+
+        #ritual-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 18, 28, 0.4) 0%, rgba(13, 18, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(96, 165, 250, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #3b82f6;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #60a5fa;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- MODIFIED Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="ritual-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Ritual Art Engine</h1>
+            <p class="text-lg md:text-xl text-blue-200">A Deep Dive into Generic Ritual Support</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-100">
+                    The Ritual Summoning mechanic has historically been defined by inherent card disadvantage. In response, a series of generic support cards emerged, none more transformative than the 
+                    <a href="https://ygoprodeck.com/card-search/?&fname=Ritual%20Art" target="_blank" class="lore-link">"Ritual Art" engine</a>.
+                    This suite of cards—comprising <strong class="text-accent font-bold">Advanced Ritual Art</strong>, <strong class="text-accent font-bold">High Ritual Art</strong>, and <strong class="text-accent font-bold">Urgent Ritual Art</strong>—represents a paradigm shift by leveraging unconventional resource pools like the Main Deck. The engine's core design revolves around a strict reliance on Normal Monsters, a constraint that, when properly leveraged, turns the cost of including non-effect monsters into a significant strategic benefit.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Components Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Components: The "Ritual Art" Spells</h2>
+            <p class="text-blue-100 mb-8 text-center max-w-2xl mx-auto">
+                The engine's power lies in the distinct functions of its three core cards, each addressing a different aspect of the Ritual Summoning process.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Advanced Ritual Art -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col items-center">
+                        <div id="advanced-ritual-art-img" class="card-image-container mb-4 card-placeholder">Advanced Ritual Art</div>
+                        <h3 class="text-xl font-bold text-accent mb-2">Advanced Ritual Art</h3>
+                        <p class="text-sm text-blue-100 text-center">The foundational spell. It Ritual Summons from the hand by sending Normal Monsters from the <strong class="text-accent">Deck</strong> to the GY, serving as both a consistency tool and a potent Graveyard setup engine.</p>
+                    </div>
+                </div>
+                <!-- High Ritual Art -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col items-center">
+                        <div id="high-ritual-art-img" class="card-image-container mb-4 card-placeholder">High Ritual Art</div>
+                        <h3 class="text-xl font-bold text-accent mb-2">High Ritual Art</h3>
+                        <p class="text-sm text-blue-100 text-center">A high-impact offensive card. It Ritual Summons directly from the <strong class="text-accent">Deck</strong> by tributing Normal Monsters from the hand, enabling surprise OTKs. The monster is temporary and returns to the deck.</p>
+                    </div>
+                </div>
+                <!-- Urgent Ritual Art -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col items-center">
+                        <div id="urgent-ritual-art-img" class="card-image-container mb-4 card-placeholder">Urgent Ritual Art</div>
+                        <h3 class="text-xl font-bold text-accent mb-2">Urgent Ritual Art</h3>
+                        <p class="text-sm text-blue-100 text-center">The engine's interactive tool. This Trap Card copies a Ritual Spell from the hand or GY, allowing you to Ritual Summon at Spell Speed 2 as a powerful interruption on the opponent's turn.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Support Network Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Support Network</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Searchers and Consistency -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-search text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Searchers & Consistency</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Manju of the Ten Thousand Hands</h4>
+                            <p class="text-sm text-blue-100">The classic Normal Summon searcher, adding either a Ritual Monster or Ritual Spell from Deck to hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Diviner of the Herald</h4>
+                            <p class="text-sm text-blue-100">A one-card starter. On summon, it sends <strong class="text-accent">Herald of the Arc Light</strong> from the Extra Deck to the GY, which then triggers to search any Ritual Monster or Spell.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Impcantation Engine</h4>
+                            <p class="text-sm text-blue-100">A dedicated engine (<strong class="text-accent">Candoll</strong>, <strong class="text-accent">Talismandra</strong>) that Special Summons itself from the hand and searches the missing Ritual pieces, all while building a board for tributes.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Normal Monster Conundrum -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-question-circle text-4xl text-blue-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Normal Monster Conundrum</h3>
+                    </div>
+                    <p class="text-blue-100 mb-4">The engine's biggest challenge is the mandatory inclusion of Normal Monsters, which can be "bricks" if drawn. A successful build must strategically select its Normal Monsters based on:</p>
+                    <ul class="list-disc list-inside space-y-2 text-blue-100">
+                        <li><strong class="text-accent">Level:</strong> Must match the Ritual Monster's Level (e.g., Level 8 <strong class="text-accent">Blue-Eyes White Dragon</strong> for <strong class="text-accent">Chaos MAX</strong>).</li>
+                        <li><strong class="text-accent">Attribute/Type:</strong> Crucial for archetypes like <strong class="text-accent">Magikey</strong> that gain effects based on Attributes in the GY.</li>
+                        <li><strong class="text-accent">Name:</strong> Iconic monsters like <strong class="text-accent">Dark Magician</strong> have their own support networks.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Synergistic Archetypes Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Case Studies: Synergistic Archetypes</h2>
+            <p class="text-blue-100 mb-8 text-center max-w-2xl mx-auto">
+                The "Ritual Art" engine's true potential is realized when integrated into archetypes that benefit from its unique mechanics.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Magikey -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Case Study: Magikey</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="batosbuster-img" class="card-image-container card-placeholder">Magikey Mechmusket - Batosbuster</div>
+                    </div>
+                    <p class="text-blue-100"><strong class="text-accent">Advanced Ritual Art</strong> is the most efficient way to fuel the Magikey mechanic, which grants effects based on the number of different Attributes in the GY. Summoning <strong class="text-accent">Batosbuster</strong> with a WATER Normal Monster from the deck instantly turns on other Magikey effects.</p>
+                </div>
+                <!-- Blue-Eyes Chaos MAX -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Case Study: Blue-Eyes Chaos MAX</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="chaos-max-img" class="card-image-container card-placeholder">Blue-Eyes Chaos MAX Dragon</div>
+                    </div>
+                    <p class="text-blue-100"><strong class="text-accent">Advanced Ritual Art</strong> provides the most direct route to summoning this 4000 ATK OTK behemoth. It uses one card to send the Level 8 <strong class="text-accent">Blue-Eyes White Dragon</strong> from Deck to GY, summoning <strong class="text-accent">Chaos MAX</strong> and setting up <strong class="text-accent">BEWD</strong> for revival plays.</p>
+                </div>
+                <!-- Shinobird -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Case Study: Shinobird</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="shinobaroness-img" class="card-image-container card-placeholder">Shinobaroness Peacock</div>
+                    </div>
+                    <p class="text-blue-100">This deck's potential is unlocked by <strong class="text-accent">Urgent Ritual Art</strong>. It allows the summon of Spirit Rituals like <strong class="text-accent">Shinobaroness Peacock</strong> during the opponent's turn, triggering their powerful on-summon effects to bounce cards and dismantle the opponent's board as an interruption.</p>
+                </div>
+                <!-- Dark Magician -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Case Study: Dark Magician</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="illusion-of-chaos-img" class="card-image-container card-placeholder">Illusion of Chaos</div>
+                    </div>
+                    <p class="text-blue-100"><strong class="text-accent">Advanced Ritual Art</strong> can summon Level 7 Rituals like <strong class="text-accent">Illusion of Chaos</strong> by sending the Level 7 Normal Monster <strong class="text-accent">Dark Magician</strong> from Deck to GY. This sets up <strong class="text-accent">Dark Magician</strong> to be revived by <strong class="text-accent">Eternal Soul</strong> while also searching a key combo piece.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-100">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">Explosive Power:</strong> Can summon boss monsters with minimal hand investment for OTKs.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400 font-bold">Resource Conversion:</strong> Uniquely transforms the deck into a resource, thinning it and setting up the GY.</li>
+                        <li><span class="pro-icon"><i class="fas fa-user-secret"></i></span> <strong class="text-green-400 font-bold">Surprise Factor:</strong> <strong class="text-accent">High Ritual Art</strong> and <strong class="text-accent">Urgent Ritual Art</strong> provide unpredictability.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-100">
+                        <li><span class="con-icon"><i class="fas fa-dumpster"></i></span> <strong class="text-red-400 font-bold">The "Brick" Factor:</strong> Drawing multiple Normal Monsters without the Ritual Spells leads to unplayable hands.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Choke Points:</strong> Highly centralized around its key spells. A single <strong class="text-accent">Ash Blossom</strong> on <strong class="text-accent">Advanced Ritual Art</strong> can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-400 font-bold">Graveyard Hate:</strong> Vulnerable to cards like <strong class="text-accent">The Bystial</strong> monsters or <strong class="text-accent">D.D. Crow</strong> that banish GY resources.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Support Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-100">
+                        <li><span class="neutral-icon"><i class="fas fa-hand-sparkles"></i></span> <strong class="text-accent">Diviner of the Herald:</strong> The best 1-card starter for any Ritual deck.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-search"></i></span> <strong class="text-accent">Manju / Senju / Sonic Bird:</strong> The classic searchers that trade a Normal Summon for a combo piece.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-magic"></i></span> <strong class="text-accent">Impcantation Engine:</strong> A free way to search pieces and put bodies on board for tributes.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">MINOR IMPACT:</strong> The "Ritual Art" engine itself is at full power, but a key generic support card is Limited.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Advanced Ritual Art (3 copies)</strong></li>
+                            <li><strong class="text-green-300">High Ritual Art (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Urgent Ritual Art (3 copies)</strong></li>
+                            <li>Diviner of the Herald (3 copies)</li>
+                            <li>Manju of the Ten Thousand Hands (3 copies)</li>
+                            <li>All Impcantation monsters (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div classs="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Herald of the Arc Light (1 copy)</strong></li>
+                            <li>The primary target for Diviner of the Herald's GY send effect.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The "Ritual Art" engine is fully operational. However, the limitation of <strong class="text-accent">Herald of the Arc Light</strong> means that the <strong class="text-accent">Diviner of the Herald</strong> combo can only be used once per duel to search a Ritual card via this method, slightly reducing the deck's recursive power but not its initial consistency.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // --- RITUAL ART ANIMATED BANNER SCRIPT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('ritual-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speed = Math.random() * 0.5 + 0.2;
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        this.color = `rgba(96, 165, 250, ${Math.random() * 0.5 + 0.3})`; // Light blue
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < 0) {
+                            this.y = canvas.height;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING SCRIPT ---
+            // We assume CardLoader.js is already loaded from the <head>
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'advanced-ritual-art-img': 'Advanced Ritual Art',
+                    'high-ritual-art-img': 'High Ritual Art',
+                    'urgent-ritual-art-img': 'Urgent Ritual Art',
+                    'batosbuster-img': 'Magikey Mechmusket - Batosbuster',
+                    'chaos-max-img': 'Blue-Eyes Chaos MAX Dragon',
+                    'shinobaroness-img': 'Shinobaroness Peacock',
+                    'illusion-of-chaos-img': 'Illusion of Chaos'
+                });
+            } else {
+                console.error('CardLoader is not defined. Make sure card-loader.js is loaded correctly.');
+            }
+        });
+    </script>
+</body>
+</html>

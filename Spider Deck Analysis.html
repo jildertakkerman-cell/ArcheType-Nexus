@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spider Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in assets/js/ -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Orbitron for a "modern engine" feel, and Inter for body text -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1633; /* Dark Indigo/Purple */
+            color: #e0e7ff; /* Light Lavender White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a2457; /* Darker Purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #ec4899; /* Venomous Pink/Magenta */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a2457;
+            border: 1px solid #ec4899;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3c337c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3c337c;
+            border: 1px dashed #ec4899;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ec4899; } /* Venomous Pink/Magenta */
+        .arrow-color { color: #ec4899; }
+        .heading-underline {
+            border-bottom: 2px solid #ec4899;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        /* The requested link hint */
+        .lore-link {
+            color: #ec4899;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ec4899;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ec4899;
+        }
+
+        /* --- NEW SPIDER WEB ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1633;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #ec4899;
+        }
+
+        #web-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 22, 51, 0.4) 0%, rgba(26, 22, 51, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(236, 72, 153, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 22, 51, 0.95); /* Dark Purple base */
+            border: 1px solid #ec4899; /* Pink accent */
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #ec4899;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Orbitron', sans-serif;
+            color: #ec4899;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="web-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">SPIDER</h1>
+            <p class="text-lg md:text-xl text-pink-200">Analysis of the Modern OTK Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: Two Generations</h2>
+                <p class="text-indigo-200">
+                    The "Spider" collection is not one cohesive archetype, but two distinct generations of cards separated by over a decade.
+                </p>
+                <p class="text-indigo-200 mt-4">
+                    The <strong class="text-accent font-bold">Legacy Web (2009)</strong> focused on a slow, battle-centric control strategy of forcing monsters into Defense Position. This strategy is entirely obsolete in the modern game.
+                </p>
+                <p class="text-indigo-200 mt-4">
+                    The <strong class="text-accent font-bold">Modern Swarm (2023)</strong> introduced a hyper-consistent, two-card combo engine that completely supplants the old strategy. This modern engine is a proactive, game-ending OTK strategy designed to swarm the field and summon high-Rank DARK Xyz monsters. This analysis will focus exclusively on this modern, competitively viable engine.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Modern Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Anatomy of the Modern Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Mother Spider Splitter -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-sitemap text-4xl text-pink-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Progenitor: Mother Spider Splitter</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div id="splitter-img-container" class="w-full card-placeholder mb-4">Mother Spider Splitter</div>
+                        <p class="text-sm text-indigo-200"><strong class="text-accent">Role:</strong> The primary, one-card starter.</p>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200 text-sm">
+                            <li><strong class="text-white">Inherent Summon:</strong> Can Special Summon itself from the hand if you control no monsters, saving your Normal Summon.</li>
+                            <li><strong class="text-white">The Splitting Effect:</strong> Tributes itself to Special Summon up to 3 <strong class="text-accent">Baby Spider</strong> from your hand and/or Deck.</li>
+                            <li><strong class="text-white">Level Modification:</strong> All summoned `Baby Spider`s become Level 5.</li>
+                            <li><strong class="text-white">Critical Restriction:</strong> Locks you into Special Summoning only <strong class="text-accent">DARK Xyz Monsters</strong> from the Extra Deck for the rest of the turn. This defines the entire Extra Deck.</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Baby Spider -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-spider text-4xl text-pink-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Swarm: Baby Spider</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div id="baby-img-container" class="w-full card-placeholder mb-4">Baby Spider</div>
+                        <p class="text-sm text-indigo-200"><strong class="text-accent">Role:</strong> The versatile combo tool and extender.</p>
+                         <ul class="list-disc list-inside space-y-2 text-indigo-200 text-sm">
+                            <li><strong class="text-white">On-Field Effect:</strong> Can Tribute 1 DARK monster (itself) to increase the Levels of all other "Baby Spiders" you control by the Tributed monster's Level. This is the key to making Rank 10s.</li>
+                            <li><strong class="text-white">Graveyard Effect:</strong> Can pay half your LP, banish itself from the GY, and detach 1 material from your DARK Xyz Monster to Special Summon 1 DARK monster from your GY. This is a powerful extender for the OTK.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The Go-Second OTK</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The deck's primary win condition. This sequence converts a single <strong class="text-accent">Mother Spider Splitter</strong> into a game-winning board.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="splitter-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Mother Spider Splitter</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Split</h3>
+                            </div>
+                            <p class="text-indigo-200">Special Summon <strong class="text-accent">Mother Spider Splitter</strong> (Hand). Activate its effect, Tributing it. Special Summon 3x <strong class="text-accent">Baby Spider</strong> from Deck. They all become Level 5.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="baby-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Baby Spider</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Tribute</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate the on-field effect of one <strong class="text-accent">Baby Spider</strong>, Tributing itself (a Level 5 DARK monster). The remaining two <strong class="text-accent">Baby Spiders</strong> have their Levels increased by 5, making them both Level 10.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="tarantula-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Number 35: Ravenous Tarantula</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The First Titan</h3>
+                            </div>
+                            <p class="text-indigo-200">Overlay the two Level 10 <strong class="text-accent">Baby Spiders</strong> to Xyz Summon <strong class="text-accent">Number 35: Ravenous Tarantula</strong> in Attack Position.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 4 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="pain-gainer-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Number 84: Pain Gainer</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                <h3 class="text-lg font-bold">The Rank-Up (Part 1)</h3>
+                            </div>
+                            <p class="text-indigo-200">Immediately overlay <strong class="text-accent">Ravenous Tarantula</strong> to Xyz Summon <strong class="text-accent">Number 84: Pain Gainer</strong> (using Tarantula as material).</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 5 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="revival-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Number 35: Ravenous Tarantula</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span>
+                                <h3 class="text-lg font-bold">The Revival</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate the <strong class="text-accent">Baby Spider</strong> in your GY (from Step 2). Pay half your LP, banish it, and detach <strong class="text-accent">Tarantula</strong> from <strong class="text-accent">Pain Gainer</strong> to Special Summon <strong class="text-accent">Number 35: Ravenous Tarantula</strong> back to the field.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 6 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="seven-sins-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Number 77: The Seven Sins</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a1633] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">6</span>
+                                <h3 class="text-lg font-bold">The Final Titan</h3>
+                            </div>
+                            <p class="text-indigo-200">Overlay <strong class="text-accent">Number 84: Pain Gainer</strong> to Xyz Summon <strong class="text-accent">Number 77: The Seven Sins</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Grand Finale: The OTK Endboard</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                The resulting board is simple but overwhelmingly powerful, designed to end the game in a single Battle Phase.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Ravenous Tarantula -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Number 35: Ravenous Tarantula</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="tarantula-end-img" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Global ATK Boost:</strong> All monsters you control gain ATK/DEF equal to the *difference* between your LP and your opponent's LP.</li>
+                        <li><strong class="text-accent">Synergistic Cost:</strong> The <strong class="text-accent">Baby Spider</strong>'s "pay half LP" cost is now a benefit, typically granting a 4000+ ATK boost to your entire field.</li>
+                    </ul>
+                </div>
+                <!-- The Seven Sins -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Number 77: The Seven Sins</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="seven-sins-end-img" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Massive Attacker:</strong> Starts with 4000 ATK, which becomes 8000+ ATK with Tarantula's boost, enabling an easy OTK.</li>
+                        <li><strong class="text-accent">Board Wipe:</strong> Can detach 2 materials to banish all opposing Special Summoned monsters (non-targeting).</li>
+                        <li><strong class="text-accent">Protection:</strong> Can detach 1 material to protect itself from destruction.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ecosystem & Support Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Ecosystem: Support & Synergies</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The two-card engine cannot function in a vacuum. Building a successful Spider deck is less about the Spiders themselves and more about constructing the most efficient 
+                <a href="https://yugipedia.com/wiki/Spider" target="_blank" class="lore-link">web of support cards</a>
+                to find and enable <strong class="text-accent">Mother Spider Splitter</strong>.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Consistency -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Consistency Web</h3>
+                    <div id="resonance-img" class="w-full card-placeholder mb-4">Resonance Insect</div>
+                    <p class="text-indigo-200 text-sm">
+                        <strong class="text-accent">Resonance Insect</strong> is the most important non-Spider monster. When sent from field to GY (e.g., via Link Summoning <strong class="text-accent">Linkuriboh</strong> or <strong class="text-accent">Salamangreat Almiraj</strong>), it searches <strong class="text-accent">Mother Spider Splitter</strong> (a Level 5 Insect).
+                    </p>
+                </div>
+                <!-- Beetrooper Alliance -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Beetrooper Alliance</h3>
+                    <div id="beetrooper-img" class="w-full card-placeholder mb-4">Beetrooper Scout Buggy</div>
+                    <p class="text-indigo-200 text-sm">
+                        The Beetrooper engine provides swarming and extension. <strong class="text-accent">Beetrooper Armor Horn</strong> grants an additional Normal Summon, allowing you to summon <strong class="text-accent">Resonance Insect</strong>, Link it off for a search, and still have your Normal Summon.
+                    </p>
+                </div>
+                <!-- Legacy Spiders -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Legacy Web (Historical)</h3>
+                    <div id="legacy-img" class="w-full card-placeholder mb-4">Mother Spider</div>
+                    <p class="text-indigo-200 text-sm">
+                        The original 2009 "Spider" cards (<strong class="text-accent">Mother Spider</strong>, <strong class="text-accent">Spyder Spider</strong>, <strong class="text-accent">Underground Arachnid</strong>) are <strong class="text-red-400">fundamentally incompatible</strong> with the modern engine. Their slow, battle-focused strategy has no synergy with the go-second OTK plan and should not be included in a competitive build.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-rocket"></i></span> <strong class="text-green-300">Explosive OTK:</strong> Capable of ending the game from a single card if uninterrupted.</li>
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Consistency:</strong> The deck is built around finding its one-card starter (Splitter) via multiple generic Insect searchers.</li>
+                        <li><span class="pro-icon"><i class="fas fa-dollar-sign"></i></span> <strong class="text-green-300">Budget-Friendly:</strong> The core engine and its Xyz targets are very affordable, making it a powerful rogue option.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-bomb"></i></span> <strong class="text-red-300">Glass Cannon:</strong> The deck is extremely fragile. A single, well-timed hand trap (<strong class="text-accent">Ash Blossom</strong>, <strong class="text-accent">Impermanence</strong>) on <strong class="text-accent">Mother Spider Splitter</strong>'s effect ends the turn completely.</li>
+                        <li><span class="con-icon"><i class="fas fa-lock"></i></span> <strong class="text-red-300">Attribute Lock:</strong> Vulnerable to floodgates like <strong class="text-accent">Gozen Match</strong> (as all main monsters are DARK).</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">No "Plan B":</strong> If the OTK fails, the deck has almost no follow-up, grind game, or defensive options.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Tech & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-search"></i></span> <strong class="text-accent">Small World:</strong> An excellent generic searcher that can bridge almost any Insect in the deck to <strong class="text-accent">Mother Spider Splitter</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-pastafarianism"></i></span> <strong class="text-accent">"Kaiju" Monsters:</strong> Insect-Type Kaijus like <strong class="text-accent">Kumongous</strong> are searchable by <strong class="text-accent">Resonance Insect</strong>, providing built-in removal.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-magic"></i></span> <strong class="text-accent">Board Breakers:</strong> As a "go-second" deck, it relies heavily on cards like <strong class="text-accent">Forbidden Droplet</strong> and <strong class="text-accent">Dark Ruler No More</strong> to bypass negations.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The modern Spider OTK strategy remains at full power in the TCG.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Core Engine (Unlimited)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Mother Spider Splitter (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Baby Spider (3 copies)</strong></li>
+                            <li>Number 35: Ravenous Tarantula (3 copies)</li>
+                            <li>Number 84: Pain Gainer (3 copies)</li>
+                            <li>Number 77: The Seven Sins (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Support Engine (Mixed)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Resonance Insect (3 copies)</li>
+                            <li>Beetrooper Scout Buggy (3 copies)</li>
+                            <li>Beetrooper Armor Horn (3 copies)</li>
+                            <li>Salamangreat Almiraj (3 copies)</li>
+                            <li><strong class="text-yellow-300">Linkuriboh (1 copy)</strong> - Limited</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The deck's core combo is entirely at full power. The limit on <strong class="text-accent">Linkuriboh</strong> slightly hurts the consistency of the <strong class="text-accent">Resonance Insect</strong> line but does not stop it, as <strong class="text-accent">Almiraj</strong> is a perfect substitute. The strategy is fully viable.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- SPIDER WEB ANIMATION ---
+            const canvas = document.getElementById('web-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                let mouse = { x: null, y: null, radius: 100 };
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+                
+                canvas.addEventListener('mousemove', (event) => {
+                    const rect = canvas.getBoundingClientRect();
+                    mouse.x = event.clientX - rect.left;
+                    mouse.y = event.clientY - rect.top;
+                });
+
+                canvas.addEventListener('mouseleave', () => {
+                    mouse.x = null;
+                    mouse.y = null;
+                });
+
+                class Particle {
+                    constructor(x, y, dirX, dirY, size, color) {
+                        this.x = x;
+                        this.y = y;
+                        this.originX = x;
+                        this.originY = y;
+                        this.dirX = dirX;
+                        this.dirY = dirY;
+                        this.size = size;
+                        this.color = color;
+                        this.pulseSpeed = Math.random() * 0.04 + 0.01;
+                        this.pulse = Math.random();
+                    }
+
+                    draw() {
+                        const pulseSize = this.size + Math.sin(this.pulse) * 2;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, pulseSize > 0 ? pulseSize : 0, 0, Math.PI * 2, false);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+
+                    update() {
+                        // Mouse interaction
+                        if (mouse.x) {
+                            let dx = mouse.x - this.x;
+                            let dy = mouse.y - this.y;
+                            let distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance < mouse.radius) {
+                                this.x -= (dx / distance) * 2;
+                                this.y -= (dy / distance) * 2;
+                            } else {
+                                // Return to origin
+                                if (this.x !== this.originX) this.x -= (this.x - this.originX) / 20;
+                                if (this.y !== this.originY) this.y -= (this.y - this.originY) / 20;
+                            }
+                        } else {
+                            // Return to origin
+                            if (this.x !== this.originX) this.x -= (this.x - this.originX) / 20;
+                            if (this.y !== this.originY) this.y -= (this.y - this.originY) / 20;
+                        }
+
+                        // Wall collision (or wrap around)
+                        if (this.x > canvas.width || this.x < 0) this.originX = Math.random() * canvas.width;
+                        if (this.y > canvas.height || this.y < 0) this.originY = Math.random() * canvas.height;
+
+                        this.pulse += this.pulseSpeed;
+                        this.draw();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    let numParticles = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < numParticles; i++) {
+                        let size = Math.random() * 2 + 1;
+                        let x = Math.random() * canvas.width;
+                        let y = Math.random() * canvas.height;
+                        let dirX = (Math.random() * 0.4) - 0.2;
+                        let dirY = (Math.random() * 0.4) - 0.2;
+                        let color = '#ec4899'; // Pink accent
+                        particles.push(new Particle(x, y, dirX, dirY, size, color));
+                    }
+                }
+
+                function connect() {
+                    let opacity = 1;
+                    for (let a = 0; a < particles.length; a++) {
+                        for (let b = a + 1; b < particles.length; b++) {
+                            let dist = Math.sqrt(
+                                Math.pow(particles[a].x - particles[b].x, 2) +
+                                Math.pow(particles[a].y - particles[b].y, 2)
+                            );
+                            if (dist < 100) {
+                                opacity = 1 - (dist / 100);
+                                ctx.strokeStyle = `rgba(236, 72, 153, ${opacity * 0.5})`; // Semi-transparent pink
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[a].x, particles[a].y);
+                                ctx.lineTo(particles[b].x, particles[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => p.update());
+                    connect();
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+            }
+
+            // --- CARD LOADING ---
+            // Assumes CardLoader.js is loaded and initialized
+            CardLoader.loadCards({
+                'splitter-img-container': 'Mother Spider Splitter',
+                'baby-img-container': 'Baby Spider',
+                'splitter-combo-img': 'Mother Spider Splitter',
+                'baby-combo-img': 'Baby Spider',
+                'tarantula-combo-img': 'Number 35: Ravenous Tarantula',
+                'pain-gainer-combo-img': 'Number 84: Pain Gainer',
+                'revival-combo-img': 'Number 35: Ravenous Tarantula',
+                'seven-sins-combo-img': 'Number 77: The Seven Sins',
+                'tarantula-end-img': 'Number 35: Ravenous Tarantula',
+                'seven-sins-end-img': 'Number 77: The Seven Sins',
+                'resonance-img': 'Resonance Insect',
+                'beetrooper-img': 'Beetrooper Scout Buggy',
+                'legacy-img': 'Mother Spider'
+            });
+        });
+    </script>
+</body>
+</html>

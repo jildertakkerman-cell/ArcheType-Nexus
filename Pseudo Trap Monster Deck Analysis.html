@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pseudo Trap Monster Deep Dive</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Card Loader Script -->
+    <script src="assets/js/card-loader.js"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1a1c; /* Dark Teal/Deep Sea */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a2e2e; /* Darker Cyan/Fossil */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #45a29e; /* Muted Cyan Border */
+        }
+        .combo-step-card {
+            background-color: #2a4141; /* Slightly lighter teal */
+            border: 1px solid #5fb3ac;
+        }
+        .pro-con-card {
+            background-color: #2a4141;
+            border: 1px solid #5fb3ac;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #2a4141;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a4141;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #66fcf1; } /* Bright Aqua/Cyan */
+        .text-accent-secondary { color: #a4e5e0; }
+        .arrow-color { color: #45a29e; }
+        .heading-underline {
+            border-bottom: 2px solid #66fcf1;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #66fcf1;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #66fcf1;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #66fcf1;
+        }
+
+        /* --- New Paleozoic Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d1a1c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #45a29e;
+        }
+
+        #excavation-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 26, 28, 0.4) 0%, rgba(13, 26, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(102, 252, 241, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', monospace;
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* --- Card Popup Styles --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 26, 28, 0.95); /* Dark Teal */
+            border: 1px solid #66fcf1; /* Bright Aqua/Cyan Border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #66fcf1; /* Bright Aqua/Cyan Title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #66fcf1;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="excavation-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Pseudo Trap Monsters</h1>
+            <p class="text-lg md:text-xl text-cyan-200">A Deep Dive into Trap Monster Evolution</p>
+        </header>
+
+        <!-- Introduction -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Introduction: Beyond the Backrow</h2>
+                <p class="text-accent-secondary">
+                    In the intricate architecture of the Yu-Gi-Oh! Trading Card Game, card types form the foundational syntax of play. The division between Monsters, Spells, and Traps is typically absolute. However, a unique and strategically fascinating subset of cards exists at the intersection of these categories: Trap Monsters. These are Trap Cards that, through their own effects, Special Summon themselves to the field as monsters, blurring the lines between the front and back rows. This report provides an exhaustive analysis of a specific, competitively significant sub-category known as "Pseudo Trap Monsters."
+                </p>
+                <p class="text-accent-secondary mt-4">
+                    Historically, early Trap Monsters such as <strong class="text-accent">Embodiment of Apophis</strong> established the concept but were plagued by an inherent design vulnerability: they were treated as both a Monster and a Trap Card simultaneously while on the field. This "double jeopardy" made them susceptible to an expanded range of removal options, limiting their strategic viability. The advent of Pseudo Trap Monsters—cards that Special Summon themselves as monsters and are explicitly <strong class="text-white">not treated as Traps</strong> thereafter—represents a pivotal evolution in game design. This is not a mere semantic distinction; it is a fundamental mechanical shift that resolves the inherent fragility of their predecessors and enables the construction of complex, resilient, and competitively potent archetypes.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 1: Rulings -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Section 1: The Definitive Guide to Rulings</h2>
+            <p class="text-accent-secondary mb-8 text-center max-w-3xl mx-auto">
+                A comprehensive understanding of the nuanced rulings that govern Trap Monsters is paramount to mastering their strategic application. The distinction between "Regular" and "Pseudo" Trap Monsters is the primary axis upon which their gameplay, deck-building, and counter-strategies pivot.
+            </p>
+
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-white mb-4">1.1 The Two Classes: Regular vs. Pseudo Trap Monsters</h3>
+                <p class="text-accent-secondary mb-4"><strong class="text-accent">Defining Regular Trap Monsters:</strong> This class is defined by card text that, after Special Summoning, includes the clause "(This card is <strong class="text-white">also still a Trap Card</strong>.)". This creates a hybrid state where the card exists in a Monster Zone but retains its identity as a Trap Card. Examples include the "Tiki" series (Tiki Soul, Tiki Curse), Embodiment of Apophis, and the "Golden Land" traps (e.g., <strong class="text-accent">Conquistador of the Golden Land</strong>).</p>
+                <p class="text-accent-secondary"><strong class="text-accent">Defining Pseudo Trap Monsters:</strong> This class is defined by the inverse clause: "(This card is <strong class="text-white">NOT treated as a Trap</strong>.)". When the effect resolves, it undergoes a complete transformation, ceasing to be a Trap Card while in the Monster Zone. This category includes the "Paleozoic" series, "The Phantom Knights" Trap Monsters, and <strong class="text-accent">The Prime Monarch</strong>.</p>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-4">1.2 Key Rulings and Interactions: The Strategic Consequences</h3>
+                <p class="text-accent-secondary mb-6">
+                    The distinction between a lingering, continuous state versus a fully resolved, transformative effect is the theoretical underpinning for all the divergent rulings that follow.
+                </p>
+                <!-- Rulings Table -->
+                <div class="overflow-x-auto rounded-lg border border-cyan-700">
+                    <table class="w-full text-left">
+                        <thead class="bg-cyan-900 bg-opacity-30">
+                            <tr>
+                                <th class="p-4 font-bold text-accent">Ruling Scenario</th>
+                                <th class="p-4 font-bold text-white">"Regular" Trap Monster (e.g., Conquistador)</th>
+                                <th class="p-4 font-bold text-white">"Pseudo" Trap Monster (e.g., Paleozoic Canadia)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-cyan-800">
+                            <tr class="hover:bg-cyan-900 hover:bg-opacity-20">
+                                <td class="p-4 font-semibold text-accent">On-Field Status</td>
+                                <td class="p-4 text-accent-secondary">Treated as both a Monster and a Trap Card.</td>
+                                <td class="p-4 text-accent-secondary">Treated <strong class="text-white">only</strong> as a Monster.</td>
+                            </tr>
+                            <tr class="hover:bg-cyan-900 hover:bg-opacity-20">
+                                <td class="p-4 font-semibold text-accent">Effect of Mystical Space Typhoon</td>
+                                <td class="p-4 text-accent-secondary">Can be targeted and <strong class="text-red-400">destroyed</strong>.</td>
+                                <td class="p-4 text-accent-secondary"><strong class="text-green-400">Cannot</strong> be targeted or destroyed.</td>
+                            </tr>
+                            <tr class="hover:bg-cyan-900 hover:bg-opacity-20">
+                                <td class="p-4 font-semibold text-accent">Effect of Book of Moon</td>
+                                <td class="p-4 text-accent-secondary">Flipped face-down and <strong class="text-red-400">moved to the Spell & Trap Zone</strong> as a Set Trap.</td>
+                                <td class="p-4 text-accent-secondary">Flipped into face-down Defense Position <strong class="text-green-400">in the Monster Zone</strong>.</td>
+                            </tr>
+                            <tr class="hover:bg-cyan-900 hover:bg-opacity-20">
+                                <td class="p-4 font-semibold text-accent">Effect of Royal Decree</td>
+                                <td class="p-4 text-accent-secondary">Effect is negated; card <strong class="text-red-400">returns to the S&T Zone</strong>, face-up and useless.</td>
+                                <td class="p-4 text-accent-secondary"><strong class="text-green-400">Unaffected</strong> if already on the field.</td>
+                            </tr>
+                            <tr class="hover:bg-cyan-900 hover:bg-opacity-20">
+                                <td class="p-4 font-semibold text-accent">Effect of Temporary Banishment</td>
+                                <td class="p-4 text-accent-secondary">Returns to Monster Zone, then <strong class="text-red-400">sent to GY</strong> by game mechanics.</td>
+                                <td class="p-4 text-accent-secondary">Returns to Monster Zone, then <strong class="text-red-400">sent to GY</strong> by game mechanics.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Paleozoic -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Section 2: Archetype Analysis: The Paleozoic Epoch</h2>
+            
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-white mb-4">2.1 Core Philosophy: A War of Attrition</h3>
+                <p class="text-accent-secondary">
+                    The Paleozoic strategy is fundamentally a war of attrition. Its game plan revolves around utilizing a suite of powerful, generic Normal Trap cards to control the board. Each time a Trap Card is activated, Paleozoic cards in the Graveyard can trigger their shared effect to Special Summon themselves. This creates a cycle where every act of disruption simultaneously generates a Level 2 body on the field, slowly overwhelming the opponent with card advantage that originates not from the hand, but from the Graveyard.
+                </p>
+            </div>
+
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-6 text-center">The Paleozoic Arsenal</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Canadia -->
+                <div class="card p-6 combo-step-card flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="canadia-img-container" class="card-image-container card-placeholder">Paleozoic Canadia</div>
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Paleozoic Canadia</h4>
+                        <p class="text-sm text-accent-secondary">The archetype's premier disruptive tool. Its effect to target an opponent's monster and change it to face-down Defense Position is a reusable Book of Moon.</p>
+                    </div>
+                </div>
+                <!-- Dinomischus -->
+                <div class="card p-6 combo-step-card flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="dinomischus-img-container" class="card-image-container card-placeholder">Paleozoic Dinomischus</div>
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Paleozoic Dinomischus</h4>
+                        <p class="text-sm text-accent-secondary">Provides powerful, non-destruction removal. By targeting a face-up card and discarding, Dinomischus banishes its target.</p>
+                    </div>
+                </div>
+                <!-- Olenoides -->
+                <div class="card p-6 combo-step-card flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="olenoides-img-container" class="card-image-container card-placeholder">Paleozoic Olenoides</div>
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Paleozoic Olenoides</h4>
+                        <p class="text-sm text-accent-secondary">The dedicated in-theme solution for backrow, allowing the player to target and destroy one Spell or Trap Card on the field.</p>
+                    </div>
+                </div>
+                <!-- Marrella -->
+                <div class="card p-6 combo-step-card flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="marrella-img-container" class="card-image-container card-placeholder">Paleozoic Marrella</div>
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Paleozoic Marrella</h4>
+                        <p class="text-sm text-accent-secondary">A critical setup card. Marrella's effect sends one Trap Card from the Deck to the Graveyard, loading other Paleozoics or utility traps.</p>
+                    </div>
+                </div>
+                <!-- Opabinia -->
+                <div class="card p-6 combo-step-card flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="opabinia-img-container" class="card-image-container card-placeholder">Paleozoic Opabinia</div>
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Paleozoic Opabinia</h4>
+                        <p class="text-sm text-accent-secondary">The deck's consistency tool. Allows activation of "Paleozoic" Traps from the hand and can search for any "Paleozoic" Trap Card.</p>
+                    </div>
+                </div>
+                <!-- Anomalocaris -->
+                <div class="card p-6 combo-step-card flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="anomalocaris-img-container" class="card-image-container card-placeholder">Paleozoic Anomalocaris</div>
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Paleozoic Anomalocaris</h4>
+                        <p class="text-sm text-accent-secondary">The archetype's primary boss monster. It is unaffected by other monsters' effects and can detach a material to destroy any card on the field.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card p-6 mb-6">
+                 <h3 class="text-xl font-bold text-white mb-4">2.2 The Shared Effect</h3>
+                 <p class="text-accent-secondary">
+                    All Main Deck "Paleozoic" Normal Traps possess a shared secondary effect: "Once per Chain, when a Trap Card is activated while this card is in your GY: You can Special Summon this card as a Normal Monster (Aqua/WATER/Level 2/ATK 1200/DEF 0). (This card is NOT treated as a Trap.)". This turns the Graveyard into a 
+                    <a href="https://yugipedia.com/wiki/Paleozoic" target="_blank" class="lore-link">reservoir of monsters, a "second hand"</a>,
+                    accessible at Spell Speed 2.
+                </p>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-4">2.5 Symbiotic Relationships: Historical Allies</h3>
+                <p class="text-accent-secondary mb-4"><strong class="text-accent">Paleo-Frog:</strong> This was the most historically significant variant. The "Frog" engine, using <strong class="text-accent">Swap Frog</strong>, could rapidly fill the Graveyard. The ultimate goal was <strong class="text-accent">Toadally Awesome</strong>, which provided an omni-negate. The Paleozoic engine provided a constant stream of Level 2 Aqua bodies to summon and fuel it.</p>
+                <p class="text-accent-secondary mb-4"><strong class="text-accent">Paleo-Spright:</strong> A more contemporary variant that leveraged the "Spright" archetype. A single Paleozoic summoned from the Graveyard would enable the entire Spright engine, leading to boards ending on <strong class="text-accent">Gigantic Spright</strong> and <strong class="text-accent">Spright Elf</strong>.</p>
+                <p class="text-accent-secondary text-center font-bold p-4 bg-red-900 bg-opacity-30 rounded-lg border border-red-500">
+                    <i class="fas fa-exclamation-triangle text-red-400 mr-2"></i>
+                    <strong class="text-red-400">CRITICAL UPDATE:</strong> As of the October 2025 TCG Banlist, both of these variants are non-functional. The banning of <strong class="text-white">Toadally Awesome</strong>, <strong class="text-white">Ronintoadin</strong>, and <strong class="text-white">Spright Elf</strong> has removed the core boss monsters and enablers for both engines.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 3: Phantom Knights -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Section 3: Archetype Analysis: The Phantom Knights</h2>
+
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-white mb-4">3.1 Core Philosophy: Combo from the Shadows</h3>
+                <p class="text-accent-secondary">
+                    In stark contrast to the control-oriented Paleozoics, "The Phantom Knights" (PK) archetype utilizes Pseudo Trap Monsters not as a central engine, but as hyper-efficient, proactive tools within a fast-paced, combo-centric strategy. The strategy revolves around using its monsters' effects in the Graveyard to search for other pieces, extend combos, and build a powerful endboard of Xyz and Link monsters.
+                </p>
+            </div>
+
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-6 text-center">The Phantom Knights' Arsenal</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Shade Brigandine -->
+                <div class="card p-6 combo-step-card flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="shade-brigandine-img-container" class="card-image-container card-placeholder">The Phantom Knights of Shade Brigandine</div>
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">The Phantom Knights of Shade Brigandine</h4>
+                        <p class="text-sm text-accent-secondary">Functions as a "combo ignition." If you have no Traps in your GY, you can activate this card the turn it was Set, Special Summoning it as a Level 4 monster.</p>
+                    </div>
+                </div>
+                <!-- Rusty Bardiche -->
+                <div class="card p-6 combo-step-card flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="rusty-bardiche-img-container" class="card-image-container card-placeholder">The Phantom Knights of Rusty Bardiche</div>
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">The Phantom Knights of Rusty Bardiche</h4>
+                        <p class="text-sm text-accent-secondary">The centerpiece of the archetype. This Link-3 monster sends a PK monster from Deck to GY and Sets a PK Spell/Trap (like Shade Brigandine) directly from the Deck.</p>
+                    </div>
+                </div>
+                <!-- Fog Blade -->
+                <div class="card p-6 combo-step-card flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="fog-blade-img-container" class="card-image-container card-placeholder">Phantom Knights' Fog Blade</div>
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Phantom Knights' Fog Blade</h4>
+                        <p class="text-sm text-accent-secondary">A powerful disruption tool that negates a monster's effects. Crucially, it can be banished from the GY to Special Summon a PK monster, turning disruption into an extender.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-white mb-4">3.4 Core Combo Sequence</h3>
+                <p class="text-accent-secondary">
+                    A typical combo begins with two Level 3 monsters to Link Summon <strong class="text-accent">Cherubini, Ebon Angel of the Burning Abyss</strong>. Cherubini sends a PK monster to the GY (like <strong class="text-accent">Ancient Cloak</strong>), which banishes itself to search <strong class="text-accent">Silent Boots</strong>. Boots is Special Summoned, and the two monsters are used to Link Summon <strong class="text-accent">The Phantom Knights of Rusty Bardiche</strong>. Bardiche's effect then sends another PK monster and, most importantly, Sets <strong class="text-accent">Shade Brigandine</strong> directly from the Deck, which can be activated immediately to continue the combo.
+                </p>
+                <div id="cherubini-img-container" class="w-32 card-placeholder mx-auto mt-4">Cherubini, Ebon Angel of the Burning Abyss</div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Typical Endboards (October 2025 TCG)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Paleozoic Endboard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Pure Paleozoic Control</h3>
+                    <p class="text-accent-secondary mb-4 text-sm text-center">With its combo variants banned, Paleozoic reverts to its original pure control strategy.</p>
+                    <div class="flex justify-center mb-4">
+                        <div id="anomalocaris-end-img-container" class="card-image-container card-placeholder">Paleozoic Anomalocaris</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-accent-secondary">
+                        <li><strong class="text-accent">Paleozoic Anomalocaris:</strong> The unaffected boss monster, providing card destruction.</li>
+                        <li><strong class="text-accent">Multiple Set Traps:</strong> A backrow of 3-5 cards, including <strong class="text-accent">Canadia</strong>, <strong class="text-accent">Dinomischus</strong>, and generic powerful traps to control the game.</li>
+                    </ul>
+                </div>
+                <!-- Phantom Knights Endboard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Phantom Knights Combo</h3>
+                    <p class="text-accent-secondary mb-4 text-sm text-center">With generic bosses like Apollousa and Baronne banned, PK focuses on in-theme and alternative negates.</p>
+                    <div class="flex justify-center mb-4">
+                        <div id="utopic-future-end-img-container" class="card-image-container card-placeholder">Number F0: Utopic Draco Future</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-accent-secondary">
+                        <li><strong class="text-accent">The Phantom Knights of Rusty Bardiche:</strong> On field to destroy a card and provide resources.</li>
+                        <li><strong class="text-accent">Number F0: Utopic Draco Future:</strong> A powerful monster negate and control-stealing effect.</li>
+                        <li><strong class="text-accent">Set Phantom Knights' Fog Blade (x2-3):</strong> Multiple monster negates to disrupt the opponent's turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Counters & Expanded -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Section 4: Expanded Universe & Counter-Strategy</h2>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-4">4.1 Other Notable Trap Monsters</h3>
+                <p class="text-accent-secondary mb-4"><strong class="text-accent">The Prime Monarch:</strong> A Pseudo Trap Monster used as recursive Tribute Fodder for the "Monarch" archetype, solving their consistency issues.</p>
+                <p class="text-accent-secondary"><strong class="text-accent">"Tiki" Series & Statue of Anguish Pattern:</strong> A dedicated <strong class="text-white">Regular</strong> Trap Monster strategy. These cards *are* still treated as traps, making them vulnerable to backrow removal but enabling synergies with cards like <strong class="text-accent">Uria, Lord of Searing Flames</strong>.</p>
+            
+                <h3 class="text-xl font-bold text-white mt-6 mb-4">4.2 Countering Trap Monster Decks</h3>
+                <p class="text-accent-secondary mb-4"><strong class="text-accent">Countering Paleozoics:</strong> The engine is entirely dependent on its Graveyard.
+                    <li class="text-accent-secondary ml-4"><strong class="text-white">Graveyard Disruption:</strong> <strong class="text-accent">Necrovalley</strong> or <strong class="text-accent">Called by the Grave (Limited)</strong> are devastating. <strong class="text-accent">Dimension Shifter (Limited)</strong> ends their turn.</li>
+                    <li class="text-accent-secondary ml-4"><strong class="text-white">Backrow Removal:</strong> Proactive removal like <strong class="text-accent">Harpie's Feather Duster (Limited)</strong> or <strong class="text-accent">Lightning Storm</strong> before they can activate a trap is crippling.</li>
+                </p>
+                <p class="text-accent-secondary"><strong class="text-accent">Countering Phantom Knights:</strong>
+                    <li class="text-accent-secondary ml-4"><strong class="text-white">Identifying Choke Points:</strong> Negating the on-summon effect of <strong class="text-accent">The Phantom Knights of Rusty Bardiche</strong> is often the most effective way to end their turn.</li>
+                    <li class="text-accent-secondary ml-4"><strong class="text-white">Floodgates:</strong> Cards that restrict GY effects (e.g., <strong class="text-accent">Dimensional Fissure</strong>) or limit Special Summons are highly effective. <strong class="text-accent">Anti-Spell Fragrance (Limited)</strong> can also slow them down.</li>
+                </p>
+            </div>
+        </section>
+        
+        <!-- NEW TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Impact (Oct 2025)</h2>
+            <div class="card p-6">
+                <p class="text-accent-secondary mb-4 text-center">
+                    <strong class="text-red-400 font-bold">CRITICAL IMPACT:</strong> The TCG Banlist has fundamentally altered the viability of the most popular Pseudo Trap Monster variants.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Forbidden Cards -->
+                    <div class="card combo-step-card p-4 border-red-500">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden Cards (0 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-accent-secondary">
+                            <li><strong class="text-red-400">Toadally Awesome</strong> (Kills Paleo-Frog)</li>
+                            <li><strong class="text-red-400">Ronintoadin</strong> (Kills Paleo-Frog)</li>
+                            <li><strong class="text-red-400">Spright Elf</strong> (Kills Paleo-Spright)</li>
+                            <li><strong class="text-red-400">Apollousa, Bow of the Goddess</strong> (Generic Boss)</li>
+                            <li><strong class="text-red-400">Baronne de Fleur</strong> (Generic Boss)</li>
+                            <li><strong class="text-red-400">Borreload Savage Dragon</strong> (Generic Boss)</li>
+                            <li><strong class="text-red-400">Summon Limit</strong> (Key Floodgate)</li>
+                            <li><strong class="text-red-400">Dimensional Barrier</strong> (Key Floodgate)</li>
+                        </ul>
+                    </div>
+                    <!-- Limited Cards -->
+                    <div class="card combo-step-card p-4 border-yellow-500">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-accent-secondary">
+                            <li><strong class="text-yellow-400">Dimension Shifter</strong> (Key Floodgate)</li>
+                            <li><strong class="text-yellow-400">Called by the Grave</strong> (Key Counter)</li>
+                            <li><strong class="text-yellow-400">Harpie's Feather Duster</strong> (Key Counter)</li>
+                            <li><strong class="text-yellow-400">Anti-Spell Fragrance</strong> (Key Floodgate)</li>
+                            <li><strong class="text-yellow-400">Skill Drain</strong> (Key Floodgate)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-accent-secondary"><strong>Meta Implications:</strong> The "Paleozoic" archetype has been forced back into a "Pure" control build, as its two most explosive variants (Frog and Spright) are now defunct. "Phantom Knights" remains fully intact at an engine level but has lost access to the game's strongest generic boss monsters, forcing it to rely on in-archetype options like <strong class="text-accent">Dark Requiem Xyz Dragon</strong> or alternatives like <strong class="text-accent">Utopic Draco Future</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- PALEOZOIC EXCAVATION BANNER ANIMATION ---
+            const canvas = document.getElementById('excavation-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const particleCount = 70;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speedY = Math.random() * 1 + 0.5;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.color = `rgba(102, 252, 241, ${Math.random() * 0.5 + 0.3})`; // Aqua/Cyan
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < -10) {
+                            this.y = canvas.height + Math.random() * 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                // Paleozoic
+                'canadia-img-container': 'Paleozoic Canadia',
+                'dinomischus-img-container': 'Paleozoic Dinomischus',
+                'olenoides-img-container': 'Paleozoic Olenoides',
+                'marrella-img-container': 'Paleozoic Marrella',
+                'opabinia-img-container': 'Paleozoic Opabinia',
+                'anomalocaris-img-container': 'Paleozoic Anomalocaris',
+                // Paleo Allies
+                'toadally-awesome-img-container': 'Toadally Awesome',
+                'gigantic-spright-img-container': 'Gigantic Spright',
+                // Phantom Knights
+                'shade-brigandine-img-container': 'The Phantom Knights of Shade Brigandine',
+                'rusty-bardiche-img-container': 'The Phantom Knights of Rusty Bardiche',
+                'fog-blade-img-container': "Phantom Knights' Fog Blade",
+                'cherubini-img-container': 'Cherubini, Ebon Angel of the Burning Abyss',
+                // Endboards
+                'anomalocaris-end-img-container': 'Paleozoic Anomalocaris',
+                'utopic-future-end-img-container': 'Number F0: Utopic Draco Future'
+            });
+        });
+    </script>
+</body>
+</html>
+

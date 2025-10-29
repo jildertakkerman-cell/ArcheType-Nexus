@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skull Servant Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark Gray-Blue */
+            color: #e5e7eb; /* Light Gray */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1f2937; /* Gray-800 */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4b5563; /* Gray-600 */
+        }
+        .combo-step-card {
+            background-color: #374151; /* Gray-700 */
+            border: 1px solid #6b7280; /* Gray-500 */
+        }
+        .pro-con-card {
+            background-color: #374151;
+            border: 1px solid #6b7280;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #374151;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #374151;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #4b5563);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        
+        /* Skull Servant Theme Colors */
+        .text-accent {
+            color: #a7f3d0; /* Ghostly Mint Green */
+        }
+        .arrow-color {
+            color: #a7f3d0;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #a7f3d0;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #a7f3d0;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a7f3d0;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #111827;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4b5563;
+        }
+
+        #ghost-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(17, 24, 39, 0.4) 0%, rgba(17, 24, 39, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(167, 243, 208, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'UnifrakturCook', serif;
+             font-size: 3.5rem;
+        }
+        @media (max-width: 768px) {
+            .banner-header h1 {
+                 font-size: 2.5rem;
+            }
+        }
+
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* --- Card Popup --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(31, 41, 55, 0.95); /* gray-800 */
+            border: 1px solid #a7f3d0; /* accent */
+            border-radius: 0.75rem;
+            color: #e5e7eb;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif;
+            color: #a7f3d0; /* accent */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #a7f3d0; /* accent */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="ghost-banner"></canvas>
+            <h1 class="text-white mb-2">Skull Servant</h1>
+            <p class="text-lg md:text-xl text-gray-300">An In-Depth Analysis: From Boneyard to Battlefield</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-gray-200">
+                    From its humble origins as one of the weakest Normal Monsters, <strong class="text-accent font-bold">"Skull Servant"</strong> has evolved into a formidable rogue strategy. Its flavor text, "A skeletal ghost that isn't strong but can mean trouble in large numbers," has proven prophetic, as the archetype's entire game plan revolves around 
+                    <a href="https://yugipedia.com/wiki/Skull_Servant_(archetype)" target="_blank" class="lore-link">this very concept</a>.
+                    The strategy is built upon filling the Graveyard (GY) with as many monsters bearing the name "Skull Servant" as possible to empower a single, devastating boss monster, <strong class="text-accent font-bold">"King of the Skull Servants"</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Cast and Crew Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Anatomy of the Archetype</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-secret text-4xl text-gray-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Royal Court: Core Wights</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">King of the Skull Servants</h4>
+                            <p class="text-sm text-gray-200">The primary win condition. Gains 1000 ATK for each "Skull Servant" and "King" in the GY, easily reaching over 10,000 ATK.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Wightprince</h4>
+                            <p class="text-sm text-gray-200">The most important setup card. When sent to the GY, it mills "Skull Servant" and "The Lady in Wight" from the deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Wightbaking</h4>
+                            <p class="text-sm text-gray-200">The premier consistency tool. When sent to the GY, it searches two "Skull Servant" cards and then discards one card (often "Wightprince").</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Moissa Wight</h4>
+                            <p class="text-sm text-gray-200">A new starter. On summon, searches any "Skull Servant" card and grants an additional Normal Summon for a Zombie.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book-dead text-4xl text-gray-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Graveyard's Tools</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Lady in Wight</h4>
+                            <p class="text-sm text-gray-200">The deck's protection. While on the field, she makes "King" and other Level 3 or lower Zombies immune to Spells, Traps, and battle destruction.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Wightmare</h4>
+                            <p class="text-sm text-gray-200">Resource recovery. Discards itself to return banished "Skull Servants" to the GY or to Special Summon a banished "King" or "Lady".</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Wight Reanimator</h4>
+                            <p class="text-sm text-gray-200">A Continuous Spell that revives a "King" or "Skull Servant" from the GY by milling another "Wight" from the deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Tri-Wight</h4>
+                            <p class="text-sm text-gray-200">A high-roll Spell that revives three "Skull Servant" Normal Monsters, enabling instant Link-3 or Rank 1 plays.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The 'Moissa Wight' Starter</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">This one-card combo demonstrates how "Moissa Wight" establishes a full board and fills the Graveyard.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="moissa-img" class="card-image-container card-placeholder">Moissa Wight</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Normal Summon & Search</h3>
+                        </div>
+                        <p class="text-gray-200">Normal Summon <strong class="text-accent font-bold">Moissa Wight</strong>. Activate its effect to add <strong class="text-accent font-bold">Wightbaking</strong> from Deck to hand.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="linkuriboh-img" class="card-image-container card-placeholder">Linkuriboh</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Link Summon & Second Normal</h3>
+                        </div>
+                        <p class="text-gray-200">Link Summon <strong class="text-accent font-bold">Linkuriboh</strong> using "Moissa Wight." Now use "Moissa's" GY effect to Normal Summon <strong class="text-accent font-bold">Wightbaking</strong>.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="baking-img-combo" class="card-image-container card-placeholder">Wightbaking</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Trigger The Boneyard</h3>
+                        </div>
+                        <p class="text-gray-200">Link Summon a Link-2 (e.g., <strong class="text-accent font-bold">Vampire Sucker</strong>) using "Linkuriboh" and "Wightbaking." "Wightbaking" triggers in the GY: add <strong class="text-accent font-bold">Wightprince</strong> and <strong class="text-accent font-bold">Wightmare</strong>, then discard "Wightprince." "Wightprince" triggers: mill "Skull Servant" and "The Lady in Wight."</p>
+                        <p class="text-gray-200 mt-2"><strong>Result:</strong> A Link-2 on field, "Wightmare" in hand, and 5 "Skull Servant" names in the GY.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Power Play Combo -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Power Play: The 'Uni-Zombie' OTK Line</h2>
+             <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="uni-zombie-img" class="card-image-container card-placeholder">Uni-Zombie</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Uni-Zombie Dumps Baking</h3>
+                        </div>
+                        <p class="text-gray-200">Normal Summon <strong class="text-accent font-bold">Uni-Zombie</strong>. Activate its effect, sending <strong class="text-accent font-bold">Wightbaking</strong> from Deck to GY.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="baking-img-dump" class="card-image-container card-placeholder">Wightbaking (in GY)</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Baking Dumps Prince</h3>
+                        </div>
+                        <p class="text-gray-200"><strong class="text-accent font-bold">Wightbaking</strong> triggers: Add <strong class="text-accent font-bold">Wightprince</strong> and <strong class="text-accent font-bold">The Lady in Wight</strong>. Discard "Wightprince." <strong class="text-accent font-bold">Wightprince</strong> triggers: Mill "Skull Servant" and another "Lady."</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 3 -->
+                 <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="mezuki-img" class="card-image-container card-placeholder">Mezuki (in GY)</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Uni-Zombie Dumps Mezuki</h3>
+                        </div>
+                        <p class="text-gray-200">Activate <strong class="text-accent font-bold">Uni-Zombie's</strong> second effect: Discard "The Lady in Wight" from hand to send <strong class="text-accent font-bold">Mezuki</strong> from Deck to GY and increase "Uni-Zombie's" Level to 5.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <!-- Step 4 -->
+                 <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="red-eyes-zombie-lord-img" class="card-image-container card-placeholder">Red-Eyes Zombie Dragon Lord</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1f2937] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                            <h3 class="text-lg font-bold">Synchro & Summon King</h3>
+                        </div>
+                        <p class="text-gray-200">Banish <strong class="text-accent font-bold">Mezuki</strong> to revive "The Lady in Wight" (Level 3). Synchro Summon a Level 8 monster (e.g., <strong class="text-accent font-bold">Red-Eyes Zombie Dragon Lord</strong>) using "Uni-Zombie" (Level 5) and "Lady" (Level 3). Finally, banish "Wightprince" and 2 other "Skull Servants" from GY to Special Summon <strong class="text-accent font-bold">King of the Skull Servants</strong> from your Deck.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Grand Finale: A Typical End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Undead Juggernaut: The End Board</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-3xl mx-auto">
+                The primary objective is to create a board that can end the game in a single turn. The ideal end board consists of an overwhelming offensive threat that is simultaneously immune to most common forms of removal.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The Core Disruption Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The King (8000+ ATK)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="king-end-img" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><strong class="text-accent">Primary Win Condition:</strong> With 8+ names in GY, the King has 8000+ ATK.</li>
+                        <li><strong class="text-accent">Self-Revival:</strong> If destroyed by battle, it can banish another "Skull Servant" from the GY to revive itself.</li>
+                    </ul>
+                </div>
+                <!-- The Payoff -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Lady in Wight</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="lady-end-img" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><strong class="text-accent">Total Protection:</strong> While on field, all Level 3 or lower Zombies (including the Level 1 King) are indestructible by battle.</li>
+                        <li><strong class="text-accent">Spell & Trap Immunity:</strong> Also makes them unaffected by all Spell and Trap effects.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Assessment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="pro-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-green-400 font-bold">Massive OTK Potential:</strong> Capable of easily summoning a 10,000+ ATK monster.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400 font-bold">Recursive Engine:</strong> The deck is very resilient in the grind game thanks to "Wightmare" and "Mezuki."</li>
+                        <li><span class="pro-icon"><i class="fas fa-hand-rock"></i></span> <strong class="text-green-400 font-bold">Go-Second Power:</strong> Excels at breaking boards with its high ATK and can run many board-breaker cards.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-400 font-bold">Graveyard Hate:</strong> The deck's primary vulnerability. Cards like <strong class="text-accent font-bold">Dimension Shifter</strong>, <strong class="text-accent font-bold">Bystials</strong>, and <strong class="text-accent font-bold">D.D. Crow</strong> can be lethal.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Floodgates:</strong> Cards like <strong class="text-accent font-bold">Macro Cosmos</strong> or <strong class="text-accent font-bold">Abyss Dweller</strong> completely shut down the strategy.</li>
+                        <li><span class="con-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-red-400 font-bold">Fragile Turn 1:</strong> The pure build has very little inherent interaction, making it difficult to survive when forced to go first.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="neutral-icon"><i class="fas fa-book-dead"></i></span> <strong class="text-accent font-bold">Zombie World Engine:</strong> The most common pairing. Adds <strong class="text-accent font-bold">Doomking Balerdroch</strong> for disruption and a viable Turn 1 play.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-ankh"></i></span> <strong class_("text-accent font-bold")>Horus Engine:</strong> Uses <strong class="text-accent font-bold">King's Sarcophagus</strong> to discard "Wights" and make <strong class="text-accent font-bold">The Zombie Vampire</strong> to mill even more cards.</li>
+                        <li><span class="neutral-icon"><i class("fas fa-gem")></i></span> <strong class="text-accent font-bold">Eldlich Engine:</strong> Provides a recursive Trap-based engine that doesn't use the Normal Summon, covering a key weakness.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    The core <strong class="text-green-500 font-bold">"Skull Servant"</strong> archetype is <strong class="text-green-500 font-bold">ENTIRELY UNLIMITED</strong>. However, its most powerful generic boss monsters and hybrid-enabling cards have been heavily restricted.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden / Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">That Grass Looks Greener (0 copies)</strong> - The 60-card "Grass" build is not TCG-legal.</li>
+                            <li><strong class="text-red-400">Chaos Ruler... (0 copies)</strong> - A key Synchro extender is banned.</li>
+                            <li><strong class="text-red-400">Baronne de Fleur (0 copies)</strong> - Top generic Level 10 Synchro is banned.</li>
+                            <li><strong class="text-red-400">Borreload Savage Dragon (0 copies)</strong> - Top generic Level 8 Synchro is banned.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">All "Skull Servant" / "Wight" cards (3 copies)</strong> - Full power.</li>
+                            <li><strong class="text-green-300">"Zombie World" Engine (3 copies)</strong> - "Uni-Zombie", "Mezuki", "Doomking".</li>
+                            <li><strong classtext-green-300">"Horus" Engine (3 copies)</strong> - "King's Sarcophagus", "Imsety".</li>
+                            <li><strong class="text-green-300">"Eldlich" Engine (3 copies)</strong> - "Eldlich the Golden Lord".</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The deck is forced to rely on its in-theme power and TCG-legal engines like "Zombie World" and "Horus." Its access to the game's most powerful generic Synchro boss monsters and "Grass" strategies has been eliminated, lowering its overall ceiling but keeping its core OTK strategy intact.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GHOST BANNER ANIMATION ---
+            const canvas = document.getElementById('ghost-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const particleCount = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 100;
+                        this.speedY = Math.random() * 1 + 0.5;
+                        this.size = Math.random() * 3 + 1;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(167, 243, 208, ${this.opacity})`; // Ghostly Mint
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'moissa-img': 'Moissa Wight',
+                'linkuriboh-img': 'Linkuriboh',
+                'baking-img-combo': 'Wightbaking',
+                'vampire-sucker-img': 'Vampire Sucker',
+                'uni-zombie-img': 'Uni-Zombie',
+                'baking-img-dump': 'Wightbaking',
+                'mezuki-img': 'Mezuki',
+                'lady-img-revive': 'The Lady in Wight',
+                'red-eyes-zombie-lord-img': 'Red-Eyes Zombie Dragon Lord',
+                'king-img-combo': 'King of the Skull Servants',
+                'king-end-img': 'King of the Skull Servants',
+                'lady-end-img': 'The Lady in Wight'
+            });
+        });
+    </script>
+</body>
+</html>

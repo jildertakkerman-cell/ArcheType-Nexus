@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sacred Beast Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- The card-loader.js script is assumed to be in this path -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a112e; /* Deep dark purple */
+            color: #f3e8ff; /* Light lavender */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2e1a4d; /* Dark violet */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #581c87; /* Purple border */
+        }
+        .combo-step-card {
+            background-color: #3b2263; /* Lighter violet */
+            border: 1px solid #7e22ce;
+        }
+        .pro-con-card {
+            background-color: #3b2263;
+            border: 1px solid #7e22ce;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3b2263;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b2263;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fde047; } /* Bright Gold */
+        .arrow-color { color: #a855f7; } /* Purple */
+        .heading-underline {
+            border-bottom: 2px solid #fde047;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fde047;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- New Sacred Beast Animated Banner Styles --- */
+        .banner {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(45deg, #1a112e, #2e1a4d);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #581c87;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: content-appear 1s ease-out 0.5s forwards;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: #e0e7ff;
+            text-shadow: 0 0 8px rgba(253, 224, 71, 0.5), 0 0 15px rgba(168, 85, 247, 0.3);
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #c7d2fe;
+        }
+        .phantasm-orb {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0;
+            animation: float 10s infinite linear;
+            z-index: 1;
+            filter: blur(4px);
+        }
+        .phantasm-orb.c1 { width: 15px; height: 15px; left: 10%; background: #ef4444; animation-duration: 12s; animation-delay: 0s; }
+        .phantasm-orb.c2 { width: 10px; height: 10px; left: 25%; background: #3b82f6; animation-duration: 8s; animation-delay: 2s; }
+        .phantasm-orb.c3 { width: 20px; height: 20px; left: 40%; background: #eab308; animation-duration: 15s; animation-delay: 1s; }
+        .phantasm-orb.c4 { width: 12px; height: 12px; left: 60%; background: #a855f7; animation-duration: 10s; animation-delay: 4s; }
+        .phantasm-orb.c5 { width: 18px; height: 18px; left: 80%; background: #ef4444; animation-duration: 13s; animation-delay: 3s; }
+        .phantasm-orb.c6 { width: 8px; height: 8px; left: 90%; background: #eab308; animation-duration: 7s; animation-delay: 5s; }
+
+        @keyframes content-appear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes float {
+            0% { bottom: -50px; opacity: 0; transform: rotate(0deg); }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { bottom: 120px; opacity: 0; transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .banner { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes ygoButtonPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+        @keyframes ygoIconGlow {
+            0% { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); }
+            100% { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3); }
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 17, 46, 0.95); /* Dark purple popup */
+            border: 1px solid #fde047; /* Gold border */
+            border-radius: 0.75rem;
+            color: #f3e8ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #fde047; /* Gold title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats { font-family: 'Playfair Display', serif; color: #fde047; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner">
+                <div class="phantasm-orb c1"></div>
+                <div class="phantasm-orb c2"></div>
+                <div class="phantasm-orb c3"></div>
+                <div class="phantasm-orb c4"></div>
+                <div class="phantasm-orb c5"></div>
+                <div class="phantasm-orb c6"></div>
+                <div class="banner-content">
+                    <h1 class="banner-title">Sacred Beasts</h1>
+                    <p class="banner-subtitle">Unleashing the Phantasms</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Sacred Beasts</strong>—Uria, Hamon, and Raviel—began as anime icons with immense power but impractical summoning conditions. Modern support has transformed them, shifting focus from their original summoning methods to a consistent engine that "cheats" them onto the field. This report analyzes how the Sacred Beasts evolved from three unwieldy titans into the synergistic core of a potent control and One-Turn Kill (OTK) deck, capable of establishing oppressive board states and ending duels with overwhelming force. The strategy now revolves around a suite of support cards designed to deploy the <a href="#card-overview" class="lore-link">Three Phantoms</a> with remarkable efficiency.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Engine Room</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The Prime Movers</h3>
+                    <p class="text-indigo-200 mb-4">The deck's consistency hinges on a core of 0 ATK/DEF Fiend monsters that search and summon the Sacred Beasts.</p>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Dark Beckoning Beast:</strong> The one-card starter. On Normal Summon, it searches any "Sacred Beast" card and grants an additional Normal Summon for another 0 ATK/DEF Fiend.</li>
+                        <li><strong class="text-accent">Chaos Summoning Beast:</strong> Tributes itself to summon a Sacred Beast from the hand. Its GY effect banishes itself to search "Fallen Paradise".</li>
+                        <li><strong class="text-accent">Dark Summoning Beast:</strong> Tributes itself to summon a Sacred Beast from the hand or Deck, but prevents you from attacking that turn.</li>
+                    </ul>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The Central Hub</h3>
+                    <p class="text-indigo-200 mb-4">The deck's spells provide recursion, protection, and card advantage, forming a resilient loop.</p>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Opening of the Spirit Gates:</strong> A Continuous Spell that searches a monster on activation, revives a 0 ATK/DEF Fiend from the GY by discarding, and recycles a Continuous Spell from the GY.</li>
+                        <li><strong class="text-accent">Fallen Paradise:</strong> The Field Spell. While you control a Sacred Beast, it provides targeting and destruction protection and lets you draw 2 cards once per turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Titans: Role and Application Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Titans: Role and Application</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Raviel -->
+                <div class="card p-6">
+                    <div class="flex justify-center mb-4">
+                        <div id="raviel-img-container" class="card-image-container card-placeholder w-32 h-44"></div>
+                    </div>
+                    <h3 class="text-xl font-bold text-accent text-center mb-2">Raviel, Lord of Phantasms</h3>
+                    <p class="text-indigo-200 text-sm">The primary beater. A 4000 ATK/DEF wall that enables a devastating OTK with its support card, <strong class="text-accent">Shimmering Scraper</strong>, which doubles its ATK to 8000 and allows it to attack all monsters.</p>
+                </div>
+                <!-- Hamon -->
+                <div class="card p-6">
+                    <div class="flex justify-center mb-4">
+                        <div id="hamon-img-container" class="card-image-container card-placeholder w-32 h-44"></div>
+                    </div>
+                    <h3 class="text-xl font-bold text-accent text-center mb-2">Hamon, Lord of Striking Thunder</h3>
+                    <p class="text-indigo-200 text-sm">The defensive juggernaut. While in Defense Position, it forces the opponent to attack it. Its support spell, <strong class="text-accent">Cerulean Skyfire</strong>, provides a Spell/Trap negate, then swaps Hamon to Defense to activate its protection.</p>
+                </div>
+                <!-- Uria -->
+                <div class="card p-6">
+                    <div class="flex justify-center mb-4">
+                        <div id="uria-img-container" class="card-image-container card-placeholder w-32 h-44"></div>
+                    </div>
+                    <h3 class="text-xl font-bold text-accent text-center mb-2">Uria, Lord of Searing Flames</h3>
+                    <p class="text-indigo-200 text-sm">The backrow punisher. It gains 1000 ATK for each Continuous Trap in the GY and can destroy a Set Spell/Trap once per turn. Its trap, <strong class="text-accent">Hyper Blaze</strong>, fuels its ATK and provides revival for any Sacred Beast.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The One-Card Starter</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how a single <strong class="text-accent font-bold">Dark Beckoning Beast</strong> can establish your core board.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="dbb-img-container" class="card-image-container card-placeholder">Dark Beckoning Beast</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2e1a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Summon & Search</h3>
+                        </div>
+                        <p class="text-indigo-200">Normal Summon <strong class="text-accent">Dark Beckoning Beast</strong>. Activate its effect to search <strong class="text-accent">Chaos Summoning Beast</strong>. Use the additional Normal Summon to summon it.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="csb-img-container" class="card-image-container card-placeholder">Chaos Summoning Beast</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2e1a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Summon a Titan</h3>
+                        </div>
+                        <p class="text-indigo-200">Activate <strong class="text-accent">Chaos Summoning Beast's</strong> effect, Tributing it to Special Summon <strong class="text-accent">Raviel, Lord of Phantasms</strong> from your hand (or Hamon/Uria).</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="paradise-img-container" class="card-image-container card-placeholder">Fallen Paradise</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#2e1a4d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Build the Fortress</h3>
+                        </div>
+                        <p class="text-indigo-200">Activate the GY effect of <strong class="text-accent">Chaos Summoning Beast</strong>, banishing it to add <strong class="text-accent">Fallen Paradise</strong>. Activate the Field Spell and use its effect to draw 2 cards.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Grand Finale: A Typical End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Grand Finale: Typical End Boards</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                The deck's goal is to establish a protected boss monster or, with a stronger hand, a complete lockdown of the opponent's monster effects.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The Core Fortress -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Core Fortress</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="raviel-end-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">A Sacred Beast (e.g., Raviel):</strong> A 4000 ATK/DEF body that's difficult to remove by battle.</li>
+                        <li><strong class="text-accent">Fallen Paradise:</strong> Provides complete targeting and destruction protection for your Beasts.</li>
+                        <li><strong class="text-accent">Card Advantage:</strong> The "Draw 2" from Fallen Paradise refills your hand with disruption or follow-up plays.</li>
+                    </ul>
+                </div>
+                <!-- The "High Roll" Lockdown -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The "High Roll" Lockdown</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="awakening-end-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Two+ Sacred Beasts:</strong> Achieved with <strong class="text-accent">Opening of the Spirit Gates</strong>, getting two different Beasts on field.</li>
+                        <li><strong class="text-accent">Awakening of the Sacred Beasts:</strong> With two Beasts, this Continuous Trap gains its devastating floodgate effect.</li>
+                        <li><strong class="text-red-400 font-bold">The Lock:</strong> "Negate the activated effects of monsters your opponent controls." This is a one-sided Skill Drain that paralyzes most decks.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">MODERATE IMPACT:</strong> While the core Sacred Beast monsters are unrestricted, key consistency and synergy cards are limited, forcing the deck to adapt.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Limited Cards (1 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Opening of the Spirit Gates</strong> - A major hit to consistency and recovery.</li>
+                            <li><strong class="text-red-400">Bystial Magnamhut</strong> - Key synergy piece for Branded variants is limited.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Semi-Limited Cards (2 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                             <li><strong class="text-yellow-400">Branded Fusion</strong> - Slightly impacts the consistency of Branded-hybrid builds.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4 col-span-1 md:col-span-2">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards (3 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All Sacred Beasts (Uria, Hamon, Raviel) & their support (Shimmering Scraper, etc.)</li>
+                            <li>Dark Beckoning Beast, Chaos Summoning Beast, Dark Summoning Beast</li>
+                            <li>Fallen Paradise, Awakening of the Sacred Beasts, Dimension Fusion Destruction</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The limit on <strong class="text-accent">Opening of the Spirit Gates</strong> significantly hurts the deck's resilience and ability to "high roll" into the two-beast lockdown. The deck must rely more heavily on <strong class="text-accent">Dark Beckoning Beast</strong> or external engines to function, making it more vulnerable to a single interruption.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">High Consistency:</strong> Powerful one-card starters like Dark Beckoning Beast.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400 font-bold">Strong Resilience:</strong> Fallen Paradise provides excellent protection, and the engine has many recovery loops.</li>
+                        <li><span class="pro-icon"><i class="fas fa-gavel"></i></span> <strong class="text-green-400 font-bold">Powerful End Boards:</strong> Can end on a 10,000 ATK OTK machine, a protected boss, or a one-sided Skill Drain.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Normal Summon Reliant:</strong> The pure build is extremely vulnerable to hand traps (Ash, Imperm) on Dark Beckoning Beast.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400 font-bold">Floodgate Vulnerability:</strong> Susceptible to cards like Macro Cosmos or Summon Limit that stop its engine.</li>
+                        <li><span class="con-icon"><i class="fas fa-ruler-horizontal"></i></span> <strong class="text-red-400 font-bold">Linear Combos:</strong> The main combo lines are predictable, allowing experienced opponents to disrupt key chokepoints.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Branded & Bystial:</strong> The most competitive variant. Branded Fusion acts as an alternate starter, setting up the GY for Spirit Gates.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-chess-king"></i></span> <strong class="text-accent">Eldlich:</strong> Synergizes with the focus on Continuous Traps, fueling Uria and recycling "Golden Land" cards with Awakening.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-church"></i></span> <strong class="text-accent">Dogmatika:</strong> Nadir Servant can send monsters to the GY while Ecclesia provides on-field negation.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section id="card-overview" class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Phantasm Arsenal: Key Cards</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">A detailed overview of each card's individual role and effects.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Cards -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Dark Beckoning Beast</h3>
+                    <p class="text-indigo-200 mb-2"><strong>Monster/Effect</strong></p>
+                    <p class="text-indigo-200">The deck's one-card starter. Searches any "Sacred Beast" card and grants an additional Normal Summon for a 0 ATK/DEF Fiend.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Opening of the Spirit Gates</h3>
+                    <p class="text-indigo-200 mb-2"><strong>Continuous Spell</strong></p>
+                    <p class="text-indigo-200">Multi-purpose engine hub. Searches a monster, revives a 0 ATK/DEF Fiend from GY, and recycles Continuous Spells.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Fallen Paradise</h3>
+                    <p class="text-indigo-200 mb-2"><strong>Field Spell</strong></p>
+                    <p class="text-indigo-200">Provides targeting and destruction protection to all Sacred Beasts and offers a "Draw 2" effect once per turn.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Awakening of the Sacred Beasts</h3>
+                    <p class="text-indigo-200 mb-2"><strong>Continuous Trap</strong></p>
+                    <p class="text-indigo-200">The ultimate lockdown tool. With two or more different Sacred Beasts, it becomes a one-sided Skill Drain.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Raviel, Lord of Phantasms - Shimmering Scraper</h3>
+                    <p class="text-indigo-200 mb-2"><strong>Monster/Effect</strong></D</p>
+                    <p class="text-indigo-200">A hand-trap OTK enabler. Discards to double Raviel's ATK to 8000 and grant it a board-wiping attack. Recycles itself from the GY.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Armityle the Chaos Phantasm</h3>
+                    <p class="text-indigo-200 mb-2"><strong>Fusion/Effect</strong></p>
+                    <p class="text-indigo-200">The primary OTK fusion. It becomes 10,000 ATK on your turn and cannot be destroyed by battle. Summoned with <strong class="text-accent">Dimension Fusion Destruction</strong>.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load all the card images needed for this page
+            CardLoader.loadCards({
+                // Section 2: Titans
+                'raviel-img-container': 'Raviel, Lord of Phantasms',
+                'hamon-img-container': 'Hamon, Lord of Striking Thunder',
+                'uria-img-container': 'Uria, Lord of Searing Flames',
+
+                // Section 3: Core Combo
+                'dbb-img-container': 'Dark Beckoning Beast',
+                'csb-img-container': 'Chaos Summoning Beast',
+                'paradise-img-container': 'Fallen Paradise',
+
+                // Section 4: End Board
+                'raviel-end-img-container': 'Raviel, Lord of Phantasms',
+                'awakening-end-img-container': 'Awakening of the Sacred Beasts'
+            });
+        });
+    </script>
+</body>
+</html>

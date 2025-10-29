@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paladin of Dragon Series</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0f1e; /* Deep dark blue */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a203a; /* Dark blue/purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a477a; /* Lighter blue border */
+        }
+        .combo-step-card {
+            background-color: #262e5a; /* Slightly lighter blue */
+            border: 1px solid #4f5b9e;
+        }
+        .pro-con-card {
+            background-color: #262e5a;
+            border: 1px solid #4f5b9e;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #262e5a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #262e5a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Gold/Amber */
+        .arrow-color { color: #facc15; }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+        .header-font {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* --- New Ritual Banner Styles --- */
+        .banner-header {
+            position: relative;
+            height: 120px;
+            background: #0a0f1e;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #3a477a;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+            margin-bottom: 2.5rem;
+        }
+        .banner-content {
+            z-index: 2;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.5), 0 0 20px rgba(250, 204, 21, 0.3);
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #dbeafe;
+        }
+        #ritual-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .banner-header { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+        /* --- End of Banner Styles --- */
+
+        /* --- Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+        /* --- End of Home Button --- */
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 15, 30, 0.95);
+            border: 1px solid #facc15;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #facc15;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Cinzel', serif;
+            color: #facc15;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="banner-header">
+            <canvas id="ritual-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="banner-title">Paladin of Dragon</h1>
+                <p class="banner-subtitle">An Analytical Deep Dive into the Ritual Conduit Series</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl header-font text-white mb-4">Introduction: The Paladins as Ritual Conduits</h2>
+                <p class="text-blue-200">
+                    Within the vast card pool of the Yu-Gi-Oh! Trading Card Game, certain series of cards exist not as formal, searchable archetypes, but as a shared design philosophy. The 
+                    <a href="https://yugipedia.com/wiki/Paladin_of_Dragon_(archetype)" target="_blank" class="lore-link">"Paladin of Dragon | Knight of Dragon" cards</a> 
+                    represent a prime example of this concept. This informal series is composed of Level 4 Ritual Monsters, predominantly sharing an Attack value of 1900, that function as specialized conduits. Their primary strategic purpose is to act as a bridge between the resource-intensive Ritual Summoning mechanic and the game's most iconic high-level Dragon monsters.
+                </p>
+                <p class="text-blue-200 mt-4">
+                    The core function of this series is to mitigate a fundamental challenge in decks built around powerful "boss" monsters: the risk of drawing them at an inopportune time. A card like <strong class="text-accent font-bold">Blue-Eyes White Dragon</strong> is a game-ending threat on the field but can be a "garnet" in the opening hand. The "Paladin of Dragon" monsters solve this issue by providing a direct, reliable method to Special Summon these boss monsters from the deck, transforming a potential liability into an immediate threat.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Knights Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl header-font font-bold text-white mb-6 text-center heading-underline">The Core Knights and Their Oaths</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                Each member of this series functions as a self-contained engine. A granular analysis reveals not only their individual mechanics but also a clear evolution in card design, with later additions incorporating more complex resource management.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Paladin of White Dragon -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="white-paladin-img" class="card-image-container card-placeholder"></div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white header-font mb-2">Paladin of White Dragon</h3>
+                            <p class="text-sm text-blue-200 mb-2"><strong class="text-accent">Ritual Spell:</strong> White Dragon Ritual</p>
+                            <p class="text-sm text-blue-200"><strong class="text-accent">Target:</strong> "Blue-Eyes White Dragon"</p>
+                            <p class="text-sm text-blue-200 mt-2">The original progenitor. Its effect is straightforward: Tribute this card to Special Summon 1 <strong class="text-accent">Blue-Eyes White Dragon</strong> from your hand or Deck. Its Ritual Spell, <strong class="text-accent">White Dragon Ritual</strong>, is equally simple and provides no further value from the Graveyard, making it a "one-and-done" play typical of its era.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paladin of Dark Dragon -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="dark-paladin-img" class="card-image-container card-placeholder"></div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white header-font mb-2">Paladin of Dark Dragon</h3>
+                            <p class="text-sm text-blue-200 mb-2"><strong class="text-accent">Ritual Spell:</strong> Dark Dragon Ritual</p>
+                            <p class="text-sm text-blue-200"><strong class="text-accent">Target:</strong> "Red-Eyes" monster</p>
+                            <p class="text-sm text-blue-200 mt-2">A significant evolution. It summons a "Red-Eyes" monster, which is far more versatile for combo plays (e.g., <strong class="text-accent">Red-Eyes Darkness Metal Dragon</strong>). The true power lies in <strong class="text-accent">Dark Dragon Ritual's</strong> GY effect: banish it to add 1 "Red-Eyes" Spell/Trap from Deck to hand, turning the engine into a resource generator.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paladin of Photon Dragon -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="photon-paladin-img" class="card-image-container card-placeholder"></div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white header-font mb-2">Paladin of Photon Dragon</h3>
+                            <p class="text-sm text-blue-200 mb-2"><strong class="text-accent">Ritual Spell:</strong> Luminous Dragon Ritual</p>
+                            <p class="text-sm text-blue-200"><strong class="text-accent">Target:</strong> "Galaxy-Eyes Photon Dragon"</p>
+                            <p class="text-sm text-blue-200 mt-2">Adapts the formula for the "Galaxy-Eyes" archetype. <strong class="text-accent">Luminous Dragon Ritual</strong> introduces another form of resource management, allowing you to banish it from the GY to perform a second Ritual Summon from your hand, using monsters in your GY as the cost.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Knight of Armor Dragon -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="armor-knight-img" class="card-image-container card-placeholder"></div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white header-font mb-2">Knight of Armor Dragon</h3>
+                            <p class="text-sm text-blue-200 mb-2"><strong class="text-accent">Ritual Spell:</strong> Armor Dragon Ritual</p>
+                            <p class="text-sm text-blue-200"><strong class="text-accent">Target:</strong> Level 5+ WIND Dragon</p>
+                            <p class="text-sm text-blue-200 mt-2">The most specialized of the group, designed to support "Armed Dragon" or monsters like <strong class="text-accent">Tempest, Dragon Ruler of Storms</strong>. Its Ritual Spell's GY effect is weaker, requiring you to banish monsters from your hand or field (not GY) to summon the Knight from the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Assembling the Arsenal Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl header-font font-bold text-white mb-6 text-center heading-underline">Assembling the Arsenal</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The viability of any Ritual strategy hinges on its consistency. This series benefits from some of the most powerful generic Ritual support cards ever printed.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Pre-Preparation of Rites -->
+                <div class="card p-6 pro-con-card text-center">
+                    <div class="flex justify-center mb-4">
+                        <div id="pre-prep-img" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white header-font mb-2">Pre-Preparation of Rites</h3>
+                    <p class="text-blue-200">The single most important support card. It searches both the Ritual Monster and its specific Ritual Spell in one go. All four pairs in this series are compatible with this card.</p>
+                </div>
+                <!-- Manju -->
+                <div class="card p-6 pro-con-card text-center">
+                    <div class="flex justify-center mb-4">
+                        <div id="manju-img" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white header-font mb-2">Manju of the Ten Thousand Hands</h3>
+                    <p class="text-blue-200">A classic option. When Normal Summoned, it searches for either a Ritual Monster or a Ritual Spell, guaranteeing access to a missing piece at the cost of your Normal Summon.</p>
+                </div>
+                <!-- Diviner -->
+                <div class="card p-6 pro-con-card text-center">
+                    <div class="flex justify-center mb-4">
+                        <div id="diviner-img" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white header-font mb-2">Diviner of the Herald</h3>
+                    <p class="text-blue-200">A modern powerhouse. When summoned, it can send <strong class="text-accent">Herald of the Arc Light</strong> from the Extra Deck to the GY, whose effect then triggers to search for any Ritual Monster or Spell.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl header-font font-bold text-white mb-6 text-center heading-underline">Executing the Strategy</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the most efficient opening play available to any deck utilizing these engines.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="pre-prep-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Pre-Preparation of Rites</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a203a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold header-font">The One-Card Starter</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent font-bold">Pre-Preparation of Rites</strong>. Add the desired Paladin/Knight and its corresponding Ritual Spell from your deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="paladin-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Paladin Ritual Monster</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a203a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold header-font">Ritual Summon</h3>
+                            </div>
+                            <p class="text-blue-200">Activate the Ritual Spell, Tributing a monster from your hand (or field) to Ritual Summon the Paladin/Knight to the field.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="boss-monster-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Boss Monster (e.g., Blue-Eyes)</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a203a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold header-font">Summon from Deck</h3>
+                            </div>
+                            <p class="text-blue-200">Activate the Paladin/Knight's ignition effect, Tributing itself as cost. Special Summon its target boss monster directly from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl header-font font-bold text-white mb-6 text-center heading-underline">Endboard Analysis</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The resulting field state varies significantly, showing a clear shift in design philosophy. Early Paladins create simple board presence, while later versions create combo pieces that enable complex, interactive, and resilient boards.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto max-w-6xl">
+                <!-- White Dragon -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center header-font">White Dragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="blue-eyes-img" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Endboard:</strong> A 3000 ATK <strong class="text-accent">Blue-Eyes White Dragon</strong> that cannot attack this turn.</li>
+                        <li><strong class="text-accent">Analysis:</strong> A static threat. It's a large body the opponent must deal with, but it offers no interaction or further combo potential on its own.</li>
+                    </ul>
+                </div>
+                <!-- Dark Dragon -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center header-font">Dark Dragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="red-eyes-img" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Endboard:</strong> A key extender like <strong class="text-accent">Red-Eyes Darkness Metal Dragon</strong>.</li>
+                        <li><strong class="text-accent">Analysis:</strong> Far more dynamic. "REMD" can immediately activate its effect to Special Summon another Dragon, extending the combo and potentially resulting in two or more powerful monsters.</li>
+                    </ul>
+                </div>
+                <!-- Photon Dragon -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center header-font">Photon Dragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="galaxy-eyes-img" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Endboard:</strong> <strong class="text-accent">Galaxy-Eyes Photon Dragon</strong>, a primary material for Rank 8 Xyz plays.</li>
+                        <li><strong class="text-accent">Analysis:</strong> This is not the end goal, but the start. The player can immediately overlay it to summon monsters like <strong class="text-accent">Number 90: Galaxy-Eyes Photon Lord</strong> for negation.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Assessment Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl header-font font-bold text-white mb-6 text-center heading-underline">Final Assessment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 header-font">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400 font-bold">Consistency Enhancement:</strong> Summons key high-level monsters directly from the deck, turning potential bricks into powerful plays.</li>
+                        <li><span class="pro-icon"><i class="fas fa-search"></i></span> <strong class="text-green-400 font-bold">Incredible Searchability:</strong> Direct access to <strong class="text-accent">Pre-Preparation of Rites</strong> makes these engines remarkably consistent.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400 font-bold">Resource Recursion:</strong> The Graveyard effects on the modern Ritual Spells (Dark, Luminous, Armor) provide follow-up plays and resource recovery.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 header-font">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-arrow-down"></i></span> <strong class="text-red-400 font-bold">Card Advantage:</strong> The initial summon is often a net loss in card advantage on the turn it is performed.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Vulnerability to Disruption:</strong> The strategy is linear and highly susceptible to hand traps like <strong class="text-accent">Ash Blossom & Joyous Spring</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-dragon"></i></span> <strong class="text-red-400 font-bold">Variable Impact:</strong> The power of the play is entirely dependent on the boss monster. Ending on a simple vanilla monster is often insufficient.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl header-font font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> This entire series and its core support cards are at full power in the TCG.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2 header-font">Core Series (Unlimited)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Paladin of White Dragon</li>
+                            <li>Paladin of Dark Dragon</li>
+                            <li>Paladin of Photon Dragon</li>
+                            <li>Knight of Armor Dragon</li>
+                            <li>All associated Ritual Spells</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2 header-font">Key Support (Unlimited)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Pre-Preparation of Rites</li>
+                            <li>Manju of the Ten Thousand Hands</li>
+                            <li>Diviner of the Herald</li>
+                            <li>Herald of the Arc Light</li>
+                            <li>Foolish Burial Goods</li>
+                            <li>Tempest, Dragon Ruler of Storms</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With no restrictions, decks utilizing these engines can operate at maximum consistency. The availability of all support cards makes them a potent and reliable strategy for their respective archetypes.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Ritual Banner Animation ---
+            const canvas = document.getElementById('ritual-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.reset();
+                        this.y = Math.random() * canvas.height;
+                    }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speed = Math.random() * 1 + 0.5;
+                        this.radius = Math.random() * 2 + 1;
+                        this.opacity = Math.random() * 0.5 + 0.3;
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < -10) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(250, 204, 21, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- Card Loading ---
+            CardLoader.loadCards({
+                'white-paladin-img': 'Paladin of White Dragon',
+                'dark-paladin-img': 'Paladin of Dark Dragon',
+                'photon-paladin-img': 'Paladin of Photon Dragon',
+                'armor-knight-img': 'Knight of Armor Dragon',
+                'pre-prep-img': 'Pre-Preparation of Rites',
+                'manju-img': 'Manju of the Ten Thousand Hands',
+                'diviner-img': 'Diviner of the Herald',
+                'pre-prep-combo-img': 'Pre-Preparation of Rites',
+                'paladin-combo-img': 'Paladin of White Dragon',
+                'boss-monster-combo-img': 'Blue-Eyes White Dragon',
+                'blue-eyes-img': 'Blue-Eyes White Dragon',
+                'red-eyes-img': 'Red-Eyes Darkness Metal Dragon',
+                'galaxy-eyes-img': 'Number 90: Galaxy-Eyes Photon Lord'
+            });
+        });
+    </script>
+</body>
+</html>

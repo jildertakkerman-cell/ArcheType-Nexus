@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Of the Swamp Series</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in assets/js/ as per other examples -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c1412; /* Dark Teal/Green */
+            color: #e0f2f1; /* Light Cyan */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #11221e; /* Darker Teal */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #1e3d36; /* Murky Green Border */
+        }
+        .combo-step-card,
+        .pro-con-card {
+            background-color: #1a332d; /* Even Darker Teal */
+            border: 1px solid #2a554a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1a332d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a332d;
+        }
+        .text-accent {
+            color: #6ee7b7; /* Bright Mint Green */
+        }
+        .arrow-color {
+            color: #2dd4bf; /* Teal */
+        }
+        .heading-underline {
+            border-bottom: 2px solid #2dd4bf;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #6ee7b7;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #6ee7b7;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #6ee7b7;
+        }
+
+        /* --- New Swamp Animated Banner --- */
+        .banner-header {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(45deg, #0f201d, #112e29);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #1e3d36;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: content-appear 1s ease-out 0.5s forwards;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: #e0f2f1;
+            text-shadow: 0 0 8px rgba(110, 231, 183, 0.5), 0 0 15px rgba(45, 212, 191, 0.3);
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #b2f5ea;
+        }
+        .bubble {
+            position: absolute;
+            background: rgba(110, 231, 183, 0.15);
+            border: 1px solid rgba(110, 231, 183, 0.3);
+            border-radius: 50%;
+            opacity: 0;
+            animation: float 10s infinite linear;
+            bottom: -50px;
+        }
+        .bubble.b1 { width: 15px; height: 15px; left: 10%; animation-duration: 12s; animation-delay: 0s; }
+        .bubble.b2 { width: 10px; height: 10px; left: 25%; animation-duration: 8s; animation-delay: 2s; }
+        .bubble.b3 { width: 20px; height: 20px; left: 40%; animation-duration: 15s; animation-delay: 1s; }
+        .bubble.b4 { width: 12px; height: 12px; left: 60%; animation-duration: 10s; animation-delay: 4s; }
+        .bubble.b5 { width: 18px; height: 18px; left: 80%; animation-duration: 13s; animation-delay: 3s; }
+        .bubble.b6 { width: 8px; height: 8px; left: 90%; animation-duration: 7s; animation-delay: 5s; }
+
+        @keyframes content-appear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes float {
+            0% { bottom: -50px; opacity: 0; transform: scale(0.5); }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { bottom: 120px; opacity: 0; transform: scale(1); }
+        }
+        @media (max-width: 768px) {
+            .banner-header { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+        /* --- End of Banner Styles --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        @keyframes ygoButtonPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+        @keyframes ygoIconGlow {
+            0% { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); }
+            100% { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3); }
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+        /* --- End of Home Button Styles --- */
+
+        /* --- Card Popup Styles --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(12, 20, 18, 0.95); /* Dark swamp green */
+            border: 1px solid #6ee7b7; /* Mint green border */
+            border-radius: 0.75rem;
+            color: #e0f2f1;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #6ee7b7; /* Mint green title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Playfair Display', serif;
+            color: #6ee7b7;
+        }
+        /* --- End of Popup Styles --- */
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner-header">
+                <div class="bubble b1"></div>
+                <div class="bubble b2"></div>
+                <div class="bubble b3"></div>
+                <div class="bubble b4"></div>
+                <div class="bubble b5"></div>
+                <div class="bubble b6"></div>
+                <div class="banner-content">
+                    <h1 class="banner-title">Of the Swamp</h1>
+                    <p class="banner-subtitle">An Analysis of Fusion-Based Strategies</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: The Denizens of the Swamp</h2>
+                <p class="text-teal-100">
+                    In the vast landscape of the Yu-Gi-Oh! TCG, few functional series have shown the longevity of the "of the Swamp" monsters. While not a formal archetype, these cards form a cohesive toolkit dedicated to Fusion Summoning. Their relevance is a testament to a design that provides consistency, recovers from disruption, and enables explosive plays.
+                </p>
+                <p class="text-teal-100 mt-4">
+                    This report will analyze the
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=of%20the%20swamp&stype=1" target="_blank" class="lore-link">
+                        core members of this strategic series
+                    </a>: King of the Swamp, Beastking of the Swamps, and Mudragon of the Swamp. The "of the Swamp" cards, spearheaded by the utility of King of the Swamp, represent a masterclass in generic support, functioning as a compact engine to boost any Fusion-based deck.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Swamp Royalty Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Swamp Royalty: Core Monster Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- King of the Swamp -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">King of the Swamp</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="king-swamp-img" class="card-image-container card-placeholder">King of the Swamp</div>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-2 text-center">WATER | Level 3 | Aqua / Effect | 500 ATK / 1100 DEF</p>
+                    <p class="text-teal-100 mb-4">
+                        The cornerstone of the series. Its power comes from a synergistic dual-purpose design:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100 flex-grow">
+                        <li><strong class="text-white">Fusion Substitute:</strong> Can be used as a substitute for any 1 specifically named Fusion Material. This effect is active in the hand, on the field, or in the Graveyard.</li>
+                        <li><strong class="text-white">Polymerization Searcher:</strong> You can discard this card to add 1 "Polymerization" from your Deck to your hand.</li>
+                    </ul>
+                    <p class="text-teal-100 mt-4">
+                        This solves the two fundamental challenges of Fusion Summoning: if you're missing a material, it's a substitute; if you're missing the spell, it's a searcher.
+                    </p>
+                </div>
+
+                <!-- Beastking of the Swamps -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Beastking of the Swamps</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="beastking-swamp-img" class="card-image-container card-placeholder">Beastking of the Swamps</div>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-2 text-center">WATER | Level 4 | Aqua / Effect | 1000 ATK / 1100 DEF</p>
+                    <p class="text-teal-100 mb-4">
+                        The archetypal predecessor. Its role is far more rudimentary:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100 flex-grow">
+                        <li><strong class="text-white">Fusion Substitute:</strong> Like the King, it can substitute for any 1 specifically named Fusion Material.</li>
+                        <li><strong class="text-white">Missing Search Effect:</strong> Its significant drawback is the lack of any ability to search for "Polymerization." This makes it purely a substitute, and often a "brick" if a substitute isn't needed.</li>
+                    </ul>
+                    <p class="text-teal-100 mt-4">
+                        While its Level 4 status offers niche Xyz Summon plays, it rarely outweighs the immense consistency offered by King of the Swamp.
+                    </p>
+                </div>
+
+                <!-- Mudragon of the Swamp -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Mudragon of the Swamp</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="mudragon-swamp-img" class="card-image-container card-placeholder">Mudragon of the Swamp</div>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-2 text-center">WATER | Level 4 | Wyrm / Fusion / Effect | 1900 ATK / 1600 DEF</p>
+                    <p class="text-teal-100 mb-4">
+                        An Extra Deck monster that serves as a powerful, generic payoff. Its materials are 2 monsters with the same Attribute but different Types.
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100 flex-grow">
+                        <li><strong class="text-white">Premier Super Poly Target:</strong> Its generic materials make it a top-tier target for "Super Polymerization" to remove two of an opponent's monsters.</li>
+                        <li><strong class="text-white">Targeting Protection:</strong> Your opponent cannot target this card, or monsters on the field with the same Attribute, with card effects.</li>
+                        <li><strong class="text-white">Attribute Modulation:</strong> (Quick Effect) Can change its own Attribute once per turn, protecting your entire board.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- The "King of the Swamp" Engine Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "King of the Swamp" Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Engine Composition -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">Engine Composition</h3>
+                    <p class="text-teal-100">
+                        At its core, the engine consists of 2-3 copies of <strong class="text-accent">King of the Swamp</strong> and 1 copy of <strong class="text-accent">Polymerization</strong>. This small package drastically increases the deck's access to its core Fusion spell.
+                    </p>
+                    <p class="text-teal-100 mt-4">
+                        Modern builds expand this to include a powerful payoff monster in the Extra Deck, most commonly <strong class="text-accent">Guardian Chimera</strong>, which synergizes perfectly with <strong class="text-accent">Polymerization</strong> by rewarding fusions from both hand and field.
+                    </p>
+                </div>
+                <!-- Guardian Chimera Play -->
+                <div class="card p-6 combo-step-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Combo: The Guardian Chimera Play</h3>
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="guardian-chimera-img" class="card-image-container card-placeholder">Guardian Chimera</div>
+                        <div>
+                            <p class="text-teal-100 mb-2"><strong class="text-accent">Prerequisites:</strong> "King of the Swamp" + 1 monster in hand, 1 monster on field.</p>
+                            <ol class="list-decimal list-inside space-y-2 text-teal-100">
+                                <li>Discard <strong class="text-accent">King of the Swamp</strong> to search <strong class="text-accent">Polymerization</strong>.</li>
+                                <li>Activate <strong class="text-accent">Polymerization</strong> to summon <strong class="text-accent">Guardian Chimera</strong>.</li>
+                                <li>Use materials from both hand and field.</li>
+                                <li><strong class="text-accent">Result:</strong> Summon <strong class="text-accent">Guardian Chimera</strong>, trigger its effect to draw card(s) and destroy opponent's card(s) for a massive swing in advantage.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Symbiotic Strategies Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Symbiotic Strategies: Archetypal Integration</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Tearlaments -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4">Tearlaments (Apex Synergy)</h3>
+                    <p class="text-teal-100">
+                        No archetype has a more potent synergy. The Tearlaments' core mechanic is to Fusion Summon when milled to the Graveyard.
+                    </p>
+                    <p class="text-teal-100 mt-4">
+                        <strong class="text-white">Core Interaction:</strong> When <strong class="text-accent">King of the Swamp</strong> is milled, it lands in the GY ready to be used as a substitute. It can replace the <strong class="text-red-400">(Forbidden)</strong> <strong class="text-accent">Tearlaments Kitkallos</strong> to summon <strong class="text-accent">Tearlaments Rulkallos</strong>, or the <strong class="text-yellow-400">(Limited)</strong> <strong class="text-accent">Tearlaments Reinoheart</strong> to summon <strong class="text-accent">Tearlaments Kaleido-Heart</strong>. This drastically increases the consistency of any mill.
+                    </p>
+                </div>
+                <!-- Branded Despia -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4">Branded Despia</h3>
+                    <p class="text-teal-100">
+                        A more nuanced partnership. <strong class="text-accent">King of the Swamp</strong>'s effect does *not* work from the Deck, making it incompatible with <strong class="text-accent">Branded Fusion</strong>.
+                    </p>
+                    <p class="text-teal-100 mt-4">
+                        <strong class="text-white">Core Interaction:</strong> It serves as a powerful recovery tool. If <strong class="text-yellow-400">(Semi-Limited)</strong> <strong class="text-accent">Branded Fusion</strong> is negated, the player can discard King of the Swamp to search <strong class="text-accent">Polymerization</strong> and continue their plays, making the deck much more resilient.
+                    </p>
+                </div>
+                <!-- Elemental HERO -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4">Elemental HERO</h3>
+                    <p class="text-teal-100">
+                        Plays a traditional but vital role. Many iconic HERO Fusions like <strong class="text-accent">Elemental HERO Shining Flare Wingman</strong> require very specific, named monsters.
+                    </p>
+                    <p class="text-teal-100 mt-4">
+                        <strong class="text-white">Core Interaction:</strong> King of the Swamp provides a two-pronged solution: it searches <strong class="text-accent">Polymerization</strong>, and it stands in for one of the specific named materials, fixing the archetype's historical consistency problems.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Example End Board: Tearlaments</h2>
+            <p class="text-teal-100 mb-8 text-center max-w-3xl mx-auto">
+                An end board facilitated by this engine can be incredibly oppressive. This field provides multiple points of interaction and is difficult to overcome.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-4xl">
+                <!-- Rulkallos -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Tearlaments Rulkallos</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="rulkallos-img" class="card-image-container card-placeholder">Tearlaments Rulkallos</div>
+                    </div>
+                    <p class="text-teal-100 text-center"><strong class="text-accent">Role:</strong> Provides a crucial Special Summon negation.</p>
+                </div>
+                <!-- Sulliek -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Tearlaments Sulliek</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="sulliek-img" class="card-image-container card-placeholder">Tearlaments Sulliek</div>
+                    </div>
+                    <p class="text-teal-100 text-center"><strong class="text-accent">Role:</strong> (Set Trap) Provides a monster effect negation and a search.</p>
+                </div>
+                <!-- Abyss Dweller -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Abyss Dweller <span class="text-red-400">(Forbidden)</span></h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="abyss-dweller-img" class="card-image-container card-placeholder">Abyss Dweller</div>
+                    </div>
+                    <p class="text-teal-100 text-center"><strong class="text-accent">Role:</strong> Shuts down all opponent's Graveyard effects.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    Analysis based on the TCG Forbidden & Limited List (approx. October 2025).
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Unrestricted Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted (3 copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>King of the Swamp</li>
+                            <li>Beastking of the Swamps</li>
+                            <li>Mudragon of the Swamp</li>
+                            <li>Polymerization</li>
+                            <li>Super Polymerization</li>
+                            <li>Guardian Chimera</li>
+                            <li>Tearlaments Rulkallos</li>
+                            <li>Tearlaments Kaleido-Heart</li>
+                            <li>Tearlaments Sulliek</li>
+                            <li>Grapha, Dragon Lord of Dark World</li>
+                        </ul>
+                    </div>
+                    <!-- Limited Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Tearlaments Reinoheart</li>
+                        </ul>
+                        <h4 class="text-lg font-bold text-yellow-400 mt-4 mb-2">Semi-Limited (2 copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Branded Fusion</li>
+                        </ul>
+                    </div>
+                    <!-- Forbidden Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden (0 copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Tearlaments Kitkallos</li>
+                            <li>Abyss Dweller</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-400">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The "of the Swamp" engine itself remains at full power. Its utility, however, is tied to its partner archetypes. The hits to Tearlaments (<strong class="text-accent">Reinoheart</strong>, <strong class="text-accent">Kitkallos</strong>) and Branded (<strong class="text-accent">Branded Fusion</strong>) have reduced their dominance, but <strong class="text-accent">King of the Swamp</strong> remains a premium consistency card for them and any other "Polymerization"-based strategy. The banning of <strong class="text-accent">Abyss Dweller</strong> removes a common end-board piece, but the core engine is unaffected.
+                    </D>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Swamp Banner Animation ---
+            const banner = document.querySelector('.banner-header');
+            if (banner) {
+                // The bubble elements are already in the HTML
+                // The float animation is defined in CSS
+            }
+
+            // --- Card Loader ---
+            CardLoader.loadCards({
+                'king-swamp-img': 'King of the Swamp',
+                'beastking-swamp-img': 'Beastking of the Swamps',
+                'mudragon-swamp-img': 'Mudragon of the Swamp',
+                'guardian-chimera-img': 'Guardian Chimera',
+                'rulkallos-img': 'Tearlaments Rulkallos',
+                'sulliek-img': 'Tearlaments Sulliek',
+                'abyss-dweller-img': 'Abyss Dweller'
+            });
+        });
+    </script>
+</body>
+</html>

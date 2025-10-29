@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sasuke Samurai Series Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      This page assumes 'card-loader.js' is in an 'assets/js/' directory
+      relative to the other pages.
+    -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Serif+JP:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Dark indigo, inspired by a samurai's night armor */
+            background-color: #1a1a2d; 
+            color: #dbeafe; /* Off-white / light blue text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            /* Darker, slightly purple-blue */
+            background-color: #2a2a4d; 
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a4a6b; /* Muted purple-grey border */
+        }
+        .combo-step-card {
+            background-color: #3b3b5c; /* Lighter shade for contrast */
+            border: 1px solid #5c5c7d;
+        }
+        .pro-con-card {
+            background-color: #3b3b5c;
+            border: 1px solid #5c5c7d;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 150px; /* Reduced size */
+            flex-shrink: 0;
+            cursor: pointer;
+            border-radius: 0.5rem; /* Standard radius */
+            border: 2px solid #5c5c7d; /* Solid border */
+            background-color: #1a1a2d; /* Dark bg */
+            padding: 3px; /* Inner spacing */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), 0 0 3px rgba(248, 113, 113, 0.2); /* Softer glow */
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image-container:hover {
+            transform: scale(1.05);
+            border-color: #f87171; /* Accent color */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5), 0 0 10px rgba(248, 113, 113, 0.6);
+        }
+
+        .card-image {
+            width: 100%;
+            border-radius: 0.25rem; /* Sharper inner radius */
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #2a2a4d; /* Match card bg */
+            color: #dbeafe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem; /* Kept small */
+            line-height: 1rem;
+            font-weight: bold;
+            font-family: 'Noto Serif JP', serif; /* Thematic font */
+            height: 100%;
+            min-height: 220px; /* Adjusted for 150px width */
+            width: 100%;
+            border-radius: 0.25rem; /* Match inner radius */
+            padding: 0.5rem;
+            border: 2px dashed #4a4a6b;
+            box-sizing: border-box; /* Ensure padding/border in height */
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f87171; } /* Sharp red/pink accent */
+        .arrow-color { color: #f87171; }
+        .heading-underline {
+            border-bottom: 2px solid #f87171;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f87171;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f87171;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a2d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a4a6b;
+            /* Subtle texture */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f87171' fill-opacity='0.07'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 26, 45, 0.4) 0%, rgba(26, 26, 45, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(248, 113, 113, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Noto Serif JP', serif;
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #f87171; /* Red accent border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Noto Serif JP', serif;
+            color: #f87171;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Noto Serif JP', serif;
+            color: #f87171;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="particle-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Sasuke Samurai</h1>
+            <p class="text-lg md:text-xl text-red-200">The Lone Blades: A Pre-Archetype Deep Dive</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Introduction: The "Sasuke Samurai" Anomaly</h2>
+                <p class="text-blue-200">
+                    In the modern landscape of Yu-Gi-Oh!, players are accustomed to cohesive archetypes. However, the <strong class="text-accent font-bold">"Sasuke Samurai"</strong> cards present a fascinating anomaly. Released between 2003 and 2004, they hail from a transitional era, standing as a thematic series of individual monsters rather than a functional, synergistic archetype.
+                </p>
+                <p class="text-blue-200 mt-4">
+                    This analysis will demonstrate that their value is not found in internal synergy but in their unique, standalone effects and their potential integration into the broader "Warrior Toolbox." They are not a unified engine but a collection of specialized tools, each a product of an earlier design philosophy.
+                </p>
+            </div>
+        </section>
+
+        <!-- Card-by-Card Dossier Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">A Card-by-Card Dossier</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Sasuke Samurai -->
+                <div class="card p-6">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                        <div id="sasuke-samurai-img" class="card-image-container mb-4 sm:mb-0 card-placeholder">Sasuke Samurai</div>
+                        <div class="flex-1 text-center sm:text-left">
+                            <h3 class="text-lg font-bold text-accent mb-2">Sasuke Samurai</h3>
+                            <p class="text-sm text-blue-200"><strong class="text-white">Analysis: The Face-Down Punisher.</strong> Destroys any face-down monster it attacks *without* damage calculation, bypassing Flip Effects and high DEF.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sasuke Samurai #2 -->
+                <div class="card p-6">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                        <div id="sasuke-samurai-2-img" class="card-image-container mb-4 sm:mb-0 card-placeholder">Sasuke Samurai #2</div>
+                         <div class="flex-1 text-center sm:text-left">
+                            <h3 class="text-lg font-bold text-accent mb-2">Sasuke Samurai #2</h3>
+                            <p class="text-sm text-blue-200"><strong class="text-white">Analysis: The Spell-Stopping Shinobi.</strong> For 800 LP, it creates a one-turn "Cold Wave," ensuring your plays (especially OTKs) go through uninterrupted.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sasuke Samurai #3 -->
+                <div class="card p-6">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                        <div id="sasuke-samurai-3-img" class="card-image-container mb-4 sm:mb-0 card-placeholder">Sasuke Samurai #3</div>
+                         <div class="flex-1 text-center sm:text-left">
+                            <h3 class="text-lg font-bold text-accent mb-2">Sasuke Samurai #3</h3>
+                            <p class="text-sm text-blue-200"><strong class="text-white">Analysis: The Paradox of Generosity.</strong> When it inflicts damage, your opponent draws until they have 7 cards. A fascinating, but competitively unplayable, relic of old design.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sasuke Samurai #4 -->
+                <div class="card p-6">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                        <div id="sasuke-samurai-4-img" class="card-image-container mb-4 sm:mb-0 card-placeholder">Sasuke Samurai #4</div>
+                         <div class="flex-1 text-center sm:text-left">
+                            <h3 class="text-lg font-bold text-accent mb-2">Sasuke Samurai #4</h3>
+                            <p class="text-sm text-blue-200"><strong class="text-white">Analysis: The Gambler's Blade.</strong> Has a 50% chance (via coin toss) to destroy any monster it battles, regardless of ATK/DEF. A high-risk, high-reward tool.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Absence of Synergy Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">A Disparate Clan: The Absence of Synergy</h2>
+            <div class="card p-6">
+                <p class="text-blue-200">
+                    A modern player examining the "Sasuke Samurai" will look for combos, but a systematic analysis reveals a complete lack of designed internal synergy. This reinforces their status as a thematic collection rather than a functional archetype.
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-blue-200 mt-4">
+                    <li><strong class="text-white">Attribute Mismatch:</strong> Three are WIND, but "Sasuke Samurai #3" is LIGHT, preventing unified Attribute support.</li>
+                    <li><strong class="text-white">Level Incoherence:</strong> With Levels 1, 2, 3, and 4, they were designed long before Xyz or Synchro mechanics could leverage this structure.</li>
+                    <li><strong class="text-white">Effect Isolation:</strong> Each ability is entirely self-contained. No effect mentions the "Sasuke Samurai" name—a key feature of modern archetypes. This lack of cohesion is a reflection of the game's state at the time.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Forging Alliances: The Warrior Toolbox Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Forging Alliances: The Warrior Toolbox</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                While they lack internal synergy, their shared Warrior Type grants them access to one of the most powerful generic support pools in the game. It is here they find their true playability. You can <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=sasuke%20samurai&stype=1" target="_blank" class="lore-link">examine the blades</a> of this disparate clan in the official database.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- ROTA -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="rota-img" class="card-image-container flex-shrink-0 card-placeholder">Reinforcement of the Army</div>
+                        <div>
+                            <h3 class="text-lg font-bold text-accent mb-2">"Reinforcement of the Army" (Limited)</h3>
+                            <p class="text-blue-200">The most important support card. This Spell transforms into the exact tool you need, searching any of the four "Sasuke Samurai" monsters directly from your Deck to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Isolde -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="isolde-img" class="card-image-container flex-shrink-0 card-placeholder">Isolde, Two Tales of the Noble Knights</div>
+                        <div>
+                            <h3 class="text-lg font-bold text-accent mb-2">"Isolde, Two Tales..." (Forbidden)</h3>
+                            <p class="text-blue-200">The historical centerpiece for any modern Warrior deck. Her Link Summon effect could search any "Sasuke Samurai," and her second effect could Special Summon one directly from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- BANLIST WARNING FOR ISOLDE -->
+            <div class="mt-6 p-4 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500 animate-fadeIn">
+                <h4 class="text-xl font-bold text-red-400 mb-2 flex items-center"><i class="fas fa-exclamation-triangle mr-2"></i>TCG Banlist Warning</h4>
+                <p class="text-red-300"><strong class="font-bold">Isolde, Two Tales of the Noble Knights</strong> is <strong class="font-bold">FORBIDDEN</strong> in the TCG. While central to the "Warrior Toolbox" for years, she is no longer a legal option for play, severely limiting the modern viability of this strategy.</p>
+            </div>
+        </section>
+
+        <!-- Conceptual End Boards Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Conceptual "End Boards" & Modules</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The "Sasuke Samurai" don't create a traditional end board. Instead, they exist as tactical modules for specific situations.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-6xl">
+                <!-- Module A: The Gamble Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Module A: The Gamble Engine</h3>
+                    <div class="flex justify-center mb-4 space-x-2">
+                        <div id="sasuke-4-end-img" class="card-image-container card-placeholder">Sasuke Samurai #4</div>
+                        <div id="second-coin-toss-img" class="card-image-container card-placeholder">Second Coin Toss</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Core:</strong> "Sasuke Samurai #4" + "Second Coin Toss".</li>
+                        <li><strong class="text-accent">Goal:</strong> Establish a reliable monster removal threat. "Second Coin Toss" increases the success rate of #4's effect from 50% to 75%.</li>
+                    </ul>
+                </div>
+                <!-- Module B: The OTK Protector -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Module B: The OTK Protector</h3>
+                    <div class="flex justify-center mb-4 space-x-2">
+                        <div id="sasuke-2-end-img" class="card-image-container card-placeholder">Sasuke Samurai #2</div>
+                        <div id="bls-img" class="card-image-container card-placeholder">Black Luster Soldier - Envoy of the Beginning</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Core:</strong> "Sasuke Samurai #2" + High-ATK Monsters.</li>
+                        <li><strong class="text-accent">Goal:</strong> A game-winning push. Pay 800 LP to prevent the opponent from activating Spells/Traps, ensuring your final attacks are successful.</li>
+                    </ul>
+                </div>
+                <!-- Module C: The Retro Tech -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Module C: The Retro-Format Tech</h3>
+                    <div class="flex justify-center mb-4 space-x-2">
+                        <div id="sasuke-1-end-img" class="card-image-container card-placeholder">Sasuke Samurai</div>
+                        <div id="magician-of-faith-img" class_alias="card-image-container card-placeholder" class="card-image-container card-placeholder">Magician of Faith (Set)</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Core:</strong> "Sasuke Samurai" (Original).</li>
+                        <li><strong class="text-accent">Goal:</strong> A surgical counter-pick in retro formats (like Goat) to destroy high-DEF walls or dangerous Flip monsters ("Magician of Faith," "Gravekeeper's Spy") before their effects activate.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p classs="text-blue-200 mb-4 text-center">
+                    The "Sasuke Samurai" series itself is entirely unrestricted, but its key support cards and retro-format context have been heavily impacted by the banlist.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden (0 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li>Isolde, Two Tales of the Noble Knights</li>
+                            <li>Delinquent Duo</li>
+                            <li>Confiscation</li>
+                            <li>Metamorphosis</li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li>Reinforcement of the Army</li>
+                            <li>Sangan</li>
+                        </ul>
+                    </div>
+                    <!-- Unlimited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-500 mb-2">Unlimited (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li>Sasuke Samurai</li>
+                            <li>Sasuke Samurai #2</li>
+                            <li>Sasuke Samurai #3</li>
+                            <li>Sasuke Samurai #4</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-red-300"><strong>Meta Implications:</strong> The "Sasuke Samurai" cards are fully available, but their most powerful modern enabler, <strong class="text-white">Isolde</strong>, is <strong class="text-white">Forbidden</strong>. Furthermore, their key searcher, <strong class="text-white">Reinforcement of the Army</strong>, is <strong class="text-white">Limited</strong>. This makes a dedicated "Warrior Toolbox" strategy significantly less consistent than it once was, relegating these cards to retro formats or niche casual play.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Conclusion: The Legacy of the Lone Samurai</h2>
+                <p class="text-blue-200">
+                    The "Sasuke Samurai" series is a compelling case study in Yu-Gi-Oh!'s design evolution. They are not a functional archetype but a thematically linked collection of four distinct warriors. Their power is not derived from internal synergy, which is absent, but from their unique individual effects and their integration into the "Warrior Toolbox."
+                </p>
+                <p class="text-blue-200 mt-4">
+                    The original "Sasuke Samurai" is a scalpel for set monsters. "#2" is a shield for a game-winning assault. "#4" is a gambler's die. And "#3" is a historical artifact of an abandoned design philosophy. Their legacy is that of specialized tools in a warrior's arsenal, reminding players of a time when a card's name was more about flavor than function.
+                </p>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- PARTICLE BANNER ANIMATION ---
+            const canvas = document.getElementById('particle-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.speedY = (Math.random() * 0.3) + 0.2; // Move down slowly
+                        this.radius = Math.random() * 1.5 + 1;
+                        this.color = `rgba(248, 113, 113, ${Math.random() * 0.5 + 0.3})`; // Red accent
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.y > canvas.height) {
+                            this.y = 0;
+                            this.x = Math.random() * canvas.width;
+                        }
+                        if (this.x > canvas.width || this.x < 0) {
+                            this.speedX *= -1;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Assumes CardLoader.js is loaded
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'sasuke-samurai-img': 'Sasuke Samurai',
+                    'sasuke-samurai-2-img': 'Sasuke Samurai #2',
+                    'sasuke-samurai-3-img': 'Sasuke Samurai #3',
+                    'sasuke-samurai-4-img': 'Sasuke Samurai #4',
+                    'rota-img': 'Reinforcement of the Army',
+                    'isolde-img': 'Isolde, Two Tales of the Noble Knights',
+                    'sasuke-4-end-img': 'Sasuke Samurai #4',
+                    'second-coin-toss-img': 'Second Coin Toss',
+                    'sasuke-2-end-img': 'Sasuke Samurai #2',
+                    'bls-img': 'Black Luster Soldier - Envoy of the Beginning',
+                    'sasuke-1-end-img': 'Sasuke Samurai',
+                    'magician-of-faith-img': 'Magician of Faith'
+                });
+            } else {
+                console.error('CardLoader is not defined. Please ensure card-loader.js is loaded correctly.');
+            }
+        });
+    </script>
+</body>
+</html>
+
+

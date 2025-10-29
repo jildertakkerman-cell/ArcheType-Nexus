@@ -15971,6 +15971,26 @@ const archetypes = [
     },
 
     {
+        name: 'Legacy of Greed',
+        description: 'A series of cards themed around avarice and wealth, featuring powerful draw engines and resource generation mechanics that reward greedy playstyles with overwhelming card advantage.',
+        filepath: 'Legacy of Greed Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="greedGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#a3e635;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1f1d16;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#greedGrad)" stroke="#a3e635" stroke-width="2"/>
+                        <path d="M30 35 L40 30 L50 35 L60 30 L70 35 L65 45 L70 55 L60 50 L50 55 L40 50 L35 55 L40 45 Z" fill="#5f5a43" stroke="#a3e635" stroke-width="2"/>
+                        <circle cx="45" cy="40" r="3" fill="#a3e635"/>
+                        <circle cx="55" cy="40" r="3" fill="#a3e635"/>
+                        <circle cx="50" cy="50" r="4" fill="#a3e635"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">GREED</text>
+                    </svg>`
+    },
+
+    {
         name: 'Lightsworn',
         description: 'A Light-based archetype focused on aggressive milling strategies and powerful Synchro summoning, combining high-risk, high-reward gameplay with explosive offensive potential.',
         filepath: 'Lightsworn Deck Analysis.html',
@@ -20199,6 +20219,26 @@ const archetypes = [
                     </svg>`
     },
     {
+        name: 'Of the Swamp',
+        description: 'A series of cards that focus on amphibian and reptilian monsters, featuring powerful Synchro and Xyz monsters that thrive in marshy environments and manipulate water-based effects.',
+        filepath: 'of the Swamp Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="swampGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#2dd4bf;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0c1412;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#swampGrad)" stroke="#2dd4bf" stroke-width="2"/>
+                        <path d="M25 60 Q35 50 45 55 Q55 50 65 55 Q75 50 85 60 L85 75 Q75 80 65 75 Q55 80 45 75 Q35 80 25 75 Z" fill="#1a332d" stroke="#2a554a" stroke-width="2"/>
+                        <circle cx="35" cy="45" r="4" fill="#6ee7b7"/>
+                        <circle cx="50" cy="40" r="3" fill="#6ee7b7"/>
+                        <circle cx="65" cy="45" r="4" fill="#6ee7b7"/>
+                        <path d="M40 65 Q45 60 50 65 Q55 60 60 65" stroke="#2dd4bf" stroke-width="2" fill="none"/>
+                        <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">SWAMP</text>
+                    </svg>`
+    },
+    {
         name: 'Ogdoadic',
         description: 'A Reptile archetype themed around ancient Egyptian chaos, focusing on summoning and controlling Ogdoadic monsters.',
         filepath: 'Ogdoadic Deck Analysis.html',
@@ -20479,6 +20519,25 @@ const archetypes = [
                     </svg>`
     },
     {
+        name: 'Paladin of Dragon',
+        description: 'A Dragon archetype featuring knightly warriors who wield dragon powers, focusing on Synchro and Xyz summoning with powerful dragon-themed monsters and paladin support.',
+        filepath: 'Paladin of Dragon Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="paladinGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#facc15;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0a0f1e;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#paladinGrad)" stroke="#facc15" stroke-width="2"/>
+                        <path d="M35 40 L45 35 L50 45 L55 35 L65 40 L60 50 L70 55 L55 55 L50 65 L45 55 L30 55 L40 50 Z" fill="#3a477a" stroke="#facc15" stroke-width="2"/>
+                        <circle cx="42" cy="42" r="3" fill="#facc15"/>
+                        <circle cx="58" cy="42" r="3" fill="#facc15"/>
+                        <path d="M45 60 Q50 55 55 60" stroke="#facc15" stroke-width="2" fill="none"/>
+                        <text x="50" y="80" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">PALADIN</text>
+                    </svg>`
+    },
+    {
         name: 'P.U.N.K.',
         description: 'A Psychic archetype focused on Link summoning and field control through punk-themed monsters.',
         filepath: 'P.U.N.K. Deck Analysis.html',
@@ -20756,6 +20815,25 @@ const archetypes = [
                             <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#111827" font-weight="bold">Mega Phantom Beast</text>
+                    </svg>`
+    },
+    {
+        name: 'Pot of',
+        description: 'A series of iconic Spell Cards that revolutionized Yu-Gi-Oh by providing powerful draw and search effects, featuring legendary cards like Pot of Greed, Pot of Desires, and Pot of Prosperity.',
+        filepath: 'Pot of Deck Analyis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="potGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#5eead4;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0d1c1a;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#potGrad)" stroke="#5eead4" stroke-width="2"/>
+                        <path d="M30 40 Q50 30 70 40 L65 60 Q50 70 35 60 Z" fill="#2f6e6a" stroke="#5eead4" stroke-width="2"/>
+                        <circle cx="45" cy="45" r="3" fill="#99f6e4"/>
+                        <circle cx="55" cy="45" r="3" fill="#99f6e4"/>
+                        <circle cx="50" cy="55" r="4" fill="#99f6e4"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">POT OF</text>
                     </svg>`
     },
     {
@@ -21076,6 +21154,25 @@ const archetypes = [
                             <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="bold">Prophecy</text>
+                    </svg>`
+    },
+    {
+        name: 'Pseudo Trap Monster',
+        description: 'A unique archetype featuring monsters that appear as Trap Cards but function as monsters on the field, creating deceptive and strategic gameplay through fossil-like creatures.',
+        filepath: 'Pseudo Trap Monster Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="pseudoGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#66fcf1;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0d1a1c;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#pseudoGrad)" stroke="#66fcf1" stroke-width="2"/>
+                        <path d="M25 35 L35 35 L35 25 L45 25 L45 35 L55 35 L55 45 L45 45 L45 55 L35 55 L35 45 L25 45 Z" fill="none" stroke="#66fcf1" stroke-width="3"/>
+                        <circle cx="40" cy="40" r="3" fill="#66fcf1"/>
+                        <circle cx="60" cy="40" r="3" fill="#66fcf1"/>
+                        <circle cx="50" cy="55" r="4" fill="#66fcf1"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">PSEUDO</text>
                     </svg>`
     },
     {
@@ -21439,6 +21536,25 @@ const archetypes = [
                     </svg>`
     },
     {
+        name: 'Rescue',
+        description: 'A series of Spell Cards that Special Summon Level 4 or lower monsters from the Deck, featuring powerful swarming and resource generation through rescue operations.',
+        filepath: 'Rescue Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="rescueGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#facc15;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0d121c;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#rescueGrad)" stroke="#facc15" stroke-width="2"/>
+                        <path d="M35 35 L45 35 L45 25 L55 25 L55 35 L65 35 L65 45 L55 45 L55 55 L45 55 L45 45 L35 45 Z" fill="none" stroke="#facc15" stroke-width="3"/>
+                        <circle cx="40" cy="40" r="3" fill="#facc15"/>
+                        <circle cx="60" cy="40" r="3" fill="#facc15"/>
+                        <circle cx="50" cy="55" r="4" fill="#facc15"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">RESCUE</text>
+                    </svg>`
+    },
+    {
         name: 'Relinquished',
         description: 'A Spellcaster archetype that relinquishes control to seize opponents\' monsters with eye-based magic.',
         filepath: 'Relinquished Deck Analysis.html',
@@ -21639,6 +21755,25 @@ const archetypes = [
                     </svg>`
     },
     {
+        name: 'Risebell',
+        description: 'A cosmic archetype that rises through the stars with bell-ringing summons, featuring powerful Synchro and Xyz monsters that manipulate the field with celestial energy.',
+        filepath: 'Risebell Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="risebellGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#22d3ee;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0d112a;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#risebellGrad)" stroke="#22d3ee" stroke-width="2"/>
+                        <path d="M35 35 Q50 25 65 35 L60 50 Q50 60 40 50 Z" fill="#38428a" stroke="#22d3ee" stroke-width="2"/>
+                        <circle cx="45" cy="40" r="3" fill="#67e8f9"/>
+                        <circle cx="55" cy="40" r="3" fill="#67e8f9"/>
+                        <circle cx="50" cy="50" r="4" fill="#67e8f9"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">RISEBELL</text>
+                    </svg>`
+    },
+    {
         name: 'Roid',
         description: 'A Machine archetype that revs up with vehicle-powered summons for high-speed control and disruption.',
         filepath: 'Roid deck Analysis.html',
@@ -21756,6 +21891,25 @@ const archetypes = [
                             <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4c1d95" font-weight="bold">Runick</text>
+                    </svg>`
+    },
+    {
+        name: 'Royal',
+        description: 'A series of face-up Spell/Trap Cards that manipulate the field with royal authority, featuring powerful control effects and strategic positioning through king, queen, and jack mechanics.',
+        filepath: 'Royal Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="royalGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0d0f2b;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#royalGrad)" stroke="#FFD700" stroke-width="2"/>
+                        <path d="M30 35 L40 30 L50 35 L60 30 L70 35 L65 45 L70 55 L60 50 L50 55 L40 50 L35 55 L40 45 Z" fill="#4a4a8a" stroke="#FFD700" stroke-width="2"/>
+                        <circle cx="45" cy="40" r="3" fill="#FFD700"/>
+                        <circle cx="55" cy="40" r="3" fill="#FFD700"/>
+                        <circle cx="50" cy="50" r="4" fill="#FFD700"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">ROYAL</text>
                     </svg>`
     },
     {
@@ -21959,6 +22113,25 @@ const archetypes = [
                     </svg>`
     },
     {
+        name: 'Sasuke',
+        description: 'A samurai archetype featuring the legendary ninja Sasuke with powerful Synchro and Xyz monsters, focusing on stealthy tactics and precise strikes in battle.',
+        filepath: 'Sasuke Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="sasukeGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#f87171;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a1a2d;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#sasukeGrad)" stroke="#f87171" stroke-width="2"/>
+                        <path d="M35 35 L45 35 L45 25 L55 25 L55 35 L65 35 L65 45 L55 45 L55 55 L45 55 L45 45 L35 45 Z" fill="none" stroke="#f87171" stroke-width="3"/>
+                        <circle cx="40" cy="40" r="3" fill="#f87171"/>
+                        <circle cx="60" cy="40" r="3" fill="#f87171"/>
+                        <circle cx="50" cy="55" r="4" fill="#f87171"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SASUKE</text>
+                    </svg>`
+    },
+    {
         name: 'Scareclaw',
         description: 'A Beast-Warrior archetype that frightens opponents with scarecrow tactics for defensive control.',
         filepath: 'Scareclaw Deck Analysis.html',
@@ -22079,6 +22252,24 @@ const archetypes = [
                     </svg>`
     },
     {
+        name: 'Shining Sarcophagus',
+        description: 'An ancient Egyptian archetype featuring sarcophagi that contain powerful monsters, focusing on excavation and revival mechanics with golden treasures and pharaoh-like summons.',
+        filepath: 'Shining Sarcophagus Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="sarcophagusGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#ffc107;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#2b2d42;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#sarcophagusGrad)" stroke="#ffc107" stroke-width="2"/>
+                        <rect x="30" y="35" width="40" height="30" rx="5" fill="#3f3e5e" stroke="#ffc107" stroke-width="2"/>
+                        <path d="M35 40 L45 40 M35 45 L45 45 M35 50 L45 50 M35 55 L45 55" stroke="#ffc107" stroke-width="1"/>
+                        <circle cx="50" cy="50" r="4" fill="#ffc107"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">SARCOPHAGUS</text>
+                    </svg>`
+    },
+    {
         name: 'Shiranui',
         description: 'A Zombie archetype that haunts the field with shiranui spirits for undead control and revival.',
         filepath: 'Shiranui Deck Analysis.html',
@@ -22156,6 +22347,25 @@ const archetypes = [
                             <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Simorgh</text>
+                    </svg>`
+    },
+    {
+        name: 'Signer Dragon',
+        description: 'A Dragon archetype featuring the legendary Signer Dragons that protect the world from darkness, focusing on powerful Synchro and Xyz summoning with cosmic energy and crimson markings.',
+        filepath: 'Signer Dragon Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="signerGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#f43f5e;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0a0b1e;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#signerGrad)" stroke="#f43f5e" stroke-width="2"/>
+                        <path d="M35 35 L45 30 L50 40 L55 30 L65 35 L60 45 L70 50 L55 50 L50 60 L45 50 L30 50 L40 45 Z" fill="#4a4a8a" stroke="#f43f5e" stroke-width="2"/>
+                        <circle cx="45" cy="40" r="3" fill="#f43f5e"/>
+                        <circle cx="55" cy="40" r="3" fill="#f43f5e"/>
+                        <circle cx="50" cy="50" r="4" fill="#f43f5e"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">SIGNER</text>
                     </svg>`
     },
     {
@@ -22309,6 +22519,26 @@ const archetypes = [
     },
 
     {
+        name: 'Skilled Magician',
+        description: 'A Spellcaster archetype featuring skilled magicians who manipulate spell counters and perform complex magical rituals, focusing on precise timing and powerful spell-based effects.',
+        filepath: 'Skilled Magician Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="magicianGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#fcd34d;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0d051c;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#magicianGrad)" stroke="#fcd34d" stroke-width="2"/>
+                        <path d="M35 35 L45 35 L45 25 L55 25 L55 35 L65 35 L65 45 L55 45 L55 55 L45 55 L45 45 L35 45 Z" fill="none" stroke="#fcd34d" stroke-width="3"/>
+                        <circle cx="40" cy="40" r="3" fill="#fcd34d"/>
+                        <circle cx="60" cy="40" r="3" fill="#fcd34d"/>
+                        <circle cx="50" cy="55" r="4" fill="#fcd34d"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">MAGICIAN</text>
+                    </svg>`
+    },
+
+    {
         name: 'Skyscraper',
         description: 'An archetype focused on building tall structures and overwhelming opponents with height-based strategies.',
         filepath: 'Skyscraper Deck Analysis.html',
@@ -22413,6 +22643,27 @@ const archetypes = [
                             <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#696969" font-weight="bold">Scrap</text>
+                    </svg>`
+    },
+
+    {
+        name: 'Spider',
+        description: 'An Insect archetype featuring venomous spiders that weave webs of control and disruption, focusing on swarming tactics and poisonous effects that debilitate opponents.',
+        filepath: 'Spider Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="spiderGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a1633;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#spiderGrad)" stroke="#ec4899" stroke-width="2"/>
+                        <path d="M30 40 Q50 30 70 40 L65 50 Q50 60 35 50 Z" fill="#2a2457" stroke="#ec4899" stroke-width="2"/>
+                        <circle cx="45" cy="45" r="3" fill="#ec4899"/>
+                        <circle cx="55" cy="45" r="3" fill="#ec4899"/>
+                        <circle cx="50" cy="55" r="4" fill="#ec4899"/>
+                        <path d="M25 35 L35 35 M75 35 L85 35 M25 65 L35 65 M75 65 L85 65" stroke="#ec4899" stroke-width="1"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SPIDER</text>
                     </svg>`
     },
 

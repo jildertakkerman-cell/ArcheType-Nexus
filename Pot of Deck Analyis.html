@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pot Card Ecosystem Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importing the shared card-loader.js script -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1c1a; /* Dark Teal-Green */
+            color: #d1fae5; /* Light Mint */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a3b3a; /* Darker Teal */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2f6e6a; /* Muted Teal Border */
+        }
+        .combo-step-card {
+            background-color: #225450; /* Slightly lighter teal */
+            border: 1px solid #388a83;
+        }
+        .pro-con-card {
+            background-color: #225450;
+            border: 1px solid #388a83;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #1a3b3a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a3b3a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #99f6e4; } /* Bright Mint/Teal */
+        .arrow-color { color: #5eead4; }
+        .heading-underline {
+            border-bottom: 2px solid #5eead4;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #99f6e4;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #99f6e4;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW "POT OF" VORTEX BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d1c1a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #2f6e6a;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            width: 300%;
+            height: 300%;
+            top: -100%;
+            left: -100%;
+            background: conic-gradient(
+                from 0deg at 50% 50%,
+                #0d1c1a 0%, 
+                #134e4a 20%, 
+                #14b8a6 40%,
+                #134e4a 60%,
+                #0d1c1a 100%
+            );
+            animation: spin 15s linear infinite;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .banner-header::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 28, 26, 0.4) 0%, rgba(13, 28, 26, 0.95) 100%);
+            z-index: 2;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(94, 234, 212, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 28, 26, 0.95);
+            border: 1px solid #5eead4;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #5eead4;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The "Pot of" Ecosystem</h1>
+            <p class="text-lg md:text-xl text-teal-200">An Analysis of Consistency and Cost</p>
+        </header>
+
+        <!-- I. Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">I. Executive Summary: The Consistency Engine</h2>
+                <p class="text-teal-100">
+                    The suite of "Pot of" Normal Spell cards represents the most critical non-engine 
+                    <a href="https://yugipedia.com/wiki/Pot_of" target="_blank" class="lore-link">consistency tools</a> 
+                    available in the competitive Yu-Gi-Oh! TCG. These cards function as powerful deck-thinning or deck-digging mechanisms, designed to increase the probability of drawing crucial starter cards, extenders, or disruption.
+                </p>
+                <p class="text-teal-100 mt-4">
+                    Since Konami mandates that such powerful effects must carry severe costs, the modern "Pot of" cards—primarily <strong class="text-accent">Pot of Prosperity</strong>, <strong class="text-accent">Pot of Desires</strong>, <strong class="text-accent">Pot of Extravagance</strong>, and <strong class="text-accent">Pot of Duality</strong>—operate within a delicate ecosystem defined by mutually exclusive constraints. The fundamental strategic analysis centers on this <strong class="text-accent">Constraint Ecosystem</strong>: successful deck building requires selecting a "Pot" card whose restriction (e.g., a Special Summon prohibition, a draw lock, or an Extra Deck cost) minimally impacts the deck's core strategy.
+                </p>
+            </div>
+        </section>
+
+        <!-- II. Foundational Calculus -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">II. The Foundational Calculus</h2>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-white mb-4">The Original Sin: Pot of Greed (The Uncosted +1)</h3>
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div id="pot-of-greed-img-container" class="card-image-container card-placeholder">Pot of Greed</div>
+                    <div class="flex-1">
+                        <p class="text-teal-100">
+                            The genesis of all modern consistency spells is <strong class="text-accent">Pot of Greed</strong>, the original Normal Spell that simply allows the player to "Draw 2 cards." This zero-cost card advantage (+1 net card economy) provided a mathematically certain increase in consistency without an equal drawback.
+                        </p>
+                        <p class="text-teal-100 mt-4">
+                            Its perpetually <strong class="text-red-400">Forbidden</strong> status defines the regulatory ceiling for all future draw effects. Because an uncosted +1 is Forbidden, any legal draw or selection card must enforce a severe negative cost or a debilitating restriction to achieve balance.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- III. Comprehensive Analysis of Competitive "Pot of" Spells -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">III. Analysis of Competitive "Pot" Spells</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Pot of Prosperity -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-accent mb-4">Pot of Prosperity</h3>
+                    <div class="flex flex-col md:flex-row gap-4 items-center mb-4">
+                        <div id="pot-of-prosperity-img-container" class="card-image-container card-placeholder">Pot of Prosperity</div>
+                        <p class="text-sm text-teal-100 flex-1">
+                            <strong class="text-white">Role: Precision Excavator</strong><br>
+                            Arguably the most powerful consistency tool. It allows the player to banish 3 or 6 cards from their Extra Deck to excavate that many cards from the Main Deck and add 1 to hand. This precision is favored by combo decks that *must* find a specific 1-of starter.
+                        </p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100 mt-auto">
+                        <li><strong class="text-white">Net Economy:</strong> +0 (1-for-1 trade).</li>
+                        <li><strong class="text-white">Cost:</strong> Banish 3 or 6 (choice) from Extra Deck.</li>
+                        <li><strong class="text-red-400">Restriction:</strong> Halves all damage to the opponent for the turn. Critically, you <strong class="text-red-400">cannot draw cards by card effects</strong> the turn you activate this card.</li>
+                    </ul>
+                </div>
+                
+                <!-- Pot of Desires -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-accent mb-4">Pot of Desires</h3>
+                    <div class="flex flex-col md:flex-row gap-4 items-center mb-4">
+                        <div id="pot-of-desires-img-container" class="card-image-container card-placeholder">Pot of Desires</div>
+                        <p class="text-sm text-teal-100 flex-1">
+                            <strong class="text-white">Role: Risk/Reward Volume</strong><br>
+                            The primary source of raw card advantage. It provides a +1 in card economy, prioritizing volume for strategies that possess high card redundancy (e.g., running 3 copies of all key cards).
+                        </p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100 mt-auto">
+                        <li><strong class="text-white">Net Economy:</strong> +1 (Draw 2).</li>
+                        <li><strong class="text-white">Cost:</strong> Banish 10 cards from the top of the Main Deck, face-down.</li>
+                        <li><strong class="text-red-400">Restriction:</strong> Only its own "once per turn" clause. The high-risk banish cost *is* the restriction.</li>
+                    </ul>
+                </div>
+
+                <!-- Pot of Extravagance -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-accent mb-4">Pot of Extravagance</h3>
+                    <div class="flex flex-col md:flex-row gap-4 items-center mb-4">
+                        <div id="pot-of-extravagance-img-container" class="card-image-container card-placeholder">Pot of Extravagance</div>
+                        <p class="text-sm text-teal-100 flex-1">
+                            <strong class="text-white">Role: Control Deck Staple</strong><br>
+                            Favored exclusively by control and stun archetypes (like Labrynth or Eldlich) that have minimal or zero reliance on the Extra Deck. It trades the Extra Deck for raw card advantage.
+                        </p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100 mt-auto">
+                        <li><strong class="text-white">Net Economy:</strong> +1 (Draw 2, if 6 banished).</li>
+                        <li><strong class="text-white">Cost:</strong> Banish 3 or 6 (random) from Extra Deck at the start of Main Phase 1.</li>
+                        <li><strong class="text-red-400">Restriction:</strong> You <strong class="text-red-400">cannot draw cards by card effects</strong> for the rest of the turn after resolution.</li>
+                    </ul>
+                </div>
+
+                <!-- Pot of Duality -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-accent mb-4">Pot of Duality</h3>
+                    <div class="flex flex-col md:flex-row gap-4 items-center mb-4">
+                        <div id="pot-of-duality-img-container" class="card-image-container card-placeholder">Pot of Duality</div>
+                        <p class="text-sm text-teal-100 flex-1">
+                            <strong class="text-white">Role: Non-Combo Utility</strong><br>
+                            The lowest-cost, highest-restriction "Pot." It requires no resource banishing but enforces an absolute lock, forcing it into specific strategies that rely on Normal Summons or setting Traps (like Floowandereeze).
+                        </p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-teal-100 mt-auto">
+                        <li><strong class="text-white">Net Economy:</strong> +0 (1-for-1 trade).</li>
+                        <li><strong class="text-white">Cost:</strong> None.</li>
+                        <li><strong class="text-red-400">Restriction:</strong> You <strong class="text-red-400">cannot Special Summon</strong> monsters during the entire turn you activate this card.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- IV. TCG Banlist Impact (Fulfilling User Request) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">IV. Current TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-teal-100 mb-6 text-center">
+                    The competitive viability of these cards is dictated by the Forbidden & Limited List. Based on the TCG format (as of October 2025), the "Pot" ecosystem is heavily regulated.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden (0 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-teal-100">
+                            <li><strong class="text-red-300">Pot of Greed</strong></li>
+                            <li><strong class="text-red-300">Maxx "C"</strong> (Key TCG/OCG difference)</li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-teal-100">
+                            <li><strong class="text-yellow-300">Pot of Prosperity</strong></li>
+                            <li><strong class="text-yellow-300">Triple Tactics Thrust</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Unlimited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-teal-100">
+                            <li><strong class="text-green-300">Pot of Desires</strong></li>
+                            <li><strong class="text-green-300">Pot of Extravagance</strong></li>
+                            <li><strong class="text-green-300">Pot of Duality</strong></li>
+                            <li><strong class="text-green-300">Left Arm Offering</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-teal-900 bg-opacity-30 rounded border-l-4 border-teal-500">
+                    <p class="text-sm text-teal-100">
+                        <strong class="text-white">Meta Implications:</strong> The limitation of <strong class="text-yellow-300">Pot of Prosperity</strong> has reduced its splashability, making it a precious 1-of for combo decks. Decks that can afford the risk (like Swordsoul) or don't need their Extra Deck (like Labrynth) have shifted to the unlimited <strong class="text-green-300">Pot of Desires</strong> and <strong class="text-green-300">Pot of Extravagance</strong>, respectively.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- V. "End Board" 1: Comparative Metrics -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">V. "End Board": Comparative Metrics</h2>
+            <div class="card p-6">
+                <div class="hidden md:grid grid-cols-5 gap-4 text-sm font-bold text-accent mb-2 px-4">
+                    <div>Card Name</div>
+                    <div>Net Card Economy</div>
+                    <div>Activation Cost</div>
+                    <div>Primary Restriction</div>
+                    <div>Competitive Role</div>
+                </div>
+                <!-- Metric 1: Prosperity -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 combo-step-card rounded-lg mb-3">
+                    <div class="font-bold text-white text-lg md:text-base"><span class="md:hidden text-accent">Card: </span>Pot of Prosperity</div>
+                    <div><span class="md:hidden text-accent">Economy: </span>+0 (Selection)</div>
+                    <div><span class="md:hidden text-accent">Cost: </span>Banish 3/6 ED (Choice)</div>
+                    <div class="text-red-400"><span class="md:hidden text-accent">Restriction: </span>Cannot Draw by Effects</div>
+                    <div><span class="md:hidden text-accent">Role: </span>Precision Consistency</div>
+                </div>
+                <!-- Metric 2: Desires -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 combo-step-card rounded-lg mb-3">
+                    <div class="font-bold text-white text-lg md:text-base"><span class="md:hidden text-accent">Card: </span>Pot of Desires</div>
+                    <div><span class="md:hidden text-accent">Economy: </span>+1 (Draw 2)</div>
+                    <div><span class="md:hidden text-accent">Cost: </span>Banish 10 Deck (Top)</div>
+                    <div class="text-green-400"><span class="md:hidden text-accent">Restriction: </span>None (Cost is risk)</div>
+                    <div><span class="md:hidden text-accent">Role: </span>Volume Advantage</div>
+                </div>
+                <!-- Metric 3: Extravagance -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 combo-step-card rounded-lg mb-3">
+                    <div class="font-bold text-white text-lg md:text-base"><span class="md:hidden text-accent">Card: </span>Pot of Extravagance</div>
+                    <div><span class="md:hidden text-accent">Economy: </span>+1 (Draw 2)</div>
+                    <div><span class="md:hidden text-accent">Cost: </span>Banish 3/6 ED (Random)</div>
+                    <div class="text-red-400"><span class="md:hidden text-accent">Restriction: </span>Cannot Draw by Effects</div>
+                    <div><span class="md:hidden text-accent">Role: </span>Control Deck Advantage</div>
+                </div>
+                <!-- Metric 4: Duality -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 combo-step-card rounded-lg">
+                    <div class="font-bold text-white text-lg md:text-base"><span class="md:hidden text-accent">Card: </span>Pot of Duality</div>
+                    <div><span class="md:hidden text-accent">Economy: </span>+0 (Selection)</div>
+                    <div><span class="md:hidden text-accent">Cost: </span>None</div>
+                    <div class="text-red-400"><span class="md:hidden text-accent">Restriction: </span>Cannot Special Summon</div>
+                    <div><span class="md:hidden text-accent">Role: </span>Non-Combo Consistency</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VI. Search and Retrieval Mechanisms -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">VI. Search and Retrieval</h2>
+            <p class="text-teal-100 mb-6 text-center">
+                Since "Pot" spells are unsearchable by their own archetype, players rely on generic Normal Spell searchers.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Triple Tactics Thrust -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Triple Tactics Thrust</h3>
+                    <div class="flex flex-col md:flex-row gap-4 items-center">
+                        <div id="thrust-img-container" class="card-image-container card-placeholder">Triple Tactics Thrust</div>
+                        <p class="text-sm text-teal-100 flex-1">
+                            A powerful, <strong class="text-yellow-400">Limited (1)</strong> card. If the opponent activated a monster effect, T.T.T. can search and Set any Normal Spell (like <strong class="text-accent">Prosperity</strong> or <strong class="text-accent">Desires</strong>) directly from the deck. This converts an opponent's hand trap (like Ash Blossom) into a direct search for your own consistency card.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Left Arm Offering -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Left Arm Offering</h3>
+                    <div class="flex flex-col md:flex-row gap-4 items-center">
+                        <div id="left-arm-img-container" class="card-image-container card-placeholder">Left Arm Offering</div>
+                        <p class="text-sm text-teal-100 flex-1">
+                            A high-risk, desperate searcher. It requires banishing your *entire hand* (min. 2 other cards) to add one Spell card from your deck. It's only played in highly linear, "go-first" strategies where finding a specific "Pot" card (usually <strong class="text-accent">Prosperity</strong>) is a guaranteed game-winner.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VII. Archetype Case Studies -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">VII. Archetype Case Studies</h2>
+            <p class="text-teal-100 mb-8 text-center max-w-2xl mx-auto">
+                The optimal selection of a "Pot" card is determined entirely by how its constraints align with the chosen archetype's resource management and endboard goals.
+            </p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Case Study 1: Swordsoul Tenyi -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-4">Case Study: Swordsoul & <span class="text-accent">Desires</span></h3>
+                    <p class="text-sm text-teal-100 mb-4">
+                        Swordsoul Tenyi is a perfect <strong class="text-accent">Pot of Desires</strong> deck. Its core engine pieces are all run at 3 copies, providing high redundancy to mitigate the banish cost. Furthermore, <strong class="text-accent">Desires</strong> has direct, positive synergy with the boss monster <strong class="text-white">Swordsoul Supreme Sovereign - Chengying</strong>, which gains power from banished cards.
+                    </p>
+                    <p class="text-xs text-teal-200 italic mb-4 p-3 bg-black bg-opacity-20 rounded-lg border-l-2 border-accent">
+                        <strong class="text-white not-italic">Integration:</strong> <strong class="text-accent">Desires</strong> is activated mid-combo, *after* securing a starter like <strong class="text-white">Mo Ye</strong>, to draw into extenders or hand traps to protect the final <strong class="text-white">Chengying</strong> summon.
+                    </p>
+                    <div class="mt-auto space-y-3">
+                        <h4 class="text-md font-bold text-white text-center">Representative Endboard</h4>
+                        <div class="flex gap-4 items-center p-3 combo-step-card rounded-lg">
+                            <div id="chengying-img-container" class="w-24 flex-shrink-0 card-placeholder">Chengying</div>
+                            <p class="text-sm text-teal-100">Offers omni-banish control, fueled by <strong class="text-accent">Desires</strong>.</p>
+                        </div>
+                        <div class="flex gap-4 items-center p-3 combo-step-card rounded-lg">
+                            <div id="chixiao-img-container" class="w-24 flex-shrink-0 card-placeholder">Chixiao</div>
+                            <p class="text-sm text-teal-100">Provides a monster effect negation and search.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case Study 2: Floowandereeze -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-4">Case Study: Floowandereeze & <span class="text-accent">Prosperity</span></h3>
+                    <p class="text-sm text-teal-100 mb-4">
+                        Floowandereeze avoids Special Summons, making <strong class="text-accent">Pot of Duality</strong> compatible. However, most builds prefer <strong class="text-accent">Pot of Prosperity</strong>, as the Extra Deck cost is negligible and the 6-card dig is superior for finding the 1-card starter <strong class="text-white">Robina</strong> or the Field Spell.
+                    </p>
+                    <p class="text-xs text-teal-200 italic mb-4 p-3 bg-black bg-opacity-20 rounded-lg border-l-2 border-accent">
+                        <strong class="text-white not-italic">Integration:</strong> <strong class="text-accent">Prosperity</strong> must be activated as the first action. The player banishes 6 unneeded ED monsters to find <strong class="text-white">Robina</strong> or <strong class="text-white">Map</strong>, then proceeds with their Normal Summon chains.
+                    </p>
+                    <div class="mt-auto space-y-3">
+                        <h4 class="text-md font-bold text-white text-center">Representative Endboard</h4>
+                        <div class="flex gap-4 items-center p-3 combo-step-card rounded-lg">
+                            <div id="empen-img-container" class="w-24 flex-shrink-0 card-placeholder">Empen</div>
+                            <p class="text-sm text-teal-100">Provides a search and one-sided <strong class="text-white">Skill Drain</strong> on Attack Position monsters.</p>
+                        </div>
+                        <div class="flex gap-4 items-center p-3 combo-step-card rounded-lg">
+                            <div id="barrier-statue-img-container" class="w-24 flex-shrink-0 card-placeholder">Barrier Statue</div>
+                            <p class="text-sm text-teal-100">A powerful floodgate preventing all non-WIND Special Summons.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case Study 3: Control (Labrynth/Eldlich) -->
+                <div class="card p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-4">Case Study: Control & <span class="text-accent">Extravagance</span></h3>
+                    <p class="text-sm text-teal-100 mb-4">
+                        Control decks like Labrynth or Eldlich rarely use their Extra Deck, making them ideal for <strong class="text-accent">Pot of Extravagance</strong>. The +1 card economy is superior to <strong class="text-accent">Prosperity's</strong> +0, as control decks need *more* cards (i.e., multiple traps) rather than one *specific* card.
+                    </p>
+                    <p class="text-xs text-teal-200 italic mb-4 p-3 bg-black bg-opacity-20 rounded-lg border-l-2 border-accent">
+                        <strong class="text-white not-italic">Integration:</strong> Activated at the start of Main Phase 1, banishing 6 random ED cards to draw 2, increasing the odds of opening key floodgates like <strong class="text-white">Skill Drain</strong> or engine cards like <strong class="text-white">Welcome Labrynth</strong>.
+                    </p>
+                    <div class="mt-auto space-y-3">
+                        <h4 class="text-md font-bold text-white text-center">Representative Endboard</h4>
+                        <div class="flex gap-4 items-center p-3 combo-step-card rounded-lg">
+                            <div id="eldlich-img-container" class="w-24 flex-shrink-0 card-placeholder">Eldlich</div>
+                            <p class="text-sm text-teal-100">A resilient, self-recycling boss monster.</p>
+                        </div>
+                        <div class="flex gap-4 items-center p-3 combo-step-card rounded-lg">
+                            <div id="skill-drain-img-container" class="w-24 flex-shrink-0 card-placeholder">Skill Drain</div>
+                            <p class="text-sm text-teal-100">A powerful floodgate that shuts down most monster-based decks.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIII. "End Board" 2: Risk/Reward Profile -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">VIII. "End Board": Risk/Reward Optimization</h2>
+            <div class="card p-6">
+                <p class="text-teal-100 mb-4 text-center">The choice between the two most popular staples, <strong class="text-accent">Desires</strong> and <strong class="text-accent">Prosperity</strong>, is a core deck-building decision.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm font-bold text-accent mb-2 px-4">
+                    <div>Metric</div>
+                    <div>Pot of Desires (Volume)</div>
+                    <div>Pot of Prosperity (Precision)</div>
+                </div>
+                <!-- Row 1 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 combo-step-card rounded-lg mb-3">
+                    <div class="font-bold text-white text-lg md:text-base">Net Card Economy</div>
+                    <div class="text-green-400">+1</div>
+                    <div class="text-yellow-400">+0 (Selection)</div>
+                </div>
+                <!-- Row 2 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 combo-step-card rounded-lg mb-3">
+                    <div class="font-bold text-white text-lg md:text-base">Risk of Banishing 1-of</div>
+                    <div class="text-red-400">High (~28.6%)</div>
+                    <div class="text-green-400">0% (User Choice)</div>
+                </div>
+                <!-- Row 3 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 combo-step-card rounded-lg mb-3">
+                    <div class="font-bold text-white text-lg md:text-base">Impact on Extra Deck</div>
+                    <div class="text-green-400">None</div>
+                    <div class="text-red-400">High (Removes 6)</div>
+                </div>
+                <!-- Row 4 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 combo-step-card rounded-lg">
+                    <div class="font-bold text-white text-lg md:text-base">Draw Lock Conflict (Maxx "C")</div>
+                    <div class="text-green-400">None</div>
+                    <div class="text-red-400">Severe (Full Turn Lock)</div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        // Wait for the DOM to be fully loaded before initializing the card loader
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // Check if CardLoader is defined
+            if (typeof CardLoader !== 'undefined') {
+                // Initialize the card loader
+                CardLoader.init();
+
+                // Define the map of container IDs to card names
+                const cardsToLoad = {
+                    'pot-of-greed-img-container': 'Pot of Greed',
+                    'pot-of-prosperity-img-container': 'Pot of Prosperity',
+                    'pot-of-desires-img-container': 'Pot of Desires',
+                    'pot-of-extravagance-img-container': 'Pot of Extravagance',
+                    'pot-of-duality-img-container': 'Pot of Duality',
+                    'thrust-img-container': 'Triple Tactics Thrust',
+                    'left-arm-img-container': 'Left Arm Offering',
+                    // Updated Case Study IDs
+                    'chengying-img-container': 'Swordsoul Supreme Sovereign - Chengying',
+                    'chixiao-img-container': 'Swordsoul Grandmaster - Chixiao',
+                    'empen-img-container': 'Floowandereeze & Empen',
+                    'barrier-statue-img-container': 'Barrier Statue of the Stormwinds',
+                    'eldlich-img-container': 'Eldlich the Golden Lord',
+                    'skill-drain-img-container': 'Skill Drain'
+                };
+
+                // Load all cards
+                CardLoader.loadCards(cardsToLoad);
+            } else {
+                console.error('CardLoader is not defined. Make sure card-loader.js is loaded correctly.');
+            }
+        });
+    </script>
+</body>
+</html>
+

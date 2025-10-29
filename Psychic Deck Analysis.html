@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psychic Archetype Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+        Assuming card-loader.js is in 'assets/js/' relative to this file.
+        Adjust path if necessary.
+    -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Inter for body and Orbitron for a 'psionic/sci-fi' feel in headers -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d051c; /* Deep dark indigo */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a0f30; /* Darker purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #7e22ce; /* Purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(26, 15, 48, 0.8); /* Even darker purple */
+            border: 1px solid #a855f7; /* Lighter purple border */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a1a4a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a1a4a;
+            border: 1px dashed #a855f7;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f0abfc; } /* Bright magenta/pink */
+        .arrow-color { color: #f0abfc; }
+        .heading-underline {
+            border-bottom: 2px solid #f0abfc;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f0abfc;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f0abfc;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #f0abfc;
+        }
+
+        /* --- NEW PSYCHIC WAVE ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d051c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #7e22ce;
+        }
+
+        #psionic-wave-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 5, 28, 0.4) 0%, rgba(13, 5, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(240, 171, 252, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles (Psychic Theme) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #2e1065 0%, #4c1d95 50%, #2e1065 100%); /* Purple gradient */
+            color: white;
+            border: 2px solid #a855f7; /* Lighter purple */
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(168, 85, 247, 0.4),
+                0 0 20px rgba(168, 85, 247, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(168, 85, 247, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(216, 180, 254, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(168, 85, 247, 0.6),
+                0 0 30px rgba(168, 85, 247, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #d8b4fe; /* Lighter purple on hover */
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            color: #d8b4fe; /* Lighter purple text */
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(168, 85, 247, 0.8),
+                    0 0 20px rgba(216, 180, 254, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(168, 85, 247, 1),
+                    0 0 30px rgba(216, 180, 254, 0.6),
+                    0 0 40px rgba(192, 132, 252, 0.3);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles (Psychic Theme) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 5, 28, 0.95); /* Dark purple */
+            border: 1px solid #a855f7; /* Purple border */
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #f0abfc; /* Magenta accent */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Orbitron', sans-serif;
+            color: #f0abfc;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="psionic-wave-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Psychic Archetype</h1>
+            <p class="text-lg md:text-xl text-purple-200">A Deep Dive into Psionic Power and Combo Engines</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Psychic</strong> monster type represents one of the most dynamic and evolving design philosophies in Yu-Gi-Oh!. Introduced with the Synchro mechanic, its identity has shifted from a high-risk, high-reward playstyle based on paying Life Points to a versatile engine capable of enabling a vast array of 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&stype=1&race=20" target="_blank" class="lore-link">strategies built from psionic minds</a>.
+                    This analysis covers its foundational generic support and its three most prominent modern archetypes: <strong class="text-accent">P.U.N.K.</strong>, <strong class="text-accent">Kozmo</strong>, and <strong class="text-accent">Virtual World</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Part I: The Psychic Toolkit -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Part I: The Psychic Toolkit</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                The Psychic type's strength is built on a foundation of powerful generic support cards that manipulate Life Points, the banished zone, and provide unparalleled access from the Deck.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Emergency Teleport -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Emergency Teleport</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="etele-img-container" class="card-image-container card-placeholder">Emergency Teleport</div>
+                    </div>
+                    <p class="text-indigo-200 text-sm">
+                        One of the most powerful support cards ever printed. This Quick-Play Spell summons a Level 3 or lower Psychic from the Deck, acting as a combo starter, extender, or even disruption (by summoning <strong class="text-accent">Ghost Ogre</strong>).
+                    </p>
+                </div>
+                <!-- Banish Manipulators -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Banish Manipulators</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="witch-img-container" class="card-image-container card-placeholder">Serene Psychic Witch</div>
+                    </div>
+                    <p class="text-indigo-200 text-sm">
+                        Cards like <strong class="text-accent">Serene Psychic Witch</strong> and <strong class="text-accent">Silent Psychic Wizard</strong> turn the banished zone into a secondary resource pool, banishing monsters to be revived later for follow-up plays.
+                    </p>
+                </div>
+                <!-- Negation & Bosses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4 text-center">Negation & Bosses</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="punisher-img-container-1" class="card-image-container card-placeholder">Psychic End Punisher</div>
+                    </div>
+                    <p class="text-indigo-200 text-sm">
+                        Generic tools like the Counter Trap <strong class="text-accent">Mind Over Matter</strong> provide omni-negation, while <strong class="text-accent">Psychic End Punisher</strong> serves as the ultimate boss monster, becoming unaffected and gaining massive ATK.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part II: Archetypal Deep Dives -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Part II: Archetypal Deep Dives</h2>
+            
+            <!-- P.U.N.K. -->
+            <div class="card p-6 mb-8">
+                <h3 class="text-2xl font-bold text-white mb-4 font-['Orbitron']">P.U.N.K.: The Ultimate Engine</h3>
+                <p class="text-indigo-200 mb-6">
+                    A Synchro-focused strategy that pays small LP costs to generate immense card advantage. It's renowned for its consistency, able to function as a pure strategy or a compact engine.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Core Combo Line</h4>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                            <li>Start with <strong class="text-accent">Noh-P.U.N.K. Ze Amin</strong> (searchable by <strong class="text-accent">Ogre Dance</strong> or <strong class="text-accent">E-Tele</strong>).</li>
+                            <li>Ze Amin searches <strong class="text-accent">Noh-P.U.N.K. Foxy Tune</strong>.</li>
+                            <li>Foxy Tune discards to summon <strong class="text-accent">Noh-P.U.N.K. Deer Note</strong> from Deck.</li>
+                            <li>Synchro Summon a Level 8 (like <strong class="text-accent">Chaos Ruler</strong> [Banned] or <strong class="text-accent">P.U.N.K. JAM Dragon Drive</strong>).</li>
+                            <li>Deer Note's GY effect revives a P.U.N.K. to continue plays, often ending on <strong class="text-accent">Psychic End Punisher</strong>.</li>
+                        </ul>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div id="ze-amin-img-container" class="card-placeholder h-auto">Ze Amin</div>
+                        <div id="foxy-tune-img-container" class="card-placeholder h-auto">Foxy Tune</div>
+                        <div id="deer-note-img-container" class="card-placeholder h-auto">Deer Note</div>
+                    </div>
+                </div>
+                <h4 class="text-lg font-bold text-accent mt-6 mb-2">Typical End Boards</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <strong class="text-white">Disruptive Control Board:</strong>
+                        <p class="text-sm text-indigo-200">Ends on <strong class="text-accent">Ukiyoe-P.U.N.K. Sharakusai</strong>, which Synchro Summons <strong class="text-accent">Ukiyoe-P.U.N.K. Amazing Dragon</strong> on the opponent's turn to bounce 3-4 cards.</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <strong class="text-white">The Finisher Board:</strong>
+                        <p class="text-sm text-indigo-200">Ends on <strong class="text-accent">Psychic End Punisher</strong>, which becomes unaffected by opponent's effects and gains massive ATK to OTK.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kozmo -->
+            <div class="card p-6 mb-8">
+                <h3 class="text-2xl font-bold text-white mb-4 font-['Orbitron']">Kozmo: The Sci-Fi Saga</h3>
+                <p class="text-indigo-200 mb-6">
+                    A reactive, anti-meta strategy blending Psychic "pilots" and Machine "spaceships." Pilots banish themselves as a Quick Effect to summon untargetable ships from the hand, dodging effects and disrupting the opponent.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Key Tactical Plays</h4>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                            <li><strong class="text-accent">Tincan End Phase Setup:</strong> <strong class="text-accent">Kozmo Tincan</strong> reveals 3 Kozmo cards, adding one to hand and milling two (often ships for revival).</li>
+                            <li><strong class="text-accent">Farmgirl OTK Loop:</strong> <strong class="text-accent">Kozmo Farmgirl</strong> attacks, searches a card, then tags out to a big ship to attack again.</li>
+                            <li><strong class="text-accent">Reactive Disruption:</strong> Tag out a pilot to summon <strong class="text-accent">Kozmo Dark Destroyer</strong>, whose on-summon effect destroys a monster.</li>
+                        </ul>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div id="tincan-img-container" class="card-placeholder h-auto">Tincan</div>
+                        <div id="dark-lady-img-container" class="card-placeholder h-auto">Dark Lady</div>
+                        <div id="dark-destroyer-img-container" class="card-placeholder h-auto">Dark Destroyer</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Virtual World -->
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-white mb-4 font-['Orbitron']">Virtual World: The Digital Domain</h3>
+                <p class="text-indigo-200 mb-6">
+                    A complex "freestyle" combo deck that manipulates monster Levels and Types to perform rapid Synchro and Xyz Summons. It uses its main deck monsters to send "Virtual World Gate" Spells/Traps from Deck to GY, which then banish themselves for advantage.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Core Mechanic & Goal</h4>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                            <li><strong class="text-accent">Virtual World Mai-Hime - Lulu</strong> and <strong class="text-accent">Kirin - Lili</strong> start combos by targeting a VW card and sending another VW card of a different type (Monster, Spell, Trap) to the GY.</li>
+                            <li>This "resource conversion" loads the GY with "Gate" cards for searching, revival, and level modulation.</li>
+                            <li>The primary end board goal is <strong class="text-accent">Virtual World Kyubi - Shenshen</strong>.</li>
+                        </ul>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div id="lulu-img-container" class="card-placeholder h-auto">Lulu</div>
+                        <div id="shenshen-img-container" class="card-placeholder h-auto">Shenshen</div>
+                        <div id="chuche-img-container" class="card-placeholder h-auto">Chuche</div>
+                    </div>
+                </div>
+                <h4 class="text-lg font-bold text-accent mt-6 mb-2">Typical End Board</h4>
+                <div class="combo-step-card p-4 rounded-lg">
+                    <strong class="text-white">The Shenshen Lock:</strong>
+                    <p class="text-sm text-indigo-200">Ends on <strong class="text-accent">Virtual World Kyubi - Shenshen</strong>, whose continuous effect banishes any card sent from the field to the GY, crippling most modern decks. This is backed up by the disruption of <strong class="text-accent">Virtual World Gate - Chuche</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part III: Psychic Synergy -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Part III: Psychic Synergy as an Engine</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- P.U.N.K. Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4">The P.U.N.K. Engine</h3>
+                    <p class="text-indigo-200 text-sm mb-4">
+                        A small package (Ze Amin, Foxy Tune, Deer Note) provides one-card access to a Level 8 Synchro. Historically, this was used to summon the (now banned) <strong class="text-accent">Chaos Ruler</strong> to mill 5 and fill the GY.
+                    </p>
+                    <p class="text-indigo-200 text-sm">
+                        <strong class="text-white">Modern Use (Gold Pride):</strong> The LP costs of P.U.N.K. directly enable the Special Summon condition of "Gold Pride" monsters, creating a powerful symbiotic strategy.
+                    </p>
+                </div>
+                <!-- E-Tele Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-4">The E-Tele Engine</h3>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <p class="text-indigo-200 text-sm flex-1">
+                            Simply running <strong class="text-accent">Emergency Teleport</strong> with a small toolbox of Psychic monsters gives any deck incredible flexibility.
+                        </p>
+                        <div id="ghost-ogre-img-container" class="card-image-container max-w-[120px] mx-auto sm:mx-0 card-placeholder">Ghost Ogre & Snow Rabbit</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-1 text-indigo-200 text-sm mt-4">
+                        <li><strong class="text-white">Disruption:</strong> Summon <strong class="text-accent">Ghost Ogre & Snow Rabbit</strong> on the opponent's turn.</li>
+                        <li><strong class="text-white">Extension:</strong> Summon extenders like <strong class="text-accent">Psychic Tracker</strong> or <strong class="text-accent">Psychic Wheeleder</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-6 text-center">
+                    The Psychic type's power is often checked by the banlist, primarily by targeting its most powerful generic enablers.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Chaos Ruler, the Chaotic Magical Dragon</strong></li>
+                        </ul>
+                        <div id="chaos-ruler-img-container" class="w-full mt-4 card-placeholder h-auto">Chaos Ruler</div>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited (1 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Emergency Teleport</strong></li>
+                        </ul>
+                        <div id="etele-img-container-2" class="w-full mt-4 card-placeholder h-auto">Emergency Teleport</div>
+                    </div>
+                    <!-- Unlimited -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-500 mb-2">Unlimited (3 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "P.U.N.K." monsters</li>
+                            <li>All "Kozmo" monsters</li>
+                            <li>All "Virtual World" monsters</li>
+                            <li>Ghost Ogre & Snow Rabbit</li>
+                            <li>Psychic End Punisher</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300">
+                        <strong>Meta Implications:</strong> The banning of <strong class="text-accent">Chaos Ruler</strong> significantly weakened the P.U.N.K. engine's generic ceiling. The limitation of <strong class="text-accent">Emergency Teleport</strong> remains the primary check on the type's explosive consistency. However, the core archetypes (P.U.N.K., Kozmo, VW) remain at full, unrestricted power.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- PSYCHIC WAVE BANNER ANIMATION ---
+            const canvas = document.getElementById('psionic-wave-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let time = 0;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                // Psionic wave colors
+                const colors = ['#a855f7', '#d946ef', '#f0abfc', '#06b6d4'];
+
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    time += 0.02;
+                    
+                    for (let j = 0; j < colors.length; j++) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = colors[j];
+                        ctx.lineWidth = 1 + j * 0.5;
+                        ctx.globalAlpha = 0.5 - j * 0.1;
+                        
+                        for (let i = 0; i <= canvas.width; i += 5) {
+                            const y = canvas.height / 2 + 
+                                      Math.sin(i * 0.02 + time + j * 0.5) * 15 * Math.sin(time + j) +
+                                      Math.sin(i * 0.03 + time + j) * 20;
+                            
+                            if (i === 0) {
+                                ctx.moveTo(i, y);
+                            } else {
+                                ctx.lineTo(i, y);
+                            }
+                        }
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+                    ctx.globalAlpha = 1.0;
+                    requestAnimationFrame(draw);
+                }
+
+                setCanvasSize();
+                draw();
+                window.addEventListener('resize', setCanvasSize);
+            }
+
+            // --- CARD LOADING ---
+            // This uses the shared card-loader.js script
+            CardLoader.loadCards({
+                'etele-img-container': 'Emergency Teleport',
+                'etele-img-container-2': 'Emergency Teleport',
+                'witch-img-container': 'Serene Psychic Witch',
+                'punisher-img-container-1': 'Psychic End Punisher',
+                'ze-amin-img-container': 'Noh-P.U.N.K. Ze Amin',
+                'foxy-tune-img-container': 'Noh-P.U.N.K. Foxy Tune',
+                'deer-note-img-container': 'Noh-P.U.N.K. Deer Note',
+                'tincan-img-container': 'Kozmo Tincan',
+                'dark-lady-img-container': 'Kozmoll Dark Lady',
+                'dark-destroyer-img-container': 'Kozmo Dark Destroyer',
+                'lulu-img-container': 'Virtual World Mai-Hime - Lulu',
+                'shenshen-img-container': 'Virtual World Kyubi - Shenshen',
+                'chuche-img-container': 'Virtual World Gate - Chuche',
+                'ghost-ogre-img-container': 'Ghost Ogre & Snow Rabbit',
+                'chaos-ruler-img-container': 'Chaos Ruler, the Chaotic Magical Dragon'
+                // Note: Other cards mentioned in the text (like Silent Psychic Wizard, Mind Over Matter)
+                // don't have dedicated image containers in this layout but could be added.
+            });
+        });
+    </script>
+</body>
+</html>

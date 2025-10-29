@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Card Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use the card-loader.js from the root, as provided -->
+    <script src="card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Playfair Display for a "royal" feel, and Inter for body text -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0f2b; /* Deep royal blue/purple */
+            color: #e0e7ff; /* Light lavender */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1b1a3d; /* Darker purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a4a8a; /* Royal blue/purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a2952; /* Slightly lighter purple */
+            border: 1px solid #5d5c9d;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Add cursor pointer to indicate clickable */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1b1a3d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1b1a3d;
+            border: 1px dashed #5d5c9d;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #FFD700; } /* Royal Gold */
+        .arrow-color { color: #FFD700; }
+        .heading-underline {
+            border-bottom: 2px solid #FFD700;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #FFD700;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #FFD700;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #FFD700;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d0f2b;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a4a8a;
+        }
+
+        #royal-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 15, 43, 0.4) 0%, rgba(13, 15, 43, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif; /* Regal font */
+             font-size: 2.8rem;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes ygoButtonPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+        
+        @keyframes ygoIconGlow {
+            0% { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); }
+            100% { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6); }
+        }
+
+        /* Card Popup Styles (Royal Theme) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 15, 43, 0.95); /* Dark royal blue */
+            border: 1px solid #FFD700; /* Gold border */
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #FFD700; /* Gold title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Playfair Display', serif;
+            color: #FFD700; /* Gold stats */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="royal-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">A Royal Flush</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Strategic Deep Dive into the Face Card Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">"Face Card"</strong> archetype, also known as the "Three Musketeers of Face Cards," is a strategy built around a core of LIGHT Warrior monsters
+                    <a href="https://yugipedia.com/wiki/Face_Card" target="_blank" class="lore-link">reminiscent of a royal flush in poker</a>.
+                    The deck's primary game plan is to rapidly assemble its key monsters on the field to enable powerful Tribute, Fusion, Xyz, or Link Summons. Understanding the specific role of each monster is fundamental to mastering the deck's intricate lines of play.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Royal Court Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Royal Court: Core Monsters</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Queen's Knight -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex justify-center mb-4">
+                        <div id="queen-knight-img-container" class="card-image-container card-placeholder">Queen's Knight</div>
+                    </div>
+                    <h4 class="text-lg font-bold text-accent mb-1 text-center">Queen's Knight</h4>
+                    <p class="text-sm text-indigo-200">A Level 4 Normal Monster. It's the designated starting point for the archetype's signature combo and is compatible with generic support like <strong class="text-accent">Unexpected Dai</strong>.</p>
+                </div>
+                <!-- King's Knight -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex justify-center mb-4">
+                        <div id="king-knight-img-container" class="card-image-container card-placeholder">King's Knight</div>
+                    </div>
+                    <h4 class="text-lg font-bold text-accent mb-1 text-center">King's Knight</h4>
+                    <p class="text-sm text-indigo-200">The central engine. When Normal Summoned while you control <strong class="text-accent">Queen's Knight</strong>, it Special Summons one <strong class="text-accent">Jack's Knight</strong> from your Deck.</p>
+                </div>
+                <!-- Jack's Knight -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex justify-center mb-4">
+                        <div id="jack-knight-img-container" class="card-image-container card-placeholder">Jack's Knight</div>
+                    </div>
+                    <h4 class="text-lg font-bold text-accent mb-1 text-center">Jack's Knight</h4>
+                    <p class="text-sm text-indigo-200">A Level 5 Normal Monster. It's the payoff for the <strong class="text-accent">King's Knight</strong> effect, completing the on-field assembly of the three "Musketeers".</p>
+                </div>
+                <!-- Joker's Knight -->
+                <div class="card p-6 combo-step-card md:col-span-1">
+                    <div class="flex justify-center mb-4">
+                        <div id="joker-knight-img-container" class="card-image-container card-placeholder">Joker's Knight</div>
+                    </div>
+                    <h4 class="text-lg font-bold text-accent mb-1 text-center">Joker's Knight</h4>
+                    <p class="text-sm text-indigo-200">The modern lynchpin. It Special Summons itself by sending one of the trio from Deck to GY, copying its name. It also recurs itself from the GY during the End Phase, refilling your hand.</p>
+                </div>
+                <!-- Arcana Triumph Joker -->
+                <div class="card p-6 combo-step-card md:col-span-2">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="arcana-triumph-img-container" class="card-image-container card-placeholder">Arcana Triumph Joker</div>
+                        <div>
+                            <h4 class="text-lg font-bold text-accent mb-1">Arcana Triumph Joker</h4>
+                            <p class="text-sm text-indigo-200">The archetype's in-house boss monster. Summoned by sending the trio from hand/field to GY. It gains 500 ATK for each card in both players' hands and has a devastating, non-once-per-turn board wipe effect by discarding a card.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Royal Decree: Spells & Traps Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Royal Decree: Core Spells</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Joker's Straight -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex justify-center mb-4">
+                        <div id="joker-straight-img-container" class="card-image-container card-placeholder">Joker's Straight</div>
+                    </div>
+                    <h4 class="text-lg font-bold text-accent mb-1 text-center">Joker's Straight</h4>
+                    <p class="text-sm text-indigo-200">The deck's premier one-card starter. By discarding 1 card, it Special Summons <strong class="text-accent">Queen's Knight</strong>, adds <strong class="text-accent">King's Knight</strong>, and grants an additional Normal Summon to immediately summon it, assembling all three Knights.</p>
+                </div>
+                <!-- Face Card Fusion -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex justify-center mb-4">
+                        <div id="face-card-fusion-img-container" class="card-image-container card-placeholder">Face Card Fusion</div>
+                    </div>
+                    <h4 class="text-lg font-bold text-accent mb-1 text-center">Face Card Fusion</h4>
+                    <p class="text-sm text-indigo-200">The dedicated fusion spell. If you control one of the Knights, you can use 1 monster from your Deck as Fusion Material, making it a highly efficient way to summon <strong class="text-accent">Arcana Knight Joker</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The Joker's Straight Opener</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                This is the deck's most fundamental and crucial combo, turning a single spell card (and a discard) into a full board of three monsters, all without using your primary Normal Summon.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="joker-straight-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Joker's Straight</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1b1a3d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate & Discard</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent">Joker's Straight</strong>. Discard 1 card. This Special Summons <strong class="text-accent">Queen's Knight</strong> from Deck and adds <strong class="text-accent">King's Knight</strong> from Deck to hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="king-knight-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">King's Knight</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1b1a3d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Additional Normal Summon</h3>
+                            </div>
+                            <p class="text-indigo-200"><strong class="text-accent">Joker's Straight</strong> allows an additional Normal Summon. Use it to summon the <strong class="text-accent">King's Knight</strong> you just added to your hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="jack-knight-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Jack's Knight</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1b1a3d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Assemble the Trio</h3>
+                            </div>
+                            <p class="text-indigo-200">Since <strong class="text-accent">King's Knight</strong> was Normal Summoned while <strong class="text-accent">Queen's Knight</strong> is on the field, its effect triggers, Special Summoning <strong class="text-accent">Jack's Knight</strong> from the Deck. You now have all three Knights on the field.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Primary End Boards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Slifer the Sky Dragon -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Divine Alliance</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="slifer-img-container" class="card-image-container card-placeholder">Slifer the Sky Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">The Goal:</strong> Use the three assembled Knights as Tributes for <strong class="text-accent">Slifer the Sky Dragon</strong>.</li>
+                        <li><strong class="text-accent">Synergy:</strong> The "Joker" support cards (Knight, Straight, Wild) all return to the hand during the End Phase, refilling your hand to power up Slifer's ATK to 3000-5000+.</li>
+                    </ul>
+                </div>
+                <!-- Arcana Triumph Joker -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Royal Trump Card</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="arcana-triumph-end-img-container" class="card-image-container card-placeholder">Arcana Triumph Joker</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">The Goal:</strong> Use the trio to summon the main deck boss monster, <strong class="text-accent">Arcana Triumph Joker</strong>.</li>
+                        <li><strong class="text-accent">Board Break:</strong> Gains massive ATK from hand size and can repeatedly discard cards (Monsters, Spells, Traps) to destroy all face-up cards of that type your opponent controls.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">CRITICAL IMPACT:</strong> While the core archetype is untouched, a key external engine has been banned, forcing the deck to adapt.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Forbidden Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Isolde, Two Tales of the Noble Knights (0 copies)</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Limited Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Reinforcement of the Army (1 copy)</strong></li>
+                            <li><strong class="text-yellow-400">Called by the Grave (1 copy)</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Unrestricted Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Face Card" monsters (3 copies)</li>
+                            <li>All "Joker" support cards (3 copies)</li>
+                            <li><strong class="text-green-300">Unexpected Dai (3 copies)</strong></li>
+                            <li><strong class="text-green-300">Pot of Desires / Extravagance (3 copies)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The "Isolde & Warrior Combo" variant described in the original analysis is **no longer legal in the TCG** due to <strong class="text-accent">Isolde</strong> being Forbidden. This forces the deck to rely on its other, more linear variants: the <strong class="text-accent">Slifer the Sky Dragon</strong> control build or the <strong class="text-accent">Utopia OTK</strong> build (which is enabled by the LIGHT Warrior lock from <strong class="text-accent">Joker's Straight</strong>).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High-Impact Starters:</strong> <strong class="text-accent">Joker's Straight</strong> is an extremely powerful one-card combo.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-300">Strong Recursion:</strong> The "Joker" cards provide a potent resource loop, enabling a strong grind game and fueling Slifer.</li>
+                        <li><span class="pro-icon"><i class="fas fa-random"></i></span> <strong class="text-green-300">Flexible Win Conditions:</strong> Can pivot between a Divine-Beast control deck, a board-breaking beatdown deck, or a fast OTK deck.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Fragile Choke Points:</strong> Highly vulnerable to hand traps. An <strong class="text-accent">Ash Blossom</strong> on <strong class="text-accent">Joker's Straight</strong> or an <strong class="text-accent">Effect Veiler</strong> on <strong class="text-accent">King's Knight</strong> can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-th"></i></span> <strong class="text-red-300">Consistency Issues:</strong> Relies on drawing one of its few starter cards and must run Normal Monsters (like <strong class="text-accent">Queen's Knight</strong>) which can be bricks.</li>
+                        <li><span class="con-icon"><i class="fas fa-lock"></i></span> <strong class="text-red-300">Banned Engine:</strong> The loss of <strong class="text-accent">Isolde</strong> removed the deck's highest-ceiling competitive variant, making it less resilient.</li>
+                    </ul>
+                </div>
+                <!-- Strategic Variants -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Current Strategic Variants</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Slifer Control:</strong> The most iconic build. Uses the Knights as tribute fodder and the "Joker" cards to fuel Slifer's ATK.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-accent">Utopia OTK:</strong> Leverages the LIGHT Warrior lock from <strong class="text-accent">Joker's Straight</strong> to summon <strong class="text-accent">Number S39: Utopia the Lightning</strong> for a 5000 ATK, unblockable attack.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-accent">Triumph Board Break:</strong> Focuses on summoning <strong class="text-accent">Arcana Triumph Joker</strong> to systematically dismantle an opponent's board.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ROYAL FLUSH BANNER ANIMATION ---
+            const canvas = document.getElementById('royal-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const suits = ['♠', '♥', '♦', '♣'];
+                const colors = ['#FFD700', '#FFFFFF', '#C0C0C0'];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 15 + 10;
+                        this.speedY = Math.random() * 0.5 + 0.2;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.suit = suits[Math.floor(Math.random() * suits.length)];
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                        this.opacity = Math.random() * 0.5 + 0.1;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+                        if (this.y < -this.size) {
+                            this.y = canvas.height + this.size;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.globalAlpha = this.opacity;
+                        ctx.font = `${this.size}px 'Playfair Display', serif`;
+                        ctx.fillStyle = this.color;
+                        ctx.fillText(this.suit, this.x, this.y);
+                        ctx.globalAlpha = 1;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    const numParticles = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Use CardLoader to load images into the placeholders
+            CardLoader.loadCards({
+                'queen-knight-img-container': "Queen's Knight",
+                'king-knight-img-container': "King's Knight",
+                'jack-knight-img-container': "Jack's Knight",
+                'joker-knight-img-container': "Joker's Knight",
+                'arcana-triumph-img-container': "Arcana Triumph Joker",
+                'joker-straight-img-container': "Joker's Straight",
+                'face-card-fusion-img-container': "Face Card Fusion",
+                'joker-straight-combo-img-container': "Joker's Straight",
+                'king-knight-combo-img-container': "King's Knight",
+                'jack-knight-combo-img-container': "Jack's Knight",
+                'slifer-img-container': "Slifer the Sky Dragon",
+                'arcana-triumph-end-img-container': "Arcana Triumph Joker"
+            });
+        });
+    </script>
+</body>
+</html>
