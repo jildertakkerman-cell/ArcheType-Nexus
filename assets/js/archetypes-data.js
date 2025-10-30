@@ -22537,6 +22537,27 @@ const archetypes = [
                         <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">MAGICIAN</text>
                     </svg>`
     },
+        {
+        name: 'Skull Servant',
+        description: 'A Zombie archetype that specializes in milling cards to the Graveyard to swarm the field with low-level Zombie monsters, featuring powerful boss monsters like King of the Skull Servants.',
+        filepath: 'Skull Servant Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                <radialGradient id="skullGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:#6b21a8;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#1a0f0f;stop-opacity:1" />
+                </radialGradient>
+                </defs>
+                <circle cx="50" cy="50" r="45" fill="url(#skullGrad)" stroke="#6b21a8" stroke-width="2"/>
+                <path d="M30 30 L70 30 L70 45 L60 45 L60 50 L55 50 L55 45 L45 45 L45 50 L40 50 L40 45 L30 45 Z" fill="#ffffff" stroke="#6b21a8" stroke-width="2"/>
+                <circle cx="37" cy="37" r="3" fill="#000000"/>
+                <circle cx="63" cy="37" r="3" fill="#000000"/>
+                <path d="M40 55 Q50 60 60 55" fill="none" stroke="#000000" stroke-width="2"/>
+                <text x="50" y="80" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SKULL</text>
+                <text x="50" y="90" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SERVANT</text>
+                </svg>`
+    },
+    
 
     {
         name: 'Skyscraper',
