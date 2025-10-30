@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Umi Control Archetype</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Shared Card Loader Script -->
+    <!-- Make sure the path 'assets/js/card-loader.js' is correct in your project structure -->
+    <script src="assets/js/card-loader.js"></script>
+
+    <style>
+        /* Base styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d121c; /* Deep sea blue */
+            color: #dbeafe; /* Light blue text */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        /* Card component styling */
+        .card {
+            background-color: #172a4d; /* Dark blue card background */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2b4984; /* Lighter blue border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #213c6b; /* Slightly lighter blue for inner cards */
+            border: 1px solid #335ca3;
+        }
+        /* Card image placeholder */
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card-placeholder {
+            background-color: #1a305f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a305f;
+        }
+        /* Icons and accents */
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a5f3fc; } /* Light cyan accent */
+        .arrow-color { color: #a5f3fc; }
+        .heading-underline {
+            border-bottom: 2px solid #a5f3fc;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        /* Lore link style as requested */
+        .lore-link {
+            color: #a5f3fc;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a5f3fc;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #a5f3fc;
+        }
+
+        /* --- NEW UMI ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(135deg, #0d121c, #172a4d);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #2b4984;
+        }
+
+        #bubble-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(13, 18, 28, 0.65);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .banner-header h1 {
+            font-size: 2.5rem;
+        }
+        .banner-header p {
+            font-size: 1rem;
+        }
+        @media (max-width: 768px) {
+            .banner-header { height: 100px; }
+            .banner-header h1 { font-size: 2rem; }
+            .banner-header p { font-size: 0.875rem; }
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- YGO Home Button (Copied from other pages) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+        /* --- END YGO Home Button --- */
+
+        /* --- Card Popup (Themed for Umi) --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #a5f3fc; /* Cyan border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            color: #a5f3fc; /* Cyan title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            color: #a5f3fc; /* Cyan stats */
+        }
+        /* --- END Card Popup --- */
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup Element -->
+    <div id="card-popup"></div>
+
+    <!-- YGO Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="banner-header text-center">
+            <canvas id="bubble-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Umi Control</h1>
+            <p class="text-lg md:text-xl text-blue-300">A Systems Analysis of the Anti-Meta Strategy</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The collection of cards known as the "Umi" archetype provides a compelling case study in the evolution of Yu-Gi-Oh! card design. What began as a simple, thematic concept has been systematically redesigned into a potent, anti-meta control strategy.
+                </p>
+                <p class="text-blue-200 mt-2">
+                    The modern "Umi Control" deck shifts from providing passive, ambient support to engineering an active system of gameplay restriction. Its strategic purpose is to establish a powerful "floodgate" effect via <strong class="text-accent font-bold">Ocean Dragon Lord - Kairyu-Shin</strong>, which cripples modern decks by limiting them to a single non-WATER monster. The deck is not a traditional archetype, but rather a control <a href="https://yugipedia.com/wiki/Umi" target="_blank" class="lore-link">system</a> designed to summon, enable, and protect this single, game-altering effect.
+                </p>
+            </div>
+        </section>
+
+        <!-- Deconstruction of the Core "Umi" Engine -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Deconstruction of the Core "Umi" Engine</h2>
+            
+            <!-- Field Presence & Payoff -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-water text-4xl text-blue-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Field Presence: "Umi"</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">A Legendary Ocean (ALO)</h4>
+                            <p class="text-sm text-blue-200">The Field Spell of choice. Its critical function is reducing the Level of all WATER monsters by 1, allowing the Level 5 <strong class="text-accent font-bold">Kairyu-Shin</strong> to be Normal Summoned without a Tribute.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dragon text-4xl text-blue-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Primary Payoff</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Ocean Dragon Lord - Kairyu-Shin</h4>
+                            <p class="text-sm text-blue-200">The heart of the deck. While "Umi" is on the field, its floodgate effect restricts each player to only one face-up non-WATER monster. It also searches for "Umi," "Kairyu-Shin," or "Sea Stealth" Spells/Traps.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enablers, Consistency, and Protection -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Primary Enabler</h3>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">Electric Jellyfish</h4>
+                        <p class="text-sm text-blue-200">The main starter. It sends "Umi" from the Deck to the GY to Special Summon a WATER monster (like Kairyu-Shin) from hand. It also provides a Quick Effect negate for a Spell or monster effect.</p>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Consistency Module</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fish Sonar</h4>
+                            <p class="text-sm text-blue-200">Searches any key monster that mentions "Umi," like Kairyu-Shin or Jellyfish.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Warrior of Atlantis</h4>
+                            <p class="text-sm text-blue-200">Discards itself to search for <strong class="text-accent font-bold">A Legendary Ocean</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Protection Suite</h3>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Sea Stealth Attack</h4>
+                            <p class="text-sm text-blue-200">Retrieves "Umi" from the GY, protects Spells/Traps from destruction, and destroys an opponent's monster that battles your high-Level WATER monster.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Kairyu-Shin's Dark Reef</h4>
+                            <p class="text-sm text-blue-200">A Trap that summons key monsters like <strong class="text-accent font-bold">Electric Jellyfish</strong> from the deck as disruption.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Fundamental Sequence (2-Card Combo)</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the deck's most common and powerful two-card opening.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="jellyfish-img-container" class="card-image-container flex-shrink-0 card-placeholder">Electric Jellyfish</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a305f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Normal Summon & Activate</h3>
+                            </div>
+                            <p class="text-blue-200"><strong>Required Hand:</strong> Electric Jellyfish + Ocean Dragon Lord - Kairyu-Shin.<br>
+                            Normal Summon <strong class="text-accent font-bold">Electric Jellyfish</strong>. Activate its effect, sending <strong class="text-accent font-bold">A Legendary Ocean</strong> from Deck to GY as cost.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="kairyu-shin-img-container" class="card-image-container flex-shrink-0 card-placeholder">Ocean Dragon Lord - Kairyu-Shin</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a305f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon & Search</h3>
+                            </div>
+                            <p class="text-blue-200">The effect resolves, Special Summoning <strong class="text-accent font-bold">Ocean Dragon Lord - Kairyu-Shin</strong> from your hand. Activate Kairyu-Shin's effect to search for <strong class="text-accent font-bold">Sea Stealth Attack</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sea-stealth-img-container" class="card-image-container flex-shrink-0 card-placeholder">Sea Stealth Attack</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a305f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Establish the Lock</h3>
+                            </div>
+                            <p class="text-blue-200">Set <strong class="text-accent font-bold">Sea Stealth Attack</strong>. On the opponent's turn, activate it to retrieve <strong class="text-accent font-bold">A Legendary Ocean</strong> from the GY. The lock is now active, protected by Jellyfish's negate and Sea Stealth's effects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Optimal Endboard</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The ideal endboard is not a wide array of monsters but a layered system of passive and active control elements designed to preserve a static, locked game state.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto max-w-6xl">
+                <!-- Layer 1: The Floodgate -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Layer 1: The Floodgate</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="kairyu-shin-end-img-container" class="card-image-container card-placeholder">Ocean Dragon Lord - Kairyu-Shin</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Kairyu-Shin + A Legendary Ocean:</strong> Establishes the primary restriction, limiting the opponent to one non-WATER monster.</li>
+                    </ul>
+                </div>
+                <!-- Layer 2: Interaction -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Layer 2: Interaction</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="jellyfish-end-img-container" class="card-image-container card-placeholder">Electric Jellyfish</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Electric Jellyfish:</strong> Provides a one-time negate for a Spell or monster effect, protecting the lock from being broken.</li>
+                    </ul>
+                </div>
+                <!-- Layer 3: Protection -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Layer 3: Protection</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="sea-stealth-end-img-container" class="card-image-container card-placeholder">Sea Stealth Attack</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Sea Stealth Attack:</strong> Protects <strong class="text-accent">A Legendary Ocean</strong> from destruction and allows Kairyu-Shin to win any battle.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Assessment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Anti-Meta Power:</strong> The Kairyu-Shin floodgate directly counters a vast majority of modern combo decks.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-300">High Consistency:</strong> Multiple redundant searchers make the core 2-card combo very accessible.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Bypasses Protection:</strong> The floodgate does not destroy or target; it forces the opponent to send their own monsters to the GY.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Normal Summon Reliant:</strong> A single hand trap (like <strong class="text-accent">Effect Veiler</strong> or <strong class="text-accent">Impermanence</strong>) on <strong class="text-accent">Electric Jellyfish</strong> can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-300">S/T Removal:</strong> Vulnerable to non-destruction removal like <strong class="text-accent">Cosmic Cyclone</strong>, which banishes the Field Spell.</li>
+                        <li><span class="con-icon"><i class="fas fa-tint-slash"></i></span> <strong class="text-red-300">Attribute Mismatch:</strong> The floodgate is completely ineffective against other WATER-based decks (e.g., Marincess).</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-igloo"></i></span> <strong class="text-accent">Ice Barrier Engine:</strong> <strong class="text-accent">General Raiho</strong> provides another floodgate, and the <strong class="text-accent">Ice Barrier</strong> trap searches Kairyu-Shin.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-pastafarianism"></i></span> <strong class="text-accent">Kaijus:</strong> <strong class="text-accent">Gameciel, the Sea Turtle Kaiju</strong> is a WATER monster, making it a searchable out to problem monsters that doesn't conflict with the lock.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-ban"></i></span> <strong class="text-accent">Generic Floodgates:</strong> <strong class="text-accent">Gozen Match</strong> and <strong class="text-accent">There Can Be Only One</strong> are highly synergistic.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 mb-4 text-center">
+                    The core "Umi Control" archetype remains at <strong class="text-green-400 font-bold">full power</strong>. However, its most potent generic support cards and external engines have been limited.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Unrestricted Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted (3 copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li>Ocean Dragon Lord - Kairyu-Shin</li>
+                            <li>Electric Jellyfish</li>
+                            <li>A Legendary Ocean</li>
+                            <li>Fish Sonar</li>
+                            <li>Warrior of Atlantis</li>
+                            <li>Sea Stealth Attack</li>
+                            <li>Kairyu-Shin's Dark Reef</li>
+                        </ul>
+                    </div>
+                    <!-- Limited Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li>Gozen Match</li>
+                            <li>There Can Be Only One</li>
+                        </ul>
+                    </div>
+                    <!-- Forbidden Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden (0 copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li>Toadally Awesome</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-400">
+                    <p class="text-sm text-blue-200"><strong>Meta Implications:</strong> The deck's core engine is completely intact. The limitations on generic floodgates like <strong class="text-accent">Gozen Match</strong> reduce its overall consistency in locking an opponent down, and the ban on <strong class="text-accent">Toadally Awesome</strong> removes a powerful (though older) Extra Deck option. Despite this, the primary Kairyu-Shin strategy remains fully operational.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- NEW BUBBLE BANNER ANIMATION ---
+            const canvas = document.getElementById('bubble-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particlesArray;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 100; // Start below the canvas
+                        this.size = Math.random() * 3 + 1; // Bubble size
+                        this.speedY = (Math.random() * 1.5) + 0.5; // Upward speed
+                        this.speedX = (Math.random() * 2) - 1; // Sideways drift
+                        this.color = `rgba(165, 243, 252, ${Math.random() * 0.3 + 0.1})`; // Light cyan, semi-transparent
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += this.speedX;
+
+                        // Reset bubble when it goes off-screen
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                        // Keep bubbles within horizontal bounds
+                        if (this.x < -10 || this.x > canvas.width + 10) {
+                            this.speedX = -this.speedX;
+                        }
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.strokeStyle = 'rgba(207, 250, 254, 0.3)';
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                }
+
+                function init() {
+                    particlesArray = [];
+                    let numberOfParticles = (canvas.height * canvas.width) / 5000;
+                    for (let i = 0; i < numberOfParticles; i++) {
+                        particlesArray.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particlesArray.forEach(particle => {
+                        particle.update();
+                        particle.draw();
+                    });
+                }
+                
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Load card images into their designated containers
+            CardLoader.loadCards({
+                'jellyfish-img-container': 'Electric Jellyfish',
+                'kairyu-shin-img-container': 'Ocean Dragon Lord - Kairyu-Shin',
+                'sea-stealth-img-container': 'Sea Stealth Attack',
+                'kairyu-shin-end-img-container': 'Ocean Dragon Lord - Kairyu-Shin',
+                'jellyfish-end-img-container': 'Electric Jellyfish',
+                'sea-stealth-end-img-container': 'Sea Stealth Attack'
+            });
+        });
+    </script>
+</body>
+</html>

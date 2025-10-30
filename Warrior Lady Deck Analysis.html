@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warrior Lady Deck Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assumes card-loader.js is in this path as per other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Inter for body and Playfair Display for the "Saga" theme -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a0d; /* Dark Olive/Brown */
+            color: #f0f0e6; /* Off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b2b18; /* Darker Khaki */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d4d2b; /* Olive Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3b3b24;
+            border: 1px solid #5a5a3a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Hint that it's clickable */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3b3b24;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b3b24;
+            border: 1px dashed #5a5a3a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ffcc00; } /* Gold/Amber */
+        .arrow-color { color: #d4b106; }
+        .heading-underline {
+            border-bottom: 2px solid #d4b106;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ffcc00;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffcc00;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+        .banner-title {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* --- NEW DIMENSIONAL RIFT BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a0d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4d4d2b;
+        }
+
+        #rift-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 26, 13, 0.4) 0%, rgba(26, 26, 13, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+        @keyframes ygoIconGlow {
+            0% { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); }
+            100% { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3); }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 26, 13, 0.95); /* Dark olive base */
+            border: 1px solid #ffcc00; /* Gold border */
+            border-radius: 0.75rem;
+            color: #f0f0e6; /* Off-white text */
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #ffcc00; /* Gold title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: #ffcc00; /* Gold stats */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="rift-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 banner-title">The Warrior Lady's Saga</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Strategic Deep Dive into a Classic Series</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: The Unsung "Archetype"</h2>
+                <p class="text-yellow-100">
+                    The "Warrior Lady" series is a prime example of a thematic series united by name, Warrior typing, and a rich, player-discovered narrative. It is not a formal, mechanically supported archetype, but its members represent three distinct eras of Yu-Gi-Oh! card design.
+                </p>
+                <p class="text-yellow-100 mt-4">
+                    <strong class="text-accent">D.D. Warrior Lady</strong> embodies early generic removal, <strong class="text-accent">Warrior Lady of the Wasteland</strong> represents combo-extending "floaters," and <strong class="text-accent">Rookie Warrior Lady</strong> is a modern, multi-purpose hand trap and recursion engine. This analysis deconstructs how these individual cards create emergent synergies within a "Warrior Toolbox" strategy.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Cast of Warriors Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Cast of Warriors</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                To understand the collective strategy, one must first master its individual components. The following is a foundational overview of these 
+                <!-- This link fulfills the user's request for a "link in the wording that hints to the cards" -->
+                <a href="https://yugipedia.com/wiki/Warrior_Lady" target="_blank" class="lore-link">key cards</a>.
+            </p>
+            <div class="space-y-8">
+                <!-- Warrior Lady of the Wasteland -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                        <div id="wasteland-img" class="card-image-container card-placeholder">Warrior Lady of the Wasteland</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-accent mb-2">Warrior Lady of the Wasteland: The Recruiter</h3>
+                            <p class="text-yellow-100 mb-2"><strong class="text-white">Role:</strong> Engine Starter / Recruiter</p>
+                            <p class="text-yellow-100">
+                                This card is the heart of the engine. As a classic "floater," her destruction by battle is not a loss but a strategic advantage. Her effect to Special Summon an EARTH Warrior (1500 or less ATK) from the Deck is the central pillar of the strategy. She tutors key combo pieces, thins the deck, and establishes board presence, turning a defensive loss into a major tempo swing.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- D.D. Warrior Lady -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                        <div id="dd-warrior-lady-img" class="card-image-container card-placeholder">D.D. Warrior Lady</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-accent mb-2">D.D. Warrior Lady: The Dimensional Exile</h3>
+                            <p class="text-yellow-100 mb-2"><strong class="text-white">Role:</strong> Universal Removal / Problem Solver</p>
+                            <p class="text-yellow-100">
+                                One of the most iconic removal monsters in the game's history. Her optional effect to banish both herself and the monster she battles (after damage calculation) makes her a universal answer to almost any monster-based threat, bypassing most destruction protection. Her 1500 ATK also makes her a valid target for Wasteland if you need a LIGHT monster or removal.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Rookie Warrior Lady -->
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                        <div id="rookie-warrior-lady-img" class="card-image-container card-placeholder">Rookie Warrior Lady</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-accent mb-2">Rookie Warrior Lady: The Modern Hand Trap</h3>
+                            <p class="text-yellow-100 mb-2"><strong class="text-white">Role:</strong> Battle Hand Trap / Recursion Engine</p>
+                            <p class="text-yellow-100">
+                                The most recent addition, Rookie provides modern interaction. Her first effect is a hand trap that protects another Warrior in battle by reducing the opponent's monster's ATK to 0. Her second, more crucial effect, allows her to be banished from the GY to add an EARTH Warrior (like <strong class="text-accent">Wasteland</strong>) from the GY back to the hand. This creates the deck's sustainable resource loop.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Wasteland Storyline Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Wasteland Storyline</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-3xl mx-auto">
+                Beyond mechanics, these cards are bound by a visual narrative told across many card arts. The story chronicles the transformation of <strong class="text-accent">Warrior Lady of the Wasteland</strong> after a fateful clash with her rival, Warrior Dai Grepher, as seen in <strong class="text-accent">Simultaneous Loss</strong>.
+            </p>
+            <div class="card p-6">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div class="flex-shrink-0 grid grid-cols-2 gap-4">
+                        <div id="simultaneous-loss-img" class="card-image-container card-placeholder">Simultaneous Loss</div>
+                        <div id="karma-cut-img" class="card-image-container card-placeholder">Karma Cut</div>
+                        <div id="dd-ground-img" class="card-image-container card-placeholder">Different Dimension Ground</div>
+                        <div id="return-dd-img" class="card-image-container card-placeholder">Return from the Different Dimension</div>
+                    </div>
+                    <div>
+                        <p class="text-yellow-100">
+                            The pivotal moment is shown in <strong class="text-accent">Karma Cut</strong>, where a portal to the Different Dimension (D.D.) opens during their duel, dragging her in. Stranded and wounded, she masters these dimensional energies, re-emerging as the battle-hardened <strong class="text-accent">D.D. Warrior Lady</strong>.
+                        </p>
+                        <p class="text-yellow-100 mt-4">
+                            Her saga concludes in <strong class="text-accent">Different Dimension Ground</strong>, where she confronts her rival—now corrupted into Dark Lucius—and banishes him. She is last seen returning home in <strong class="text-accent">Return from the Different Dimension</strong>, a veteran of the dimensional chaos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Core Combo Pathways Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo Pathways</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                While not a formal archetype, the cards possess surprisingly potent internal synergies, primarily between <strong class="text-accent">Wasteland</strong> and <strong class="text-accent">Rookie</strong>.
+            </p>
+            
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-6 text-center">The Core Engine: Wasteland Resource Loop</h3>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="wasteland-img-combo" class="card-image-container flex-shrink-0 card-placeholder">Warrior Lady of the Wasteland</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The "Float"</h3>
+                            </div>
+                            <p class="text-yellow-100">Start with <strong class="text-accent">Warrior Lady of the Wasteland</strong> face-down (and <strong class="text-accent">Rookie Warrior Lady</strong> in GY, sent by Foolish Burial or her own effect). When the opponent destroys <strong class="text-accent">Wasteland</strong> by battle, her effect triggers.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ua-midfielder-img" class="card-image-container flex-shrink-0 card-placeholder">U.A. Midfielder</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Recruit</h3>
+                            </div>
+                            <p class="text-yellow-100">Special Summon a key EARTH Warrior from Deck, such as another <strong class="text-accent">Wasteland</strong>, <strong class="text-accent">Exiled Force</strong> for removal, or an engine starter like <strong class="text-accent">U.A. Midfielder</strong>. The first <strong class="text-accent">Wasteland</strong> is now in the GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down h-10 w-10 arrow-color animate-fadeIn"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="rookie-warrior-lady-img-combo" class="card-image-container flex-shrink-0 card-placeholder">Rookie Warrior Lady</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Recursion</h3>
+                            </div>
+                            <p class="text-yellow-100">During your Main Phase, activate <strong class="text-accent">Rookie Warrior Lady</strong>'s effect in the GY. Banish her to add <strong class="text-accent">Warrior Lady of the Wasteland</strong> from your GY back to your hand. You are now ready to set <strong class="text-accent">Wasteland</strong> and repeat the entire loop.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic End Goals</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-3xl mx-auto">
+                Unlike meta decks, a "Warrior Lady" strategy aims to out-resource the opponent. The "end board" is not a static field of negates, but a strategic state of advantage.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-5xl">
+                <!-- Goal 1: Resource Loop -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Goal 1: The Resource Loop</h3>
+                    <div class="flex justify-center mb-4">
+                        <i class="fas fa-sync-alt text-6xl text-accent"></i>
+                    </div>
+                    <p class="text-yellow-100">
+                        The primary win condition. By establishing the <strong class="text-accent">Wasteland/Rookie</strong> loop, you force the opponent into a war of attrition. Every attack they make simply refuels your engine, allowing you to maintain board presence and card advantage turn after turn.
+                    </p>
+                </div>
+                <!-- Goal 2: Toolbox State -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Goal 2: The Toolbox State</h3>
+                    <div class="flex justify-center mb-4">
+                        <i class="fas fa-toolbox text-6xl text-accent"></i>
+                    </div>
+                    <p class="text-yellow-100">
+                        This involves using <strong class="text-accent">Wasteland</strong> and searchers like <strong class="text-accent">Reinforcement of the Army</strong> to assemble a hand/field of answers. This could be a <strong class="text-accent">Marauding Captain</strong> lock, a <strong class="text-accent">D.D. Warrior Lady</strong> in hand for a boss monster, and an <strong class="text-accent">Exiled Force</strong> on field for spot removal.
+                    </p>
+                </div>
+                <!-- Goal 3: Link Climbing -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Goal 3: Link Climbing</h3>
+                    <div class="flex justify-center mb-4">
+                        <i class="fas fa-sitemap text-6xl text-accent"></i>
+                    </div>
+                    <p class="text-yellow-100">
+                        A modern approach. The constant stream of monsters from <strong class="text-accent">Wasteland</strong> serves as perfect fuel for Link Summons. The goal is to summon <strong class="text-accent">Isolde, Two Tales of the Noble Knights</strong>, use her to extend even further, and end on a powerful generic boss monster like Accesscode Talker.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Warrior Toolbox Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Warrior Toolbox: Key Support</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                The "Warrior Lady" cards are maximized when integrated into a "Warrior Toolbox" shell, using generic support to search for situational monsters.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- ROTA -->
+                <div class="card p-6 combo-step-card text-center">
+                    <div class="flex justify-center mb-4">
+                        <div id="rota-img" class="w-32 h-44 card-placeholder flex items-center justify-center">Reinforcement of the Army</div>
+                    </div>
+                    <h4 class="text-lg font-bold text-accent mb-1">Reinforcement of the Army</h4>
+                    <p class="text-sm text-yellow-100">The most vital consistency card. Searches any core "Warrior Lady" piece exactly when needed. (Currently Limited).</p>
+                </div>
+                <!-- Isolde -->
+                <div class="card p-6 combo-step-card text-center">
+                    <div class="flex justify-center mb-4">
+                        <div id="isolde-img" class="w-32 h-44 card-placeholder flex items-center justify-center">Isolde, Two Tales...</div>
+                    </div>
+                    <h4 class="text-lg font-bold text-accent mb-1">Isolde, Two Tales of the Noble Knights</h4>
+                    <p class="text-sm text-yellow-100">The central hub for all modern Warrior combos. Turns any two Warriors into a search *and* a Special Summon from deck.</p>
+                </div>
+                <!-- TWRA -->
+                <div class="card p-6 combo-step-card text-center">
+                    <div class="flex justify-center mb-4">
+                        <div id="twra-img" class="w-32 h-44 card-placeholder flex items-center justify-center">The Warrior Returning Alive</div>
+                    </div>
+                    <h4 class="text-lg font-bold text-accent mb-1">The Warrior Returning Alive</h4>
+                    <p class="text-sm text-yellow-100">Simple, effective recursion that adds any Warrior from GY to hand, supplementing the <strong class="text-accent">Rookie</strong> loop.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-300">Resilience:</strong> The <strong class="text-accent">Wasteland/Rookie</strong> loop provides an exceptional grind game against battle-focused decks.</li>
+                        <li><span class="pro-icon"><i class="fas fa-toolbox"></i></span> <strong class="text-green-300">Flexibility:</strong> The toolbox nature allows the deck to adapt and search for specific answers to various threats.</li>
+                        <li><span class="pro-icon"><i class="fas fa-question"></i></span> <strong class="text-green-300">Surprise Factor:</strong> As a non-meta strategy, opponents may not know the correct choke points or may be unprepared for battle traps like <strong class="text-accent">Rookie</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-snail"></i></span> <strong class="text-red-300">Slow Speed:</strong> The core engine relies on being destroyed by battle, which is too reactive and slow for modern combo decks.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Disruption Vulnerability:</strong> Graveyard banishment (e.g., <strong class="text-accent">D.D. Crow</strong>) stops the <strong class="text-accent">Rookie</strong> loop, and monster effect negation stops <strong class="text-accent">Wasteland</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-user-shield"></i></span> <strong class="text-red-300">Low Power Ceiling:</strong> Without the Link Climbing goal, the deck's individual monsters are weak and can struggle to close out a game quickly.</li>
+                    </ul>
+                </div>
+                <!-- Key Support -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Support & Partners</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="neutral-icon"><i class="fas fa-running"></i></span> <strong class="text-accent">U.A. (Ultimate Athletes):</strong> <strong class="text-accent">Wasteland</strong> can summon <strong class="text-accent">U.A. Midfielder</strong>, acting as extra copies of their best starter.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-accent">War Rock:</strong> Another EARTH Warrior archetype that benefits from <strong class="text-accent">Wasteland</strong>'s search and <strong class="text-accent">Rookie</strong>'s protection/recursion.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-users"></i></span> <strong class="text-accent">Six Samurai:</strong> <strong class="text-accent">Rookie</strong> can recycle key EARTH "Samurai" monsters like <strong class="text-accent">Kizan</strong> from the GY.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">MINOR IMPACT:</strong> The "Warrior Lady" core is at full power, but its main consistency tool is Limited.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Reinforcement of the Army</strong> - The deck's primary consistency tool and Warrior searcher.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited Cards (3 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Warrior Lady of the Wasteland</strong></li>
+                            <li><strong class="text-green-300">D.D. Warrior Lady</strong></li>
+                            <li><strong class="text-green-300">Rookie Warrior Lady</strong></li>
+                            <li><strong class="text-green-300">Isolde, Two Tales of the Noble Knights</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The core <strong class="text-accent">Wasteland/Rookie</strong> engine is fully unrestricted and functional. The only limitation is on <strong class="text-accent">Reinforcement of the Army</strong>, which hurts the deck's consistency and ability to "toolbox" but does not prevent the main strategy from working.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DIMENSIONAL RIFT BANNER ANIMATION ---
+            const canvas = document.getElementById('rift-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 200;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.reset();
+                        this.color = Math.random() > 0.5 
+                            ? `rgba(255, 204, 0, ${Math.random() * 0.5 + 0.2})`  // Gold
+                            : `rgba(167, 139, 250, ${Math.random() * 0.5 + 0.2})`; // Purple
+                    }
+                    
+                    reset() {
+                        this.x = canvas.width / 2;
+                        this.y = canvas.height / 2;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 3 + 1;
+                        this.radius = Math.random() * 2 + 1;
+                        this.life = Math.random() * 100 + 50;
+                        this.initialLife = this.life;
+                    }
+
+                    update() {
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed;
+                        this.life--;
+                        if (this.life <= 0) {
+                            this.reset();
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = this.life / this.initialLife;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    // Fading trail effect
+                    ctx.fillStyle = 'rgba(26, 26, 13, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.globalAlpha = 1;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // This function is defined in assets/js/card-loader.js
+            // It finds elements by ID and loads the card image from the API.
+            CardLoader.loadCards({
+                'wasteland-img': 'Warrior Lady of the Wasteland',
+                'dd-warrior-lady-img': 'D.D. Warrior Lady',
+                'rookie-warrior-lady-img': 'Rookie Warrior Lady',
+                'simultaneous-loss-img': 'Simultaneous Loss',
+                'karma-cut-img': 'Karma Cut',
+                'dd-ground-img': 'Different Dimension Ground',
+                'return-dd-img': 'Return from the Different Dimension',
+                'wasteland-img-combo': 'Warrior Lady of the Wasteland',
+                'rookie-warrior-lady-img-combo': 'Rookie Warrior Lady',
+                'ua-midfielder-img': 'U.A. Midfielder',
+                'rota-img': 'Reinforcement of the Army',
+                'isolde-img': 'Isolde, Two Tales of the Noble Knights',
+                'twra-img': 'The Warrior Returning Alive',
+                // These were in the doc but not explicitly added to sections yet,
+                // adding them here in case they are needed for future edits.
+                'marauding-captain-img-combo': 'Marauding Captain',
+                'exiled-force-img': 'Exiled Force'
+            });
+        });
+    </script>
+</body>
+</html>

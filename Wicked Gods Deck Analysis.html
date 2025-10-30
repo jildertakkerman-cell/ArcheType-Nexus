@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wicked Gods: Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/card-loader.js"></script> <!-- Assuming card-loader.js is in assets/js/ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a0c0a; /* Deep dark red/brown */
+            color: #ffe0e0; /* Pale red/white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #331a1a; /* Darker red/brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #5c3d3d; /* Muted red border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(51, 26, 26, 0.8); /* Semi-transparent darker red */
+            border: 1px solid #7a5252;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Add cursor pointer for card loader */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #331a1a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #331a1a;
+            border: 1px dashed #7a5252;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ef4444; } /* Sharp Red */
+        .arrow-color { color: #ef4444; }
+        .heading-underline {
+            border-bottom: 2px solid #ef4444;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ef4444;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ef4444;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #ef4444;
+        }
+
+        /* --- WICKED GODS ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a0c0a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #5c3d3d;
+        }
+
+        #shadow-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 12, 10, 0.4) 0%, rgba(26, 12, 10, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* Card Popup Styles - Copied from Abyss Actor for card-loader.js */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 12, 10, 0.95); /* Dark red theme */
+            border: 1px solid #ef4444; /* Red border */
+            border-radius: 0.75rem;
+            color: #ffe0e0;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', serif;
+            color: #ef4444;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+
+        /* --- New Tab Styles --- */
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: #ffe0e0;
+            border: 2px solid transparent;
+            border-bottom: 0;
+            border-radius: 0.5rem 0.5rem 0 0;
+            transform: translateY(2px);
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            background-color: transparent;
+        }
+        .tab-button.tab-active {
+            background-color: #331a1a; /* Card background */
+            border-color: #5c3d3d; /* Card border */
+            color: #ef4444; /* Accent color */
+        }
+        .tab-button:not(.tab-active):hover {
+            background-color: #331a1a;
+            color: #fff;
+        }
+        .tab-panel {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .tab-panel.panel-active {
+            display: block; /* Shown when active */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup Placeholder (for card-loader.js) -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="shadow-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">THE WICKED GODS</h1>
+            <p class="text-lg md:text-xl text-red-200">Harnessing the Shadows</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Deconstructing the Wicked Gods</h2>
+                <p class="text-red-200">
+                    The <strong class="text-accent font-bold">"Wicked God"</strong> cards are a unique series of high-risk, high-reward boss monsters, acting as dark counterparts to the Egyptian God Cards. They lack a formal archetype, possessing no inherent searchers or support monsters. Instead, these 
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=The%20Wicked&stype=1" target="_blank" class="lore-link">three distinct entities</a>
+                    are united by their demanding summoning condition: a Normal Summon requiring the Tribute of three monsters. This challenge forces duelists to build elaborate strategies around them, grafting modern engines onto an archaic win condition.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Triumvirate of Shadow Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Triumvirate of Shadow</h2>
+            
+            <div class="max-w-4xl mx-auto">
+                <!-- Tab Buttons -->
+                <div class="flex flex-col sm:flex-row justify-center border-b border-gray-700 mb-6 space-y-2 sm:space-y-0 sm:space-x-2">
+                    <button class="tab-button tab-active" data-tab="avatar">
+                        <i class="fas fa-crown mr-2"></i> The Wicked Avatar
+                    </button>
+                    <button class="tab-button" data-tab="dreadroot">
+                        <i class="fas fa-shield-alt mr-2"></i> The Wicked Dreadroot
+                    </button>
+                    <button class="tab-button" data-tab="eraser">
+                        <i class="fas fa-bomb mr-2"></i> The Wicked Eraser
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div id="tab-content">
+                    <!-- Avatar Panel -->
+                    <div id="avatar-panel" class="tab-panel panel-active card p-6">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div id="avatar-img-container" class="card-image-container mx-auto md:mx-0 card-placeholder">The Wicked Avatar</div>
+                            <div class="flex-1">
+                                <h3 class="text-2xl font-bold text-white mb-3">The Wicked Avatar</h3>
+                                <span class="block text-accent font-bold mb-3 text-lg">Role: The Supreme Floodgate</span>
+                                <p class="text-red-200 mb-4">Locks the opponent out of Spell & Trap Cards for two of their turns after it's Normal Summoned. This is a devastating lockdown capable of winning games on its own.</p>
+                                <p class="text-red-200"><strong class="text-white">Mechanic:</strong> Its ATK/DEF are always 100 points higher than the strongest monster on the field, ensuring it perpetually dominates in battle.</p>
+                                <p class="text-red-200 mt-4"><strong class="text-white">Vulnerability:</strong> Relies on other monsters to have ATK (it's 100 ATK on an empty field) and is vulnerable to monster effects.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Dreadroot Panel -->
+                    <div id="dreadroot-panel" class="tab-panel card p-6">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div id="dreadroot-img-container" class="card-image-container mx-auto md:mx-0 card-placeholder">The Wicked Dreadroot</div>
+                            <div class="flex-1">
+                                <h3 class="text-2xl font-bold text-white mb-3">The Wicked Dreadroot</h3>
+                                <span class="block text-accent font-bold mb-3 text-lg">Role: The Field Dominator</span>
+                                <p class="text-red-200 mb-4">A 4000 ATK body that continuously halves the ATK/DEF of all other monsters on the field (including your own).</p>
+                                <p class="text-red-200"><strong class="text-white">Mechanic:</strong> This immediately establishes battle dominance, crippling opposing monsters and turning its own 4000 ATK into a game-ending threat.</p>
+                                <p class="text-red-200 mt-4"><strong class="text-white">Synergy:</strong> Does not affect The Wicked Avatar, which recalculates its ATK *after* Dreadroot's effect, creating a formidable lock.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Eraser Panel -->
+                    <div id="eraser-panel" class="tab-panel card p-6">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div id="eraser-img-container" class="card-image-container mx-auto md:mx-0 card-placeholder">The Wicked Eraser</div>
+                            <div class="flex-1">
+                                <h3 class="text-2xl font-bold text-white mb-3">The Wicked Eraser</h3>
+                                <span class="block text-accent font-bold mb-3 text-lg">Role: The Volatile Board Wipe</span>
+                                <p class="text-red-200 mb-4">A high-impact, "go-second" tool for breaking an established board. Its ATK/DEF are 1000x the number of cards your opponent controls.</p>
+                                <p class="text-red-200"><strong class="text-white">Mechanic:</strong> You can destroy this card during your Main Phase, and when it's destroyed and sent to the GY, it destroys *all* cards on the field.</p>
+                                <p class="text-red-200 mt-4"><strong class="text-white">Vulnerability:</strong> The board wipe is symmetrical, destroying your cards too. It's a high-risk, all-or-nothing reset button.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Sole Pillar of Support Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Sole Pillar of Support</h2>
+            <div class="card p-6 max-w-2xl mx-auto flex flex-col md:flex-row items-center gap-6">
+                <div id="divine-evo-img-container" class="card-image-container card-placeholder">Divine Evolution</div>
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-2">Divine Evolution</h3>
+                    <p class="text-red-200">
+                        This is the *only* card with named support for the Wicked Gods. It grants 1000 ATK/DEF, protects its effect activations from being negated, and provides non-targeting removal when it attacks.
+                        <br><br>
+                        <strong class="text-accent">Limitation:</strong> It's a "win-more" card. It offers no help in the difficult task of summoning a Wicked God and is a dead card until one is on the field.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Assembling the Tribute: Summoning Engines Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Assembling the Tribute: Summoning Engines</h2>
+            <p class="text-red-200 mb-8 text-center max-w-2xl mx-auto">
+                The core challenge is generating three monsters for Tribute. This requires integrating external engines designed to swarm the field.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Slime Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Module A: The Slime Engine</h3>
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="god-slime-img-container" class="card-image-container card-placeholder">Egyptian God Slime</div>
+                        <p class="text-sm text-red-200"><strong class="text-accent">Core Cards:</strong> Reactor Slime, Egyptian God Slime.
+                        <br><br>
+                        A compact, 1-card combo via Reactor Slime. However, it requires entering the Battle Phase, making it a "go-second" strategy.</p>
+                    </div>
+                </div>
+                <!-- Horus Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Module B: The Horus Engine</h3>
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="imsety-img-container" class="card-image-container card-placeholder">Imsety, Glory of Horus</div>
+                        <p class="text-sm text-red-200"><strong class="text-accent">Core Cards:</strong> Imsety, King's Sarcophagus.
+                        <br><br>
+                        An incredibly resilient stream of tribute fodder. The Horus monsters Special Summon themselves from the GY, providing 3+ bodies easily.</p>
+                    </div>
+                </div>
+                <!-- Lair Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Module C: The Lair of Darkness Engine</h3>
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="lair-img-container" class="card-image-container card-placeholder">Lair of Darkness</div>
+                        <p class="text-sm text-red-200"><strong class="text-accent">Core Cards:</strong> Lair of Darkness, Lilith.
+                        <br><br>
+                        A control-oriented choice that allows you to use your *opponent's* monsters as Tributes for your card effects, and eventually for the summon itself.</p>
+                    </div>
+                </div>
+                <!-- Kashtira Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Module D: The Kashtira Engine</h3>
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="fenrir-img-container" class="card-image-container card-placeholder">Kashtira Fenrir</div>
+                        <p class="text-sm text-red-200"><strong class="text-accent">Core Cards:</strong> Kashtira Unicorn, Fenrir, Birth.
+                        <br><br>
+                        A self-starting, aggressive package that places multiple Level 7 bodies on the field for free, which can then be Tributed.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Defining the End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Defining the End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The Avatar Lock -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Primary Goal (Going First): The Avatar Lock</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="mound-img-container" class="card-image-container card-placeholder">Mound of the Bound Creator</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-red-200">
+                        <li><strong class="text-accent">Board:</strong> The Wicked Avatar + Mound of the Bound Creator.</li>
+                        <li><strong class="text-accent">Function:</strong> Avatar locks the opponent out of Spells & Traps.</li>
+                        <li><strong class="text-accent">Protection:</strong> Mound makes Avatar immune to targeting and destruction by card effects, covering its key weakness.</li>
+                    </ul>
+                </div>
+                <!-- The Eraser Nuke -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Secondary Goal (Going Second): The Eraser Nuke</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="eraser-end-img-container" class="card-image-container card-placeholder">The Wicked Eraser</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-red-200">
+                        <li><strong class="text-accent">Board:</strong> An opponent's established field.</li>
+                        <li><strong class="text-accent">Function:</strong> Summon The Wicked Eraser and immediately use its effect to destroy itself.</li>
+                        <li><strong class="text-accent">Result:</strong> A full field wipe for *both* players. A desperate, all-or-nothing reset of the game state.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-200">
+                        <li><span class="pro-icon"><i class="fas fa-eye-slash"></i></span> <strong class="text-green-300">Unconventional Threat:</strong> Operates on the Tribute Summon mechanic, which many modern decks are not built to stop.</li>
+                        <li><span class="pro-icon"><i class="fas fa-dungeon"></i></span> <strong class="text-green-300">Potent Floodgate:</strong> A resolved Wicked Avatar is one of the most powerful lockdown effects in the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Engine Versatility:</strong> Can be paired with various modern engines (Horus, Kashtira) for customization.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-200">
+                        <li><span class="con-icon"><i class="fas fa-random"></i></span> <strong class="text-red-300">Crippling Inconsistency:</strong> The lack of *any* dedicated searchers for the Gods is a critical, game-losing flaw.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Fragility:</strong> The entire strategy hinges on a single Normal Summon. A well-timed interruption can end the turn.</li>
+                        <li><span class="con-icon"><i class="fas fa-battery-empty"></i></span> <strong class="text-red-300">Resource Intensive:</strong> Investing four cards (3 tributes + 1 God) for one monster is a steep cost in the modern game.</li>
+                    </ul>
+                </div>
+                <!-- Final Verdict -->
+                <div class="card p-6 pro-con-card md:col-span-2 lg:col-span-1">
+                    <h3 class="text-xl font-bold text-white mb-4">Final Verdict</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-200">
+                        <li><span class="neutral-icon"><i class="fas fa-chess-knight"></i></span> <strong class="text-accent">"Rogue" Tier:</strong> The Wicked Gods are a rogue strategy with a high power ceiling but a very low floor of consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-lightbulb"></i></span> <strong class="text-accent">High-Impact Plays:</strong> Success demands a well-piloted engine and a degree of luck in drawing the combo pieces.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> Unlike many powerful archetypes, the Wicked Gods themselves are not the target of the banlist due to their inherent inconsistencies.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Archetype Status</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">The Wicked Avatar (Unlimited)</strong></li>
+                            <li><strong class="text-green-300">The Wicked Dreadroot (Unlimited)</strong></li>
+                            <li><strong class="text-green-300">The Wicked Eraser (Unlimited)</strong></li>
+                            <li><strong class="text-green-300">Divine Evolution (Unlimited)</strong></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Engine Considerations</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>The core "Wicked God" cards are at full power.</li>
+                            <li>The deck's viability is tied to the banlist status of its *chosen engine* (e.g., Horus, Kashtira).</li>
+                            <li>Powerful generic engines are often restricted, which indirectly impacts this deck's consistency.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The deck is fully legal to play. Its success is not limited by its own cards, but by its fundamental reliance on generic engines to function, which may themselves be limited.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- WICKED GODS SHADOW ANIMATION ---
+            const canvas = document.getElementById('shadow-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = canvas.width / 2;
+                        this.y = canvas.height / 2;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 2 + 0.5;
+                        this.radius = Math.random() * 2 + 1;
+                        this.life = Math.random() * 100 + 50;
+                        this.initialLife = this.life;
+                        // Use the accent red color
+                        this.color = `rgba(239, 68, 68, ${Math.random() * 0.5 + 0.5})`; 
+                    }
+                    update() {
+                        this.x += Math.cos(this.angle) * this.speed;
+                        this.y += Math.sin(this.angle) * this.speed;
+                        this.life--;
+                        if (this.life <= 0) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = this.life / this.initialLife;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                    reset() {
+                        this.x = canvas.width / 2;
+                        this.y = canvas.height / 2;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 2 + 0.5;
+                        this.life = Math.random() * 100 + 50;
+                        this.initialLife = this.life;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            // Assuming card-loader.js is loaded and CardLoader.init() is called by it.
+            
+            const cardsToLoad = {
+                'avatar-img-container': 'The Wicked Avatar',
+                'dreadroot-img-container': 'The Wicked Dreadroot',
+                'eraser-img-container': 'The Wicked Eraser',
+                'divine-evo-img-container': 'Divine Evolution',
+                'god-slime-img-container': 'Egyptian God Slime',
+                'imsety-img-container': 'Imsety, Glory of Horus',
+                'lair-img-container': 'Lair of Darkness',
+                'fenrir-img-container': 'Kashtira Fenrir',
+                'mound-img-container': 'Mound of the Bound Creator',
+                'eraser-end-img-container': 'The Wicked Eraser'
+            };
+
+            // CardLoader should be available globally from card-loader.js
+            if (window.CardLoader) {
+                CardLoader.loadCards(cardsToLoad);
+            } else {
+                console.error('CardLoader is not defined. Make sure card-loader.js is loaded correctly.');
+                // Fallback to placeholder text if loader fails
+                for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.innerHTML = cardName;
+                    }
+                }
+            }
+
+            // --- Tabbed Interface for Triumvirate Section ---
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.dataset.tab;
+
+                    // Deactivate all buttons and panels
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('tab-active');
+                    });
+                    tabPanels.forEach(panel => {
+                        panel.classList.remove('panel-active');
+                    });
+
+                    // Activate the clicked button and corresponding panel
+                    button.classList.add('tab-active');
+                    const targetPanel = document.getElementById(`${targetTab}-panel`);
+                    if (targetPanel) {
+                        targetPanel.classList.add('panel-active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+

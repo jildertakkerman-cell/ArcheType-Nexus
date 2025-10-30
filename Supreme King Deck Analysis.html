@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supreme King Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- This needs to point to where you have card-loader.js -->
+    <!-- Assuming assets/js/card-loader.js based on other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a041a; /* Deep dark purple */
+            color: #e0e7ff; /* Light lavender */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1b0f3b; /* Dark violet */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4c3d8e; /* Purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a1a5c; /* Slightly lighter violet */
+            border: 1px solid #6a5acd; /* Brighter purple border */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a1a5c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a1a5c;
+            border: 1px dashed #6a5acd;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a78bfa; } /* Bright violet */
+        .arrow-color { color: #a78bfa; }
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #a78bfa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a78bfa;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #a78bfa;
+        }
+
+        /* --- NEW SUPREME KING ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a041a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4c3d8e;
+        }
+
+        #vortex-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 4, 26, 0.4) 0%, rgba(10, 4, 26, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(167, 139, 250, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+        /* --- END OF BANNER STYLES --- */
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+            100% { text-shadow: 0 0 15px rgba(99, 102, 241, 1); }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 4, 26, 0.95);
+            border: 1px solid #a78bfa;
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #a78bfa;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Orbitron', sans-serif;
+            color: #a78bfa;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="vortex-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">SUPREME KING</h1>
+            <p class="text-lg md:text-xl text-purple-200">Analysis of the Pendulum Overlord Engine</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">"Supreme King"</strong> archetype has transformed from a lore-centric concept into a formidable competitive force. Initially defined by its boss monster, <strong class="text-accent font-bold">Supreme King Z-ARC</strong>, the archetype now functions as a highly consistent and powerful Pendulum engine. This engine excels when hybridized with other archetypes, most notably "Pendulum Magicians," to create a complex, high-skill deck. For years, this engine was capable of constructing some of the most oppressive end boards in the game. However, recent, severe hits on the TCG Forbidden & Limited List have <a href="#banlist-impact" class="lore-link">forced the deck to evolve</a>, moving away from generic negate boards to focus on its own powerful in-archetype traps.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Supreme King's Court Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Supreme King's Court</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dragon text-4xl text-purple-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Dragons of Domination</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Supreme King Dragon Darkwurm</h4>
+                            <p class="text-sm text-indigo-200">The heart of the engine. A one-card starter via `Foolish Burial` or `Dragon Shrine`. Summons itself from the GY and searches a "Supreme King Gate" monster.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Supreme King Dragon Lightwurm</h4>
+                            <p class="text-sm text-indigo-200">A vital Level 4 Tuner and extender. Recycles "Supreme King" Pendulum monsters from the Extra Deck to the hand and enables Synchro/Xyz plays.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Supreme King Gate Magician</h4>
+                            <p class="text-sm text-indigo-200">The critical bridge. Summons itself from hand and searches for the archetype's game-changing trap cards, primarily `Soul of the Supreme Celestial King`.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-purple-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Overlord's Edicts</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Supreme King Gate Zero</h4>
+                            <p class="text-sm text-indigo-200">The primary low-scale (Scale 0) target, set by `Gate Magician` to complete the Pendulum Scales for a massive summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Wings of Light</h4>
+                            <p class="text-sm text-indigo-200">A flexible Quick-Play Spell that searches any "Supreme King" Dragon or Gate monster, adding another layer of consistency to the deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Soul of the Supreme Celestial King</h4>
+                            <p class="text-sm text-indigo-200">The modern win condition. This trap tributes a Spellcaster to Fusion Summon `Supreme King Z-ARC` during the opponent's turn, triggering its effect to wipe the entire field.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough (Historical) Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Historical Combo: The Electrumite Loop</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                For years, the deck's power was defined by its access to <strong class="text-accent">Heavymetalfoes Electrumite</strong>. This combo is **NO LONGER LEGAL** in the TCG but is essential for understanding the deck's design.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="darkwurm-img-container" class="card-image-container flex-shrink-0 card-placeholder">Supreme King Dragon Darkwurm</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1b0f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Starter</h3>
+                            </div>
+                            <p class="text-indigo-200">Start by sending <strong class="text-accent">Darkwurm</strong> to the GY (e.g., with `Dragon Shrine`). <strong class="text-accent">Darkwurm</strong> revives itself and searches <strong class="text-accent">Gate Magician</strong>, which in turn summons itself and searches a trap.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg bg-red-900 bg-opacity-30 border-red-500">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="electrumite-img-container" class="card-image-container flex-shrink-0 card-placeholder">Heavymetalfoes Electrumite</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1b0f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold text-red-400">The Engine <span class="text-red-400">(FORBIDDEN)</span></h3>
+                            </div>
+                            <p class="text-indigo-200">Link Summon <strong class="text-red-400">Heavymetalfoes Electrumite</strong>. Use its effect to send <strong class="text-accent">Astrograph Sorcerer</strong> to the Extra Deck. This was the deck's primary advantage engine.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg bg-red-900 bg-opacity-30 border-red-500">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="astrograph-img-container" class="card-image-container flex-shrink-0 card-placeholder">Astrograph Sorcerer</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1b0f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold text-yellow-400">The Loop <span class="text-yellow-400">(LIMITED)</span></h3>
+                            </div>
+                            <p class="text-indigo-200">Use <strong class="text-red-400">Electrumite</strong> to destroy a scale, add <strong class="text-yellow-400">Astrograph Sorcerer</strong> back to hand, and trigger Astrograph to summon itself. This loop generated massive card advantage, leading to end boards of multiple negates.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Modern Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Modern End Board: The Z-ARC Trap</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                With its historical combo pieces banned, the deck now focuses on a more direct, archetype-focused end board. The goal is to consistently set up the devastating trap card <strong class="text-accent">Soul of the Supreme Celestial King</strong>.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-4xl">
+                <!-- Exceed the Pendulum -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Exceed the Pendulum</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="exceed-img-container" class="card-image-container card-placeholder">Exceed the Pendulum</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li>The primary Link monster post-Electrumite.</li>
+                        <li>Recurs key Pendulum monsters from the Extra Deck.</li>
+                    </ul>
+                </div>
+                <!-- Odd-Eyes Vortex Dragon -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Odd-Eyes Vortex Dragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="vortex-img-container" class="card-image-container card-placeholder">Odd-Eyes Vortex Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li>Summoned via `Odd-Eyes Absolute Dragon`.</li>
+                        <li>Provides a reliable, reusable omni-negate.</li>
+                    </ul>
+                </div>
+                <!-- The Z-ARC Trap -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Z-ARC Trap</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="trap-img-container" class="card-image-container card-placeholder">Soul of the Supreme Celestial King</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li>The deck's main disruption.</li>
+                        <li>Summons `Z-ARC` on the opponent's turn to wipe their board.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Consistency:</strong> Multiple one-card starters (`Darkwurm`, `Dragon Shrine`, `Wings of Light`) ensure the engine starts.</li>
+                        <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-green-300">Redundancy:</strong> Overlapping search effects allow the deck to play through one or two interruptions.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bomb"></i></span> <strong class="text-green-300">High-Impact Trap:</strong> The `Z-ARC` board wipe is one of the most powerful, game-ending traps in Yu-Gi-Oh!</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Crippled by Banlist:</strong> The loss of `Electrumite` and `Apollousa` destroyed the deck's ability to build multi-negate boards.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Floodgate Vulnerability:</strong> Extremely weak to `Anti-Spell Fragrance` and `Droll & Lock Bird`.</li>
+                        <li><span class="con-icon"><i class="fas fa-ghost"></i></span> <strong class="text-red-300">Grave Hate:</strong> Relies on `Darkwurm` in the GY, making it vulnerable to `Bystial` monsters or `D.D. Crow`.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Core Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-theater-masks"></i></span> <strong class="text-accent">Pendulum Magicians:</strong> The deck's premier partner, providing extenders and destruction triggers (`Double Iris`, `Purple Poison`).</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Odd-Eyes:</strong> Used to access the powerful `Odd-Eyes Vortex Dragon` negate via `Odd-Eyes Absolute Dragon`.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-cog"></i></span> <strong class="text-accent">Generic Pendulum:</strong> Relies on generic support like `Exceed the Pendulum` and `Beyond the Pendulum` to function.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" id="banlist-impact" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact (Oct 2025)</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">CRITICAL IMPACT:</strong> The Supreme King engine, as described in its prime, is no longer viable. Key generic support cards that it relied on have been forbidden.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4 border-red-500">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden (0 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Heavymetalfoes Electrumite</strong></li>
+                            <li><strong class="text-red-400">Apollousa, Bow of the Goddess</strong></li>
+                            <li><strong class="text-red-400">Borreload Savage Dragon</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4 border-yellow-500">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Astrograph Sorcerer</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Unlimited -->
+                    <div class="card combo-step-card p-4 border-green-500">
+                        <h4 class="text-lg font-bold text-green-500 mb-2">Unlimited (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-400">All "Supreme King" cards</strong></li>
+                            <li><strong class="text-green-400">Exceed the Pendulum</strong></li>
+                            <li><strong class="text-green-400">I:P Masquerena</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The deck's ceiling has been shattered. The loss of `Electrumite` removes its primary advantage loop. The banning of `Apollousa` and `Savage Dragon` removes its main payoff. The deck is now forced to play a slower, trap-based game revolving around `Soul of the Supreme Celestial King`.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- SUPREME KING VORTEX ANIMATION ---
+            const canvas = document.getElementById('vortex-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 200;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x || Math.random() * canvas.width;
+                        this.y = y || Math.random() * canvas.height;
+                        this.radius = Math.random() * 2 + 1;
+                        this.color = Math.random() > 0.3 ? '#a78bfa' : '#10b981'; // Purple and Green
+                        this.velocity = {
+                            x: (Math.random() - 0.5) * 0.5,
+                            y: (Math.random() - 0.5) * 0.5
+                        };
+                        this.alpha = 1;
+                    }
+
+                    draw() {
+                        ctx.save();
+                        ctx.globalAlpha = this.alpha;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.restore();
+                    }
+
+                    update() {
+                        const centerX = canvas.width / 2;
+                        const centerY = canvas.height / 2;
+                        const dx = centerX - this.x;
+                        const dy = centerY - this.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        // Gravitational pull towards center
+                        if (distance > 1) {
+                            this.velocity.x += dx * 0.0005;
+                            this.velocity.y += dy * 0.0005;
+                        }
+
+                        // Orbital velocity (tangential)
+                        this.velocity.x += -dy * 0.0001;
+                        this.velocity.y += dx * 0.0001;
+
+                        // Max speed
+                        const speed = Math.sqrt(this.velocity.x**2 + this.velocity.y**2);
+                        if (speed > 2) {
+                            this.velocity.x *= 2 / speed;
+                            this.velocity.y *= 2 / speed;
+                        }
+
+                        this.x += this.velocity.x;
+                        this.y += this.velocity.y;
+                        this.alpha = 0.5 + (distance / Math.max(canvas.width, canvas.height)) * 0.5;
+
+                        // Reset particle if it escapes
+                        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.velocity = {
+                                x: (Math.random() - 0.5) * 0.5,
+                                y: (Math.random() - 0.5) * 0.5
+                            };
+                        }
+                        
+                        this.draw();
+                    }
+                }
+
+                function init() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    // Fading effect
+                    ctx.fillStyle = 'rgba(10, 4, 26, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    particles.forEach(p => p.update());
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Use the CardLoader.js functions
+            if (window.CardLoader) {
+                CardLoader.loadCards({
+                    // Core Cards
+                    'darkwurm-img-container': 'Supreme King Dragon Darkwurm',
+                    'lightwurm-img-container': 'Supreme King Dragon Lightwurm',
+                    'gate-magician-img-container': 'Supreme King Gate Magician',
+                    'gate-zero-img-container': 'Supreme King Gate Zero',
+                    'wings-img-container': 'Wings of Light',
+                    'trap-img-container': 'Soul of the Supreme Celestial King',
+                    // Historical Combo
+                    'electrumite-img-container': 'Heavymetalfoes Electrumite',
+                    'astrograph-img-container': 'Astrograph Sorcerer',
+                    // Modern Board
+                    'exceed-img-container': 'Exceed the Pendulum',
+                    'vortex-img-container': 'Odd-Eyes Vortex Dragon',
+                    // Other cards mentioned
+                    'zarc-img-container': 'Supreme King Z-ARC',
+                    'savage-img-container': 'Borreload Savage Dragon',
+                    'absolute-img-container': 'Odd-Eyes Absolute Dragon',
+                    'ip-img-container': 'I:P Masquerena',
+                    'apollousa-img-container': 'Apollousa, Bow of the Goddess'
+                });
+            } else {
+                console.error("CardLoader script not found. Please ensure assets/js/card-loader.js is loaded.");
+            }
+        });
+    </script>
+</body>
+</html>

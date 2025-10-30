@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Insect Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      Note: Adjusted path to card-loader.js to match the root upload.
+      If your other pages use 'assets/js/card-loader.js', you may need to
+      move the card-loader.js file into that folder and update this path.
+    -->
+    <script src="card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a0d; /* Dark Olive Green */
+            color: #f0f0e6; /* Off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2b2b18; /* Darker Khaki */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4d4d2b; /* Olive Border */
+        }
+        .combo-step-card {
+            background-color: #3b3b24;
+            border: 1px solid #5a5a3a;
+        }
+        .pro-con-card {
+            background-color: #3b3b24;
+            border: 1px solid #5a5a3a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3b3b24;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b3b24;
+            border: 1px dashed #5a5a3a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #ffcc00; } /* Gold/Amber */
+        .arrow-color { color: #d4b106; }
+        .heading-underline {
+            border-bottom: 2px solid #d4b106;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ffcc00;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffcc00;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a0d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4d4d2b;
+        }
+
+        #metamorphosis-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(26, 26, 13, 0.75); /* Dark Olive overlay */
+            /* Subtle honeycomb/cell background */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%23d4b106' fill-opacity='0.05' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.99 7.5V30L0 22.5zM15 0l12.99 7.5V22.5L15 15zM28 15L15 7.5V0L28 7.5zM14 49l14-7.5v-15L14 34zM3 41.5l10.99 6.34L25 41.5v-12.7L14 35.16zM0 34l12.99 7.5V49L0 41.5z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles (from Battlewasp) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* --- Card Popup Styles (from Battlewasp) --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 18, 28, 0.95);
+            border: 1px solid #ffcc00; /* Amber border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Inter', sans-serif;
+            color: #ffcc00; /* Amber title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #ffcc00;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="metamorphosis-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Ultimate Insect</h1>
+            <p class="text-lg md:text-xl text-yellow-200">The Metamorphosis of a Classic</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: The Evolutionary Path</h2>
+                <p class="text-yellow-100">
+                    The "LV" mechanic, a hallmark of the early Yu-Gi-Oh! GX era, represents a design philosophy centered on gradual evolution. Among the first to showcase this concept was the "Ultimate Insect" series, a
+                    <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Ultimate%20Insect&stype=1" target="_blank" class="lore-link">lineage of monsters</a>
+                    that embodied this slow, methodical approach to victory. Their strategy was one of patience: field a nascent creature and protect it, allowing it to metamorphose turn by turn.
+                    <br><br>
+                    However, the landscape of the TCG has shifted dramatically. The deliberate, turn-based progression that once defined the archetype is now its greatest liability. This report details the radical strategic metamorphosis of this classic series. It has evolved from a slow, self-reliant control deck into a potent "payoff" package—a set of powerful boss monsters that are "cheated" into play by a hyper-efficient, modern Insect-type combo engine.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Ultimate Insect Lineage Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Anatomy of the Swarm</h2>
+            
+            <!-- Desktop/Large Screen Layout (Horizontal Evolution) -->
+            <div class="hidden lg:flex flex-row items-center justify-between gap-4">
+                <!-- LV1 Card -->
+                <div class="card p-6 flex flex-col items-center w-1/4">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ultimate Insect LV1</h3>
+                    <p class="text-sm text-yellow-200 mb-4">0 ATK / 0 DEF</p>
+                    <div id="lv1-img-container" class="card-image-container mb-4 card-placeholder">Ultimate Insect LV1</div>
+                    <p class="text-sm text-yellow-100 text-center">The genesis. A named component to accelerate evolution via other cards.</p>
+                </div>
+                
+                <!-- Arrow -->
+                <div class="flex-shrink-0">
+                    <i class="fas fa-long-arrow-alt-right text-4xl arrow-color"></i>
+                </div>
+                
+                <!-- LV3 Card -->
+                <div class="card p-6 flex flex-col items-center w-1/4">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ultimate Insect LV3</h3>
+                    <p class="text-sm text-yellow-200 mb-4">1400 ATK / 900 DEF</p>
+                    <div id="lv3-img-container" class="card-image-container mb-4 card-placeholder">Ultimate Insect LV3</div>
+                    <p class="text-sm text-yellow-100 text-center">Introduces the -300 ATK reduction aura. Carries the slow evolution effect.</p>
+                </div>
+                
+                <!-- Arrow -->
+                <div class="flex-shrink-0">
+                    <i class="fas fa-long-arrow-alt-right text-4xl arrow-color"></i>
+                </div>
+                
+                <!-- LV5 Card -->
+                <div class="card p-6 flex flex-col items-center w-1/4">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ultimate Insect LV5</h3>
+                    <p class="text-sm text-yellow-200 mb-4">2300 ATK / 900 DEF</p>
+                    <div id="lv5-img-container" class="card-image-container mb-4 card-placeholder">Ultimate Insect LV5</div>
+                    <p class="text-sm text-yellow-100 text-center">Amplifies the aura to -500 ATK. Still burdened by the slow "must survive" clause.</p>
+                </div>
+                
+                <!-- Arrow -->
+                <div class="flex-shrink-0">
+                    <i class="fas fa-long-arrow-alt-right text-4xl arrow-color"></i>
+                </div>
+                
+                <!-- LV7 Card -->
+                <div class="card p-6 flex flex-col items-center w-1/4">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ultimate Insect LV7</h3>
+                    <p class="text-sm text-yellow-200 mb-4">2600 ATK / 1200 DEF</p>
+                    <div id="lv7-img-container" class="card-image-container mb-4 card-placeholder">Ultimate Insect LV7</div>
+                    <p class="text-sm text-yellow-100 text-center">The final form. A potent -700 ATK/DEF field-wide debuff. The deck's ultimate goal.</p>
+                </div>
+            </div>
+            
+            <!-- Mobile/Medium Screen Layout (Stacked Evolution) -->
+            <div class="flex lg:hidden flex-col items-center gap-6">
+                <!-- LV1 -->
+                <div class="card p-6 flex flex-col items-center w-full max-w-md">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ultimate Insect LV1</h3>
+                    <p class="text-sm text-yellow-200 mb-4">0 ATK / 0 DEF</p>
+                    <div id="lv1-img-container-mobile" class="card-image-container mb-4 card-placeholder">Ultimate Insect LV1</div>
+                    <p class="text-sm text-yellow-100 text-center">The genesis. A named component to accelerate evolution via other cards.</p>
+                </div>
+                
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <i class="fas fa-long-arrow-alt-down text-4xl arrow-color"></i>
+                </div>
+                
+                <!-- LV3 -->
+                <div class="card p-6 flex flex-col items-center w-full max-w-md">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ultimate Insect LV3</h3>
+                    <p class="text-sm text-yellow-200 mb-4">1400 ATK / 900 DEF</p>
+                    <div id="lv3-img-container-mobile" class="card-image-container mb-4 card-placeholder">Ultimate Insect LV3</div>
+                    <p class="text-sm text-yellow-100 text-center">Introduces the -300 ATK reduction aura. Carries the slow evolution effect.</p>
+                </div>
+                
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <i class="fas fa-long-arrow-alt-down text-4xl arrow-color"></i>
+                </div>
+                
+                <!-- LV5 -->
+                <div class="card p-6 flex flex-col items-center w-full max-w-md">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ultimate Insect LV5</h3>
+                    <p class="text-sm text-yellow-200 mb-4">2300 ATK / 900 DEF</p>
+                    <div id="lv5-img-container-mobile" class="card-image-container mb-4 card-placeholder">Ultimate Insect LV5</div>
+                    <p class="text-sm text-yellow-100 text-center">Amplifies the aura to -500 ATK. Still burdened by the slow "must survive" clause.</p>
+                </div>
+                
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <i class="fas fa-long-arrow-alt-down text-4xl arrow-color"></i>
+                </div>
+                
+                <!-- LV7 -->
+                <div class="card p-6 flex flex-col items-center w-full max-w-md">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ultimate Insect LV7</h3>
+                    <p class="text-sm text-yellow-200 mb-4">2600 ATK / 1200 DEF</p>
+                    <div id="lv7-img-container-mobile" class="card-image-container mb-4 card-placeholder">Ultimate Insect LV7</div>
+                    <p class="text-sm text-yellow-100 text-center">The final form. A potent -700 ATK/DEF field-wide debuff. The deck's ultimate goal.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Accelerating Evolution Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Accelerating Evolution: The Enablers</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Original Shortcuts -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll-old text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Original Shortcuts</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Level Up!</h4>
+                            <p class="text-sm text-yellow-100">The most direct solution. Sends a face-up "LV" monster to GY to summon the next stage from the deck, ignoring its conditions.</p>
+                            <div id="levelup-img-container" class="w-1/2 max-w-[120px] mt-2 card-placeholder">Level Up!</div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Insect Imitation</h4>
+                            <p class="text-sm text-yellow-100">Tributes a monster to summon an Insect from the deck that is exactly 1 Level higher. A flexible ladder-climbing tool.</p>
+                            <div id="imitation-img-container" class="w-1/2 max-w-[120px] mt-2 card-placeholder">Insect Imitation</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modern Engine -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-cogs text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Modern Engine Room</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Resonance Insect</h4>
+                            <p class="text-sm text-yellow-100">The most important card. When sent from field to GY, searches any Level 5+ Insect (LV7). When banished, sends an Insect from deck to GY.</p>
+                            <div id="resonance-img-container" class="w-1/2 max-w-[120px] mt-2 card-placeholder">Resonance Insect</div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Gokipole</h4>
+                            <p class="text-sm text-yellow-100">When sent to GY, searches a Level 4 Insect. Its primary target is "Resonance Insect," creating a powerful search chain.</p>
+                            <div id="gokipole-img-container" class="w-1/2 max-w-[120px] mt-2 card-placeholder">Gokipole</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Assembled Hive Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Assembled Hive: Modern Engines</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Beetrooper Engine -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The "Beetrooper" Engine</h3>
+                    <p class="text-yellow-100 mb-4">A Link-focused theme that excels at swarming the field to trigger the GY effects of "Resonance Insect" and "Gokipole."</p>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Beetrooper Scout Buggy</h4>
+                            <p class="text-sm text-yellow-100">Summons another copy of itself from hand, Deck, or GY, providing instant Link-2 material.</p>
+                            <div id="buggy-img-container" class="w-1/2 max-w-[120px] mt-2 card-placeholder">Beetrooper Scout Buggy</div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Giant Beetrooper Invincible Atlas</h4>
+                            <p class="text-sm text-yellow-100">The Link-4 boss. 3000 ATK, untargetable, and indestructible by card effects. A key part of the final endboard.</p>
+                            <div id="atlas-img-container" class="w-1/2 max-w-[120px] mt-2 card-placeholder">Giant Beetrooper Invincible Atlas</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Hostile Takeover Engine -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The "Hostile Takeover" Engine</h3>
+                    <p class="text-yellow-100 mb-4">A devastating two-card combo that functions as removal and summons your boss monster simultaneously.</p>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Parasite Paranoid</h4>
+                            <p class="text-sm text-yellow-100">Quick Effect from hand to equip to *any* monster, turning it into an Insect.</p>
+                            <div id="parasite-img-container" class="w-1/2 max-w-[120px] mt-2 card-placeholder">Parasite Paranoid</div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Cocoon of Ultra Evolution</h4>
+                            <p class="text-sm text-yellow-100">Tributes an equipped Insect from *either* field to summon any Insect from your Deck, ignoring its conditions (e.g., "Ultimate Insect LV7").</p>
+                            <div id="cocoon-img-container" class="w-1/2 max-w-[120px] mt-2 card-placeholder">Cocoon of Ultra Evolution</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">From Larva to Apex: Combo Paths</h2>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Combo Path A -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <h3 class="text-lg font-bold text-accent mb-2">Path A: The Resonance Value Chain</h3>
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="gokipole-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Gokipole</div>
+                        <div>
+                            <p class="text-yellow-100">
+                                <strong class="text-accent">1. Start:</strong> Normal Summon "Gokipole."<br>
+                                <strong class="text-accent">2. Action:</strong> Link Summon "Salamangreat Almiraj."<br>
+                                <strong class="text-accent">3. Trigger:</strong> "Gokipole" effect in GY adds "Resonance Insect" from Deck to hand.<br>
+                                <strong class="text-accent">4. Extend:</strong> Normal/Special Summon "Resonance Insect" (e.g., via "Beetrooper Armor Horn").<br>
+                                <strong class="text-accent">5. Action:</strong> Link "Resonance Insect" into another monster (e.g., "Inzektor Picofalena").<br>
+                                <strong class="text-accent">6. Result:</strong> "Resonance Insect" effect in GY adds "Ultimate Insect LV7" from Deck to hand.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Combo Path B -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <h3 class="text-lg font-bold text-accent mb-2">Path B: The Hostile Takeover (Interruption)</h3>
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="parasite-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Parasite Paranoid</div>
+                        <div>
+                            <p class="text-yellow-100">
+                                <strong class="text-accent">1. Pre-req:</strong> Opponent controls a monster. "Parasite Paranoid" in hand, "Cocoon of Ultra Evolution" set.
+                                <strong class="text-accent">2. Action:</strong> (During opponent's turn) Activate "Parasite Paranoid" from hand, equipping it to their monster.
+                                <strong class="text-accent">3. Action:</strong> Chain or activate "Cocoon of Ultra Evolution."
+                                <strong class="text-accent">4. Cost:</strong> Tribute the opponent's monster (which is now an equipped Insect).
+                                <strong class="text-accent">5. Result:</strong> Special Summon "Ultimate Insect LV7" directly from your Deck.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Apex Endboard</h2>
+            <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">
+                The goal is to construct a multi-layered board that is difficult to dismantle through both battle and card effects.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-5xl">
+                <!-- Atlas -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Invincible Atlas</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="atlas-end-img-container" class="card-image-container card-placeholder">Giant Beetrooper Invincible Atlas</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent">Protection:</strong> Untargetable and indestructible by opponent's card effects.</li>
+                    </ul>
+                </div>
+                <!-- LV7 -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Ultimate Insect LV7</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="lv7-end-img-container" class="card-image-container card-placeholder">Ultimate Insect LV7</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent">Passive Control:</strong> Applies a permanent -700 ATK/DEF debuff to all opposing monsters.</li>
+                    </ul>
+                </div>
+                <!-- Cicada King / Fly & Sting -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Negation Layer</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="cicada-end-img-container" class="card-image-container card-placeholder">Number 3: Cicada King</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><strong class="text-accent">Cicada King:</strong> Provides a monster effect negation.</li>
+                        <li><strong class="text-accent">Fly & Sting:</strong> (Set in S/T zone) A Counter Trap for monster effect negation.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Unique Boss Monster:</strong> LV7's persistent, field-wide debuff is a rare and powerful control tool.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">Seamless Integration:</strong> Fits perfectly into the modern "Beetrooper" Insect engine.</li>
+                        <li><span class="pro-icon"><i class="fas fa-hand-rock"></i></span> <strong class="text-green-300">Powerful Removal:</strong> The Parasite/Cocoon combo is non-targeting removal that also develops your board.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-yellow-100">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Brick Potential:</strong> Drawing a high-level "Ultimate Insect" without an enabler is a dead card.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Combo Dependent:</strong> Highly vulnerable to hand traps like "Ash Blossom" on a key search or "Nibiru" after swarming.</li>
+                        <li><span class-></span> <strong class="text-red-300">Relies on Banned Cards (Historically):</strong> The deck's true "Tier 1" potential was always tied to generic cards like "Block Dragon," which are now forbidden.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">ARCHETYPE UNRESTRICTED:</strong> The "Ultimate Insect" archetype and its core Insect support remain fully available for competitive play.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Ultimate Insect" monsters</li>
+                            <li>All "Beetrooper" monsters</li>
+                            <li>All "Battlewasp" monsters</li>
+                            <li>Resonance Insect</li>
+                            <li>Gokipole</li>
+                            <li>Parasite Paranoid</li>
+                            <li>Cocoon of Ultra Evolution</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                             <li>(None relevant to core engine)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden (0 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Block Dragon</strong></li>
+                            <li><strong class="text-red-400">Spright Elf</strong></li>
+                            <li><strong class="text-red-400">Splash Mage</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The deck is fully intact and legal. Its power ceiling is defined by its own engine rather than historically broken generic cards, making it a fair and resilient rogue strategy.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary Table Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Progression Summary</h2>
+            <div class="card p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-yellow-100">
+                        <thead class="text-sm text-accent uppercase bg-opacity-20 bg-black">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Monster Name</th>
+                                <th scope="col" class="px-6 py-3">Level</th>
+                                <th scope="col" class="px-6 py-3">ATK/DEF</th>
+                                <th scope="col" class="px-6 py-3">Cumulative ATK/DEF Reduction</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-bold">Ultimate Insect LV1</td>
+                                <td class="px-6 py-4">1</td>
+                                <td class="px-6 py-4">0/0</td>
+                                <td class="px-6 py-4">N/A</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-bold">Ultimate Insect LV3</td>
+                                <td class="px-6 py-4">3</td>
+                                <td class="px-6 py-4">1400/900</td>
+                                <td class="px-6 py-4">-300 ATK</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-bold">Ultimate Insect LV5</td>
+                                <td class="px-6 py-4">5</td>
+                                <td class="px-6 py-4">2300/900</td>
+                                <td class="px-6 py-4">-500 ATK</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 font-bold">Ultimate Insect LV7</td>
+                                <td class="px-6 py-4">7</td>
+                                <td class="px-6 py-4">2600/1200</td>
+                                <td class="px-6 py-4">-700 ATK / -700 DEF</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ULTIMATE INSECT METAMORPHOSIS ANIMATION ---
+            const canvas = document.getElementById('metamorphosis-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speedY = -(Math.random() * 1.5 + 0.5); // Move up
+                        this.speedX = (Math.random() - 0.5) * 0.5; // Slight horizontal drift
+                        this.radius = Math.random() * 2 + 1;
+                        this.color = `rgba(255, 204, 0, ${Math.random() * 0.5 + 0.3})`; // Amber/Gold
+                        this.life = Math.random() * 100 + 100;
+                        this.initialLife = this.life;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        this.life--;
+                        if (this.y < -10 || this.life <= 0) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = (this.life / this.initialLife) * 0.7; // Fade out as it rises
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + 10;
+                        this.speedY = -(Math.random() * 1.5 + 0.5);
+                        this.life = Math.random() * 100 + 100;
+                        this.initialLife = this.life;
+                        this.color = `rgba(255, 204, 0, ${Math.random() * 0.5 + 0.3})`;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Assumes card-loader.js is loaded
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    // Archetype
+                    'lv1-img-container': 'Ultimate Insect LV1',
+                    'lv3-img-container': 'Ultimate Insect LV3',
+                    'lv5-img-container': 'Ultimate Insect LV5',
+                    'lv7-img-container': 'Ultimate Insect LV7',
+                    'lv1-img-container-mobile': 'Ultimate Insect LV1',
+                    'lv3-img-container-mobile': 'Ultimate Insect LV3',
+                    'lv5-img-container-mobile': 'Ultimate Insect LV5',
+                    'lv7-img-container-mobile': 'Ultimate Insect LV7',
+                    // Support
+                    'levelup-img-container': 'Level Up!',
+                    'imitation-img-container': 'Insect Imitation',
+                    'resonance-img-container': 'Resonance Insect',
+                    'gokipole-img-container': 'Gokipole',
+                    // Engines
+                    'buggy-img-container': 'Beetrooper Scout Buggy',
+                    'atlas-img-container': 'Giant Beetrooper Invincible Atlas',
+                    'parasite-img-container': 'Parasite Paranoid',
+                    'cocoon-img-container': 'Cocoon of Ultra Evolution',
+                    // Combo Pieces
+                    'gokipole-combo-img-container': 'Gokipole',
+                    'parasite-combo-img-container': 'Parasite Paranoid',
+                    // Endboard
+                    'atlas-end-img-container': 'Giant Beetrooper Invincible Atlas',
+                    'lv7-end-img-container': 'Ultimate Insect LV7',
+                    'cicada-end-img-container': 'Number 3: Cicada King'
+                    // Note: 'Salamangreat Almiraj', 'Inzektor Picofalena', 
+                    // and 'Beetrooper Fly & Sting' are also mentioned but not given
+                    // dedicated visual boxes in this layout. They could be added if needed.
+                });
+            } else {
+                console.error("CardLoader is not defined. Make sure card-loader.js is loaded correctly.");
+            }
+        });
+    </script>
+</body>
+</html>
+

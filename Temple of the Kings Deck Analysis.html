@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temple of the Kings Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in 'assets/js/' relative to this HTML file's location -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Inter for body and Cinzel for a thematic title font -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a150f; /* Dark, rich brown */
+            color: #f5f3ef; /* Warm parchment off-white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+        .card {
+            background-color: #3b312a; /* Medium dusty brown */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #a18a5b; /* Tarnished gold border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2e2620; /* Darker brown */
+            border: 1px solid #a18a5b;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #3b312a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #3b312a;
+            border: 1px dashed #a18a5b;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #4fc3f7; } /* Lapis blue/turquoise accent */
+        .text-accent { color: #fcd34d; } /* Sandy Gold */
+        .arrow-color { color: #fcd34d; }
+        .heading-underline {
+            border-bottom: 2px solid #fcd34d;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fcd34d;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fcd34d;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #fcd34d;
+        }
+
+        /* --- NEW "TOMB DUST" ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a150f;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #a18a5b;
+        }
+
+        #tomb-dust-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(46, 38, 32, 0.4) 0%, rgba(26, 21, 15, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(252, 211, 77, 0.7);
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles (Themed) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 21, 15, 0.95); /* Dark brown */
+            border: 1px solid #fcd34d; /* Gold border */
+            border-radius: 0.75rem;
+            color: #f5f3ef; /* Parchment text */
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #fcd34d; /* Gold header */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Cinzel', serif;
+            color: #fcd34d;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="tomb-dust-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 font-cinzel">Temple of the Kings</h1>
+            <p class="text-lg md:text-xl text-yellow-200">A Strategic Deep Dive into the Royal Trap Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: Unsealing the Tomb</h2>
+                <p class="text-gray-200">
+                    The <strong class="text-accent font-bold">"Temple of the Kings"</strong> archetype is the modern incarnation of Odion's anime strategy, transformed from a fragile gimmick into a cohesive, Trap Monster-focused control deck. The core game plan is to establish control by leveraging a robust search engine to place <strong class="text-accent font-bold">Treasures of the Kings</strong> on the field. From there, the deck summons a suite of <strong class="text-accent font-bold">"Apophis"</strong> Trap Monsters to build board presence and disrupt the opponent. Through intricate resource loops, layered protection, and access to powerful Fusion Monsters, the deck aims to out-value the opponent, all thanks to <a href="#pharaohs-blueprint" class="lore-link">a vast network of internal consistency</a>.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Keepers & The Armory Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Keepers & The Armory</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-shield text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Keepers: Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Man with the Mark</h4>
+                            <p class="text-sm text-gray-200">The primary starter. On summon, it searches any "Temple" card or Spell/Trap that mentions it, and provides battle/effect protection for your field.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Anubis the Last Judge</h4>
+                            <p class="text-sm text-gray-200">The boss monster. Can be sent from hand to GY to search "The Man with the Mark," and recycles Traps from the GY to summon itself.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Merciless Scorpion of Serket</h4>
+                            <p class="text-sm text-gray-200">A key extender. Special Summons itself by banishing a Level 10+ monster (like <strong class="text-accent">The Winged Dragon of Ra</strong>) from your Deck and searches a "Temple" Spell.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-scroll text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Armory: Core Spells & Traps</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Treasures of the Kings</h4>
+                            <p class="text-sm text-gray-200">The lynchpin Field Spell. It's treated as "Temple of the Kings," Sets an "Apophis" trap from Deck, and searches a "Temple" monster once per turn.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Apophis the Swamp Deity</h4>
+                            <p class="text-sm text-gray-200">A Trap Monster that provides on-field monster effect negation based on the number of other Continuous Traps you control.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Verdict of Anubis</h4>
+                            <p class="text-sm text-gray-200">A devastating Counter Trap. If you control 3+ other Spells/Traps, it negates a Spell/Trap, destroys it, and then destroys all opponent's monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Executing the Royal Will</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">
+                This fundamental combo establishes a solid turn-one board, protection, and follow-up from a single card.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="combo-man-mark" class="card-image-container flex-shrink-0 card-placeholder">The Man with the Mark</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a150f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon the High Priest</h3>
+                            </div>
+                            <p class="text-gray-200">Normal Summon <strong class="text-accent">The Man with the Mark</strong>. Activate its on-summon effect to search <strong class="text-accent">Treasures of the Kings</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="combo-treasures" class="card-image-container flex-shrink-0 card-placeholder">Treasures of the Kings</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a150f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Activate the Temple</h3>
+                            </div>
+                            <p class="text-gray-200">Activate <strong class="text-accent">Treasures of the Kings</strong>. Its on-activation effect triggers, allowing you to Set <strong class="text-accent">Apophis the Serpent</strong> directly from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="combo-anubis" class="card-image-container flex-shrink-0 card-placeholder">Anubis the Last Judge</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a150f] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Search the Judge</h3>
+                            </div>
+                            <p class="text-gray-200">Activate the ignition effect of <strong class="text-accent">Treasures of the Kings</strong> to add <strong class="text-accent">Anubis the Last Judge</strong> from your Deck to your hand, preparing it as both a starter for next turn or a GY setup.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Royal Endboard</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-3xl mx-auto">
+                The optimal endboard is not a static field of negates but a flexible, interactive control setup focused on resource recursion and powerful, timed disruptions.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The Core Engine -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Core Engine</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div id="endboard-man-mark" class="card-image-container card-placeholder" style="max-width: 120px;"></div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent">The Man with the Mark</h4>
+                                <p class="text-sm text-gray-200">Provides blanket destruction protection for himself, your "Apophis" monsters, and "Temple of the Kings."</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div id="endboard-treasures" class="card-image-container card-placeholder" style="max-width: 120px;"></div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent">Treasures of the Kings</h4>
+                                <p class="text-sm text-gray-200">The Field Spell that enables all your plays and provides a continuous search for monsters each turn.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Trap Wall -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Trap Wall</h3>
+                     <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div id="endboard-swamp-deity" class="card-image-container card-placeholder" style="max-width: 120px;"></div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent">Apophis the Swamp Deity</h4>
+                                <p class="text-sm text-gray-200">Set and ready to be activated on the opponent's turn for a monster effect negation.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div id="endboard-divine-serpent" class="card-image-container card-placeholder" style="max-width: 120px;"></div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent">Divine Serpent Apophis</h4>
+                                <p class="text-sm text-gray-200">Fuels the resource loop by re-Setting "Apophis" traps from the GY and provides recurring destruction.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Consistency:</strong> Nearly every card searches another piece of the engine, leading to reliable opening plays.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-300">Powerful Grind Game:</strong> The "Apophis" and "Divine Serpent" loop can out-value opponents in long duels.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-300">Resilient Board:</strong> "The Man with the Mark" provides strong, built-in protection against destruction effects.</li>
+                        <li><span class="pro-icon"><i class="fas fa-gavel"></i></span> <strong class="text-green-300">"Blowout" Cards:</strong> Access to <strong class="text-accent">Verdict of Anubis</strong> can win the game on its own.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Backrow Hate:</strong> Extremely vulnerable to cards like <strong class="text-accent">Royal Decree</strong>, <strong class="text-accent">Jinzo</strong>, or a <strong class="text-accent">(Forbidden) Red Reboot</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Normal Summon Reliant:</strong> The entire combo line relies on resolving the Normal Summon of <strong class="text-accent">The Man with the Mark</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Choke Points:</strong> Susceptible to common hand traps like <strong class="text-accent">Effect Veiler</strong> and <strong class="text-accent">Infinite Impermanence</strong> on the starter.</li>
+                    </ul>
+                </div>
+                <!-- Alliances -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Alliances of the Kingdom</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-200">
+                        <li><span class="neutral-icon"><i class="fas fa-user-friends"></i></span> <strong class="text-accent">The Winged Dragon of Ra:</strong> The deck is mechanically designed to support it, using <strong class="text-accent">Merciless Scorpion</strong> to banish Ra and <strong class="text-accent">Defense of the Temple</strong> to search its summoning card.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dungeon"></i></span> <strong class="text-accent">Lord of the Heavenly Prison:</strong> Protects your Set cards and searches any Spell/Trap from the Deck.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-search-plus"></i></span> <strong class="text-accent">Consistency Spells:</strong> <strong class="text-accent">(Limited) Pot of Prosperity</strong> and <strong class="text-accent">(Semi-Limited) Pot of Extravagance</strong> help find your starters.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The core "Temple of the Kings" archetype is at full power. Restrictions only apply to its generic support cards.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted (Archetype)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Temple of the Kings" monsters (3 copies)</li>
+                            <li>All "Apophis" Trap Monsters (3 copies)</li>
+                            <li>All "Serket" monsters (3 copies)</li>
+                            <li>Treasures of the Kings, Defense of the Temple, etc. (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited & Semi-Limited (Tech)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Terraforming (Limited: 1)</strong></li>
+                            <li><strong class="text-yellow-300">Pot of Prosperity (Limited: 1)</strong></li>
+                            <li><strong class="text-yellow-300">Solemn Judgment (Limited: 1)</strong></li>
+                            <li><strong class="text-yellow-300">Pot of Extravagance (Semi-Limited: 2)</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its entire core engine untouched, the deck functions exactly as designed. Its consistency relies on navigating the limited status of generic searchers like "Terraforming" and "Prosperity," but the archetype itself is at full, unrestricted strength.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Network Section -->
+        <section id="pharaohs-blueprint" class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Pharaoh's Blueprint: Search Network</h2>
+            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">
+                The archetype's high consistency comes from its interconnected search paths, allowing nearly any card to lead to another.
+            </p>
+            <div class="card p-4 overflow-x-auto">
+                <table class="w-full min-w-max text-left">
+                    <thead class="border-b border-b-accent">
+                        <tr>
+                            <th class="p-3 text-accent font-bold">The Enabler (Card)</th>
+                            <th class="p-3 text-accent font-bold">The Action (Effect)</th>
+                            <th class="p-3 text-accent font-bold">The Target (Card Accessed)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-bold">Anubis the Last Judge</td>
+                            <td class="p-3">Send from Hand to GY $\rightarrow$ Add to Hand</td>
+                            <td class="p-3">The Man with the Mark</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-bold">The Man with the Mark</td>
+                            <td class="p-3">Normal/Special Summon $\rightarrow$ Add to Hand OR Send to GY</td>
+                            <td class="p-3">"Temple of the Kings" OR any Spell/Trap mentioning it</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-bold">Treasures of the Kings</td>
+                            <td class="p-3">Activation $\rightarrow$ Set from Deck</td>
+                            <td class="p-3">Any "Apophis" Trap</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-bold">Treasures of the Kings</td>
+                            <td class="p-3">Ignition Effect $\rightarrow$ Add to Hand</td>
+                            <td class="p-3">Any monster mentioning "Temple of the Kings"</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-bold">Merciless Scorpion of Serket</td>
+                            <td class="p-3">Ignition Effect $\rightarrow$ Add to Hand</td>
+                            <td class="p-3">"Temple of the Kings" OR any Spell mentioning it</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-bold">Defense of the Temple</td>
+                            <td class="p-3">Banish from GY $\rightarrow$ Add to Hand</td>
+                            <td class="p-3">Dangers of the Divine</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-bold">Apophis the Serpent</td>
+                            <td class="p-3">Activation $\rightarrow$ Set from Deck</td>
+                            <td class="p-3">Any "Apophis" Trap (except itself)</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-bold">Apophis the Serpent</td>
+                            <td class="p-3">Sent to GY $\rightarrow$ Add to Hand</td>
+                            <td class="p-3">Embodiment of Apophis</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- "TOMB DUST" BANNER ANIMATION ---
+            const canvas = document.getElementById('tomb-dust-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.speed = Math.random() * 0.5 + 0.2; // Slow upward speed
+                        this.radius = Math.random() * 2 + 0.5;
+                        this.color = `rgba(252, 211, 77, ${Math.random() * 0.5 + 0.3})`; // Gold particles
+                        this.drift = (Math.random() - 0.5) * 0.1;
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        this.x += this.drift;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            // CardLoader.js is already included in the <head>
+            // We just need to call loadCards with our specific IDs and names
+            CardLoader.loadCards({
+                // Core Cards
+                'core-man-mark': 'The Man with the Mark',
+                'core-anubis': 'Anubis the Last Judge',
+                'core-merciless': 'Merciless Scorpion of Serket',
+                'core-treasures': 'Treasures of the Kings',
+                'core-swamp-deity': 'Apophis the Swamp Deity',
+                'core-verdict': 'Verdict of Anubis',
+                
+                // Combo
+                'combo-man-mark': 'The Man with the Mark',
+                'combo-treasures': 'Treasures of the Kings',
+                'combo-anubis': 'Anubis the Last Judge',
+
+                // Endboard
+                'endboard-man-mark': 'The Man with the Mark',
+                'endboard-treasures': 'Treasures of the Kings',
+                'endboard-swamp-deity': 'Apophis the Swamp Deity',
+                'endboard-divine-serpent': 'Divine Serpent Apophis'
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yōkai Girl Hand Trap Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assuming card-loader.js is in 'assets/js/' relative to this file's location -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #161424; /* Dark Spectral Purple */
+            color: #e0e7ff; /* Light Lavender White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a263c; /* Darker Purple/Indigo */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #584c7a; /* Lighter Purple Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3a3352; /* Slightly Lighter */
+            border: 1px solid #7a6ca5;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a263c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a263c;
+            border: 1px dashed #7a6ca5;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #f472b6; } /* Vibrant Pink */
+        .arrow-color { color: #f472b6; }
+        .heading-underline {
+            border-bottom: 2px solid #f472b6;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f472b6;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f472b6;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f472b6;
+        }
+
+        /* --- NEW YŌKAI GIRL ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #161424;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #584c7a;
+        }
+
+        #petal-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(22, 20, 36, 0.4) 0%, rgba(22, 20, 36, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(244, 114, 182, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i { font-size: 22px; }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(22, 20, 36, 0.95); /* Match new theme */
+            border: 1px solid #f472b6; /* Accent color */
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #f472b6; /* Accent color */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #f472b6; /* Accent color */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="petal-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Yōkai Girl Deep Dive</h1>
+            <p class="text-lg md:text-xl text-pink-200">Mastering Modern Yu-Gi-Oh!'s Premier Disruptors</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Introduction to the Yōkai Girl Engine</h2>
+                <p class="text-indigo-200">
+                    The "Yōkai Girl" series stands as the preeminent example of modern card design philosophy. They are a collection of cards that, while thematically linked, function not as a cohesive army but as a 
+                    <a href="https://yugipedia.com/wiki/Hand_trap" target="_blank" class="lore-link">versatile arsenal of individual, high-impact disruption tools</a>.
+                    Understanding their role is paramount to mastering competitive play. A common misconception is that they constitute a formal, playable archetype. They critically lack any mechanical components that define a true archetype. Their true strength is not found in synergy with each other, but in their individual power as generic, flexible utility cards.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Defining the "Hand Trap"</h2>
+                <p class="text-indigo-200">
+                    A "hand trap" is a colloquial term for a card, most often a monster, that possesses a Quick Effect which can be activated from the player's hand, typically in response to an opponent's action. This ability to interact with the game state during the opponent's turn, without needing to be Set on the field, is their defining characteristic.
+                </p>
+                <p class="text-indigo-200 mt-2">
+                    In a game where the player who goes first can often construct a formidable board, hand traps provide the second player with a crucial opportunity to intervene and dismantle these plays before they become insurmountable. The Yōkai Girl series is a comprehensive toolbox, with each of the six primary "girls" meticulously crafted to interact with a different fundamental zone or mechanic of the game.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Yōkai Girl At-a-Glance Table -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Yōkai Girl Dossier: At-a-Glance</h2>
+            <div class="card p-4 overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="border-b-2 border-pink-700">
+                        <tr>
+                            <th class="p-3 text-white">Card Name</th>
+                            <th class="p-3 text-white">Attribute / Type</th>
+                            <th class="p-3 text-white">Primary Function</th>
+                            <th class="p-3 text-white">Metagame Role</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-medium text-pink-300">Ash Blossom & Joyous Spring</td>
+                            <td class="p-3 text-indigo-200">FIRE / Zombie / Tuner</td>
+                            <td class="p-3 text-indigo-200">Negates effects that move cards from the Deck.</td>
+                            <td class="p-3 text-indigo-200">Universal Staple</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-medium text-pink-300">Ghost Belle & Haunted Mansion</td>
+                            <td class="p-3 text-indigo-200">EARTH / Zombie / Tuner</td>
+                            <td class="p-3 text-indigo-200">Negates effects that move cards from the Graveyard.</td>
+                            <td class="p-3 text-indigo-200">Powerful GY Hate</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-medium text-pink-300">Ghost Ogre & Snow Rabbit</td>
+                            <td class="p-3 text-indigo-200">LIGHT / Psychic / Tuner</td>
+                            <td class="p-3 text-indigo-200">Destroys a face-up card that activates its effect.</td>
+                            <td class="p-3 text-indigo-200">On-Field Disruption</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-medium text-pink-300">Ghost Reaper & Winter Cherries</td>
+                            <td class="p-3 text-indigo-200">DARK / Zombie / Tuner</td>
+                            <td class="p-3 text-indigo-200">Banishes key cards from the opponent's Extra Deck.</td>
+                            <td class="p-3 text-indigo-200">Meta-Specific Side Deck</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-medium text-pink-300">Ghost Mourner & Moonlit Chill</td>
+                            <td class="p-3 text-indigo-200">WIND / Zombie / Tuner</td>
+                            <td class="p-3 text-indigo-200">Negates the effects of a Special Summoned monster.</td>
+                            <td class="p-3 text-indigo-200">Specialized Monster Negate</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-medium text-pink-300">Ghost Sister & Spooky Dogwood</td>
+                            <td class="p-3 text-indigo-200">WATER / Zombie / Tuner</td>
+                            <td class="p-3 text-indigo-200">Gains Life Points to survive an opponent's turn.</td>
+                            <td class="p-3 text-indigo-200">Niche Anti-OTK Tool</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <!-- Individual Card Breakdown Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Individual Card Breakdown</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Ash Blossom -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex-shrink-0 mb-4">
+                        <div id="ash-blossom-img-container" class="card-image-container mx-auto card-placeholder">Ash Blossom & Joyous Spring</div>
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-accent mb-2">Ash Blossom & Joyous Spring</h3>
+                        <p class="text-sm text-indigo-200">The most powerful and flexible hand trap. Its dominance stems from the fact that nearly every competitive strategy must perform one of the three actions Ash Blossom negates: Add from Deck to hand, Special Summon from Deck, or Send from Deck to GY.</p>
+                    </div>
+                </div>
+                
+                <!-- Ghost Belle -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex-shrink-0 mb-4">
+                        <div id="ghost-belle-img-container" class="card-image-container mx-auto card-placeholder">Ghost Belle & Haunted Mansion</div>
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-accent mb-2">Ghost Belle & Haunted Mansion</h3>
+                        <p class="text-sm text-indigo-200">The guardian of the Graveyard. It is a dedicated counter to any strategy that relies on recursion, covering three distinct interactions: Add from GY, Special Summon from GY, or Banish from GY. Its power is intensely dependent on the metagame.</p>
+                    </div>
+                </div>
+
+                <!-- Ghost Ogre -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex-shrink-0 mb-4">
+                        <div id="ghost-ogre-img-container" class="card-image-container mx-auto card-placeholder">Ghost Ogre & Snow Rabbit</div>
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-accent mb-2">Ghost Ogre & Snow Rabbit</h3>
+                        <p class="text-sm text-indigo-200">The on-field disruptor. Critically, Ghost Ogre destroys but does *not* negate. It excels against cards that must remain face-up to resolve, such as Field Spells, Continuous Spells/Traps, or monsters with continuous/repeatable effects.</p>
+                    </div>
+                </div>
+
+                <!-- Ghost Reaper -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex-shrink-0 mb-4">
+                        <div id="ghost-reaper-img-container" class="card-image-container mx-auto card-placeholder">Ghost Reaper & Winter Cherries</div>
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-accent mb-2">Ghost Reaper & Winter Cherries</h3>
+                        <p class="text-sm text-indigo-200">The "silver bullet" for "Tier 0" formats. It preemptively removes all copies of an opponent's critical Extra Deck monster. Its cost is significant, as you must also run a copy of that monster in your *own* Extra Deck.</p>
+                    </div>
+                </div>
+
+                <!-- Ghost Mourner -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex-shrink-0 mb-4">
+                        <div id="ghost-mourner-img-container" class="card-image-container mx-auto card-placeholder">Ghost Mourner & Moonlit Chill</div>
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-accent mb-2">Ghost Mourner & Moonlit Chill</h3>
+                        <p class="text-sm text-indigo-200">A specialized monster negator, often compared to Effect Veiler. Its activation condition is stricter (only on Special Summon), which is its primary weakness, as it cannot stop key Normal Summons. The burn damage is a minor bonus.</p>
+                    </div>
+                </div>
+
+                <!-- Ghost Sister -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex-shrink-0 mb-4">
+                        <div id="ghost-sister-img-container" class="card-image-container mx-auto card-placeholder">Ghost Sister & Spooky Dogwood</div>
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-accent mb-2">Ghost Sister & Spooky Dogwood</h3>
+                        <p class="text-sm text-indigo-200">The most niche of the series. It does not disrupt the opponent's board but aims to ensure survival by gaining massive Life Points. In most competitive scenarios, preventing the board is better than surviving it.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Indirect Synergies -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Indirect Synergies & Engine Potential</h2>
+            <div class="card p-6">
+                <p class="text-indigo-200 mb-4">
+                    While not a formal archetype, their shared characteristics create a web of powerful indirect synergies, transforming them from defensive plays into offensive combo material.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">Level 3 Tuners</h4>
+                        <p class="text-sm text-indigo-200">All six are Level 3 Tuners. This means they can be revived from the GY (e.g., by "Monster Reborn") to make powerful Synchro monsters like "Baronne de Fleur" (with a Level 7) or Rank 3 Xyz monsters.</p>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">The Zombie Core</h4>
+                        <p class="text-sm text-indigo-200">Five of the six (all except Ogre) are Zombie-Type. This gives them immense synergy with generic Zombie support like "Mezuki" and "Zombie World," allowing them to be recycled repeatedly.</p>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">The Psychic Outlier</h4>
+                        <p class="text-sm text-indigo-200">"Ghost Ogre" is the sole Psychic-Type, giving it a unique and powerful synergy: it is searchable by the Quick-Play Spell "Emergency Teleport," making it a core component of P.U.N.K. engines.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Theoretical End Board Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Theoretical End Board</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                While not a combo deck, a casual "Yōkai Girl Turbo" deck using the Zombie engine can use the girls to disrupt the opponent, then revive them on its own turn to summon generic, powerful boss monsters.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Baronne de Fleur -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Baronne de Fleur</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="baronne-img-container" class="card-image-container card-placeholder">Baronne de Fleur</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Omni-Negate:</strong> Provides a powerful, once-per-turn negation.</li>
+                        <li><strong class="text-accent">Summoning:</strong> Easily made by reviving a Level 3 Yōkai Girl Tuner and pairing it with a Level 7 monster (like "Kashtira Fenrir" or a Zombie).</li>
+                    </ul>
+                </div>
+                <!-- Chaos Ruler -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Chaos Ruler (BANNED)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="chaos-ruler-img-container" class="card-image-container card-placeholder">Chaos Ruler, the Chaotic Magical Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">GY Setup:</strong> Mills 5 cards, setting up the Graveyard with more Zombie Yōkai Girls and "Mezuki".</li>
+                        <li><strong class="text-accent">Note:</strong> This card is currently <strong class="text-red-400">FORBIDDEN</strong> in the TCG, but was a key piece of this theoretical engine.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Metagame Counter-Guide Table -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Metagame Matchup Matrix</h2>
+            <div class="card p-4 overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="border-b-2 border-pink-700">
+                        <tr>
+                            <th class="p-3 text-white">Hand Trap</th>
+                            <th class="p-3 text-white">vs. Snake-Eye / Tenpai</th>
+                            <th class="p-3 text-white">vs. Branded / Fire King</th>
+                            <th class="p-3 text-white">vs. Labrynth / Control</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-medium text-pink-300">Ash Blossom</td>
+                            <td class="p-3 text-indigo-200"><strong>High:</strong> Target initial searchers ("Bonfire," "Snake-Eye Ash").</td>
+                            <td class="p-3 text-indigo-200"><strong>High:</strong> Target "Branded Fusion" or "Nadir Servant."</td>
+                            <td class="p-3 text-indigo-200"><strong>Medium:</strong> Target "Arianna the Labrynth Servant."</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-medium text-pink-300">Ghost Belle</td>
+                            <td class="p-3 text-indigo-200"><strong>Situational:</strong> Can stop revival effects of "Promethean Princess."</td>
+                            <td class="p-3 text-indigo-200"><strong>High:</strong> Target "Branded in Red" or Fire King revival effects.</td>
+                            <td class="p-3 text-indigo-200"><strong>Medium:</strong> Target effects that set Traps from GY.</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-medium text-pink-300">Ghost Ogre</td>
+                            <td class="p-3 text-indigo-200"><strong>Medium:</strong> Target Field Spells ("Divine Temple") or "I:P Masquerena."</td>
+                            <td class="p-3 text-indigo-200"><strong>Low:</strong> Most key effects do not require the card to remain on field.</td>
+                            <td class="p-3 text-indigo-200"><strong>High:</strong> Target key Continuous Spells/Traps ("Runick Fountain," "Welcome Labrynth").</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800">
+                            <td class="p-3 font-medium text-pink-300">Ghost Reaper</td>
+                            <td class="p-3 text-indigo-200"><strong>High (Side):</strong> Target "Promethean Princess" or "Baronne" in mirror matches.</td>
+                            <td class="p-3 text-indigo-200"><strong>Medium (Side):</strong> Target "Mirrorjade the Iceblade Dragon."</td>
+                            <td class="p-3 text-indigo-200"><strong>Low:</strong> Control decks use a diverse Extra Deck.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.7s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> All six of the primary "Yōkai Girl" hand traps are currently at 3 copies per deck (Unlimited) in the TCG.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited Cards (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Ash Blossom & Joyous Spring</li>
+                            <li>Ghost Belle & Haunted Mansion</li>
+                            <li>Ghost Ogre & Snow Rabbit</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited Cards (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>Ghost Reaper & Winter Cherries</li>
+                            <li>Ghost Mourner & Moonlit Chill</li>
+                            <li>Ghost Sister & Spooky Dogwood</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With the entire suite at full power, players have complete access to this defensive toolbox, allowing them to precisely tailor their deck's non-engine slots to counter the expected metagame.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- YŌKAI GIRL PETAL ANIMATION ---
+            const canvas = document.getElementById('petal-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = (Math.random() * 0.5) - 0.25;
+                        this.speedY = Math.random() * 1 + 0.5;
+                        this.color = Math.random() > 0.1 ? "rgba(244, 114, 182, 0.6)" : "rgba(255, 255, 255, 0.6)"; // Pink with some white
+                        this.spin = Math.random() * Math.PI;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        this.spin += 0.03;
+                        if (this.y > canvas.height) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = -this.size;
+                        }
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.spin);
+                        ctx.fillStyle = this.color;
+                        ctx.fillRect(-this.size / 2, -this.size / 2, this.size * 1.5, this.size); // Petal shape
+                        ctx.restore();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT ---
+            // Use CardLoader to load images
+            CardLoader.loadCards({
+                'ash-blossom-img-container': 'Ash Blossom & Joyous Spring',
+                'ghost-belle-img-container': 'Ghost Belle & Haunted Mansion',
+                'ghost-ogre-img-container': 'Ghost Ogre & Snow Rabbit',
+                'ghost-reaper-img-container': 'Ghost Reaper & Winter Cherries',
+                'ghost-mourner-img-container': 'Ghost Mourner & Moonlit Chill',
+                'ghost-sister-img-container': 'Ghost Sister & Spooky Dogwood',
+                'baronne-img-container': 'Baronne de Fleur',
+                'chaos-ruler-img-container': 'Chaos Ruler, the Chaotic Magical Dragon'
+            });
+        });
+    </script>
+</body>
+</html>

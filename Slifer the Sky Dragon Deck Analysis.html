@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slifer the Sky Dragon Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- IMPORTANT: Assumes card-loader.js is in an 'assets/js/' folder relative to this HTML file -->
+    <!-- If it's in the same folder, change src to "card-loader.js" -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c1425; /* Deep stormy blue */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a233a; /* Darker blue/gray */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #fde047; /* Electric yellow border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #1f2a45; /* Slightly lighter than card */
+            border: 1px solid #eab308; /* Darker yellow */
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1a233a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a233a;
+            border: 1px dashed #fde047;
+        }
+        .card-placeholder-sm {
+            background-color: #1a233a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 175px; /* Adjust height for smaller card */
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1a233a;
+            border: 1px dashed #fde047;
+        }
+        .card-image-container-sm {
+            width: 100%;
+            max-width: 120px; /* Smaller max-width */
+            flex-shrink: 0;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #fde047; } /* Electric yellow for accents */
+        .arrow-color { color: #fde047; }
+        .heading-underline {
+            border-bottom: 2px solid #fde047;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fde047;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #fde047;
+        }
+
+        /* --- SLIFER ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0c1425;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #fde047;
+        }
+
+        #lightning-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 20, 37, 0.4) 0%, rgba(12, 20, 37, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(253, 224, 71, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Cinzel Decorative', serif;
+        }
+        
+        /* --- YGO HOME BUTTON --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(12, 20, 37, 0.95); /* Deep blue popup */
+            border: 1px solid #fde047; /* Yellow border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel Decorative', serif;
+            color: #fde047;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Cinzel Decorative', serif;
+            color: #fde047;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="lightning-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">SLIFER THE SKY DRAGON</h1>
+            <p class="text-lg md:text-xl text-yellow-200">Executive Producer of the Heavens</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    Among the pantheon of legendary monsters, <strong class="text-accent font-bold">Slifer the Sky Dragon</strong> commands unique reverence. In the TCG, this celestial dragon presents a formidable strategic puzzle. Its power is not absolute but conditional, demanding a deck built not merely to summon it, but to sustain its heavenly might. This analysis moves beyond classic "big hand" strategies, delving into the modern, sophisticated "Graveyard-first" tactics that have given Slifer new life. By leveraging its powerful, modern support, a duelist can transform this nostalgic icon into a legitimate and awe-inspiring win condition.
+                </p>
+            </div>
+        </section>
+
+        <!-- Anatomy of a God Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Anatomy of a God</h2>
+            <div class="card p-6">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="slifer-img-container" class="card-image-container mx-auto md:mx-0 card-placeholder">Slifer the Sky Dragon</div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-accent mb-4">Slifer the Sky Dragon</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-white">The Power Clause (ATK/DEF)</h4>
+                                <p class="text-blue-200 text-sm">Gains 1000 ATK/DEF for each card in your hand. This is the core mechanic, creating a paradox where playing cards to support Slifer also weakens it. Modern strategies aim to solve this by refilling the hand instantly.</p>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-white">The Control Clause ("Second Mouth")</h4>
+                                <p class="text-blue-200 text-sm">If an opponent's monster (ATK 2000 or less) is summoned in Attack Position, it loses 2000 ATK, then is destroyed. This is a powerful floodgate that can dismantle combo decks reliant on low-ATK starters.</p>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-white">The Weakness Clause (End Phase)</h4>
+                                <p class="text-blue-200 text-sm">If Special Summoned, it's sent to the GY during the End Phase. Modern decks turn this "weakness" into a strength, using it to set up GY-based plays or as a temporary, powerful interruption on the opponent's turn.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Divine Arsenal Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Divine Arsenal</h2>
+            
+            <!-- The Revived Sky God (Featured) -->
+            <div class="card p-6 mb-8 border-2 border-accent shadow-lg shadow-yellow-500/20">
+                <h3 class="text-2xl font-bold text-accent mb-4 text-center">Core Strategy: The Revived Sky God</h3>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="revived-sky-god-img-container" class="card-image-container mx-auto md:mx-0 card-placeholder">The Revived Sky God</div>
+                    <div class="flex-1">
+                        <p class="text-blue-200 mb-4">This Normal Trap is the heart of all modern Slifer strategies. It single-handedly solves Slifer's core paradox.</p>
+                        <ul class="list-disc list-inside space-y-2 text-blue-200">
+                            <li><strong class="text-white">Effect 1:</strong> Special Summons 1 <strong class="text-accent">Slifer the Sky Dragon</strong> from your GY.</li>
+                            <li><strong class="text-white">Effect 2:</strong> After summoning, <strong class="text-accent">both players draw until they have 6 cards</strong>.</li>
+                        </ul>
+                        <p class="text-blue-200 mt-4">This turns a "GY-first" setup into a devastating interruption: a 6000 ATK Slifer and a full hand of 6 new cards (including potential hand traps) on your opponent's turn.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other Support Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Thunderforce Attack -->
+                <div class="card p-6 pro-con-card h-full">
+                    <h4 class="text-xl font-bold text-white mb-2">Thunderforce Attack</h4>
+                    <div class="flex gap-4">
+                        <div id="thunderforce-img-container" class="card-image-container-sm card-placeholder-sm">Thunderforce Attack</div>
+                        <div class="flex-1">
+                            <p class="text-sm text-blue-200">Slifer's signature offensive weapon. This Quick-Play Spell destroys as many face-up monsters your opponent controls as possible, then lets you draw cards equal to the number destroyed.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ultimate Divine-Beast -->
+                <div class="card p-6 pro-con-card h-full">
+                    <h4 class="text-xl font-bold text-white mb-2">Ultimate Divine-Beast</h4>
+                    <div class="flex gap-4">
+                        <div id="ultimate-divine-beast-img-container" class="card-image-container-sm card-placeholder-sm">Ultimate Divine-Beast</div>
+                        <div class="flex-1">
+                            <p class="text-sm text-blue-200">A defensive Continuous Trap. It can revive a Divine-Beast from the GY in Defense Position to block an attack, and can destroy all face-up cards your opponent activated this turn during the End Phase.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Path to Summoning Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Path to Summoning</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                Consistently summoning Slifer—or setting up its revival—is the deck's primary challenge. Several engines have been developed to accomplish this, split between traditional tribute methods and modern "cheating" strategies.
+            </p>
+
+            <!-- Traditional Tribute Engines -->
+            <h3 class="text-2xl font-bold text-accent text-center mb-6">Traditional Tribute Engines</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Slime Engine -->
+                <div class="card p-6 combo-step-card h-full">
+                    <h3 class="text-lg font-bold text-center text-white mb-4">Engine 1: The Slime Engine</h3>
+                    <div class="flex gap-4">
+                        <div id="reactor-slime-img-container" class="card-image-container-sm card-placeholder-sm">Reactor Slime</div>
+                        <div class="flex-1">
+                            <p class="text-sm text-blue-200 mb-2"><strong class="text-white">Reactor Slime</strong> generates tokens and sets <strong class="text-white">Metal Reflect Slime</strong>.</p>
+                            <p class="text-sm text-blue-200">This summons <strong class="text-accent">Egyptian God Slime</strong>, which can be treated as 3 Tributes for Slifer's summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Poker Knights Engine -->
+                <div class="card p-6 combo-step-card h-full">
+                    <h3 class="text-lg font-bold text-center text-white mb-4">Engine 2: The Poker Knights</h3>
+                    <div class="flex gap-4">
+                        <div id="jokers-straight-img-container" class="card-image-container-sm card-placeholder-sm">Joker's Straight</div>
+                        <div class="flex-1">
+                            <p class="text-sm text-blue-200 mb-2"><strong class="text-white">Joker's Straight</strong> summons <strong class="text-white">Queen's Knight</strong> and searches <strong class="text-white">King's Knight</strong>.</p>
+                            <p class="text-sm text-blue-200">This assembles all 3 Knights, enabling <strong class="text-accent">Thunderspeed Summon</strong> to search Slifer and immediately Normal Summon it.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modern Methods -->
+            <h3 class="text-2xl font-bold text-accent text-center mb-6">Modern Methods (GY & Go-Second)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- GY First Engine -->
+                <div class="card p-6 combo-step-card h-full">
+                    <h3 class="text-lg font-bold text-center text-white mb-4">Method 1: The "GY First" Enabler</h3>
+                    <div class="flex gap-4">
+                        <div id="branded-fusion-img-container-path" class="card-image-container-sm card-placeholder-sm">Branded Fusion</div>
+                        <div class="flex-1">
+                            <p class="text-sm text-blue-200 mb-2">The most potent strategy. The goal is to send Slifer to the GY, not summon it from hand.</p>
+                            <p class="text-sm text-blue-200"><strong class="text-white">Branded Fusion</strong> is the most efficient enabler, sending <strong class="text-accent">Slifer</strong> from the deck to the GY as material, perfectly setting up <strong class="text-accent">The Revived Sky God</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Soul Crossing -->
+                <div class="card p-6 combo-step-card h-full">
+                    <h3 class="text-lg font-bold text-center text-white mb-4">Method 2: The Board-Breaker</h3>
+                    <div class="flex gap-4">
+                        <div id="soul-crossing-img-container" class="card-image-container-sm card-placeholder-sm">Soul Crossing</div>
+                        <div class="flex-1">
+                            <p class="text-sm text-blue-200 mb-2">The ultimate go-second tool. This Quick-Play Spell allows you to Tribute Summon a Divine-Beast.</p>
+                            <p class="text-sm text-blue-200">Critically, it allows you to use your <strong class="text-accent">opponent's monsters</strong> as Tributes, bypassing most forms of protection to summon Slifer and wipe their board.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Branded Sky God" Endboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Slifer in GY -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Setup: Slifer in Graveyard</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="slifer-gy-img-container" class="card-image-container card-placeholder">Slifer the Sky Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Goal:</strong> Get Slifer into the GY.</li>
+                        <li><strong class="text-accent">Method:</strong> Use <strong class="text-white">Branded Fusion</strong> to send Slifer from Deck to GY as material for a Fusion Monster (like Brigrand).</li>
+                        <li><strong class="text-accent">Enablers:</strong> <strong class="text-white">Foolish Burial</strong> or <strong class="text-white">The True Name</strong> are also options.</li>
+                    </ul>
+                </div>
+                <!-- Revived Sky God Set -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Interruption: The Set Trap</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="revived-sky-god-endboard-img-container" class="card-image-container card-placeholder">The Revived Sky God</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Goal:</strong> Search and Set <strong class="text-white">The Revived Sky God</strong>.</li>
+                        <li><strong class="text-accent">Method:</strong> Searched via <strong class="text-white">Trap Trick</strong>, <strong class="text-white">Lady Labrynth</strong>, or drawn naturally.</li>
+                        <li><strong class="text-accent">The Payoff:</strong> Activate on opponent's turn. Summons a 6000 ATK Slifer and draws you to a 6-card hand full of new interruptions.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-star"></i></span> <strong class="text-green-300">Explosive Power:</strong> Resolving <strong class="text-accent">The Revived Sky God</strong> is one of the biggest power plays in the game, generating a 6000 ATK floodgate and massive card advantage.</li>
+                        <li><span class="pro-icon"><i class="fas fa-low-vision"></i></span> <strong class="text-green-300">Surprise Factor:</strong> Opponents often don't expect the "GY First" strategy and may not save removal for Slifer in the Graveyard.</li>
+                        <li><span class="pro-icon"><i class="fas fa-lock"></i></span> <strong class="text-green-300">Board Control:</strong> A full-power Slifer completely shuts down decks reliant on low-ATK combo starters.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-box-open"></i></span> <strong class="text-red-300">GY Disruption:</strong> The "GY First" strategy is extremely vulnerable to <strong class="text-accent">Bystial</strong> monsters, <strong class="text-accent">D.D. Crow</strong>, or <strong class="text-accent">Called by the Grave</strong> banishing Slifer.</li>
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-300">Fragility:</strong> Relies on drawing specific payoff cards (like the trap) and enablers (like Branded Fusion). Can "brick" easily.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Spell/Trap Removal:</strong> Proactive removal like <strong class="text-accent">Harpie's Feather Duster</strong> or <strong class="text-accent">Cosmic Cyclone</strong> can remove the Set trap before it's live.</li>
+                    </ul>
+                </div>
+                <!-- Hybrids & Tech -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergistic Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong class="text-accent">Branded Slifer:</strong> The most common and powerful build, using <strong class="text-white">Branded Fusion</strong> as the primary setup tool.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-hat-wizard"></i></span> <strong class="text-accent">Dark Magician Slifer:</strong> Uses <strong class="text-white">Soul Servant</strong> and <strong class="text-white">Illusion of Chaos</strong> to stack the deck, guaranteeing <strong class="text-accent">The True Name</strong> resolves.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dungeon"></i></span> <strong class="text-accent">Labrynth Slifer:</strong> Uses the Labrynth engine (<strong class="text-white">Lady Labrynth</strong>) to search and set <strong class="text-accent">The Revived Sky God</strong> directly from the deck.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="my-10 md:my-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The core "Slifer the Sky Dragon" archetype and its dedicated support are at full power. However, its hybrid engines are impacted by the banlist.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Slifer the Sky Dragon</strong></li>
+                            <li><strong class="text-green-300">The Revived Sky God</strong></li>
+                            <li><strong class="text-green-300">Thunderforce Attack</strong></li>
+                            <li>All "Slime" and "Poker Knight" engine cards</li>
+                            <li>Branded Fusion</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Relevant Restricted Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Block Dragon (FORBIDDEN)</strong> - Key enabler for older Rock-based tribute decks is banned.</li>
+                            <li><strong class="text-yellow-400">Called by the Grave (LIMITED 1)</strong> - Key protection from hand traps is limited.</li>
+                            <li><strong class="text-yellow-400">Bystial Magnamhut (LIMITED 1)</strong> - A key searcher for GY hate is limited, which helps the deck.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The Slifer archetype itself is untouched, allowing all of its strategies to function. The "GY First" build remains the most viable, as its key enabler (<strong class="text-white">Branded Fusion</strong>) is unrestricted.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if CardLoader is defined
+            if (typeof CardLoader !== 'undefined') {
+                // --- CARD LOADING ---
+                CardLoader.loadCards({
+                    'slifer-img-container': 'Slifer the Sky Dragon',
+                    'thunderforce-img-container': 'Thunderforce Attack',
+                    'revived-sky-god-img-container': 'The Revived Sky God',
+                    'ultimate-divine-beast-img-container': 'Ultimate Divine-Beast',
+                    'reactor-slime-img-container': 'Reactor Slime',
+                    'jokers-straight-img-container': "Joker's Straight",
+                    'branded-fusion-img-container-path': 'Branded Fusion',
+                    'soul-crossing-img-container': 'Soul Crossing',
+                    'slifer-gy-img-container': 'Slifer the Sky Dragon',
+                    'revived-sky-god-endboard-img-container': 'The Revived Sky God'
+                });
+            } else {
+                console.error("CardLoader script not found. Please ensure 'assets/js/card-loader.js' is linked correctly.");
+                // Fallback to show text in placeholders
+                const placeholders = document.querySelectorAll('.card-placeholder');
+                placeholders.forEach(p => {
+                    // The text is already inside, just log the error.
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+

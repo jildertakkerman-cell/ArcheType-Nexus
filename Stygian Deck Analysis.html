@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stygian Engine Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Card Loader Import -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0218; /* Deep Underworld Purple/Black */
+            color: #E6E0FF; /* Light Lavender White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1A0D33; /* Dark Purple Slate */
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            border: 1px solid #4C2B80; /* Violet Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #211542; /* Slightly darker/richer purple */
+            border: 1px solid #6A3EAA;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #331A66;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #331A66;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #D7263D; } /* Crimson Red/Hellish accent */
+        .arrow-color { color: #8A4FBC; } /* Lighter Purple for Flow */
+        .heading-underline {
+            border-bottom: 2px solid #D7263D;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #ffcc00;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ffcc00;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- STYGIAN BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0A0218;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #river-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(10, 2, 24, 0.7), rgba(10, 2, 24, 0.95)); /* Dark fade overlay */
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            font-family: 'Playfair Display', serif;
+            text-shadow: 0 0 10px rgba(215, 38, 61, 0.8);
+        }
+        /* --- END OF BANNER STYLES --- */
+            /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 2, 24, 0.95);
+            border: 1px solid #D7263D;
+            border-radius: 0.75rem;
+            color: #E6E0FF;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #D7263D;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Playfair Display', serif;
+            color: #D7263D;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="river-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Stygian Engine</h1>
+            <p class="text-lg md:text-xl text-red-300">A Deep Dive into the Non-Archetype DARK Fiend Support</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: Engine Over Archetype</h2>
+                <p class="text-purple-300">
+                    The <strong class="text-accent font-bold">Stygian</strong> series is not a cohesive archetype but a collection of highly specialized utility cards for DARK Fiend-Type strategies. Its enduring relevance centers on a critical design relic: the non-"once per turn" Graveyard effect of <a class="lore-link" onclick="CardLoader.showPopup(event, 'Stygian Street Patrol')">Stygian Street Patrol</a>. This effect enables complex, explosive combo loops, most famously within the Infernity archetype, by providing repeatable, in-Graveyard Special Summoning from the hand. The engine is a perfect case study in competitive Yu-Gi-Oh! of how niche cards with unique design flaws can define a powerful competitive strategy.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Stygian Operatives Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Four Operatives: A Card-by-Card Breakdown</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Stygian Street Patrol -->
+                <div class="card p-4 combo-step-card">
+                    <h3 class="text-lg font-bold text-accent mb-1 flex items-center"><i class="fas fa-bolt mr-2"></i> Street Patrol: The Combo Catalyst</h3>
+                    <p class="text-sm text-purple-300">Its non-OPT Graveyard effect to banish itself and Special Summon a Fiend (2000 ATK or less) from hand is the core of the engine's infinite looping potential.</p>
+                </div>
+                <!-- Stygian Security -->
+                <div class="card p-4 combo-step-card">
+                    <h3 class="text-lg font-bold text-accent mb-1 flex items-center"><i class="fas fa-shield-alt mr-2"></i> Security: The Defensive Tuner</h3>
+                    <p class="text-sm text-purple-300">A Level 1 Fiend Tuner whose main monster effect is too reactive (battle destruction) for modern play, but retains niche Synchro utility.</p>
+                </div>
+                <!-- Stygian Sergeants -->
+                <div class="card p-4 combo-step-card">
+                    <h3 class="text-lg font-bold text-accent mb-1 flex items-center"><i class="fas fa-dagger mr-2"></i> Sergeants: The Battle Payoff</h3>
+                    <p class="text-sm text-purple-300">A Level 5 DARK Fiend Synchro monster. It gains 800 ATK and attacks twice when it destroys a monster by battle, serving as a clean, battle-focused payoff.</p>
+                </div>
+                <!-- Stygian Dirge -->
+                <div class="card p-4 combo-step-card">
+                    <h3 class="text-lg font-bold text-accent mb-1 flex items-center"><i class="fas fa-gavel mr-2"></i> Dirge: The Strategic Saboteur</h3>
+                    <p class="text-sm text-purple-300">A Continuous Trap that reduces the Levels of all opponent's monsters by 1, making it a highly metagame-dependent floodgate against Synchro and Xyz decks.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section: The Infernity Loop -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Engine in Action: The Non-OPT Infernity Loop</h2>
+            <p class="text-purple-300 mb-8 text-center max-w-2xl mx-auto">
+                The Stygian Engine's peak performance is seen in its highly intricate loop with the Infernity archetype, which requires an empty hand to function. <strong class="text-accent font-bold">Stygian Street Patrol</strong> acts as the essential bridge for recursion.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="armageddon-knight-img-container" class="card-image-container flex-shrink-0 card-placeholder">Armageddon Knight</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1A0D33] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Setup the Graveyard</h3>
+                            </div>
+                            <p class="text-purple-300">Normal Summon <strong class="text-accent">Armageddon Knight</strong>, sending <strong class="text-accent">Stygian Street Patrol</strong> from Deck to GY. Activate Patrol's GY effect, banishing it to Special Summon <strong class="text-accent">Infernity Archfiend</strong> from hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="infernity-archfiend-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Archfiend</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1A0D33] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">First Search & Link</h3>
+                            </div>
+                            <p class="text-purple-300">Since hand is empty, <strong class="text-accent">Archfiend</strong> searches <strong class="text-accent">Infernity Launcher</strong>. Link the two monsters into a Link-2 (e.g., <strong class="text-accent">Knightmare Phoenix</strong>), sending <strong class="text-accent">Archfiend</strong> to the GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="leviair-img-container" class="card-image-container flex-shrink-0 card-placeholder">Leviair the Sea Dragon</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1A0D33] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Engine Recursion</h3>
+                            </div>
+                            <p class="text-purple-300">Continue the Infernity combo (using <strong class="text-accent">Launcher</strong>, etc.) until you can Xyz Summon <strong class="text-accent">Leviair the Sea Dragon</strong>. Leviair brings the banished <strong class="text-accent">Stygian Street Patrol</strong> back to the field, making its non-OPT effect available again for subsequent loops!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Final Endboard: The Handless Lockdown</h2>
+            <p class="text-purple-300 mb-8 text-center max-w-3xl mx-auto">
+                The ultimate goal of the Stygian-Infernity loop is to establish a powerful, multi-layered negation board while maintaining an empty hand to satisfy key card requirements.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Infernity Barrier and Void Ogre Dragon -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Primary Negates (Handless)</h3>
+                    <div class="flex justify-center mb-4 gap-4">
+                        <div id="infernity-barrier-img-container" class="card-image-container card-placeholder w-1/2">Infernity Barrier</div>
+                        <div id="void-ogre-img-container" class="card-image-container card-placeholder w-1/2">Void Ogre Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-300">
+                        <li><strong class="text-accent">Infernity Barrier:</strong> A powerful Counter Trap that can negate a Spell, Trap, or Monster Effect. You can often search and set multiple copies.</li>
+                        <li><strong class="text-accent">Void Ogre Dragon:</strong> A Level 8 Synchro that can negate a Spell/Trap activation (Quick Effect) while you have no cards in hand.</li>
+                    </ul>
+                </div>
+                <!-- Apollousa / Generic Links -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Link Disruption</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="apollousa-img-container" class="card-image-container card-placeholder">Apollousa, Bow of the Goddess</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-300">
+                        <li><strong class="text-accent">Link Monsters:</strong> The loop provides enormous Link Material, leading to multi-negate Link Bosses like <strong class="text-accent">Apollousa, Bow of the Goddess</strong> (monster effect negates).</li>
+                        <li><strong class="text-accent">Resource Denial:</strong> Often includes utility Links to clean up the Graveyard or set up follow-up plays for the opponent's turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-300">
+                        <li><span class="pro-icon"><i class="fas fa-redo-alt"></i></span> <strong class="text-green-300">Repeatable Extension:</strong> <strong class="text-accent">Street Patrol's</strong> non-OPT nature grants virtually unlimited Special Summons from hand.</li>
+                        <li><span class="pro-icon"><i class="fas fa-lock"></i></span> <strong class="text-green-300">Lockdown Potential:</strong> The Infernity combination creates a nearly unbreakable, multi-negate board.</li>
+                        <li><span class="pro-icon"><i class="fas fa-hand-sparkles"></i></span> <strong class="text-green-300">Engine Utility:</strong> Works as a compact, two-card starter for generic Fiend/Synchro decks.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-300">
+                        <li><span class="con-icon"><i class="fas fa-fist-raised"></i></span> <strong class="text-red-300">Choke Points:</strong> Highly vulnerable to interruption on the initial Normal Summon (e.g., <strong class="text-accent">Armageddon Knight</strong>).</li>
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-300">Hand Trap Vulnerability:</strong> Heavy Special Summon count makes it susceptible to <strong class="text-accent">Nibiru, the Primal Being</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-chain-broken"></i></span> <strong class="text-red-300">Banishment:</strong> Graveyard removal (like <strong class="text-accent">D.D. Crow</strong>) can permanently remove the vital <strong class="text-accent">Stygian Street Patrol</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Synergies & Tech Cards</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-300">
+                        <li><span class="neutral-icon"><i class="fas fa-brain"></i></span> <strong class="text-accent">Infernity Archetype:</strong> The definitive partner, using the engine's extension to power its search loops.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-anchor"></i></span> <strong class="text-accent">Leviair the Sea Dragon:</strong> Essential Rank 3 Xyz to recover the banished <strong class="text-accent">Street Patrol</strong>, re-enabling the loop.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-book"></i></span> <strong class="text-accent">Foolish Burial:</strong> An immediate one-card method to place <strong class="text-accent">Stygian Street Patrol</strong> in the GY to begin the combo.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">LIMITED IMPACT:</strong> The engine itself is mostly unrestricted, but its primary partner is limited.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Stygian Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Stygian Street Patrol (3 copies)</strong> - Core engine piece</li>
+                            <li>Stygian Security & Stygian Sergeants</li>
+                            <li>Stygian Dirge (Side Deck floodgate)</li>
+                            <li>Infernity Archfiend and Infernity Barrier</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">External Restrictions (Infernity Core)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Infernity Launcher (1 copy)</strong> - Primary search target and combo facilitator is Limited.</li>
+                            <li>This restricts the deck's explosive capability by limiting access to repeatable Graveyard summons.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the Stygian engine is completely legal, the restriction on Infernity Launcher forces players to rely more heavily on generic Link monsters and complex combo lines to achieve the same end board consistency it offered in the past. The strategy remains viable but requires higher card quality.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STYGIAN RIVER ANIMATION ---
+            const canvas = document.getElementById('river-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                let particles = [];
+                const numParticles = 80;
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedX = (Math.random() * 0.5) - 0.25;
+                        this.speedY = (Math.random() * 0.5) + 0.1; // Slow vertical drift downward
+                        this.size = Math.random() * 2 + 0.5;
+                        // Color: Dark red/purple "river" glow
+                        this.color = `rgba(215, 38, 61, ${Math.random() * 0.3 + 0.2})`;
+                        this.maxLife = Math.random() * 200 + 100;
+                        this.life = this.maxLife;
+                    }
+
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        this.life--;
+
+                        if (this.life <= 0 || this.y > canvas.height) {
+                            this.reset();
+                        }
+                    }
+
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = this.life / this.maxLife;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = 0; // Reset to top
+                        this.life = this.maxLife;
+                        this.speedX = (Math.random() * 0.5) - 0.25;
+                        this.speedY = (Math.random() * 0.5) + 0.1;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    // Fade effect for the "river"
+                    ctx.fillStyle = 'rgba(10, 2, 24, 0.3)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+
+            // IMPORTANT: loadCards relies on the CardLoader module, which is imported in the header.
+            CardLoader.loadCards({
+                'armageddon-knight-img-container': 'Armageddon Knight',
+                'infernity-archfiend-img-container': 'Infernity Archfiend',
+                'leviair-img-container': 'Leviair the Sea Dragon',
+                'infernity-barrier-img-container': 'Infernity Barrier',
+                'void-ogre-img-container': 'Void Ogre Dragon',
+                'apollousa-img-container': 'Apollousa, Bow of the Goddess',
+                // For the executive summary link hover effect
+                'stygian-street-patrol': 'Stygian Street Patrol'
+            });
+        });
+    </script>
+</body>
+</html>

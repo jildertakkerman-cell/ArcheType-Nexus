@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zera Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use the card-loader.js from the assets/js/ directory as seen in other files -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Inter for body and Playfair Display for titles, similar to Abyss Actor for the 'legacy' theme -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e; /* Dark purple/indigo */
+            color: #e0e7ff; /* Light lavender white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2a2845; /* Darker slate purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a4a6b; /* Lighter purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3b3a5e; /* Slightly lighter slate purple */
+            border: 1px solid #5c5c7d;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2845;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2845;
+            border: 1px dashed #6a5acd;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+
+        /* --- Zera Theme Accents --- */
+        .text-accent-light { color: #f0e68c; } /* Gold/Light */
+        .text-accent-dark { color: #da70d6; } /* Orchid/Dark */
+        
+        .arrow-color { color: #a78bfa; } /* Light Violet */
+        .heading-underline {
+            border-bottom: 2px solid #a78bfa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #f0e68c; /* Gold accent for links */
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #f0e68c;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #f0e68c;
+        }
+        .title-font {
+             font-family: 'Playfair Display', serif;
+        }
+
+        /* --- NEW ZERA ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a1a2e;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a4a6b;
+        }
+
+        #zera-banner-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(26, 26, 46, 0.4) 0%, rgba(26, 26, 46, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px rgba(240, 230, 140, 0.5), 0 0 10px rgba(218, 112, 214, 0.5);
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 26, 46, 0.95); /* Dark purple */
+            border: 1px solid #a78bfa; /* Light violet */
+            border-radius: 0.75rem;
+            color: #e0e7ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #a78bfa; /* Light violet */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #a78bfa;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="zera-banner-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 title-font">The Paths of Zera</h1>
+            <p class="text-lg md:text-xl text-indigo-200">A Strategic Analysis of a Fragmented Legacy</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 title-font">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The "Zera" collection does not form a cohesive archetype. Instead, it represents a 
+                    <a href="https://yugipedia.com/wiki/Zera" target="_blank" class="lore-link">fragmented narrative</a>—a series of boss monsters all originating from <strong class="text-accent-light">Warrior of Zera</strong>. This lore-driven design dictates the strategy, forcing a player to choose a "path" for the warrior.
+                </p>
+                <p class="text-indigo-200 mt-2">
+                    This series is a relic of a design philosophy where powerful effects were gated behind specific, challenging conditions. To "play Zera" is not to play one deck, but to choose a path—<strong class="text-accent-dark">damnation</strong>, <strong class="text-accent-light">ascension</strong>, <strong class="text-accent-light">rebirth</strong>, or <strong class="text-accent-dark">origin</strong>—and master the art of hybrid deck construction.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Cast of a Legend Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline title-font">The Cast of a Legend</h2>
+            
+            <!-- The Central Figure -->
+            <div class="card p-6 mb-8">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div id="warrior-zera-img-container" class="card-image-container card-placeholder">Warrior of Zera</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-2 title-font">The Central Figure: Warrior of Zera</h3>
+                        <p class="text-indigo-200 mb-4">The entire series revolves around this Level 4 EARTH Warrior Normal Monster. His flavor text is the foundational premise for the entire series:</p>
+                        <blockquote class="border-l-4 border-gray-500 pl-4 italic text-gray-300">
+                            "A wandering warrior who seeks the <a href="https://yugipedia.com/wiki/The_Sanctuary_in_the_Sky" target="_blank" class="lore-link">sanctuary</a> where he can gain the power of the Archlords. To escape the temptation of <a href="https://yugipedia.com/wiki/Pandemonium" target="_blank" class="lore-link">evil fiends</a>, he fights solo day by day."
+                        </blockquote>
+                        <p class="text-indigo-200 mt-4">This text outlines the two primary paths of transformation: the path of light (Archlords) and the path of darkness (fiends).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Divergent Destinies -->
+            <h3 class="text-2xl font-bold text-white mb-6 text-center title-font">The Divergent Destinies</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                <!-- Path of Damnation -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-fire-alt text-4xl text-accent-dark mr-4"></i>
+                        <h4 class="text-2xl font-bold text-accent-dark title-font">The Path of Damnation</h4>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col sm:flex-row gap-4 items-start">
+                                <div id="zera-mant-img-container" class="card-image-container w-full sm:w-[150px] flex-shrink-0 card-placeholder">Zera the Mant</div>
+                                <div class="flex-1">
+                                    <h5 class="text-lg font-bold text-accent-dark mb-1 title-font">Zera the Mant</h5>
+                                    <p class="text-sm text-indigo-200">The original Ritual Monster. A "vanilla" beater whose viability depends on generic Ritual and non-effect support (like Tenyi).</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col sm:flex-row gap-4 items-start">
+                                <div id="mazera-deville-img-container" class="card-image-container w-full sm:w-[150px] flex-shrink-0 card-placeholder">Mazera DeVille</div>
+                                <div class="flex-1">
+                                    <h5 class="text-lg font-bold text-accent-dark mb-1 title-font">Mazera DeVille</h5>
+                                    <p class="text-sm text-indigo-200">The fallen form. Summoned using <strong class="text-accent-dark">Pandemonium</strong>, its effect rips 3 random cards from the opponent's hand.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col sm:flex-row gap-4 items-start">
+                                <div id="darklord-zerato-img-container" class="card-image-container w-full sm:w-[150px] flex-shrink-0 card-placeholder">Darklord Zerato</div>
+                                <div class="flex-1">
+                                    <h5 class="text-lg font-bold text-accent-dark mb-1 title-font">Darklord Zerato</h5>
+                                    <p class="text-sm text-indigo-200">The modern retrain. A competitively superior version integrated into the "Darklord" archetype with a similar board-wipe effect.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Path of Ascension -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star text-4xl text-accent-light mr-4"></i>
+                        <h4 class="text-2xl font-bold text-accent-light title-font">The Path of Ascension</h4>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col sm:flex-row gap-4 items-start">
+                                <div id="archlord-zerato-img-container" class="card-image-container w-full sm:w-[150px] flex-shrink-0 card-placeholder">Archlord Zerato</div>
+                                <div class="flex-1">
+                                    <h5 class="text-lg font-bold text-accent-light mb-1 title-font">Archlord Zerato</h5>
+                                    <p class="text-sm text-indigo-200">The ascended form. Summoned using <strong class="text-accent-light">The Sanctuary in the Sky</strong>, it discards a LIGHT monster to destroy all opponent's monsters.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col sm:flex-row gap-4 items-start">
+                                <div id="angel-zera-img-container" class="card-image-container w-full sm:w-[150px] flex-shrink-0 card-placeholder">Angel of Zera</div>
+                                <div class="flex-1">
+                                    <h5 class="text-lg font-bold text-accent-light mb-1 title-font">Angel of Zera</h5>
+                                    <p class="text-sm text-indigo-200">The transcendent Synchro. A resilient threat that Special Summons itself from the banished zone, representing a path of rebirth.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <div class="flex flex-col sm:flex-row gap-4 items-start">
+                                <div id="zeradias-img-container" class="card-image-container w-full sm:w-[150px] flex-shrink-0 card-placeholder">Zeradias, Herald of Heaven</div>
+                                <div class="flex-1">
+                                    <h5 class="text-lg font-bold text-accent-light mb-1 title-font">Zeradias, Herald of Heaven</h5>
+                                    <p class="text-sm text-indigo-200">The guide. A searcher for <strong class="text-accent-light">The Sanctuary in the Sky</strong> and ideal discard fodder for Zerato's board-wipe effect.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- The Divergent Paths (Combos) Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline title-font">The Divergent Paths: Core Strategies</h2>
+            
+            <!-- Path 1: Damnation (Mazera DeVille) -->
+            <div class="card p-6 combo-step-card mb-6">
+                <h3 class="text-2xl font-bold text-accent-dark mb-3 title-font">Path of Damnation: The Mazera DeVille Hand-Rip</h3>
+                <p class="text-indigo-200 mb-4">A hyper-focused, "glass cannon" combo deck. The goal is to assemble 3 pieces on Turn 1: <strong class="text-accent-light">Warrior of Zera</strong>, <strong class="text-accent-dark">Pandemonium</strong>, and <strong class="text-accent-dark">Mazera DeVille</strong>.</p>
+                <div class="bg-gray-900 p-4 rounded-lg">
+                    <p class="text-indigo-200"><strong class="text-white">1. Access Warrior of Zera:</strong> Use <strong class="text-accent-light">Rescue Rabbit</strong> (to summon 2 from Deck) or <strong class="text-accent-light">Reinforcement of the Army</strong> (to search).</p>
+                    <p class="text-indigo-200"><strong class="text-white">2. Access Pandemonium:</strong> Use <strong class="text-accent-dark">Archfiend General</strong> (discard to search) or <strong class="text-accent-light">Terraforming</strong>.</p>
+                    <p class="text-indigo-200"><strong class="text-white">3. Access Mazera DeVille:</strong> Search with <strong class="text-accent-dark">Dark Spirit's Mastery</strong>.</p>
+                    <p class="text-indigo-200"><strong class="text-white">4. Resolution:</strong> Tribute Zera while Pandemonium is active to summon Mazera DeVille. The opponent discards 3 random cards, crippling their opening hand.</p>
+                </div>
+            </div>
+
+            <!-- Path 2: Ascension (Archlord Zerato) -->
+            <div class="card p-6 combo-step-card mb-6">
+                <h3 class="text-2xl font-bold text-accent-light mb-3 title-font">Path of Ascension: The Archlord Zerato Board-Wipe</h3>
+                <p class="text-indigo-200 mb-4">A "go-second" board-breaking strategy. This path functions best as a "package" inside a larger <strong class="text-accent-light">LIGHT Fairy "Agent"</strong> deck.</p>
+                <div class="bg-gray-900 p-4 rounded-lg">
+                    <p class="text-indigo-200"><strong class="text-white">1. Establish Sanctuary:</strong> Discard <strong class="text-accent-light">Zeradias, Herald of Heaven</strong> to search <strong class="text-accent-light">The Sanctuary in the Sky</strong>.</p>
+                    <p class="text-indigo-200"><strong class="text-white">2. Summon Warrior:</strong> Normal Summon <strong class="text-accent-light">Warrior of Zera</strong>.</p>
+                    <p class="text-indigo-200"><strong class="text-white">3. Summon Zerato:</strong> Tribute Zera while Sanctuary is active to summon <strong class="text-accent-light">Archlord Zerato</strong>.</p>
+                    <p class="text-indigo-200"><strong class="text-white">4. Resolution:</strong> Discard any LIGHT monster (like another Zeradias or an "Agent") to destroy all monsters the opponent controls.</p>
+                </div>
+            </div>
+
+            <!-- Path 3: Rebirth (Angel of Zera) -->
+            <div class="card p-6 combo-step-card mb-6">
+                <h3 class="text-2xl font-bold text-accent-light mb-3 title-font">Path of Rebirth: The Immortal Angel Loop</h3>
+                <p class="text-indigo-200 mb-4">A recursion strategy built around the Synchro Monster <strong class="text-accent-light">Angel of Zera</strong>, which returns from the banished zone. The goal is to get it banished reliably.</p>
+                <div class="bg-gray-900 p-4 rounded-lg">
+                    <p class="text-indigo-200"><strong class="text-white">Method 1 (Passive):</strong> With <strong class="text-accent-light">Macro Cosmos</strong> or <strong class="text-accent-light">Dimensional Fissure</strong> active, Angel of Zera is banished upon destruction, triggering its return.</p>
+                    <p class="text-indigo-200"><strong class="text-white">Method 2 (Active):</strong> Use <strong class="text-accent-light">Master Hyperion's</strong> effect, banishing Angel of Zera from the GY as cost to destroy a card. This provides removal *and* sets up the revival.</p>
+                    <p class="text-indigo-200"><strong class="text-white">Method 3 (Combo):</strong> Synchro Summon using <strong class="text-accent-dark">Eccentric Boy</strong>, which banishes the Synchro monster when it leaves the field, guaranteeing the loop.</p>
+                </div>
+            </div>
+
+            <!-- Path 4: Origin (Zera the Mant) -->
+            <div class="card p-6 combo-step-card">
+                <h3 class="text-2xl font-bold text-accent-dark mb-3 title-font">Path of Origin: The Tenyi Control</h3>
+                <p class="text-indigo-200 mb-4">A modern control strategy that uses the "vanilla" <strong class="text-accent-dark">Zera the Mant</strong> as an enabler for the powerful "Tenyi" archetype, which requires a non-effect monster.</p>
+                <div class="bg-gray-900 p-4 rounded-lg">
+                    <p class="text-indigo-200"><strong class="text-white">1. The Summoner:</strong> Use the <strong class="text-accent-dark">"Impcantation"</strong> engine to Ritual Summon <strong class="text-accent-dark">Zera the Mant</strong> without using your Normal Summon.</p>
+                    <p class="text-indigo-200"><strong class="text-white">2. The Payoff:</strong> With Zera the Mant (a non-effect monster) on the field, you can now activate the powerful "Tenyi" support cards.</p>
+                    <p class="text-indigo-200"><strong class="text-white">3. End Board:</strong> <strong class="text-accent-dark">Zera the Mant</strong> (2800 ATK) protected by <strong class="text-accent-light">Fists of the Unrivaled Tenyi</strong> (an omni-negate Counter Trap).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline title-font">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 title-font">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-green-300">Creative Challenge:</strong> Offers a unique, rewarding deck-building puzzle.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">High-Impact Effects:</strong> The individual paths have powerful (though situational) effects like hand-rips and board wipes.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Recursive Power:</strong> The "Angel of Zera" loop creates a resilient, recurring threat.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 title-font">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-link-slash"></i></span> <strong class="text-red-300">No Cohesion:</strong> The cards are not a true archetype and lack internal searchers for the core strategies.</li>
+                        <li><span class="con-icon"><i class="fas fa-praying-hands"></i></span> <strong class="text-red-300">Inconsistent:</strong> All strategies rely on drawing specific, unsearchable multi-card combos.</li>
+                        <li><span class="con-icon"><i class="fas fa-arrow-up"></i></span> <strong class="text-red-300">Power-crept:</strong> Modern retrains (like <strong class="text-accent-dark">Darklord Zerato</strong>) are objectively superior and more consistent.</li>
+                    </ul>
+                </div>
+                <!-- Hybrids/Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 title-font">Hybrids & Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-sun"></i></span> <strong class="text-accent-light">"The Agent" Engine:</strong> The best home for <strong class="text-accent-light">Archlord Zerato</strong> and <strong class="text-accent-light">Angel of Zera</strong>.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-moon"></i></span> <strong class="text-accent-dark">"Darklord" Engine:</strong> The required engine to play the modern <strong class="text-accent-dark">Darklord Zerato</strong> retrain.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent-light">"Tenyi" Engine:</strong> A powerful control shell that uses <strong class="text-accent-dark">Zera the Mant</strong> as its non-effect enabler.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-magic"></i></span> <strong class="text-accent-dark">"Impcantation" Engine:</strong> The most efficient way to summon <strong class="text-accent-dark">Zera the Mant</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline title-font">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-400 font-bold">LARGELY UNRESTRICTED:</strong> The core "Zera" series of monsters is entirely unrestricted. However, the generic consistency cards used in their hybrid strategies are limited.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards (3 copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-300">Warrior of Zera</strong></li>
+                            <li><strong class="text-green-300">Zera the Mant</strong> & <strong class="text-green-300">Zera Ritual</strong></li>
+                            <li><strong class="text-green-300">Mazera DeVille</strong> & <strong class="text-green-300">Archlord Zerato</strong></li>
+                            <li><strong class="text-green-300">Angel of Zera</strong> & <strong class="text-green-300">Darklord Zerato</strong></li>
+                            <li><strong class="text-green-300">Zeradias, Herald of Heaven</strong></li>
+                            <li><strong class="text-green-300">Pandemonium</strong> & <strong class="text-green-300">The Sanctuary in the Sky</strong></li>
+                            <li><strong class="text-green-300">Rescue Rabbit</strong>, <strong class="text-green-300">Macro Cosmos</strong>, <strong class="text-green-300">Dimensional Fissure</strong></li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-300">Reinforcement of the Army</strong></li>
+                            <li><strong class="text-yellow-300">Terraforming</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The strategies are fully playable, but their consistency is hampered by the Limited status of their best generic searchers. This reinforces the "glass cannon" nature of the Mazera DeVille path and the "toolbox" nature of the Zerato path.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ZERA BANNER ANIMATION ---
+            const canvas = document.getElementById('zera-banner-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.speedY = (Math.random() - 0.5) * 0.5;
+                        this.radius = Math.random() * 1.5 + 0.5;
+                        // 50/50 chance for light or dark theme
+                        if (Math.random() > 0.5) {
+                            this.color = `rgba(240, 230, 140, ${Math.random() * 0.5 + 0.3})`; // Gold/Light
+                        } else {
+                            this.color = `rgba(218, 112, 214, ${Math.random() * 0.5 + 0.3})`; // Orchid/Dark
+                        }
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // This function should be defined in your card-loader.js file
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'warrior-zera-img-container': 'Warrior of Zera',
+                    'zera-mant-img-container': 'Zera the Mant',
+                    'mazera-deville-img-container': 'Mazera DeVille',
+                    'archlord-zerato-img-container': 'Archlord Zerato',
+                    'angel-zera-img-container': 'Angel of Zera',
+                    'zeradias-img-container': 'Zeradias, Herald of Heaven',
+                    'darklord-zerato-img-container': 'Darklord Zerato'
+                });
+            } else {
+                console.error("CardLoader script not found or loaded.");
+            }
+        });
+    </script>
+</body>
+</html>
+

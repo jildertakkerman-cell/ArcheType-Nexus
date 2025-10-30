@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Dragon Archetype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      NOTE: The user's other files reference "assets/js/card-loader.js".
+      This file is in the root, so I am referencing "card-loader.js" directly.
+      The user may need to adjust this path based on their file structure.
+    -->
+    <script src="card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1a1c; /* Dark Teal/Blue */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1a2b30; /* Darker Slate Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3d6a8e; /* Water Blue Border */
+        }
+        .combo-step-card {
+            background-color: #213c4a; /* Slightly lighter */
+            border: 1px solid #335ca3;
+        }
+        .pro-con-card {
+            background-color: #213c4a;
+            border: 1px solid #335ca3;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #213c4a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #213c4a;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 8px #3d6a8e);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #60a5fa; } /* Light Blue */
+        .arrow-color { color: #60a5fa; }
+        .heading-underline {
+            border-bottom: 2px solid #60a5fa;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #60a5fa;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #60a5fa;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- New Water Dragon Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(45deg, #0d1a1c, #1a2b30);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 1rem;
+            border: 2px solid #3d6a8e;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .banner-content {
+            z-index: 2;
+            position: relative;
+        }
+        .banner-title {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 2.5rem;
+            color: #e0e7ff;
+            text-shadow: 0 0 8px rgba(96, 165, 250, 0.5), 0 0 15px rgba(96, 165, 250, 0.3);
+            letter-spacing: 0.1em;
+        }
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #c7d2fe;
+        }
+        #alchemical-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        @media (max-width: 768px) {
+            .banner-header { height: 100px; }
+            .banner-title { font-size: 2rem; }
+            .banner-subtitle { font-size: 0.875rem; }
+        }
+        
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+        
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 26, 28, 0.95);
+            border: 1px solid #60a5fa;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #60a5fa;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- New Animated Banner -->
+        <header class="mb-10 md:mb-16">
+            <div class="banner-header">
+                <canvas id="alchemical-banner"></canvas>
+                <div class="banner-content">
+                    <h1 class="banner-title">Water Dragon</h1>
+                    <p class="banner-subtitle">The Alchemical Duelist: A Strategic Deep Dive</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Introduction: From Anime Icon to Modern Hybrid</h2>
+                <p class="text-blue-200">
+                    First introduced in the Yu-Gi-Oh! GX anime as the signature ace of the calculated duelist Bastion Misawa, the "Water Dragon" archetype has long held a special place in the hearts of fans for its unique, science-themed concept. However, transitioning from animation to the competitive card game revealed a strategy burdened by cumbersome summoning requirements and situational effects.
+                </p>
+                <p class="text-blue-200 mt-4">
+                    This report provides a comprehensive analysis of the 
+                    <a href="https://yugipedia.com/wiki/Water_Dragon_(archetype)" target="_blank" class="lore-link">"Water Dragon" series of cards</a>, 
+                    focusing on its most effective and synergistic iteration: a hybrid strategy fused with the Dinosaur archetype, commonly referred to as a "Bonding Dino" or "Water Dragon Dino" deck. By examining the individual components, dissecting its crucial symbiotic relationship with the Dinosaur engine, and mapping its core combo lines, this analysis will illuminate how a famously impractical anime deck was engineered into a functional, albeit fragile, strategy.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Formula Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Core Formula: "Bonding" Suite</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Catalysts & Bonds -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-atom text-4xl text-blue-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Catalysts & Bonds</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Duoterion</h4>
+                            <p class="text-sm text-blue-200">The lynchpin and starter. Discard to add any "Bonding" Spell/Trap. On summon, can revive a material from the GY.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Hydrogeddon & Oxygeddon</h4>
+                            <p class="text-sm text-blue-200">The "necessary evil" materials. Individually weak, but their names are required for all "Bonding" card resolutions.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Bonding - D2O</h4>
+                            <p class="text-sm text-blue-200">The modern summoner. Tributes materials from hand/field to summon a boss from the Deck. Recycles itself from the GY.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Bonding - DHO</h4>
+                            <p class="text-sm text-blue-200">A Trap for disruption. More importantly, banish from GY to add a boss monster from Deck or GY to hand.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Final Compounds -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-flask text-4xl text-blue-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Final Compounds</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Water Dragon</h4>
+                            <p class="text-sm text-blue-200">The original boss. Reduces FIRE/Pyro ATK to 0. Now primarily used as an extender or Rank 8 material after being summoned by its counterpart.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Water Dragon Cluster</h4>
+                            <p class="text-sm text-blue-200">The true boss. On summon, it negates all opposing monster effects and changes their ATK to 0 for the turn. A devastating board-breaker.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Prehistoric Engine Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Prehistoric Engine: Dinosaur Synergy</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                The "Bonding" engine's critical flaw is its inability to find its own Dinosaur materials (Hydrogeddon, Oxygeddon). The Dinosaur engine's entire identity is built around searching Dinosaurs, perfectly patching this flaw.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Oviraptor -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Souleating Oviraptor</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="oviraptor-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <p class="text-sm text-blue-200">The best Normal Summon. Searches any "Geddon" material directly, or mills them to the GY to be used as resources for `Bonding - DHO`.</p>
+                </div>
+                <!-- Fossil Dig -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Fossil Dig</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="fossil-dig-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <p class="text-sm text-blue-200">Adds any Level 6 or lower Dinosaur from Deck to hand. It can search Oviraptor, Duoterion, Hydrogeddon, or Oxygeddon. A critical consistency tool.</p>
+                </div>
+                <!-- Miscellaneousaurus -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Miscellaneousaurus</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="misc-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <p class="text-sm text-blue-200">Provides vital protection. Discard from hand to make your Dinosaurs unaffected by opponent's activated effects, ensuring Oviraptor's search resolves.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: Duoterion Starter</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates the most direct path to summoning `Water Dragon Cluster` using the in-theme starter.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="duoterion-img-container" class="card-image-container flex-shrink-0 card-placeholder">Duoterion</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a2b30] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold">Search the Trap</h3>
+                        </div>
+                        <p class="text-blue-200">Start with <strong class="text-accent">Duoterion</strong> in hand. Discard it to activate its effect, adding <strong class="text-accent">Bonding - DHO</strong> from your Deck to your hand.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="oviraptor-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Souleating Oviraptor</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a2b30] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold">Mill Materials</h3>
+                        </div>
+                        <p class="text-blue-200">Use a Dinosaur starter, such as <strong class="text-accent">Souleating Oviraptor</strong>, to send <strong class="text-accent">Hydrogeddon</strong> and <strong class="text-accent">Oxygeddon</strong> from your Deck to the Graveyard. This establishes all three required materials (Duoterion, Hydrogeddon, Oxygeddon) in the GY.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="cluster-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Water Dragon Cluster</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="bg-[#1a2b30] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                            <h3 class="text-lg font-bold">Disrupt & Summon</h3>
+                        </div>
+                        <p class="text-blue-200">Set <strong class="text-accent">Bonding - DHO</strong>. During your opponent's Main Phase, activate it. Shuffle the 3 materials from your GY into the Deck to Special Summon <strong class="text-accent">Water Dragon Cluster</strong>, negating their entire board.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Grand Finale: Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Synthesizing Victory: The Endboard</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                The deck's end goal is twofold: a devastating board-wipe leading into an OTK, or a follow-up negation to secure the game.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The OTK Sequence -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The OTK Sequence: Cluster + UCT</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="uct-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Step 1:</strong> Summon <strong class="text-accent">Water Dragon Cluster</strong> to negate all opposing monsters and set their ATK to 0.</li>
+                        <li><strong class="text-accent">Step 2:</strong> Special Summon <strong class="text-accent">Ultimate Conductor Tyranno</strong>.</li>
+                        <li><strong class="text-accent">Step 3:</strong> Enter Battle Phase. UCT attacks all 0 ATK monsters, inflicting massive battle damage for a swift OTK.</li>
+                    </ul>
+                </div>
+                <!-- The Rank 8 Follow-up -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Rank 8 Follow-up</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="hope-harbinger-img-container" class="card-image-container card-placeholder"></div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">Step 1:</strong> After its effect resolves, activate <strong class="text-accent">Water Dragon Cluster's</strong> Quick Effect, Tributing itself.</li>
+                        <li><strong class="text-accent">Step 2:</strong> Special Summon two copies of <strong class="text-accent">Water Dragon</strong> from your Deck.</li>
+                        <li><strong class="text-accent">Step 3:</strong> Overlay the two Level 8 Water Dragons to Xyz Summon <strong class="text-accent">Number 38: Hope Harbinger Dragon Titanic Galaxy</strong>, providing a powerful Spell negate.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros, Cons, and Tech Cards Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Strategic Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400 font-bold">Explosive OTK:</strong> The Cluster + UCT combo is one of the most potent OTKs in the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-green-400 font-bold">Powerful Board-Breaking:</strong> `Water Dragon Cluster` acts as a monster-based "Dark Ruler No More" that also zeroes ATK.</li>
+                        <li><span class="pro-icon"><i class="fas fa-surprise"></i></span> <strong class="text-green-400 font-bold">Surprise Factor:</strong> The archetype is rogue and not commonly played, meaning opponents may not know how to counter it.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-400 font-bold">Extreme Fragility:</strong> The deck is a "glass cannon." If `Bonding - D2O` or `DHO` is negated, it's often an immediate loss.</li>
+                        <li><span class="con-icon"><i class="fas fa-unlink"></i></span> <strong class="text-red-400 font-bold">Inconsistency:</strong> Relies on drawing specific, unsearchable, and individually weak cards like `Oxygeddon`.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400 font-bold">Choke Points:</strong> Highly vulnerable to `Ash Blossom & Joyous Spring` on the "Bonding" Spells.</li>
+                    </ul>
+                </div>
+                <!-- Tech Choices -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Advanced Chemistry & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-burn"></i></span> <strong class="text-accent">Kaiju Package:</strong> Giving the opponent a FIRE Kaiju (e.g., `Dogoran`) allows `Water Dragon` to reduce its ATK to 0.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-book-dead"></i></span> <strong class="text-accent">Foolish Burial Goods:</strong> A "spicy tech" to send `Bonding - DHO` from Deck to GY, allowing you to banish it to search `Water Dragon Cluster`.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-exchange-alt"></i></span> <strong class="text-accent">Trade-In:</strong> Use with the Level 8 `Water Dragon` to draw 2 cards and dig for combo pieces.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-red-500 font-bold">SIGNIFICANT IMPACT:</strong> The "Water Dragon" components are untouched, but its crucial "Dinosaur" engine has been hit by the TCG banlist.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Limited Cards (1 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Miscellaneousaurus</strong> - Key protection for your Dino starters.</li>
+                            <li><strong class="text-red-400">Fossil Dig</strong> - The deck's best Dinosaur searcher.</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards (3 per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Water Dragon" & "Bonding" cards</li>
+                            <li>`Duoterion`, `Water Dragon Cluster`</li>
+                            <li>`Souleating Oviraptor`</li>
+                            <li>`Ultimate Conductor Tyranno`</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With both `Miscellaneousaurus` and `Fossil Dig` at one, the consistency of the Dinosaur engine is severely hampered. This makes the already fragile hybrid strategy even more difficult to execute reliably, as you have fewer ways to find your materials and protect your Oviraptor. The deck's power remains, but its consistency is at an all-time low.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Alchemical Components: Card Arsenal</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">A detailed overview of the key cards and their roles.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Cards -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Duoterion</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 5 WATER Dinosaur</strong></p>
+                    <p class="text-blue-200">The primary starter. Discard to search any "Bonding" Spell/Trap.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Bonding - D2O</h3>
+                    <p class="text-blue-200 mb-2"><strong>Normal Spell</strong></p>
+                    <p class="text-blue-200">Summons `Water Dragon` or `Cluster` from the Deck, using materials from hand/field.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Bonding - DHO</h3>
+                    <p class="text-blue-200 mb-2"><strong>Normal Trap</strong></p>
+                    <p class="text-blue-200">GY effect is key: Banish to search `Water Dragon` or `Cluster`.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Water Dragon Cluster</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 10 WATER Sea Serpent</strong></p>
+                    <p class="text-blue-200">The main boss. Negates all opponent's monsters and sets their ATK to 0 for the turn.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Souleating Oviraptor</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 4 DARK Dinosaur</strong></p>
+                    <p class="text-blue-200">The best Dino starter. Searches or mills any Dinosaur material needed.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Ultimate Conductor Tyranno</h3>
+                    <p class="text-blue-200 mb-2"><strong>Level 10 LIGHT Dinosaur</strong></p>
+                    <p class="text-blue-200">The OTK machine. Attacks all monsters, synergizing perfectly with Cluster's 0 ATK effect.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Alchemical Banner Animation ---
+            const canvas = document.getElementById('alchemical-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let bubbles = [];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.parentElement.offsetWidth;
+                    canvas.height = canvas.parentElement.offsetHeight;
+                };
+
+                class Bubble {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 50;
+                        this.radius = Math.random() * 5 + 1;
+                        this.speed = Math.random() * 1 + 0.5;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                        this.color = `rgba(96, 165, 250, ${this.opacity})`;
+                    }
+
+                    update() {
+                        this.y -= this.speed;
+                        if (this.y < -this.radius) {
+                            this.y = canvas.height + Math.random() * 50;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    bubbles = [];
+                    const bubbleCount = (canvas.width * canvas.height) / 5000;
+                    for (let i = 0; i < bubbleCount; i++) {
+                        bubbles.push(new Bubble());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    bubbles.forEach(bubble => {
+                        bubble.update();
+                        bubble.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            // --- Card Loader Script ---
+            // Assumes card-loader.js is loaded and CardLoader is available
+            CardLoader.loadCards({
+                'duoterion-img-container': 'Duoterion',
+                'oviraptor-combo-img-container': 'Souleating Oviraptor',
+                'cluster-combo-img-container': 'Water Dragon Cluster',
+                'oviraptor-img-container': 'Souleating Oviraptor',
+                'fossil-dig-img-container': 'Fossil Dig',
+                'misc-img-container': 'Miscellaneousaurus',
+                'uct-img-container': 'Ultimate Conductor Tyranno',
+                'hope-harbinger-img-container': 'Number 38: Hope Harbinger Dragon Titanic Galaxy',
+                // Adding cards from the overview at the bottom too
+                'hydrogeddon-img-container': 'Hydrogeddon',
+                'oxygeddon-img-container': 'Oxygeddon',
+                'bonding-d2o-img-container': 'Bonding - D2O',
+                'bonding-dho-img-container': 'Bonding - DHO',
+                'water-dragon-img-container': 'Water Dragon'
+            });
+        });
+    </script>
+</body>
+</html>

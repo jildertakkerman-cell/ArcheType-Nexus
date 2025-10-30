@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>White Aura Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      This page loads a shared 'card-loader.js' script.
+      Make sure 'card-loader.js' is in the same directory or update the src path.
+    -->
+    <script src="card-loader.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1c1c; /* Deep Teal/Ocean Blue */
+            color: #dbeafe;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #112a2a; /* Darker Sea Green */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #1d4e4e; /* Muted Teal Border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(17, 42, 42, 0.8);
+            border: 1px solid #2d7a7a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #112a2a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #112a2a;
+            border: 1px dashed #2d7a7a;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #67e8f9; } /* Luminous Cyan */
+        .arrow-color { color: #67e8f9; }
+        .heading-underline {
+            border-bottom: 2px solid #67e8f9;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #67e8f9;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #67e8f9;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #67e8f9;
+        }
+
+        /* --- NEW WHITE AURA ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d1c1c;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #1d4e4e;
+        }
+
+        #water-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 28, 28, 0.4) 0%, rgba(13, 28, 28, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(103, 232, 249, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Playfair Display', serif;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 28, 28, 0.95); /* Themed background */
+            border: 1px solid #67e8f9; /* Accent border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: #67e8f9; /* Accent color */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #67e8f9; /* Accent color */
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    
+    <!-- Card Popup (used by card-loader.js) -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="water-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">The Luminous Tide</h1>
+            <p class="text-lg md:text-xl text-cyan-200">A Strategic Guide to the 'White Aura' Fish Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">The Shimmering Depths: Understanding the 'White' Archetype</h2>
+                <p class="text-indigo-200">
+                    The "White" and "White Aura" series of cards represent a fascinating case study in the evolution of a Yu-Gi-Oh! TCG archetype. Born from the pages of the Yu-Gi-Oh! ARC-V manga, their initial design was more thematic than competitive. This origin story is fundamental to understanding their mechanics; they were not conceived as a self-contained, meta-defining force but as a
+                    <a href="https://yugipedia.com/wiki/White_Aura" target="_blank" class="lore-link">collection of synergistic WATER Fish-type monsters</a>
+                    with a unique, shared identity. Over time, with the release of new generic Fish support and the discovery of a profound synergy with other archetypes, this once-niche series has been forged into a potent and complex Synchro-based strategy.
+                </p>
+                <p class="text-indigo-200 mt-4">
+                    At its heart, the "White" archetype operates on a distinct three-phase gameplay loop:
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-indigo-200 mt-4">
+                    <li><strong class="text-accent">Phase 1 - Swarm and Setup:</strong> Populate the field and, more importantly, the Graveyard (GY) with Fish monsters. Cards like <strong class="text-white">White Stingray</strong> and <strong class="text-white">White Sardine</strong> excel at this, converting cards in hand and deck into accessible resources in the Graveyard.</li>
+                    <li><strong class="text-accent">Phase 2 - The Tuner Transformation:</strong> The archetype's most defining mechanic. Main Deck "White" monsters can be treated as Tuners when Special Summoned from the GY. This recontextualizes every revival effect as the primary method of generating Tuners for Synchro Summons.</li>
+                    <li><strong class="text-accent">Phase 3 - The Synchro Ladder:</strong> The culmination of the first two phases is the summoning of the powerful "White Aura" Synchro monsters. When destroyed, they can revive themselves as Tuners, creating a "Synchro Ladder" where the destruction of one boss monster becomes the catalyst for summoning an even more powerful one.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 1: The Main Deck Shoal -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Section 1: The Main Deck Shoal</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- White Sardine -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sardine-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Sardine</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">White Sardine (The Primary Starter)</h3>
+                            <p class="text-sm text-indigo-200">A Level 2 Fish and the most important starter. Its effect sends one White Sardine from Deck to GY to Special Summon itself from hand. This establishes a monster, thins the deck, and loads the GY all at once, setting up other cards like White Sunfish or White Mirror.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- White Stingray -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="stingray-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Stingray</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">White Stingray (The Primary Extender)</h3>
+                            <p class="text-sm text-indigo-200">A Level 4 Fish and the premier extender. It Special Summons itself from hand by discarding one WATER monster. The discard is not a cost but a synergistic benefit, loading the GY with another resource to be revived later.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- White Sunfish -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sunfish-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Sunfish</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">White Sunfish (The High-Ceiling Combo Piece)</h3>
+                            <p class="text-sm text-indigo-200">A Level 4 Fish for explosive plays. If you control a Fish, you can target a Fish in your GY with the same name to Special Summon both Sunfish from hand and the target from GY. This can flood the board with three monsters from just two cards.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- White Moray -->
+                <div class="card p-6 combo-step-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="moray-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Moray</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-accent mb-2">White Moray (The Utility Piece)</h3>
+                            <p class="text-sm text-indigo-200">A Level 2 Fish that is functionally the simplest. Its value lies in being another unique name that shares the all-important effect to become a Tuner when revived from the GY. It serves as a consistency piece and alternative to White Sardine.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: The Arcane Currents -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Section 2: The Arcane Currents</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Spells -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-water text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Key Spells & Traps</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">White Reincarnation</h4>
+                            <p class="text-sm text-indigo-200">Continuous Spell. The heart of consistency. On activation, searches any Fish that can treat itself as a Tuner (i.e., any core "White" monster). Provides a direct line to starters and extenders.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">White Mirror</h4>
+                            <p class="text-sm text-indigo-200">Normal Spell. Embodies explosive potential. Summons one Level 4 or lower Fish from GY, then adds a monster with the same name from Deck to hand. A clean +1 in card advantage.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Whitefish Salvage</h4>
+                            <p class="text-sm text-indigo-200">Continuous Spell. The cornerstone of the grind game. Once per turn, adds one Fish from GY to hand. This allows repeated recycling of key monsters like White Sardine, turn after turn.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">White Howling</h4>
+                            <p class="text-sm text-indigo-200">Counter Trap. While you control a WATER monster, negates an opponent's Spell Card and banishes it. A potent, specialized disruption tool, often sided against Spell-heavy matchups.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resource Loop -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-sync-alt text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Resource Loop</h3>
+                    </div>
+                    <p class="text-indigo-200">
+                        The design of this spell lineup facilitates potent resource loops. A player is not just using their monsters once; they are cycling them.
+                    </p>
+                    <p class="text-indigo-200 mt-4">
+                        For example, a <strong class="text-white">White Sardine</strong> can be:
+                    </p>
+                    <ol class="list-decimal list-inside space-y-2 text-indigo-200 mt-4">
+                        <li>Used for a Synchro Summon.</li>
+                        <li>Revived with <strong class="text-accent">White Mirror</strong> for another Synchro Summon.</li>
+                        <li>Returned to hand with <strong class="text-accent">Whitefish Salvage</strong> on the next turn to restart the entire sequence.</li>
+                    </ol>
+                    <p class="text-indigo-200 mt-4">
+                        This demonstrates a design philosophy centered on sustainability. The deck's resilience is one of its greatest strengths, stemming from its ability to repeatedly leverage its core monster lineup far beyond their initial use.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: The Luminous Titans -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Section 3: The Luminous Titans</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- White Aura Dolphin -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-2 text-center">White Aura Dolphin (Level 6)</h3>
+                    <div class="flex justify-center mb-4">
+                         <div id="dolphin-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Aura Dolphin</div>
+                    </div>
+                    <p class="text-sm text-indigo-200">A generic Level 6, often the first Synchro. Once per turn, targets an opponent's monster and halves its original ATK. When destroyed, revives itself as a Level 6 Tuner, setting up a climb into Bihamut.</p>
+                </div>
+                <!-- White Aura Porpoise -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-2 text-center">White Aura Porpoise (Level 6)</h3>
+                     <div class="flex justify-center mb-4">
+                         <div id="porpoise-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Aura Porpoise</div>
+                    </div>
+                    <p class="text-sm text-indigo-200">When Synchro Summoned, it Summons a Level 4 or lower Fish from hand or GY, and then can Summon another with the same name from GY. A one-card combo extender that floods the board.</p>
+                </div>
+                <!-- White Aura Monoceros -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-2 text-center">White Aura Monoceros (Level 7)</h3>
+                     <div class="flex justify-center mb-4">
+                         <div id="monoceros-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Aura Monoceros</div>
+                    </div>
+                    <p class="text-sm text-indigo-200">Requires a WATER Tuner. When Synchro Summoned, revives any Fish from the GY (it cannot attack). A simple, powerful extension effect for further Synchro or Link plays.</p>
+                </div>
+                <!-- White Aura Whale -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-accent mb-2 text-center">White Aura Whale (Level 8)</h3>
+                     <div class="flex justify-center mb-4">
+                         <div id="whale-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Aura Whale</div>
+                    </div>
+                    <p class="text-sm text-indigo-200">The primary board breaker. When Synchro Summoned, destroys all opponent's Attack Position monsters. Can make two attacks on monsters and inflicts piercing damage. A devastating offensive tool.</p>
+                </div>
+            </div>
+            <!-- Bihamut -->
+            <div class="card p-6 pro-con-card mt-6">
+                <h3 class="text-xl font-bold text-accent mb-2 text-center">White Aura Bihamut (Level 10)</h3>
+                 <div class="flex justify-center mb-4">
+                     <div id="bihamut-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Aura Bihamut</div>
+                </div>
+                <p class="text-sm text-indigo-200 text-center">The undisputed king. Requires a Tuner Synchro (Double Tuning). When Synchro Summoned, it Summons a massive 3300 ATK "Divine Dragon Token." It can also summon this token as a Quick Effect during the opponent's turn. If destroyed while a token is on the field, it revives itself. A resilient and recurring boss monster.</p>
+            </div>
+        </section>
+
+        <!-- Section 4: Combos -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Section 4: The Art of the Combo</h2>
+            
+            <h3 class="text-2xl font-bold text-white mb-4">4.1: The Two-Card Engine (Sardine + Sunfish)</h3>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sardine-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Sardine</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#112a2a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Activate White Sardine</h3>
+                            </div>
+                            <p class="text-indigo-200">Use <strong class="text-accent">Sardine's</strong> effect from hand. Send a second copy from Deck to GY to Special Summon the first. (Field: 1 Sardine, GY: 1 Sardine)</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sunfish-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Sunfish</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#112a2a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Activate White Sunfish</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent">Sunfish</strong> from hand. Target the <strong class="text-accent">Sardine</strong> in GY. Special Summon Sunfish (L4) from hand and Sardine (L2) from GY. (Field: 2 Sardine, 1 Sunfish)</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="porpoise-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">White Aura Porpoise</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#112a2a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Extend with Porpoise</h3>
+                            </div>
+                            <p class="text-indigo-200">Synchro Summon <strong class="text-accent">White Aura Porpoise</strong> (L6) using Sunfish (L4) + one Sardine (L2). Porpoise effect triggers, reviving the <strong class="text-accent">Sardine</strong> from GY. (Field: Porpoise, 2 Sardine). This strong foundation enables Link or further Synchro plays.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-2xl font-bold text-white mb-4 mt-12">4.2: The Shark Offensive (Abyss Shark Starter)</h3>
+            <div class="card p-6">
+                <p class="text-indigo-200">This sequence shows how a non-archetypal starter can dramatically increase consistency, especially with the Ghoti engine.</p>
+                <ol class="list-decimal list-inside space-y-2 text-indigo-200 mt-4">
+                    <li>Start with <strong class="text-accent">Abyss Shark</strong> in hand.</li>
+                    <li>Special Summon <strong class="text-accent">Abyss Shark</strong> (L5) from hand. Its effect activates, searching for <strong class="text-accent">Lifeless Leaffish</strong>.</li>
+                    <li>Normal Summon <strong class="text-accent">Lifeless Leaffish</strong> (L4). Activate its effect to send a Ghoti Tuner (e.g., <strong class="text-accent">Shif, Fairy of the Ghoti</strong>) from Deck to GY.</li>
+                    <li><strong class="text-white">Result:</strong> Field of Abyss Shark + Leaffish, with a Ghoti Tuner in GY, ready to be banished. You can now make a Level 9 Synchro or, more strategically, Link Summon <strong class="text-accent">Marincess Coral Anemone</strong> to revive a monster and extend plays.</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Section 4.3: Redefining the Endboard -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Section 4.3: Redefining the 'Endboard'</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                Unlike decks that build a field of negates, the "White Aura Ghoti" strategy has a different objective. The ideal endboard is often deceptively simple. The true power is not what is visible, but what has been assembled in the "hidden" resource zones: the Graveyard and the Banished Zone.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto max-w-5xl">
+                <!-- On-Field -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">On-Field Presence</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="arionpos-end-img-container" class="card-image-container card-placeholder">Arionpos, Serpent of the Ghoti</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Arionpos, Serpent of the Ghoti:</strong> The key piece. On Synchro Summon, it banishes a Level 6 or lower Fish (like <strong class="text-white">Psiics</strong>) from Deck.</li>
+                    </ul>
+                </div>
+                <!-- Banished Zone -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Banished Zone (The Real Threat)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="psiics-end-img-container" class="card-image-container card-placeholder">Psiics, Moonlight of the Ghoti</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Ghoti Tuners:</strong> <strong class="text-white">Shif</strong>, <strong class="text-white">Paces</strong>, and <strong class="text-white">Psiics</strong> are set up here, ready to summon themselves during the opponent's turn.</li>
+                        <li><strong class="text-accent">Quick-Synchro:</strong> This setup allows you to Synchro Summon *during* the opponent's Main Phase as a form of disruption.</li>
+                    </ul>
+                </div>
+                <!-- Graveyard -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Graveyard (The Fuel)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="sardine-end-img-container" class="card-image-container card-placeholder">White Sardine</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">"White" Monsters:</strong> Loaded with <strong class="text-white">Sardine</strong>, <strong class="text-white">Stingray</strong>, etc., to be revived as Tuners.</li>
+                        <li><strong class="text-accent">Ghoti Fuel:</strong> Provides the Fish monsters needed to banish for Ghoti effects.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Ghoti Synthesis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Section 5: Symbiotic Schools (The 'White Aura Ghoti' Synthesis)</h2>
+            <div classs="card p-6">
+                <p class="text-indigo-200 mb-4">
+                    The deck's most competitive incarnation is a hybrid build with the "Ghoti" archetype. This is a perfect marriage of two complementary mechanics:
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-indigo-200 mb-4">
+                    <li>The <strong class="text-accent">"White" engine</strong> is exceptional at filling the Graveyard with Fish.</li>
+                    <li>The <strong class="text-accent">"Ghoti" engine</strong> is fueled by banishing Fish from the Graveyard.</li>
+                </ul>
+                <p class="text-indigo-200 mb-4">
+                    This creates a self-sustaining loop. The "White" cards provide abundant fuel for Ghoti costs. In return, the Ghoti engine provides the deck's primary form of interaction: the ability to Synchro Summon on the opponent's turn.
+                </p>
+                
+                <h3 class="text-2xl font-bold text-white mb-4 mt-8">Ghoti Core Combo: From Shoal to Deep</h3>
+                <div class="card p-6 combo-step-card">
+                    <ol class="list-decimal list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-white">Start:</strong> Perform any standard "White" or <strong class="text-accent">Abyss Shark</strong> combo.</li>
+                        <li><strong class="text-white">Goal:</strong> Assemble materials to Synchro Summon <strong class="text-accent">Arionpos, Serpent of the Ghoti</strong> (L6).</li>
+                        <li><strong class="text-white">Activate Arionpos:</strong> On summon, use its effect to banish <strong class="text-accent">Psiics, Moonlight of the Ghoti</strong> from your Deck.</li>
+                        <li><strong class="text-white">Pass Turn:</strong> End with Arionpos on field and Psiics banished.</li>
+                        <li><strong class="text-white">Opponent's Standby Phase:</strong> Psiics's effect triggers. Banish another Fish from your GY (fuel from the "White" engine) to Special Summon Psiics.</li>
+                        <li><strong class="text-white">Search and Banish:</strong> Psiics's second effect triggers. Search for a Ghoti Tuner (like <strong class->"text-accent"</strong>Shif), then banish it from your hand with Psiics's effect.</li>
+                        <li><strong class="text-white">Enter Main Phase:</strong> You now enter your opponent's Main Phase with Arionpos, Psiics, and a banished Shif, ready to Quick-Synchro into <strong class="text-accent">Askaan, the Bicorned Ghoti</strong> (L8) or <strong class="text-accent">White Aura Whale</strong> (L8) to disrupt their plays.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Section 6: Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Power Ceiling:</strong> Capable of generating massive boards and OTKs from just a few cards.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Exceptional Grind Game:</strong> Multiple layers of recursion can outlast many opponents.</li>
+                        <li><span class="pro-icon"><i class="fas fa-project-diagram"></i></span> <strong class="text-green-300">Non-Linear Plays:</strong> Reactive, opponent's-turn interactions can be difficult for unprepared duelists to navigate.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Floodgate Vulnerability:</strong> Profoundly weak to cards like <strong class="text-white">Dimension Shifter</strong> and <strong class="text-white">Abyss Dweller</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Choke Points:</strong> Relies on resolving key starters like <strong class="text-white">Lifeless Leaffish</strong> or <strong class="text-white">Arionpos</strong>, which are vulnerable to hand traps.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech & Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-fish"></i></span> <strong class="text-accent">Lifeless Leaffish:</strong> The single best Normal Summon. Sends any Fish from Deck to GY, setting up both "White" and "Ghoti" plays.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-fish"></i></span> <strong class="text-accent">Beautunaful Princess:</strong> A one-card starter that banishes itself to summon <strong class="text-white">Lifeless Leaffish</strong> from Deck.</li>
+                         <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Adamancipator Risen - Dragite:</strong> A generic WATER Synchro that provides a powerful Spell/Trap negate.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div id="banlist-loading" class="card p-6 text-center">
+                <p class="text-lg text-accent">
+                    <i class="fas fa-sync-alt fa-spin mr-2"></i>
+                    Verifying current TCG banlist status...
+                </p>
+            </div>
+            <div id="banlist-content" class="hidden">
+                <!-- This content will be filled by JavaScript -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- WHITE AURA WATER ANIMATION ---
+            const canvas = document.getElementById('water-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+                let mouse = { x: null, y: null };
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = Math.random() * 1 - 0.5;
+                        this.speedY = Math.random() * 1 - 0.5;
+                        this.color = `rgba(103, 232, 249, ${Math.random() * 0.5 + 0.2})`;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+
+                        if (this.size > 0.2) this.size -= 0.05;
+
+                        // Mouse interaction
+                        if (mouse.x && mouse.y) {
+                            const dx = this.x - mouse.x;
+                            const dy = this.y - mouse.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance < 50) {
+                                this.size = 3;
+                                this.x += dx / 10;
+                                this.y += dy / 10;
+                            }
+                        }
+
+                        // Reset particle
+                        if (this.size <= 0.2) {
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            this.size = Math.random() * 2 + 1;
+                            this.speedX = Math.random() * 1 - 0.5;
+                            this.speedY = Math.random() * 1 - 0.5;
+                        }
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+
+                canvas.addEventListener('mousemove', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    mouse.x = e.clientX - rect.left;
+                    mouse.y = e.clientY - rect.top;
+                });
+                canvas.addEventListener('mouseleave', () => {
+                    mouse.x = null;
+                    mouse.y = null;
+                });
+            }
+
+            // --- CARD IMAGE FETCHER SCRIPT (using card-loader.js) ---
+            // We trust card-loader.js is loaded and CardLoader is on the window.
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'sardine-img-container': 'White Sardine',
+                    'stingray-img-container': 'White Stingray',
+                    'sunfish-img-container': 'White Sunfish',
+                    'moray-img-container': 'White Moray',
+                    'dolphin-img-container': 'White Aura Dolphin',
+                    'porpoise-img-container': 'White Aura Porpoise',
+                    'monoceros-img-container': 'White Aura Monoceros',
+                    'whale-img-container': 'White Aura Whale',
+                    'bihamut-img-container': 'White Aura Bihamut',
+                    'sardine-combo-img-container': 'White Sardine',
+                    'sunfish-combo-img-container': 'White Sunfish',
+                    'porpoise-combo-img-container': 'White Aura Porpoise',
+                    'arionpos-end-img-container': 'Arionpos, Serpent of the Ghoti',
+                    'psiics-end-img-container': 'Psiics, Moonlight of the Ghoti',
+                    'sardine-end-img-container': 'White Sardine'
+                });
+            } else {
+                console.error("CardLoader script not loaded.");
+            }
+
+            // --- BANLIST FETCHER SCRIPT ---
+            async function fetchBanlist() {
+                const loadingEl = document.getElementById('banlist-loading');
+                const contentEl = document.getElementById('banlist-content');
+                
+                const keyCards = [
+                    'White Sardine', 'White Stingray', 'White Sunfish', 'White Moray', 
+                    'White Aura Dolphin', 'White Aura Porpoise', 'White Aura Monoceros', 
+                    'White Aura Whale', 'White Aura Bihamut', 'White Reincarnation', 
+                    'White Mirror', 'Whitefish Salvage', 'White Howling',
+                    'Arionpos, Serpent of the Ghoti', 'Psiics, Moonlight of the Ghoti', 
+                    'Shif, Fairy of the Ghoti', 'Paces, Light of the Ghoti', 
+                    'Zep, Ruby of the Ghoti', 'Askaan, the Bicorned Ghoti', 
+                    'Ghoti of the Deep Beyond', 'Abyss Shark', 'Lifeless Leaffish', 
+                    'Beautunaful Princess', 'Superancient Deepsea King Coelacanth', 
+                    'Adamancipator Risen - Dragite', 'Swordsoul Supreme Sovereign - Chengying', 
+                    'Marincess Coral Anemone', 'Dimension Shifter', 'Abyss Dweller',
+                    'Nibiru, the Primal Being', 'Ash Blossom & Joyous Spring'
+                ];
+                
+                const banlistMap = new Map();
+                const forbidden = [];
+                const limited = [];
+                const semiLimited = [];
+
+                try {
+                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    
+                    const data = await response.json();
+                    
+                    // Populate the map with all banned/limited/semi-limited cards
+                    for (const card of data.data) {
+                        if (card.banlist_info && card.banlist_info.ban_tcg) {
+                            banlistMap.set(card.name, card.banlist_info.ban_tcg);
+                        }
+                    }
+
+                    // Check our key cards against the map
+                    for (const cardName of keyCards) {
+                        const status = banlistMap.get(cardName);
+                        if (status === 'Banned') {
+                            forbidden.push(cardName);
+                        } else if (status === 'Limited') {
+                            limited.push(cardName);
+                        } else if (status === 'Semi-Limited') {
+                            semiLimited.push(cardName);
+                        }
+                    }
+
+                    // Build the HTML
+                    let html = '<div class="card p-6">';
+                    
+                    if (forbidden.length === 0 && limited.length === 0 && semiLimited.length === 0) {
+                        html += `
+                            <p class="text-gray-300 mb-4 text-center">
+                                <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> As of the current TCG banlist, all core "White Aura," "Ghoti," and key support cards for this strategy are unrestricted.
+                            </p>
+                            <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                                <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With complete access to all archetype components and support engines, the "White Aura Ghoti" deck can operate at its full, intended power level. The deck maintains its explosive combo potential and robust grind game, making it a viable competitive choice.</p>
+                            </div>
+                        `;
+                    } else {
+                        // Handle cases where some cards ARE on the list
+                        html += `<p class="text-gray-300 mb-4 text-center"><strong class="text-yellow-500 font-bold">LIMITED STATUS:</strong> The core "White Aura" and "Ghoti" engines are largely unrestricted, but some key generic cards are impacted:</p>`;
+                        
+                        // Forbidden
+                        if (forbidden.length > 0) {
+                            html += `<div class="card combo-step-card p-4 mb-4">
+                                <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards (0 copies)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                                    ${forbidden.map(c => `<li><strong class="text-red-400">${c}</strong></li>`).join('')}
+                                </ul>
+                            </div>`;
+                        }
+                        
+                        // Limited
+                        if (limited.length > 0) {
+                            html += `<div class="card combo-step-card p-4 mb-4">
+                                <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited Cards (1 copy)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                                    ${limited.map(c => `<li><strong class="text-yellow-400">${c}</strong></li>`).join('')}
+                                </ul>
+                            </div>`;
+                        }
+
+                        // Semi-Limited
+                        if (semiLimited.length > 0) {
+                            html += `<div class="card combo-step-card p-4 mb-4">
+                                <h4 class="text-lg font-bold text-blue-400 mb-2">Semi-Limited Cards (2 copies)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                                    ${semiLimited.map(c => `<li><strong class="text-blue-300">${c}</strong></li>`).join('')}
+                                </ul>
+                            </div>`;
+                        }
+                        
+                        html += `<div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                                <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While some generic support cards may be limited, the core "White Aura" and "Ghoti" engines remain at full power, allowing the strategy to function as intended.</p>
+                            </div>`;
+                    }
+                    
+                    html += '</div>';
+                    contentEl.innerHTML = html;
+
+                } catch (error) {
+                    console.error("Failed to fetch banlist:", error);
+                    contentEl.innerHTML = `
+                        <div class="card p-6 bg-red-900 bg-opacity-30 border-l-4 border-red-500">
+                            <p class="text-red-300">Could not verify TCG banlist status. Please check your network connection or the API endpoint.</p>
+                        </div>
+                    `;
+                } finally {
+                    loadingEl.classList.add('hidden');
+                    contentEl.classList.remove('hidden');
+                }
+            }
+
+            fetchBanlist();
+        });
+    </script>
+</body>
+</html>

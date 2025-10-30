@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obelisk the Tormentor Deep Dive</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <!-- Card Loader Script (assuming it's in the same directory or assets/js/) -->
+    <!-- <script src="assets/js/card-loader.js" defer></script> -->
+     <script src="card-loader.js" defer></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0f1f; /* Deep Navy Blue */
+            color: #dbeafe; /* Light Blue/White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        /* Theme: Deep Blue & Gold, inspired by Obelisk's art and Egyptian theme */
+        .card {
+            background-color: #1a2347; /* Dark Royal Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a5a9b; /* Lighter blue border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #202c5c; /* Slightly lighter blue */
+            border: 1px solid #7086e0;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #202c5c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #202c5c;
+            border: 1px dashed #7086e0;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #facc15; } /* Gold */
+        .text-accent { color: #facc15; } /* Gold */
+        .arrow-color { color: #fde047; } /* Lighter Gold */
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- OBELISK ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: linear-gradient(45deg, #0c0f1f, #1a2347);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a5a9b;
+        }
+
+        #divine-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 15, 31, 0.4) 0%, rgba(12, 15, 31, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', sans-serif;
+             color: #fde047; /* Lighter Gold */
+        }
+        .banner-header p {
+            color: #e0e7ff; /* Light lavender white */
+        }
+
+        /* --- Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- Card Popup Styles --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(12, 15, 31, 0.95); /* Dark Navy */
+            border: 1px solid #facc15; /* Gold Border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15; /* Gold */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15;
+        }
+
+        /* Banlist Status Indicator */
+        .status-forbidden { color: #ef4444; font-weight: bold; }
+        .status-limited { color: #f59e0b; font-weight: bold; }
+        .status-semi-limited { color: #fde047; font-weight: bold; }
+        .status-unlimited { color: #22c55e; font-weight: bold; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="divine-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-2">Obelisk the Tormentor</h1>
+            <p class="text-lg md:text-xl text-red-200">The Fist of Fate: A Strategic Deep Dive</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    Among the pantheon of legendary monsters in the Yu-Gi-Oh! TCG, few command the same reverence as the three Egyptian God Cards. Obelisk the Tormentor represents a bygone era of ultimate power, a divine entity whose summoning signaled the apex of a Duel. For years, its playable TCG counterpart was largely a collector's item, its immense power shackled by the practical difficulties of summoning a monster that requires three tributes. However, a modern suite of dedicated support cards has fundamentally altered this dynamic. This report moves beyond nostalgia to conduct a rigorous analysis of the contemporary Obelisk the Tormentor "archetype," demonstrating how this ancient deity has been re-forged into the centerpiece of a potent and explosive rogue strategy.
+                </p>
+            </div>
+        </section>
+
+        <!-- Anatomy of a God Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Anatomy of a God</h2>
+            <div class="card p-6">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div id="obelisk-img-container" class="card-image-container card-placeholder">Obelisk the Tormentor</div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-accent mb-4">Obelisk the Tormentor</h3>
+                        <div class="mb-3">
+                            <span class="inline-block bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold text-blue-200 mr-2 mb-2">Level 10</span>
+                            <span class="inline-block bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold text-blue-200 mr-2 mb-2">DIVINE</span>
+                            <span class="inline-block bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold text-blue-200 mr-2 mb-2">Divine-Beast / Effect</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-lg font-bold text-white">ATK/ 4000</span>
+                            <span class="text-lg font-bold text-white ml-4">DEF/ 4000</span>
+                        </div>
+                        <div class="space-y-3 text-blue-200">
+                            <p><strong class="text-white">Summoning & Protection:</strong> Requires 3 Tributes to Normal Summon. The Normal Summon cannot be negated. When Normal Summoned, cards and effects cannot be activated.</p>
+                            <p><strong class="text-white">Targeting Immunity:</strong> Neither player can target this card with card effects.</p>
+                            <p><strong class="text-white">God Hand Crusher:</strong> You can Tribute 2 monsters; destroy all monsters your opponent controls. Cannot attack the turn this effect is activated.</p>
+                            <p class="text-sm text-blue-300 italic"><strong class="text-red-400">Vulnerability:</strong> Immune only to *targeting* effects. Still vulnerable to non-targeting removal like <strong class="text-white">Raigeki</strong>, <strong class="text-white">Mirror Force</strong>, or <strong class="text-white">Kaiju</strong> monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Divine Arsenal Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Divine Arsenal</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                To address Obelisk's challenges, a small but potent suite of 
+                <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Obelisk%20the%20Tormentor&stype=1&ctype=1&sort=1&rp=100" target="_blank" class="lore-link">divine support cards</a>
+                was developed. This engine provides searching, protection, and game-ending offensive power.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Support Cards -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bolt text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Offensive Arm: Soul Energy MAX!!!</h3>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-accent mb-1">Soul Energy MAX!!! (Normal Trap)</h4>
+                        <p class="text-sm text-blue-200">Tribute 2 other monsters while controlling Obelisk to destroy your opponent's monsters and inflict 4000 damage. Its GY effect is the deck's main searcher.</p>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-alt text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Protection & Disruption</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fist of Fate (Quick-Play Spell)</h4>
+                            <p class="text-sm text-blue-200">Negates and destroys an opponent's Effect Monster. Can also destroy all their Spells/Traps if used in the Main Phase.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Breaking Ruin God (Quick-Play Spell)</h4>
+                            <p class="text-sm text-blue-200">Special Summons Obelisk from hand or GY, making it *unaffected* by opponent's card effects for the turn. This is the key to patching its non-targeting vulnerability.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The Diviner Engine</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The most consistent method for summoning Obelisk is a one-card combo that leverages Fairy-type monsters to set up the entire sequence.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="diviner-img-container" class="card-image-container flex-shrink-0 card-placeholder">Diviner of the Herald</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Summon Diviner</h3>
+                            </div>
+                            <p class="text-blue-200">Normal Summon <strong class="text-accent">Diviner of the Herald</strong>. Activate its effect to send <strong class="text-accent">Trias Hierarchia</strong> from Deck to GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="trias-img-container" class="card-image-container flex-shrink-0 card-placeholder">Trias Hierarchia</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Tribute & Summon</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent">Trias Hierarchia's</strong> effect in GY. Tribute Diviner to Special Summon Trias. Diviner's second effect triggers.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="sechste-img-container" class="card-image-container flex-shrink-0 card-placeholder">Valkyrie Sechste</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Swarm the Field</h3>
+                            </div>
+                            <p class="text-blue-200">Diviner's effect summons <strong class="text-accent">Valkyrie Sechste</strong> from Deck. Sechste's effect summons <strong class="text-accent">Valkyrie Funfte</strong> from Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 4 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="max-img-container" class="card-image-container flex-shrink-0 card-placeholder">Soul Energy MAX!!!</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                <h3 class="text-lg font-bold">Foolish Burial</h3>
+                            </div>
+                            <p class="text-blue-200"><strong class="text-accent">Valkyrie Funfte's</strong> effect sends <strong class="text-accent">Soul Energy MAX!!!</strong> from Deck to GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 5 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="obelisk-combo-img-container" class="card-image-container flex-shrink-0 card-placeholder">Obelisk the Tormentor</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span>
+                                <h3 class="text-lg font-bold">Summon the God</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent">Soul Energy MAX!!!</strong> in GY. Banish it to add Obelisk from Deck to hand, then immediately Normal Summon Obelisk by Tributing your 3 monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Board & Kill Sequence</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- OTK Path -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The OTK Path (Going Second)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="breaking-ruin-god-img-container" class="card-image-container card-placeholder">The Breaking Ruin God</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li>Activate <strong class="text-accent">The Breaking Ruin God</strong> to Special Summon an *unaffected* Obelisk.</li>
+                        <li>Activate <strong class="text-accent">Soul Energy MAX!!!</strong>, Tributing 2 other monsters.</li>
+                        <li>This destroys the opponent's board and inflicts 4000 damage.</li>
+                        <li>The Tributing triggers <strong class="text-accent">The Breaking Ruin God's</strong> GY effect: banish it to clear the opponent's GY and inflict more burn damage.</li>
+                        <li>Attack with your 4000 ATK, unaffected Obelisk for game.</li>
+                    </ul>
+                </div>
+                <!-- Control Path -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Control Path (Going First)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="fist-of-fate-img-container" class="card-image-container card-placeholder">Fist of Fate</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li>End on a Normal Summoned Obelisk (via the Diviner combo).</li>
+                        <li>Set <strong class="text-accent">Fist of Fate</strong> for a monster negate and potential backrow wipe.</li>
+                        <li>Have <strong class="text-accent">The Breaking Ruin God</strong> in hand or GY as follow-up.</li>
+                        <li>Leverage Obelisk's 4000 ATK body and targeting immunity to control the board, using his own effect as needed with generated tribute fodder.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Impact</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 mb-4 text-center">
+                    This section dynamically checks the TCG banlist status for key cards mentioned in this strategy.
+                </p>
+                <!-- This container will be filled by JavaScript -->
+                <div id="banlist-status-container" class="text-center">
+                    <div class="flex justify-center items-center">
+                        <i class="fas fa-spinner fa-spin text-accent text-2xl mr-3"></i>
+                        <span class="text-blue-200">Fetching live banlist data...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Obelisk Divine Banner Animation ---
+            const canvas = document.getElementById('divine-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + 10;
+                        this.speedY = (Math.random() * 3) + 1;
+                        this.size = (Math.random() * 2) + 1;
+                        this.color = `rgba(250, 204, 21, ${Math.random() * 0.5 + 0.3})`; // Gold color
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- Card Loader ---
+            // Ensure CardLoader is loaded before calling it
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'obelisk-img-container': 'Obelisk the Tormentor',
+                    'diviner-img-container': 'Diviner of the Herald',
+                    'trias-img-container': 'Trias Hierarchia',
+                    'sechste-img-container': 'Valkyrie Sechste',
+                    'max-img-container': 'Soul Energy MAX!!!',
+                    'obelisk-combo-img-container': 'Obelisk the Tormentor',
+                    'breaking-ruin-god-img-container': 'The Breaking Ruin God',
+                    'fist-of-fate-img-container': 'Fist of Fate'
+                });
+            } else {
+                console.error("CardLoader script not loaded or failed.");
+                // Fallback for placeholders
+                const placeholders = document.querySelectorAll('.card-placeholder');
+                placeholders.forEach(p => {
+                    if (p.innerHTML === "") p.innerHTML = "Error loading CardLoader";
+                });
+            }
+
+            // --- Banlist Fetcher ---
+            async function fetchBanlistStatus() {
+                const container = document.getElementById('banlist-status-container');
+                const keyCards = [
+                    'Obelisk the Tormentor', 'Soul Energy MAX!!!', 'Fist of Fate', 
+                    'The Breaking Ruin God', 'Soul Crossing', 'Diviner of the Herald', 
+                    'Trias Hierarchia', 'Valkyrie Sechste', 'Valkyrie Funfte',
+                    'Block Dragon', 'Spright Elf', 'Gallant Granite'
+                ];
+                
+                const banlistUrl = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG';
+                let banlistData = {};
+
+                try {
+                    const response = await fetch(banlistUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    
+                    data.data.forEach(card => {
+                        if (card.banlist_info && card.banlist_info.ban_tcg) {
+                            banlistData[card.name] = card.banlist_info.ban_tcg;
+                        } else {
+                            banlistData[card.name] = 'Unlimited';
+                        }
+                    });
+
+                    // Build HTML
+                    let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-left">';
+                    keyCards.forEach(cardName => {
+                        const status = banlistData[cardName] || 'Unlimited'; // Default to Unlimited if not in list (like new cards)
+                        let statusClass = 'status-unlimited';
+                        let statusText = status;
+
+                        if (status === 'Banned') {
+                            statusClass = 'status-forbidden';
+                            statusText = "Forbidden";
+                        } else if (status === 'Limited') {
+                            statusClass = 'status-limited';
+                        } else if (status === 'Semi-Limited') {
+                            statusClass = 'status-semi-limited';
+                        }
+
+                        html += `<div class="p-3 bg-gray-800 rounded-lg">
+                                    <span class="text-blue-200">${cardName}:</span>
+                                    <span class="${statusClass} float-right">${statusText}</span>
+                                 </div>`;
+                    });
+                    html += '</div>';
+
+                    container.innerHTML = html;
+
+                } catch (error) {
+                    console.error('Failed to fetch banlist data:', error);
+                    container.innerHTML = `<p class="text-red-400">Could not load live banlist data. Please check your connection.</p>`;
+                }
+            }
+
+            fetchBanlistStatus();
+        });
+    </script>
+</body>
+</html>
