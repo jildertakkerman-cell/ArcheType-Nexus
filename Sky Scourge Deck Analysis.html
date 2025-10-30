@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sky Scourge Archetype Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- IMPORTANT: This assumes card-loader.js is in an 'assets/js/' folder relative to this file -->
+    <script src="assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0514; /* Deep, dark purple */
+            color: #e9d5ff; /* Pale lavender */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .font-title {
+            font-family: 'Cinzel', serif;
+        }
+        .card {
+            background-color: #1c103a; /* Dark violet */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a2c8c; /* Lighter purple border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #2a1a5e; /* Deeper violet */
+            border: 1px solid #6d44f7;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a1a5e;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a1a5e;
+            border: 1px dashed #6d44f7;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent-gold { color: #fde047; } /* Celestial Gold */
+        .text-accent-light { color: #e9d5ff; } /* Light Lavender */
+        .text-accent-dark { color: #fca5a5; } /* Dark/Fiend Red */
+        .arrow-color { color: #fde047; }
+        .heading-underline {
+            border-bottom: 2px solid #fde047;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #fde047;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fde047;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #fde047;
+        }
+
+        /* --- NEW ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: linear-gradient(135deg, #0a0514 0%, #1c103a 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a2c8c;
+        }
+
+        #apocalypse-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 5, 20, 0.4) 0%, rgba(10, 5, 20, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(253, 224, 71, 0.7);
+        }
+
+        /* --- Home Button Styles (Copied from other files) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+        .ygo-home-button i { font-size: 22px; }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* --- Card Popup Styles --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 5, 20, 0.95);
+            border: 1px solid #fde047;
+            border-radius: 0.75rem;
+            color: #e9d5ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #fde047;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            font-weight: bold;
+            color: #fde047;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="apocalypse-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 font-title">SKY SCOURGE</h1>
+            <p class="text-lg md:text-xl text-accent-gold">An Analysis of the Apocalypse Strategy</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-accent-light">
+                    The "Sky Scourge" series is a thematic collection of boss monsters, not a cohesive archetype. Released in 2007's *Force of the Breaker*, the three Scourges—<strong class="text-accent-dark">Norleras</strong>, <strong class="text-accent-gold">Enrise</strong>, and <strong class="text-green-300">Invicil</strong>>—are mechanically contradictory. Their summoning conditions and strategic goals actively conflict, meaning any functional deck must focus on only one.
+                </p>
+                <p class="text-accent-light mt-2">
+                    Of the three, <strong class="text-accent-dark">Sky Scourge Norleras</strong> possesses a uniquely devastating and game-defining effect: a "reset button" that sends all cards from both fields and hands to the Graveyard. Therefore, any competitive "Sky Scourge" strategy is, by necessity, a <strong class="text-accent-dark">Norleras Turbo</strong> strategy.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Three Scourges Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Three Conflicting Scourges</h2>
+            <p class="text-accent-light mb-8 text-center max-w-2xl mx-auto">
+                Understanding the deck begins with understanding why two-thirds of its namesakes are unusable in the main strategy. Their resource demands are mutually exclusive.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Norleras -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="norleras-img-container" class="card-image-container card-placeholder mb-4">Sky Scourge Norleras</div>
+                    <h3 class="text-xl font-bold text-accent-dark mb-2">Sky Scourge Norleras</h3>
+                    <p class="text-sm text-accent-light">
+                        <strong class="text-white">Requires:</strong> 1 LIGHT Fairy + 3 DARK Fiends in GY.<br>
+                        <strong class="text-white">Goal:</strong> Explosive, game-ending "reset" of the field and hands.
+                    </p>
+                </div>
+                <!-- Enrise -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="enrise-img-container" class="card-image-container card-placeholder mb-4">Sky Scourge Enrise</div>
+                    <h3 class="text-xl font-bold text-accent-gold mb-2">Sky Scourge Enrise</h3>
+                    <p class="text-sm text-accent-light">
+                        <strong class="text-white">Requires:</strong> 3 LIGHT Fairies + 1 DARK Fiend in GY.<br>
+                        <strong class="text-white">Goal:</strong> Slow, gradual board control via banishment.
+                    </p>
+                </div>
+                <!-- Invicil -->
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div id="invicil-img-container" class="card-image-container card-placeholder mb-4">Sky Scourge Invicil</div>
+                    <h3 class="text-xl font-bold text-green-300 mb-2">Sky Scourge Invicil</h3>
+                    <p class="text-sm text-accent-light">
+                        <strong class="text-white">Requires:</strong> Tribute Summon (cannot be Special Summoned).<br>
+                        <strong class="text-white">Goal:</strong> A slow, conditional floodgate (negates Spells or Traps).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Norleras Turbo Strategy Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Norleras Turbo Strategy</h2>
+            <p class="text-accent-light mb-8 text-center max-w-2xl mx-auto">
+                Attempting to summon Norleras via its printed condition is too slow and inconsistent. The entire strategy revolves around "cheating" its effect onto the field using <strong class="text-accent-dark">Phantom of Chaos</strong>.
+                It's far more efficient to send Norleras to the GY, then Normal Summon Phantom of Chaos to copy its effect. The entire strategy <a href="https://yugipedia.com/wiki/Phantom_of_Chaos" target="_blank" class="lore-link">hinges on this single phantom</a>, which is both its greatest strength and its most critical vulnerability.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Enablers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-magic-wand-sparkles text-4xl text-accent-gold mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Enabler's Toolkit</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Get Norleras to GY</h4>
+                            <p class="text-sm text-accent-light"><strong class="text-white">Armageddon Knight</strong>, <strong class="text-white">Dark Grepher</strong>, and <strong class="text-white">Foolish Burial</strong> send it from the deck. <strong class="text-white">Trade-In</strong> discards it from hand.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Access Phantom of Chaos</h4>
+                            <p class="text-sm text-accent-light"><strong class="text-white">Reinforcement of the Army</strong> can search the Warriors (Grepher/Armageddon). <strong class="text-white">Tour Guide</strong> into <strong class="text-white">Sangan</strong>, then Link summon, allows Sangan to search the 0 ATK Phantom.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- The Combo -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bolt text-4xl text-accent-dark mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Two-Card Combo</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Objective 1: Norleras in GY</h4>
+                            <p class="text-sm text-accent-light">Use an enabler like <strong class="text-white">Dark Grepher</strong> or <strong class="text-white">Armageddon Knight</strong> to send <strong class="text-accent-dark">Norleras</strong> from Deck to Graveyard.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent-light mb-1">Objective 2: Summon Phantom</h4>
+                            <p class="text-sm text-accent-light">Normal Summon <strong class="text-accent-dark">Phantom of Chaos</strong>, activate its effect, banish Norleras, and copy its apocalyptic effect.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "End Board": A New Game State</h2>
+            <p class="text-accent-light mb-8 text-center max-w-2xl mx-auto">
+                Unlike modern combo decks, the Norleras "end board" is not a field of negates. It is a <strong class="text-accent-gold">game state</strong>: an empty field, an empty opponent's hand, and a single card in your hand. The goal is to convert this resource disparity into a win before the opponent can draw a solution.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- The Apocalypse -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Apocalypse</h3>
+                    <div class="flex justify-center items-center mb-4 h-[250px] bg-black rounded-lg border border-dashed border-gray-600">
+                        <p class="text-gray-400 text-lg font-bold italic">(All Fields & Hands are Empty)</p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-accent-light">
+                        <li>Opponent's Hand: 0 Cards</li>
+                        <li>Opponent's Field: 0 Cards</li>
+                        <li>Your Hand: 1 Card (from Norleras effect)</li>
+                        <li>Your Field: 0 Cards</li>
+                    </ul>
+                </div>
+                <!-- The Follow-Up -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Follow-Up</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="dark-creator-img-container" class="card-image-container card-placeholder">The Dark Creator</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-accent-light">
+                        <li><strong class="text-accent-dark">The Dark Creator:</strong> The premier follow-up. If it's the card you draw, or if you search it with <strong class="text-white">Gold Sarcophagus</strong>, it can Special Summon itself from hand and begin reviving your DARK monsters from the GY to an empty board.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Synergistic Engines Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Synergistic Engines</h2>
+            <p class="text-accent-light mb-8 text-center max-w-2xl mx-auto">
+                To function, the core combo is wrapped in engines that excel at milling, drawing, and providing the necessary DARK Fiend/LIGHT Fairy monsters.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Burning Abyss -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent-dark mb-2">Burning Abyss (BA)</h3>
+                    <p class="text-sm text-accent-light mb-4">The premier engine. All are DARK Fiends. Their GY effects (<strong class="text-white">Graff</strong>, <strong class="text-white">Cir</strong>) trigger *after* Norleras wipes the board, letting you instantly rebuild.</p>
+                    <div class="flex justify-around">
+                        <div id="graff-img-container" class="w-24 card-placeholder">Graff</div>
+                        <div id="cir-img-container" class="w-24 card-placeholder">Cir</div>
+                    </div>
+                     <p class="text-sm text-yellow-300 mt-4"><i class="fas fa-exclamation-triangle"></i> <strong class="text-red-400">Update:</strong> This engine is now severely weakened, as its key target <strong class="text-red-400">Beatrice, Lady of the Eternal</strong> is <strong class="text-red-400">FORBIDDEN</strong>.</p>
+                </div>
+                <!-- Lightsworn -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent-gold mb-2">Lightsworn</h3>
+                    <p class="text-sm text-accent-light mb-4">A high-velocity milling engine. <strong class="text-white">Raiden</strong> and <strong class="text-white">Charge of the Light Brigade</strong> quickly fill the GY. This is a high-risk, "glass cannon" approach, as it can accidentally mill your <strong class="text-accent-dark">Phantom of Chaos</strong>.</p>
+                </div>
+                <!-- Fluffal -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-accent-light mb-2">Fluffal</h3>
+                    <p class="text-sm text-accent-light mb-4">A surprisingly potent draw engine. The interaction between <strong class="text-white">Toy Vendor</strong> and <strong class="text-white">Fluffal Wings</strong> allows you to draw 2 cards and search 1, digging for combo pieces at incredible speed.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-accent-light">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Unmatched Power:</strong> Norleras's effect is one of the most powerful board wipes ever printed, bypassing most destruction protection.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-300">Explosive:</strong> When the combo works, it often wins the game on the spot.</li>
+                        <li><span class="pro-icon"><i class="fas fa-surprise"></i></span> <strong class="text-green-300">Rogue Factor:</strong> Many modern players are unfamiliar with the strategy and may not know how to counter it.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-accent-light">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Fragile Chokepoint:</strong> The entire strategy dies if the <strong class="text-accent-dark">Phantom of Chaos</strong> Normal Summon is negated (by <strong class="text-white">Effect Veiler</strong>, <strong class="text-white">Impermanence</strong>, etc.).</li>
+                        <li><span class="con-icon"><i class="fas fa-skull-crossbones"></i></span> <strong class="text-red-300">Graveyard Hate:</strong> A single <strong class="text-white">D.D. Crow</strong> or <strong class="text-white">Called by the Grave</strong> banishing Norleras in response to Phantom's activation causes the combo to fail.</li>
+                        <li><span class="con-icon"><i class="fas fa-random"></i></span> <strong class="text-red-300">Inconsistency:</strong> As a "glass cannon" combo deck, it can draw unplayable hands and fail on its own.</li>
+                    </ul>
+                </div>
+                <!-- Conclusion -->
+                <div class="card p-6 pro-con-card md:col-span-2 lg:col-span-1">
+                    <h3 class="text-xl font-bold text-white mb-4">Conclusion</h3>
+                    <p class="text-accent-light">
+                        Sky Scourge Norleras is a relic of a different era. Its power is timeless, but the modern game's proliferation of "hand trap" interaction is intensely hostile to its single, fragile combo line. It remains a potent and respected rogue deck, especially in older formats like Edison.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-yellow-400 font-bold">MODERATE IMPACT:</strong> While the core Scourge monsters are unrestricted, the strategy's most powerful engines and enablers are heavily limited by the TCG banlist.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Forbidden Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden (0 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-red-400">Beatrice, Lady of the Eternal</strong> - Cripples the "Legitimate BA" build.</li>
+                        </ul>
+                    </div>
+                    <!-- Limited Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited (1 Copy)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-yellow-400">Armageddon Knight</strong></li>
+                            <li><strong class="text-yellow-400">Reinforcement of the Army</strong></li>
+                            <li><strong class="text-yellow-400">Foolish Burial</strong></li>
+                            <li><strong class="text-yellow-400">Charge of the Light Brigade</strong></li>
+                            <li><strong class="text-yellow-400">Graff, Malebranche of the ...</strong></li>
+                            <li><strong class="text-yellow-400">Cir, Malebranche of the ...</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Unrestricted Cards -->
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted (3 Copies)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li><strong class="text-green-400">Sky Scourge Norleras</strong></li>
+                            <li><strong class="text-green-400">Phantom of Chaos</strong></li>
+                            <li><strong class="text-green-400">Dark Grepher</strong></li>
+                            <li><strong class="text-green-400">Trade-In</strong></li>
+                            <li><strong class="text-green-400">Tour Guide From the Underworld</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The deck is functional, but the hits to its consistency tools (<strong class="text-yellow-400">Armageddon Knight</strong>, <strong class="text-yellow-400">RotA</strong>, <strong class="text-yellow-400">Foolish</strong>) and the banning of <strong class="text-red-400">Beatrice</strong> make it far more fragile and less resilient than it was at its peak.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- APOCALYPSE BANNER ANIMATION ---
+            const canvas = document.getElementById('apocalypse-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 150;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.reset();
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.color = Math.random() > 0.5 ? '#fde047' : '#a78bfa'; // Gold or Purple
+                    }
+                    
+                    reset() {
+                        this.x = canvas.width / 2;
+                        this.y = canvas.height / 2;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 3 + 0.5;
+                        this.radius = Math.random() * 2 + 1;
+                        this.life = Math.random() * 100 + 50;
+                        this.initialLife = this.life;
+                    }
+
+                    update() {
+                        // Move towards the center
+                        let dx = (canvas.width / 2) - this.x;
+                        let dy = (canvas.height / 2) - this.y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < 3) {
+                            this.reset();
+                        } else {
+                            this.x += (dx / distance) * this.speed;
+                            this.y += (dy / distance) * this.speed;
+                        }
+                        
+                        this.life--;
+                        if (this.life <= 0) {
+                            this.reset();
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                        }
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = (this.life / this.initialLife) * 0.7;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.fillStyle = 'rgba(10, 5, 20, 0.1)'; // Fading effect
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.globalAlpha = 1;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Assumes card-loader.js is loaded
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'norleras-img-container': 'Sky Scourge Norleras',
+                    'enrise-img-container': 'Sky Scourge Enrise',
+                    'invicil-img-container': 'Sky Scourge Invicil',
+                    'armageddon-knight-img-container': 'Armageddon Knight',
+                    'phantom-img-container': 'Phantom of Chaos',
+                    'dark-creator-img-container': 'The Dark Creator',
+                    'graff-img-container': "Graff, Malebranche of the Burning Abyss",
+                    'cir-img-container': "Cir, Malebranche of the Burning Abyss"
+                });
+            } else {
+                console.error("CardLoader script not found.");
+            }
+        });
+    </script>
+</body>
+</html>
