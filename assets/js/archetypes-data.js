@@ -22557,9 +22557,28 @@ const archetypes = [
                 <text x="50" y="90" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SERVANT</text>
                 </svg>`
     },
-    
-
-    {
+        {
+        name: 'Sky Scourge',
+        description: 'A LIGHT archetype that focuses on milling cards to the Graveyard to enable powerful effects and combos, featuring monsters that gain power when sent to the Graveyard.',
+        filepath: 'Sky Scourge Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="skyScourgeGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#87ceeb;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#ffffff;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#skyScourgeGrad)" stroke="#4682b4" stroke-width="2"/>
+                        <path d="M25 35 Q35 25 50 30 Q65 25 75 35 Q70 45 75 55 Q65 65 50 60 Q35 65 25 55 Q30 45 25 35 Z" fill="none" stroke="#4682b4" stroke-width="3"/>
+                        <circle cx="40" cy="40" r="3" fill="#4682b4"/>
+                        <circle cx="60" cy="40" r="3" fill="#4682b4"/>
+                        <circle cx="50" cy="55" r="4" fill="#4682b4"/>
+                        <path d="M45 35 L50 45 L40 45 L55 60 L50 50 L60 50 Z" fill="#ffd700" stroke="#ffa500" stroke-width="1"/>
+                        <text x="50" y="75" text-anchor="middle" font-size="10" fill="#000000" font-weight="bold">SKY</text>
+                        <text x="50" y="87" text-anchor="middle" font-size="10" fill="#000000" font-weight="bold">SCOURGE</text>
+                    </svg>`
+    },
+     {
         name: 'Skyscraper',
         description: 'An archetype focused on building tall structures and overwhelming opponents with height-based strategies.',
         filepath: 'Skyscraper Deck Analysis.html',
