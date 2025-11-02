@@ -315,6 +315,8 @@ const CardLoader = (function() {
         getCachedCard,
         clearCache,
         configure,
+        showPopup,
+        cardDataCache,
     };
 })();
 
