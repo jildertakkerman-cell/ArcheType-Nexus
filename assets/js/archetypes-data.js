@@ -3219,8 +3219,35 @@ const archetypes = [
     },
     {
         name: 'Archfiend',
-        description: 'A Synchro-focused combo deck centered on "Red Dragon Archfiend" and the "Resonator" engine.',
+        description: 'A control-oriented strategy built around "Summoned Skull" and its retrained boss monsters, relying on hybrid engines for grind-game control.',
         filepath: 'Archfiend Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="archfiendGrad" cx="50%" cy="50%" r="70%">
+                            <stop offset="0%" style="stop-color:#2a0a12;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#581c37;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#11080b;stop-opacity:1" />
+                        </radialGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="url(#archfiendGrad)" stroke="#f43f5e" stroke-width="3"/>
+                    
+                    <!-- Demonic horns -->
+                    <path d="M35 25 Q30 15 35 10 Q40 15 35 25" fill="#581c37" stroke="#f43f5e" stroke-width="1"/>
+                    <path d="M65 25 Q70 15 65 10 Q60 15 65 25" fill="#581c37" stroke="#f43f5e" stroke-width="1"/>
+                    
+                    <!-- Skull face -->
+                    <circle cx="45" cy="45" r="3" fill="#fde8ef"/>
+                    <circle cx="55" cy="45" r="3" fill="#fde8ef"/>
+                    <path d="M45 55 Q50 60 55 55" stroke="#fde8ef" stroke-width="2" fill="none"/>
+                    
+                    <!-- Flame accents -->
+                    <path d="M50 70 Q45 75 50 80 Q55 75 50 70" fill="#f43f5e" opacity="0.8"/>
+                </svg>`
+    },
+    {
+        name: 'Red Dragon Archfiend',
+        description: 'A Synchro-focused combo deck centered on "Red Dragon Archfiend" and the "Resonator" engine.',
+        filepath: 'Red Dragon Archfiend Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M50 10 C 40 40, 20 50, 50 90 C 80 50, 60 40, 50 10 Z" fill="#b91c1c" stroke="#fecaca" stroke-width="3" />
                                 <path d="M50 10 L 70 30 L 90 20 L 80 50 L 90 80 L 70 70 L 50 90 L 30 70 L 10 80 L 20 50 L 10 20 L 30 30 Z" fill="none" stroke="#ef4444" stroke-width="2"/>
