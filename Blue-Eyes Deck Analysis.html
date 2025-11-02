@@ -379,6 +379,23 @@
         </div>
     </section>
 
+    <!-- NEW VARIANT SPOTLIGHT SECTION -->
+    <section class="mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 text-center heading-underline">Variant Spotlight: The Primite Control Build</h2>
+        <div class="card p-6">
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="flex-1">
+                    <p class="text-sky-200 mb-4">This powerful variant shifts the deck's strategic focus from explosive combo plays to a more methodical, control-oriented game plan. By integrating the "Primite" engine, the deck aims to out-resource the opponent over several turns with recursive threats and layered trap-based interruptions.</p>
+                    <p class="text-sky-200">This build is less focused on a single, overwhelming Turn 1 board and more on winning a longer, interactive duel. Cards like <span class="text-accent">Primite Dragon Ether Beryl</span> and the powerful trap <span class="text-accent">Primite Drillbeam</span> provide additional consistency, resource loops, and potent disruptions that complement the core Blue-Eyes strategy.</p>
+                </div>
+                <div class="flex gap-4 justify-center">
+                    <div class="card-image-container" data-card-name="Primite Dragon Ether Beryl"></div>
+                    <div class="card-image-container" data-card-name="Primite Drillbeam"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- WEAKNESSES AND SYNERGIES -->
     <section class="mb-12">
         <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 text-center heading-underline">Strategic Analysis</h2>
@@ -387,7 +404,7 @@
                 <h3 class="text-2xl font-bold text-red-400 mb-4"><i class="fas fa-exclamation-triangle mr-2"></i>Strategic Weaknesses & Choke Points</h3>
                 <ul class="list-disc list-inside space-y-2 text-sky-200">
                     <li><strong class="text-red-300">Hand Trap Vulnerability:</strong> <span class="text-accent">Ash Blossom</span> on key searchers or <span class="text-accent">Infinite Impermanence</span> on <span class="text-accent">Sage</span> can be devastating.</li>
-                    <li><strong class="text-red-300">Graveyard Disruption:</strong> Cards like <span class="text-accent">Called by the Grave</span> or opposing <span class="text-accent">Bystials</span> can banish crucial resources like <span class="text-accent">The White Stone of Ancients</span>.</li>
+                    <li><strong class="text-red-300">Graveyard Disruption:</strong> Cards like <span class="text-accent">Called by the Grave</span> or opposing <span class="text-accent">Bystials</span> can banish crucial resources.</li>
                     <li><strong class="text-red-300">Inherent Inconsistency:</strong> Drawing multiple copies of the vanilla <span class="text-accent">Blue-Eyes White Dragon</span> without a starter can lead to unplayable "brick" hands.</li>
                 </ul>
             </div>
@@ -395,7 +412,6 @@
                  <h3 class="text-2xl font-bold text-green-400 mb-4"><i class="fas fa-link mr-2"></i>External Synergies</h3>
                  <ul class="list-disc list-inside space-y-2 text-sky-200">
                     <li><strong class="text-green-300">The Bystial Alliance:</strong> A natural partnership. Bystials provide free extenders for your plays and act as hand traps against LIGHT/DARK strategies, patching a key weakness.</li>
-                    <li><strong class="text-green-300">The Primite Power-Up:</strong> Shifts the strategy towards a more methodical, control-oriented game, out-resourcing the opponent over several turns with recursive threats and powerful traps.</li>
                  </ul>
             </div>
         </div>
@@ -446,10 +462,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const fetchCardImage = async (cardName, container) => {
         container.innerHTML = `<div class="card-placeholder-text">${cardName}</div>`;
         try {
+            // Updated API endpoint to handle potential "Primite" card names
             const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`);
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
-            const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url_small;
+            
+            let imageUrl;
+            if (data && data.data && data.data.length > 0) {
+                 imageUrl = data.data[0].card_images[0].image_url_small;
+            } else {
+                // Fallback for names that might not be exact matches (e.g., "Primite" cards)
+                const fuzzyResponse = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${encodeURIComponent(cardName)}`);
+                 if (!fuzzyResponse.ok) throw new Error('Fuzzy search failed');
+                 const fuzzyData = await fuzzyResponse.json();
+                 imageUrl = fuzzyData?.data?.[0]?.card_images?.[0]?.image_url_small;
+            }
+
             if (imageUrl) {
                 const img = document.createElement('img');
                 img.src = imageUrl;
@@ -457,6 +485,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.className = 'card-image';
                 container.innerHTML = '';
                 container.appendChild(img);
+            } else {
+                console.warn(`Image not found for "${cardName}".`);
             }
         } catch (error) {
             console.error(`Failed to fetch image for "${cardName}":`, error);
@@ -485,10 +515,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             data.data.forEach(card => {
                 if (relevantCards.includes(card.name)) {
-                    const status = card.banlist_info.ban_tcg.toLowerCase();
-                    if (status === 'banned') banlistStatus.forbidden.push(card.name);
-                    else if (status === 'limited') banlistStatus.limited.push(card.name);
-                    else if (status === 'semi-limited') banlistStatus.semiLimited.push(card.name);
+                    // Check if banlist_info and ban_tcg exist
+                    if (card.banlist_info && card.banlist_info.ban_tcg) {
+                        const status = card.banlist_info.ban_tcg.toLowerCase();
+                        if (status === 'banned') banlistStatus.forbidden.push(card.name);
+                        else if (status === 'limited') banlistStatus.limited.push(card.name);
+                        else if (status === 'semi-limited') banlistStatus.semiLimited.push(card.name);
+                    }
                 }
             });
 
