@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memento Archetype Deep Dive</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="assets/js/card-loader.js"></script>
+    <script src="assets/js/card-loader.js"></script> <!-- Added card-loader.js -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -30,10 +30,15 @@
             background-color: #383838;
             border: 1px solid #555;
         }
+        .pro-con-card {
+            background-color: #383838;
+            border: 1px solid #555;
+        }
         .card-image-container {
             width: 100%;
             max-width: 180px;
             flex-shrink: 0;
+            cursor: pointer; /* Added cursor pointer */
         }
         .card-image {
             width: 100%;
@@ -62,7 +67,7 @@
             border-radius: 0.5rem;
             padding: 0.5rem;
             box-shadow: 0 0 10px #383838;
-            cursor: pointer;
+            cursor: pointer; /* Added cursor pointer */
         }
         .pro-icon { color: #4ade80; }
         .con-icon { color: #f87171; }
@@ -135,6 +140,7 @@
             .banner-subtitle { font-size: 0.875rem; }
         }
 
+        /* --- Updated Home Button Style --- */
         .ygo-home-button {
             position: fixed; top: 20px; left: 20px; z-index: 1000;
             background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
@@ -143,81 +149,83 @@
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
             transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
         }
+        .ygo-home-button::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite; pointer-events: none;
+        }
         .ygo-home-button:hover {
             transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
             border-color: #8b5cf6;
         }
+        .ygo-home-button:active { transform: translateY(-1px) scale(1.02); }
         .ygo-home-button i {
-            font-size: 22px; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            font-size: 22px; position: relative; z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        .ygo-home-button .ygo-home-text {
+            position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%);
+            font-size: 10px; font-weight: 600; color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); opacity: 0;
+            transition: opacity 0.3s ease; white-space: nowrap; pointer-events: none;
+        }
+        .ygo-home-button:hover .ygo-home-text { opacity: 1; }
+        @keyframes ygoButtonPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+        @keyframes ygoIconGlow {
+            0% { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4); }
+            100% { text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3); }
+        }
+        @media (max-width: 768px) {
+            .ygo-home-button { width: 50px; height: 50px; top: 15px; left: 15px; }
+            .ygo-home-button i { font-size: 18px; }
         }
 
-        /* Popup styles */
-        .card-popup {
+        /* --- Card Popup Styles --- */
+        #card-popup {
             position: fixed;
-            background: rgba(255, 255, 255, 0.95);
-            border: 3px solid #a78bfa;
-            border-radius: 12px;
-            padding: 16px;
-            max-width: 400px;
-            max-height: 600px;
-            overflow-y: auto;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
+            display: none;
             opacity: 0;
+            padding: 1rem;
+            background-color: rgba(26, 26, 26, 0.95); /* Memento dark bg */
+            border: 1px solid #a78bfa; /* Memento purple accent */
+            border-radius: 0.75rem;
+            color: #e0e0e0;
+            max-width: 300px;
+            z-index: 1000;
             pointer-events: none;
-            transition: opacity 0.2s ease;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            word-wrap: break-word;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
         }
-
-        .card-popup.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .card-popup img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin-bottom: 12px;
-        }
-
-        .card-popup h3 {
-            color: #6366f1;
-            margin: 0 0 8px 0;
-            font-size: 18px;
+        #card-popup h3 {
+            font-family: 'Cinzel Decorative', serif;
+            color: #a78bfa;
             font-weight: bold;
+            font-size: 1.125rem;
         }
-
-        .card-popup p {
-            margin: 4px 0;
-            line-height: 1.4;
+        #card-popup p {
+            margin-top: 0.5rem;
         }
-
-        .card-popup .card-type {
-            color: #666;
-            font-style: italic;
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            font-weight: bold;
+            color: #c4b5fd; /* Lighter purple for stats */
         }
-
-        .card-popup .card-description {
-            color: #333;
-            margin-top: 8px;
-        }
-
-        .card-popup .card-stats {
-            background: rgba(99, 102, 241, 0.1);
-            padding: 8px;
-            border-radius: 6px;
-            margin-top: 8px;
-        }
-
     </style>
 </head>
 <body class="p-4 md:p-8">
+    <!-- Updated Home Button -->
     <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
         <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
     </a>
+    
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
 
 <div class="container mx-auto">
     <header class="mb-10 md:mb-16">
@@ -230,27 +238,29 @@
         </div>
     </header>
 
+    <!-- Renamed Section -->
     <section class="mb-10 md:mb-16">
         <div class="card p-6 animate-fadeIn">
-            <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">The Memento Philosophy</h2>
+            <h2 class="text-xl md:text-2xl font-bold text-white mb-4 heading-underline">Executive Summary</h2>
             <p class="text-gray-300">
                 The <strong class="text-accent font-bold">Memento</strong> archetype operates on a seemingly paradoxical principle: strategic self-destruction as the primary engine for creation. Unlike archetypes where destroying one's own cards is a cost, for Memento, it is the central mechanic that converts on-field and in-hand resources into board presence, graveyard setup, and ultimately, overwhelming advantage. Understanding this core philosophy is the first step to mastering its complex and non-linear gameplay. This process populates the Graveyard with five "Memento" monsters of different names, setting the stage for the deck's ultimate boss monster.
             </p>
         </div>
     </section>
 
+    <!-- Re-formatted Section -->
     <section class="mb-10 md:mb-16">
         <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">
             <a href="https://yugipedia.com/wiki/Memento" target="_blank" class="lore-link">The Cast of Characters</a>: Core Cards
         </h2>
         <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
-            The Memento archetype is composed of a diverse cast, each with a specific role. Understanding these rolesâ€”Starter, Extender, Payoff, or Utilityâ€”is essential for navigating the deck's intricate decision trees.
+            The Memento archetype is composed of a diverse cast, each with a specific role. Understanding these roles—Starter, Extender, Payoff, or Utility—is essential for navigating the deck's intricate decision trees.
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Starters & Extenders -->
+            <!-- Monsters -->
             <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
-                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-3"><i class="fas fa-play-circle text-accent"></i>Starters & Extenders</h3>
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-3"><i class="fas fa-theater-masks text-accent"></i>The Cast: Core Monsters</h3>
                 <div class="space-y-4">
                     <div class="combo-step-card p-4 rounded-lg">
                         <h4 class="font-bold text-accent">Mementotlan Angwitch</h4>
@@ -268,24 +278,32 @@
                         <h4 class="font-bold text-accent">Mementotlan Shleepy</h4>
                         <p class="text-sm text-gray-300">Summons itself from hand when a Memento is destroyed, enabling a Fusion Summon.</p>
                     </div>
-                </div>
-            </div>
-
-            <!-- Payoffs & Boss Monsters -->
-            <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
-                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-3"><i class="fas fa-skull-crossbones text-accent"></i>The Payoffs</h3>
-                <div class="space-y-4">
                     <div class="combo-step-card p-4 rounded-lg">
                         <h4 class="font-bold text-accent">Mementoal Tecuhtlica - Combined Creation</h4>
                         <p class="text-sm text-gray-300">The main boss. 5000 ATK, attacks all monsters, and revives Mementos from the GY as a Quick Effect.</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- Spells & Traps -->
+            <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-3"><i class="fas fa-scroll text-accent"></i>The Script: Spells & Traps</h3>
+                <div class="space-y-4">
                     <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="font-bold text-accent">Mementomictlan Tecuhtlica - Creation King</h4>
-                        <p class="text-sm text-gray-300">Fusion boss that mills 3 on summon and offers multi-card destruction.</p>
+                        <h4 class="font-bold text-accent">Mementotlan Fusion</h4>
+                        <p class="text-sm text-gray-300">Quick-Play Fusion. Its GY effect banishes itself to destroy a Memento and search any Memento S/T.</p>
                     </div>
                     <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="font-bold text-accent">Mementotlan Twin Dragon</h4>
-                        <p class="text-sm text-gray-300">A utility Fusion that searches two monsters on summon and floats into another when destroyed.</p>
+                        <h4 class="font-bold text-accent">Mementotlan Bone Party</h4>
+                        <p class="text-sm text-gray-300">Quick-Play extender. Destroys a Memento from hand/field to search or summon another from Deck.</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent">Mementomictlan</h4>
+                        <p class="text-sm text-gray-300">The Field Spell. Revives a Memento on destruction and recycles a Memento S/T from GY in the End Phase.</p>
+                    </div>
+                    <div class="combo-step-card p-4 rounded-lg">
+                        <h4 class="font-bold text-accent">Mementotlan Cranium Burst</h4>
+                        <p class="text-sm text-gray-300">Continuous Trap that provides multiple monster effect negations by targeting your "Combined Creation".</p>
                     </div>
                 </div>
             </div>
@@ -299,30 +317,80 @@
             <!-- Step 1 -->
             <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn">
                 <div class="flex flex-col md:flex-row items-center gap-6">
-                    <div id="tatsunootoshigo-img" class="card-image-container card-placeholder"></div>
+                    <div id="tatsu-combo-img" class="card-image-container card-placeholder"></div>
                     <div>
-                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span><h3 class="text-lg font-bold">Summon & Mill</h3></div>
-                        <p class="text-gray-300">Special Summon <strong class="text-accent">Tatsunootoshigo</strong> from hand. Activate its effect, destroying itself to send <strong class="text-accent">Ghattic</strong>, <strong class="text-accent">Shleepy</strong>, and <strong class="text-accent">Angwitch</strong> from Deck to GY.</p>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span><h3 class="text-lg font-bold">The Opening Mill</h3></div>
+                        <p class="text-gray-300">Special Summon <strong class="text-accent">Tatsunootoshigo</strong>. Activate its effect, destroying itself to send <strong class="text-accent">Mace</strong>, <strong class="text-accent">Goblin</strong>, and <strong class="text-accent">Ghattic</strong> from Deck to GY. <strong class="text-accent">Ghattic</strong> triggers, reviving itself, then adds <strong class="text-accent">Mace</strong> from GY to hand.</p>
                     </div>
                 </div>
             </div>
             <!-- Step 2 -->
-            <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn" style="animation-delay: 0.2s;">
+            <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn" style="animation-delay: 0.1s;">
                  <div class="flex flex-col md:flex-row items-center gap-6">
-                    <div id="ghattic-img" class="card-image-container card-placeholder"></div>
+                    <div id="mace-combo-img" class="card-image-container card-placeholder"></div>
                     <div>
-                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span><h3 class="text-lg font-bold">Revive & Recycle</h3></div>
-                        <p class="text-gray-300"><strong class="text-accent">Ghattic</strong> revives itself from the GY. Use its effect to add <strong class="text-accent">Shleepy</strong> back to hand. Then, destroy <strong class="text-accent">Ghattic</strong> to add <strong class="text-accent">Angwitch</strong> to hand.</p>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span><h3 class="text-lg font-bold">Fusion Setup</h3></div>
+                        <p class="text-gray-300">Normal Summon <strong class="text-accent">Mace</strong>. Activate its effect, destroying itself to search <strong class="text-accent">Mementotlan Fusion</strong>. Activate <strong class="text-accent">Fusion</strong>, shuffling <strong class="text-accent">Mace</strong>, <strong class="text-accent">Tatsu</strong>, and <strong class="text-accent">Goblin</strong> from GY into the Deck to summon <strong class="text-accent">Creation King</strong>.</p>
                     </div>
                 </div>
             </div>
             <!-- Step 3 -->
+            <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn" style="animation-delay: 0.2s;">
+                 <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="king-combo-img" class="card-image-container card-placeholder"></div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span><h3 class="text-lg font-bold">GY Setup & Field Spell</h3></div>
+                        <p class="text-gray-300">Activate <strong class="text-accent">Creation King's</strong> effect to send a 2nd <strong class="text-accent">King</strong>, <strong class="text-accent">Akihiron</strong>, and <strong class="text-accent">Angwitch</strong> from Deck to GY. The 1st <strong class="text-accent">King's</strong> GY effect now triggers, searching the Field Spell <strong class="text-accent">Mementomictlan</strong>. Activate it.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Step 4 -->
+            <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn" style="animation-delay: 0.3s;">
+                 <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="akihiron-combo-img" class="card-image-container card-placeholder"></div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span><h3 class="text-lg font-bold">Search & Revive</h3></div>
+                        <p class="text-gray-300">Activate <strong class="text-accent">Fusion's</strong> GY effect, banishing it and destroying <strong class="text-accent">Ghattic</strong> to search <strong class="text-accent">Mementotlan Bone Party</strong>. Now, activate <strong class="text-accent">Akihiron's</strong> GY effect to Special Summon itself.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Step 5 -->
             <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn" style="animation-delay: 0.4s;">
                  <div class="flex flex-col md:flex-row items-center gap-6">
-                    <div id="twin-dragon-img" class="card-image-container card-placeholder"></div>
+                    <div id="dark-blade-combo-img" class="card-image-container card-placeholder"></div>
                     <div>
-                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span><h3 class="text-lg font-bold">Fusion & Advantage</h3></div>
-                        <p class="text-gray-300">Since Ghattic was destroyed, Special Summon <strong class="text-accent">Shleepy</strong> from hand. Use its effect to fuse itself and <strong class="text-accent">Angwitch</strong> into <strong class="text-accent">Twin Dragon</strong>. <strong class="text-accent">Twin Dragon</strong> destroys itself to search two Mementos (including <strong class="text-accent">Combined Creation</strong>), then revives another Memento, setting up the summon for the main boss.</p>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span><h3 class="text-lg font-bold">Cascade Summons</h3></div>
+                        <p class="text-gray-300">Activate <strong class="text-accent">Bone Party</strong>, destroying <strong class="text-accent">Akihiron</strong> to summon <strong class="text-accent">Dark Blade</strong>. This triggers two effects: <strong class="text-accent">CL1 Field Spell</strong> (revives <strong class="text-accent">Angwitch</strong>), <strong class="text-accent">CL2 Akihiron</strong> (adds back banished <strong class="text-accent">Fusion</strong>).</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Step 6 -->
+            <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn" style="animation-delay: 0.5s;">
+                 <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="twin-dragon-combo-img" class="card-image-container card-placeholder"></div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">6</span><h3 class="text-lg font-bold">Second Fusion</h3></div>
+                        <p class="text-gray-300"><strong class="text-accent">Angwitch</strong> activates, searching <strong class="text-accent">Shleepy</strong>. <strong class="text-accent">Shleepy</strong> summons itself, then activates its effect, fusing with <strong class="text-accent">Angwitch</strong> to summon <strong class="text-accent">Mementotlan Twin Dragon</strong>.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Step 7 -->
+            <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn" style="animation-delay: 0.6s;">
+                 <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="apollousa-combo-img" class="card-image-container card-placeholder"></div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">7</span><h3 class="text-lg font-bold">Link Climbing</h3></div>
+                        <p class="text-gray-300"><strong class="text-accent">Twin Dragon</strong> pops itself, searching <strong class="text-accent">Horned Dragon</strong> & <strong class="text-accent">Combined Creation</strong>, then floats into <strong class="text-accent">Shleepy</strong>. <strong class="text-accent">Dark Blade</strong> pops <strong class="text-accent">Shleepy</strong> (sending a trap) to summon <strong class="text-accent">Goblin</strong>. Link <strong class="text-accent">Dark Blade</strong> + <strong class="text-accent">Goblin</strong> into <strong class="text-accent">Cross-Sheep</strong>. SS <strong class="text-accent">Horned Dragon</strong>, trigger <strong class="text-accent">Cross-Sheep</strong> to revive a monster. Link all 3 into <strong class="text-accent">Apollousa</strong>.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Step 8 -->
+            <div class="card combo-step-card p-6 w-full max-w-2xl animate-fadeIn" style="animation-delay: 0.7s;">
+                 <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="combined-creation-combo-img" class="card-image-container card-placeholder"></div>
+                    <div>
+                        <div class="flex items-center mb-2"><span class="bg-gray-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">8</span><h3 class="text-lg font-bold">The Final Board</h3></div>
+                        <p class="text-gray-300">With <strong class="text-accent">Creation King</strong> and <strong class="text-accent">Apollousa</strong> on field, Special Summon <strong class="text-accent">Combined Creation</strong> by shuffling 5 Mementos back. Set the <strong class="text-accent">Fusion</strong> you recycled. In the End Phase, the Field Spell sets your trap from the GY.</p>
                     </div>
                 </div>
             </div>
@@ -349,8 +417,8 @@
 
     <section class="mb-10 md:mb-16">
         <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="card p-6 pro-con-card animate-fadeIn" style="animation-delay: 0.1s;">
                 <h3 class="text-xl font-bold text-green-400 mb-4 flex items-center gap-3"><i class="fas fa-thumbs-up"></i>Strengths</h3>
                 <ul class="list-disc list-inside space-y-2 text-gray-300">
                     <li><strong class="text-green-300">High Power Ceiling:</strong> Capable of producing endboards with over eight distinct points of layered disruption.</li>
@@ -358,13 +426,81 @@
                     <li><strong class="text-green-300">OTK Potential:</strong> Akihiron enables Combined Creation to attack directly for 5000 damage, often leading to a swift victory.</li>
                 </ul>
             </div>
-            <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+            <div class="card p-6 pro-con-card animate-fadeIn" style="animation-delay: 0.2s;">
                 <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center gap-3"><i class="fas fa-thumbs-down"></i>Weaknesses</h3>
                 <ul class="list-disc list-inside space-y-2 text-gray-300">
                     <li><strong class="text-red-300">Complexity & Timer:</strong> Long, intricate combos are difficult to master and can lead to losses against the in-game timer.</li>
                     <li><strong class="text-red-300">Graveyard Dependency:</strong> Fundamentally reliant on the GY and can be severely hampered by floodgates like Dimension Shifter.</li>
                     <li><strong class="text-red-300">Vulnerability to Maxx "C":</strong> Performs a high number of Special Summons, making an unanswered Maxx "C" a near-certain loss.</li>
                 </ul>
+            </div>
+            <!-- Added Tech Card Section -->
+            <div class="card p-6 pro-con-card animate-fadeIn" style="animation-delay: 0.3s;">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-3"><i class="fas fa-cogs text-accent"></i>External Engines</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent">Fiendsmith Engine:</strong> Provides additional 1-card starters and raises the deck's power ceiling.</li>
+                    <li><span class="neutral-icon"><i class="fas fa-network-wired"></i></span> <strong class="text-accent">Goblin Biker Engine:</strong> Offers defensive utility, allowing you to play through disruption by Tributing targeted monsters.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Section -->
+    <section class="mb-10 md:mb-16">
+        <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Card Overview: The Memento Arsenal</h2>
+        <p class="text-gray-300 mb-8 text-center max-w-3xl mx-auto">
+            A detailed breakdown of the archetype's most critical components and their roles in your strategy.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card p-6" id="angwitch-overview">
+                <h3 class="text-xl font-bold text-accent mb-2">Mementotlan Angwitch</h3>
+                <p class="text-gray-300 mb-2"><strong>Monster / Starter</strong></p>
+                <p class="text-gray-300">The best starter. On summon, searches any "Memento" monster. Also destroys a Memento to revive a Level 2 or lower Memento from the GY.</p>
+            </div>
+            <div class="card p-6" id="dark-blade-overview">
+                <h3 class="text-xl font-bold text-accent mb-2">Mementotlan Dark Blade</h3>
+                <p class="text-gray-300 mb-2"><strong>Monster / Starter</strong></p>
+                <p class="text-gray-300">A potent starter that destroys a Memento (including itself) to Special Summon a Level 3 or lower Memento directly from the Deck.</p>
+            </div>
+            <div class="card p-6" id="tatsu-overview">
+                <h3 class="text-xl font-bold text-accent mb-2">Mementotlan Tatsunootoshigo</h3>
+                <p class="text-gray-300 mb-2"><strong>Monster / Extender</strong></p>
+                <p class="text-gray-300">The main mill engine. Destroys a Memento to send other Mementos from Deck to GY whose total Levels equal the destroyed monster's Level.</p>
+            </div>
+            <div class="card p-6" id="shleepy-overview">
+                <h3 class="text-xl font-bold text-accent mb-2">Mementotlan Shleepy</h3>
+                <p class="text-gray-300 mb-2"><strong>Monster / Extender</strong></p>
+                <p class="text-gray-300">Critical combo piece. Summons itself from hand when a Memento is destroyed, then immediately enables a Fusion Summon.</p>
+            </div>
+            <div class="card p-6" id="combined-creation-overview">
+                <h3 class="text-xl font-bold text-accent mb-2">Mementoal Tecuhtlica - Combined Creation</h3>
+                <p class="text-gray-300 mb-2"><strong>Monster / Payoff</strong></p>
+                <p class="text-gray-300">The 5000 ATK main boss. Attacks all monsters and has a Quick Effect to destroy a Memento to revive any Memento from the GY.</p>
+            </div>
+            <div class="card p-6" id="creation-king-overview">
+                <h3 class="text-xl font-bold text-accent mb-2">Mementomictlan Tecuhtlica - Creation King</h3>
+                <p class="text-gray-300 mb-2"><strong>Monster / Payoff</strong></p>
+                <p class="text-gray-300">Fusion boss that mills 3 on summon and has a Quick Effect to trade your Mementos for opponent's cards via destruction.</p>
+            </div>
+            <div class="card p-6" id="fusion-overview">
+                <h3 class="text-xl font-bold text-accent mb-2">Mementotlan Fusion</h3>
+                <p class="text-gray-300 mb-2"><strong>Spell / Utility</strong></p>
+                <p class="text-gray-300">Quick-Play Fusion Spell. Its crucial GY effect lets you banish it and destroy a Memento to search any Memento Spell/Trap.</p>
+            </div>
+            <div class="card p-6" id="bone-party-overview">
+                <h3 class="text-xl font-bold text-accent mb-2">Mementotlan Bone Party</h3>
+                <p class="text-gray-300 mb-2"><strong>Spell / Extender</strong></p>
+                <p class="text-gray-300">A vital Quick-Play extender that destroys a Memento from hand/field to summon or search another Memento from the Deck.</p>
+            </div>
+            <div class="card p-6" id="field-spell-overview">
+                <h3 class="text-xl font-bold text-accent mb-2">Mementomictlan</h3>
+                <p class="text-gray-300 mb-2"><strong>Spell / Utility</strong></p>
+                <p class="text-gray-300">The Field Spell. Protects battling Mementos and revives a Memento from hand/GY when one of your monsters is destroyed.</p>
+            </div>
+            <div class="card p-6" id="cranium-burst-overview">
+                <h3 class="text-xl font-bold text-accent mb-2">Mementotlan Cranium Burst</h3>
+                <p class="text-gray-300 mb-2"><strong>Trap / Payoff</strong></p>
+                <p class="text-gray-300">Continuous Trap that provides multiple monster negates per turn by targeting your "Combined Creation".</p>
             </div>
         </div>
     </section>
@@ -449,16 +585,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Replaced with CardLoader.js call ---
     CardLoader.loadCards({
-        'tatsunootoshigo-img': 'Mementotlan Tatsunootoshigo',
-        'ghattic-img': 'Mementotlan Ghattic',
-        'twin-dragon-img': 'Mementotlan Twin Dragon',
-        'combined-creation-img': 'Mementoal Tecuhtlica - Combined Creation'
+        // NEW Combo IDs
+        'tatsu-combo-img': 'Mementotlan Tatsunootoshigo',
+        'ghattic-combo-img': 'Mementotlan Ghattic',
+        'mace-combo-img': 'Mementotlan Mace',
+        'king-combo-img': 'Mementomictlan Tecuhtlica - Creation King',
+        'field-spell-combo-img': 'Mementomictlan',
+        'akihiron-combo-img': 'Mementotlan Akihiron',
+        'dark-blade-combo-img': 'Mementotlan Dark Blade',
+        'angwitch-combo-img': 'Mementotlan Angwitch',
+        'twin-dragon-combo-img': 'Mementotlan Twin Dragon',
+        'apollousa-combo-img': 'Apollousa, Bow of the Goddess',
+        'combined-creation-combo-img': 'Mementoal Tecuhtlica - Combined Creation',
+        
+        // Endboard ID
+        'combined-creation-img': 'Mementoal Tecuhtlica - Combined Creation',
+        
+        // Card Overview IDs
+        'angwitch-overview': 'Mementotlan Angwitch',
+        'dark-blade-overview': 'Mementotlan Dark Blade',
+        'tatsu-overview': 'Mementotlan Tatsunootoshigo',
+        'shleepy-overview': 'Mementotlan Shleepy',
+        'combined-creation-overview': 'Mementoal Tecuhtlica - Combined Creation',
+        'creation-king-overview': 'Mementomictlan Tecuhtlica - Creation King',
+        'fusion-overview': 'Mementotlan Fusion',
+        'bone-party-overview': 'Mementotlan Bone Party',
+        'field-spell-overview': 'Mementomictlan',
+        'cranium-burst-overview': 'Mementotlan Cranium Burst'
     });
 });
 </script>
-    <div id="card-popup" class="popup"></div></body>
-</html>
 
+</body>
+</html>
 
 
