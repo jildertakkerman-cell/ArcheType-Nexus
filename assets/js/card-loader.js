@@ -59,6 +59,87 @@ const CardLoader = (function() {
      * @param {string} cardName - The name of the card
      * @param {string} containerId - The ID of the container element
      */
+
+    /**
+     * Fetches and injects the suggestion form into the page.
+     */
+async function loadSuggestionForm() {
+        try {
+            // Find the main container on the page
+            const injectionPoint = document.querySelector('.container'); 
+            if (!injectionPoint) {
+                console.log('Form injection point not found.');
+                return;
+            }
+
+            // Fetch the form's HTML content
+            // *** Make sure this path is correct for your local server ***
+            const response = await fetch('suggestion-form.html'); 
+            
+            if (!response.ok) {
+                throw new Error('suggestion-form.html not found. Status: ' + response.status);
+            }
+            
+            const formHTML = await response.text();
+
+            // Create a new <section> element and inject the HTML
+            const formSection = document.createElement('section');
+            formSection.innerHTML = formHTML;
+            injectionPoint.appendChild(formSection);
+
+            // --- Now, add interactivity and fill hidden field ---
+            
+            // 1. Find the new elements
+            const toggleBtn = document.getElementById('toggle-form-btn');
+            const formContainer = document.getElementById('suggestion-form-container');
+            const contextField = document.getElementById("form-page-context");
+
+            if (!toggleBtn || !formContainer || !contextField) {
+                console.error('Form toggle elements not found after injection.');
+                return;
+            }
+
+            // 2. Add click listener to the toggle button
+            toggleBtn.addEventListener('click', () => {
+                const isHidden = formContainer.style.display === 'none';
+                if (isHidden) {
+                    formContainer.style.display = 'block'; // Show the form
+                    toggleBtn.innerHTML = '<i class="fas fa-times mr-2"></i> Hide Suggestion Form';
+                } else {
+                    formContainer.style.display = 'none'; // Hide the form
+                    toggleBtn.innerHTML = '<i class="fas fa-edit mr-2"></i> Suggest an Improvement';
+                }
+            });
+            
+            // 3. Find the page's main <h1> title
+            let pageTitle = document.title; // Fallback
+            const h1 = document.querySelector('h1');
+            if (h1) {
+                pageTitle = h1.innerText;
+            }
+
+            // 4. Set the hidden field's value
+            contextField.value = pageTitle;
+
+        } catch (error) {
+            console.error('Failed to load suggestion form:', error);
+        }
+    }
+    /**
+     * Initialize the card loader system
+     * Call this once when the page loads
+     */
+    function init() {
+        createPopup();
+        setupGlobalClickListener();
+        console.log('CardLoader initialized');
+
+        // ==========================================
+        // === 2. ADD THIS LINE TO CALL YOUR NEW FUNCTION ===
+        // ==========================================
+        loadSuggestionForm();
+        
+    }
     async function loadCard(cardName, containerId) {
     console.log('[CardLoader] loadCard called for:', cardName, 'container:', containerId);
         const container = document.getElementById(containerId);
