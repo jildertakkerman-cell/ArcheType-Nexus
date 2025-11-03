@@ -5,7 +5,7 @@
  * YuGiOh Card Loader Module
  * Handles fetching card data from API and displaying images from Google Cloud Storage
  */
-const CardLoader = (function() {
+const CardLoader = (function () {
     console.log('[CardLoader] IIFE started');
     // Configuration
     const CONFIG = {
@@ -63,10 +63,16 @@ const CardLoader = (function() {
     /**
      * Fetches and injects the suggestion form into the page.
      */
-async function loadSuggestionForm() {
+    async function loadSuggestionForm() {
+        // Skip form on pages marked as index
+        if (document.body.dataset.page === 'index') {
+            console.log('Skipping suggestion form on index page');
+            return;
+        }
+
         try {
             // Find the main container on the page
-            const injectionPoint = document.querySelector('.container'); 
+            const injectionPoint = document.querySelector('.container');
             if (!injectionPoint) {
                 console.log('Form injection point not found.');
                 return;
@@ -74,12 +80,12 @@ async function loadSuggestionForm() {
 
             // Fetch the form's HTML content
             // *** Make sure this path is correct for your local server ***
-            const response = await fetch('suggestion-form.html'); 
-            
+            const response = await fetch('suggestion-form.html');
+
             if (!response.ok) {
                 throw new Error('suggestion-form.html not found. Status: ' + response.status);
             }
-            
+
             const formHTML = await response.text();
 
             // Create a new <section> element and inject the HTML
@@ -88,7 +94,7 @@ async function loadSuggestionForm() {
             injectionPoint.appendChild(formSection);
 
             // --- Now, add interactivity and fill hidden field ---
-            
+
             // 1. Find the new elements
             const toggleBtn = document.getElementById('toggle-form-btn');
             const formContainer = document.getElementById('suggestion-form-container');
@@ -110,7 +116,7 @@ async function loadSuggestionForm() {
                     toggleBtn.innerHTML = '<i class="fas fa-edit mr-2"></i> Suggest an Improvement';
                 }
             });
-            
+
             // 3. Find the page's main <h1> title
             let pageTitle = document.title; // Fallback
             const h1 = document.querySelector('h1');
@@ -138,10 +144,10 @@ async function loadSuggestionForm() {
         // === 2. ADD THIS LINE TO CALL YOUR NEW FUNCTION ===
         // ==========================================
         loadSuggestionForm();
-        
+
     }
     async function loadCard(cardName, containerId) {
-    console.log('[CardLoader] loadCard called for:', cardName, 'container:', containerId);
+        console.log('[CardLoader] loadCard called for:', cardName, 'container:', containerId);
         const container = document.getElementById(containerId);
         if (!container) {
             console.warn(`Container not found: ${containerId}`);
@@ -163,7 +169,7 @@ async function loadSuggestionForm() {
 
             // Fetch from API
             const cardInfo = await fetchCardData(cardName);
-            
+
             if (cardInfo) {
                 // Build image URL from YOUR storage
                 cardInfo.hosted_image_url = `${CONFIG.IMAGE_BASE_URL}/${cardInfo.id}.png`;
@@ -184,8 +190,8 @@ async function loadSuggestionForm() {
      * Example: { 'container-1': 'Blue-Eyes White Dragon', 'container-2': 'Dark Magician' }
      */
     async function loadCards(cardMap) {
-    console.log('[CardLoader] loadCards called with:', cardMap);
-        const promises = Object.entries(cardMap).map(([containerId, cardName]) => 
+        console.log('[CardLoader] loadCards called with:', cardMap);
+        const promises = Object.entries(cardMap).map(([containerId, cardName]) =>
             loadCard(cardName, containerId)
         );
         await Promise.all(promises);
@@ -197,14 +203,14 @@ async function loadSuggestionForm() {
      * @returns {Promise<Object>} Card data object
      */
     async function fetchCardData(cardName) {
-    const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}`;
-    console.log("[CardLoader] fetchCardData called for:", cardName, "URL:", apiUrl);
+        const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}`;
+        console.log("[CardLoader] fetchCardData called for:", cardName, "URL:", apiUrl);
         const response = await fetch(apiUrl);
-        
+
         if (!response.ok) {
             throw new Error(`API error: ${response.status}`);
         }
-        
+
         const data = await response.json();
         return data?.data?.[0];
     }
@@ -216,7 +222,7 @@ async function loadSuggestionForm() {
      */
     function displayCardImage(cardInfo, container) {
         const imageUrl = cardInfo.hosted_image_url;
-        
+
         if (!imageUrl) {
             container.innerHTML = `<div class="card-placeholder">${cardInfo.name}</div>`;
             return;
@@ -226,15 +232,15 @@ async function loadSuggestionForm() {
         img.src = imageUrl;
         img.alt = cardInfo.name;
         img.className = 'w-full h-auto rounded-lg shadow-md';
-        
+
         // Handle image load errors with fallback to PNG
-        img.onerror = function() {
+        img.onerror = function () {
             // Try PNG extension
             if (imageUrl.endsWith('.jpg')) {
                 const pngUrl = imageUrl.replace('.png', '.jpg');
                 console.warn(`PNG not found, trying JPG: ${pngUrl}`);
                 img.src = pngUrl;
-                img.onerror = function() {
+                img.onerror = function () {
                     console.error(`Image not found: ${cardInfo.name} (ID: ${cardInfo.id})`);
                     container.innerHTML = `<div class="card-placeholder">${cardInfo.name}<br><small>Missing: ${cardInfo.id}</small></div>`;
                 };
@@ -243,7 +249,7 @@ async function loadSuggestionForm() {
                 container.innerHTML = `<div class="card-placeholder">${cardInfo.name}<br><small>Missing: ${cardInfo.id}</small></div>`;
             }
         };
-        
+
         container.innerHTML = '';
         container.appendChild(img);
     }
@@ -258,10 +264,10 @@ async function loadSuggestionForm() {
             hidePopup();
             return;
         }
-        
+
         hidePopup();
         if (!popup) return;
-        
+
         const cardInfo = cardDataCache[cardName];
         if (!cardInfo) return;
 
@@ -274,9 +280,9 @@ async function loadSuggestionForm() {
         if (atkDef.length > 0) {
             stats = `<p class="mt-2 text-red-400 font-bold">${atkDef.join(' ')}</p>`;
         }
-        
-        const cardType = cardInfo.type.includes('Monster') 
-            ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` 
+
+        const cardType = cardInfo.type.includes('Monster')
+            ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]`
             : `[${cardInfo.race} Card]`;
 
         popup.innerHTML = `
@@ -288,7 +294,7 @@ async function loadSuggestionForm() {
                 ${stats}
             </div>
         `;
-        
+
         movePopup(event);
         popup.style.display = 'block';
         setTimeout(() => { popup.style.opacity = 1; }, 10);
@@ -304,8 +310,8 @@ async function loadSuggestionForm() {
         if (Date.now() - lastShown < 100) return;
         if (activePopup) {
             activePopup.style.opacity = 0;
-            setTimeout(() => { 
-                if (activePopup) activePopup.style.display = 'none'; 
+            setTimeout(() => {
+                if (activePopup) activePopup.style.display = 'none';
             }, 200);
             activePopup = null;
             currentCard = null;
@@ -318,7 +324,7 @@ async function loadSuggestionForm() {
      */
     function movePopup(event) {
         if (!popup) return;
-        
+
         const popupWidth = popup.offsetWidth;
         const popupHeight = popup.offsetHeight;
         const cushion = 20;
@@ -344,7 +350,7 @@ async function loadSuggestionForm() {
     async function preloadCards(cardNames) {
         const promises = cardNames.map(async (cardName) => {
             if (cardDataCache[cardName]) return;
-            
+
             try {
                 const cardInfo = await fetchCardData(cardName);
                 if (cardInfo) {
@@ -355,7 +361,7 @@ async function loadSuggestionForm() {
                 console.warn(`Failed to preload card: ${cardName}`, error);
             }
         });
-        
+
         await Promise.all(promises);
         console.log(`Preloaded ${cardNames.length} cards`);
     }
