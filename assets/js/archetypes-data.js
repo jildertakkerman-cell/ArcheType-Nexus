@@ -3043,7 +3043,7 @@ const archetypes = [
     },
     {
         name: 'Appliancer',
-        description: 'A Link-focused strategy that excels at "Link Laddering" to build a resilient board.',
+        description: 'A Link-focused strategy that uses Link-1s to control the gamestate',
         filepath: 'Appliancer Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="50" cy="50" r="45" fill="#4338ca" stroke="#fff" stroke-width="2"/>
@@ -25387,7 +25387,7 @@ const archetypes = [
     },
     {
         name: "Barrier Statue",
-        description: "A rock archetype featuring barrier statues that excel at defense, negation, and controlling the field through their statue effects.",
+        description: "A series of cards that lock the opponent out of special summoning all but one Atrribute.",
         filepath: "Barrier statue deck analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
@@ -26123,7 +26123,7 @@ const archetypes = [
     },
     {
         name: "Backup",
-        description: "A support archetype focused on backup and reinforcement strategies.",
+        description: "A small series of Cyberse support that focused on backup and reinforcement strategies.",
         filepath: "Backup Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
