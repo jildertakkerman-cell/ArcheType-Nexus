@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <script src="assets/js/card-loader.js" defer></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -142,10 +143,31 @@
             font-size: 2.8rem;
             font-weight: 700;
         }
+
+        #card-popup {
+            position: fixed;
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+            background-color: #1a0f2d;
+            border: 2px solid #ff4b8d;
+            border-radius: 10px;
+            box-shadow: 0 0 25px rgba(255, 75, 141, 0.7), 0 0 25px rgba(77, 166, 255, 0.7);
+            padding: 10px;
+            animation: fadeIn 0.2s ease-out;
+            pointer-events: none;
+        }
+
+        #card-popup img {
+            width: 100%;
+            border-radius: 6px;
+        }
         
     </style>
 </head>
 <body class="p-4 md:p-8">
+
+<div id="card-popup"></div>
 
 <div class="container mx-auto">
         <!-- Title Section -->
@@ -266,14 +288,14 @@
                 <h3 class="text-xl font-bold text-white mb-4">Searchers & Consistency</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="flex flex-col md:flex-row items-center gap-4 combo-step-card p-4 rounded-lg">
-                        <div id="snitch-img-container" class="card-image-container w-32 flex-shrink-0 card-placeholder">Live☆Twin Sunny's Snitch</div>
+                        <div id="snitch-img-container" class="card-image-container w-40 flex-shrink-0 card-placeholder">Live☆Twin Sunny's Snitch</div>
                         <div>
                             <h4 class="text-lg font-bold text-pink mb-1">Live☆Twin Sunny's Snitch</h4>
                             <p class="text-sm text-purple-200">The primary searcher. This Continuous Spell adds any "Live☆Twin" monster from Deck to hand on activation, making it a key consistency tool.</p>
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row items-center gap-4 combo-step-card p-4 rounded-lg">
-                        <div id="password-img-container" class="card-image-container w-32 flex-shrink-0 card-placeholder">Secret Password</div>
+                        <div id="password-img-container" class="card-image-container w-40 flex-shrink-0 card-placeholder">Secret Password</div>
                         <div>
                             <h4 class="text-lg font-bold text-pink mb-1">Secret Password</h4>
                             <p class="text-sm text-purple-200">A flexible searcher that can grab any "Live☆Twin" Spell/Trap, most often used to get "Sunny's Snitch" or another key utility card.</p>
@@ -284,14 +306,14 @@
                 <h3 class="text-xl font-bold text-white mb-4">Extenders & Traps</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="flex flex-col md:flex-row items-center gap-4 combo-step-card p-4 rounded-lg">
-                        <div id="home-img-container" class="card-image-container w-32 flex-shrink-0 card-placeholder">Live☆Twin Home</div>
+                        <div id="home-img-container" class="card-image-container w-40 flex-shrink-0 card-placeholder">Live☆Twin Home</div>
                         <div>
                             <h4 class="text-lg font-bold text-blue mb-1">Live☆Twin Home</h4>
                             <p class="text-sm text-purple-200">A Quick-Play extender. By discarding 1 card, you can Special Summon a "Ki-sikil" or "Lil-la" from your Deck, but it locks you into "Evil★Twin" Extra Deck summons.</p>
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row items-center gap-4 combo-step-card p-4 rounded-lg">
-                        <div id="challenge-img-container" class="card-image-container w-32 flex-shrink-0 card-placeholder">Evil★Twin Challenge</div>
+                        <div id="challenge-img-container" class="card-image-container w-40 flex-shrink-0 card-placeholder">Evil★Twin Challenge</div>
                         <div>
                             <h4 class="text-lg font-bold text-blue mb-1">Evil★Twin Challenge</h4>
                             <p class="text-sm text-purple-200">A Normal Trap that revives a "Ki-sikil" or "Lil-la" and then immediately lets you Link Summon, enabling disruption on your opponent's turn.</p>
@@ -408,54 +430,17 @@
             });
         }
 
-        // Card Image Fetching
-        async function fetchAndDisplayCardImage(cardName, containerId) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`;
-
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error(`API error: ${response.status}`);
-                const data = await response.json();
-                const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-
-                if (imageUrl) {
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.alt = cardName;
-                    img.className = 'w-full h-auto rounded-lg shadow-md animate-fadeIn';
-                    let borderColor = '#ff4b8d'; // Default pink
-                    if (cardName.includes('Ki-sikil') || cardName.includes('Home') || cardName.includes('Challenge')) {
-                        borderColor = '#4da6ff'; // Blue for Ki-sikil and some support
-                    }
-                    img.style.border = `2px solid ${borderColor}`;
-                    container.innerHTML = '';
-                    container.appendChild(img);
-                } else {
-                    throw new Error("Image not found");
-                }
-            } catch (error) {
-                console.error(`Failed to fetch image for "${cardName}":`, error);
-                container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
-            }
-        }
-
-        const cardsToLoad = {
+        // Card Image Loading        
+        CardLoader.loadCards({
             'lilla-img-container': 'Live☆Twin Lil-la',
             'et-kisikil-img-container': 'Evil★Twin Ki-sikil',
             'sunny-img-container': "Evil★Twin's Trouble Sunny",
             'endboard-sunny-container': "Evil★Twin's Trouble Sunny",
-            // New cards for the support section
             'snitch-img-container': "Live☆Twin Sunny's Snitch",
             'password-img-container': "Secret Password",
             'home-img-container': "Live☆Twin Home",
             'challenge-img-container': "Evil★Twin Challenge"
-        };
-
-        for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
-            fetchAndDisplayCardImage(cardName, containerId);
-        }
+        });
     });
 </script>
 </body>
