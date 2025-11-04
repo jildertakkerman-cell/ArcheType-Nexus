@@ -196,7 +196,7 @@ const archetypes = [
     {
     name: 'Neo-Spacian',
     description: 'A unique archetype based around Neo-Spacian monsters and Contact Fusion with Elemental HERO Neos, enabling flexible strategies through multiple fusion forms and diverse card effects.',
-    filepath: 'Neo-Spacian Deck Analysis.html',
+    filepath: 'Neo Spacian Deck Analysis.html',
     icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <radialGradient id="neosAura" cx="50%" cy="40%" r="60%">
