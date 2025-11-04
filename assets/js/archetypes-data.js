@@ -192,6 +192,41 @@ const archetypes = [
                                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#2d6a4f" font-weight="bold">Naturia</text>
                                     </svg>`
     },
+
+    {
+    name: 'Neo-Spacian',
+    description: 'A unique archetype based around Neo-Spacian monsters and Contact Fusion with Elemental HERO Neos, enabling flexible strategies through multiple fusion forms and diverse card effects.',
+    filepath: 'Neo-Spacian Deck Analysis.html',
+    icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <radialGradient id="neosAura" cx="50%" cy="40%" r="60%">
+                <stop offset="0%" stop-color="#fff" stop-opacity="0.7"/>
+                <stop offset="60%" stop-color="#34d1ff" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#01275a" stop-opacity="0.7"/>
+            </radialGradient>
+            <linearGradient id="neosGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ececec"/>
+                <stop offset="100%" stop-color="#34d1ff"/>
+            </linearGradient>
+        </defs>
+        <!-- Main background -->
+        <ellipse cx="50" cy="55" rx="40" ry="33" fill="url(#neosAura)" opacity="0.8"/>
+        <!-- Central comet motif -->
+        <path d="M50 25 Q60 45 50 85 Q40 45 50 25 Z" fill="url(#neosGlow)" stroke="#34d1ff" stroke-width="2"/>
+        <!-- Orbs symbolizing Neo-Spacians -->
+        <circle cx="35" cy="50" r="5" fill="#00bcd4" opacity="0.9"/>
+        <circle cx="65" cy="50" r="5" fill="#ffa726" opacity="0.9"/>
+        <circle cx="50" cy="35" r="4" fill="#aed581" opacity="0.9"/>
+        <circle cx="45" cy="67" r="3.5" fill="#f06292" opacity="0.9"/>
+        <circle cx="55" cy="67" r="3.5" fill="#9575cd" opacity="0.9"/>
+        <!-- Sparkles for Contact Fusion -->
+        <circle cx="50" cy="25" r="2.2" fill="#fff" opacity="0.7">
+            <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Archetype label -->
+        <text x="50" y="94" text-anchor="middle" font-size="12" fill="#1877c9" font-weight="bold">Neo-Spacian</text>
+    </svg>`
+},
     {
         name: 'Nekroz',
         description: 'A WATER Ritual archetype focused on ritual summoning, searching, and versatile monster effects.',
