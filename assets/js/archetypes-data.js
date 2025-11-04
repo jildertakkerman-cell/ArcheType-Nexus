@@ -20845,6 +20845,61 @@ const archetypes = [
                     </svg>`
     },
     {
+    name: 'Phantom Knights',
+    description: 'A DARK Warrior archetype specializing in graveyard recursion and rapid swarming, the Phantom Knights enable powerful Rank 3 Xyz plays while providing unique Trap cards that turn into monsters. Their resource loop and disruption tools make them a staple for combo and control strategies alike.',
+    filepath: 'Phantom knights Deck Analysis.html',
+    icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <radialGradient id="pkCloak" cx="55%" cy="40%" r="60%">
+                <stop offset="0%" stop-color="#54546a" stop-opacity="0.8"/>
+                <stop offset="85%" stop-color="#1e1b33" stop-opacity="1"/>
+                <stop offset="100%" stop-color="#000015" stop-opacity="0.95"/>
+            </radialGradient>
+            <linearGradient id="pkBladeA" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#9fbbd2"/>
+                <stop offset="100%" stop-color="#46b5e6"/>
+            </linearGradient>
+            <linearGradient id="pkBladeB" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#65f0d5"/>
+                <stop offset="100%" stop-color="#097b74"/>
+            </linearGradient>
+            <radialGradient id="pkAura" cx="50%" cy="50%" r="80%">
+                <stop offset="0%" stop-color="#46b5e6" stop-opacity="0.18"/>
+                <stop offset="75%" stop-color="#18162c" stop-opacity="0.11"/>
+                <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="pkGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+        </defs>
+        <!-- Ghostly blue aura -->
+        <ellipse cx="50" cy="52" rx="37" ry="28" fill="url(#pkAura)" opacity="0.64"/>
+        <!-- Shadowy cloak -->
+        <path d="M25 57 Q25 35 50 18 Q75 35 75 57 Q76 79 50 88 Q24 78 25 57 Z"
+              fill="url(#pkCloak)" stroke="#373a49" stroke-width="2"/>
+        <!-- Eye slits (haunt motif) -->
+        <ellipse cx="41" cy="52" rx="3" ry="2" fill="#adebfc" opacity="0.8"/>
+        <ellipse cx="59" cy="52" rx="3" ry="2" fill="#adebfc" opacity="0.8"/>
+        <!-- Crossed Phantom Blades -->
+        <g filter="url(#pkGlow)">
+          <rect x="27" y="64" width="31" height="7" rx="2.5" fill="url(#pkBladeA)" transform="rotate(-22 43 67)"/>
+          <rect x="42" y="65" width="32" height="7" rx="2.3" fill="url(#pkBladeB)" transform="rotate(24 60 68)"/>
+        </g>
+        <!-- Chains -->
+        <g stroke="#7ed3c6" stroke-width="1.2" opacity="0.65">
+          <path d="M34 70 Q32 75 40 78"/>
+          <path d="M66 70 Q68 75 60 78"/>
+        </g>
+        <!-- Archetype text -->
+        <text x="50" y="96" text-anchor="middle" font-size="11" font-weight="bold"
+            fill="#02e0e3" font-family="Orbitron, sans-serif">Phantom Knights</text>
+      </svg>`
+},
+    {
         name: 'Pot of',
         description: 'A series of iconic Spell Cards that revolutionized Yu-Gi-Oh by providing powerful draw and search effects, featuring legendary cards like Pot of Greed, Pot of Desires, and Pot of Prosperity.',
         filepath: 'Pot of Deck Analyis.html',
