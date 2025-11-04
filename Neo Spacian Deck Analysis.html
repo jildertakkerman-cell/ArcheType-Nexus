@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo-Spacian Archetype Analysis</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/card-loader.js"></script>
+    <!-- Google Fonts (Inter for body, Orbitron for headers) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a23; /* Deep space blue */
+            color: #dbeafe; /* Light blue/white */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        /* Card styling for the "cosmic" theme */
+        .card {
+            background-color: rgba(28, 28, 61, 0.8); /* Dark blue/purple with transparency */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4f46e5; /* Indigo border */
+            backdrop-filter: blur(10px);
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(40, 40, 80, 0.8);
+            border: 1px solid #6366f1;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        /* Card placeholder for the JS loader */
+        .card-placeholder {
+            background-color: #1e1b4b; /* Dark indigo */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #1e1b4b;
+            border: 1px dashed #6366f1;
+        }
+        /* Icons and Accents */
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #a5b4fc; } /* Light indigo/lavender */
+        .arrow-color { color: #a5b4fc; }
+        .heading-underline {
+            border-bottom: 2px solid #a5b4fc;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        /* Link styling for the "hint" link */
+        .lore-link {
+            color: #a5b4fc;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #a5b4fc;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #a5b4fc;
+        }
+
+        /* --- Neo-Spacian "Starfield" Animated Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0a0a23;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4f46e5;
+        }
+        #starfield-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(10, 10, 35, 0.4) 0%, rgba(10, 10, 35, 0.9) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(165, 180, 252, 0.7);
+        }
+        .banner-header h1 {
+             font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* Card Popup Styles (from other files) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 10, 35, 0.95);
+            border: 1px solid #6366f1;
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #a5b4fc;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Orbitron', sans-serif;
+            color: #a5b4fc;
+        }
+
+        /* Home Button (from other files) */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+    
+    <!-- Card Popup Container -->
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="starfield-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">NEO-SPACIAN</h1>
+            <p class="text-lg md:text-xl text-indigo-200">The Evolution of Contact Fusion</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-200">
+                    The <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=neo-spacian&stype=1" target="_blank" class="lore-link">"Neo-Spacian" archetype</a>, alongside its ace <strong class="text-accent">Elemental HERO Neos</strong>, has evolved from a dysfunctional "Contact Fusion" strategy into a potent "GY-setup" combo deck. Originally hampered by a mechanic that required shuffling materials from the field only to have the Fusion Monster return to the Extra Deck, modern support has completely inverted this. The deck's goal is now to mill its monsters from the Deck to the Graveyard, treating the GY as a resource pool. The modern win condition is not just to "Contact Fusion," but to use powerful extenders to establish a game-ending floodgate on the opponent's turn.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Core Engine & Starters</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Starters & Enablers -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-astronaut text-4xl text-indigo-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Starters & Enablers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Neo Space Connector</h4>
+                            <p class="text-sm text-blue-200">The premier 1-card starter. On Normal Summon, it Special Summons one "Neo-Spacian" or <strong class="text-accent">Elemental HERO Neos</strong> from the Deck. This is the most direct path to <strong class="text-accent">Neo-Spacian Aqua Dolphin</strong> for a hand-rip.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">EN - Engage Neo Space</h4>
+                            <p class="text-sm text-blue-200">A "combo-in-a-can." Dumps a "Neo-Spacian" and "HERO" (like <strong class="text-accent">Shadow Mist</strong>) from Deck/Hand to GY, then summons <strong class="text-accent">Spirit of Neos</strong> from Deck to search a power card.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Elemental HERO Spirit of Neos</h4>
+                            <p class="text-sm text-blue-200">The deck's primary Spell/Trap searcher. When Special Summoned, it adds any Spell/Trap that mentions <strong class="text-accent">Elemental HERO Neos</strong>, giving you access to your best cards.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Payoffs & "The Fix" -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas
+                        fas fa-comet text-4xl text-indigo-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Payoffs: Fixing Contact Fusion</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Neos Fusion</h4>
+                            <p class="text-sm text-blue-200">The archetypal "Fusion Destiny." Summons a "Neos" Fusion from the Extra Deck by sending materials from the Deck. Its GY effect also protects your Fusions from their own "return to deck" drawback.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Favorite Contact</h4>
+                            <p class="text-sm text-blue-200">The true win condition. This Normal Trap summons a "HERO" Fusion (ignoring conditions) from the Extra Deck by placing materials from your GY/Field/Hand/Banished on the bottom of the Deck. It also makes the summoned monster *immune* to being returned to the Extra Deck.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Instant Contact</h4>
+                            <p class="text-sm text-blue-200">A "free" extender. Pay 1000 LP to summon any Level 7 or lower "Neo-Spacian" or "HERO" Fusion from the Extra Deck (effects negated) to use as Link/Fusion material.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The "Cosmo Neos Lock"</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                This is the deck's strongest Turn 1 strategy. The goal is to end the turn with a set <strong class="text-accent">Favorite Contact</strong> and a GY loaded with all the materials needed to summon your ultimate boss monster.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="engage-img-container" class="card-image-container flex-shrink-0 card-placeholder">EN - Engage Neo Space</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Engage the Engine</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent">EN - Engage Neo Space</strong>. Send <strong class="text-accent">Elemental HERO Shadow Mist</strong> (from hand) and a "Neo-Spacian" (e.g., <strong class="text-accent">Dark Panther</strong>, from Deck) to the GY. This summons <strong class="text-accent">Elemental HERO Spirit of Neos</strong> from your Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="spirit-img-container" class="card-image-container flex-shrink-0 card-placeholder">Elemental HERO Spirit of Neos</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Build the Chain</h3>
+                            </div>
+                            <div class="text-blue-200 mt-2 space-y-2">
+                                <p class="text-sm">A Chain occurs. Resolve backwards (CL2 first):</p>
+                                <div class="flex items-center bg-indigo-900/50 p-2 rounded-lg">
+                                    <i class="fas fa-link text-accent mr-3 w-4 text-center"></i>
+                                    <div>
+                                        <span class="font-bold text-white">CL2:</span>
+                                        <strong class="text-accent">Shadow Mist</strong> (to search)
+                                    </div>
+                                </div>
+                                <div class="flex items-center bg-indigo-900/50 p-2 rounded-lg">
+                                    <i class="fas fa-link text-accent mr-3 w-4 text-center"></i>
+                                    <div>
+                                        <span class="font-bold text-white">CL1:</span>
+                                        <strong class="text-accent">Spirit of Neos</strong> (to search)
+                                    </div>
+                                </div>
+                                <p class="text-sm mt-2"><strong>Result:</strong> <strong class="text-accent">Shadow Mist</strong> searches <strong class="text-accent">Prisma</strong>. <strong class="text-accent">Spirit of Neos</strong> searches <strong class="text-accent">Favorite Contact</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="fusion-img-container" class="card-image-container flex-shrink-0 card-placeholder">Neos Fusion</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Fill the Graveyard</h3>
+                            </div>
+                            <p class="text-blue-200">Activate <strong class="text-accent">Neos Fusion</strong>. Send <strong class="text-accent">Elemental HERO Neos</strong> and another "Neo-Spacian" (e.g., <strong class="text-accent">Grand Mole</strong>) from Deck to GY. Summon <strong class="text-accent">Elemental HERO Brave Neos</strong>. You now have 3+ "Neo-Spacians" and <strong class="text-accent">Neos</strong> in the GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 4 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="favorite-img-container" class="card-image-container flex-shrink-0 card-placeholder">Favorite Contact</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e1b4b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                <h3 class="text-lg font-bold">Set the Floodgate</h3>
+                            </div>
+                            <p class="text-blue-200">Set your searched <strong class="text-accent">Favorite Contact</strong> and pass your turn. Your <strong class="text-accent">Brave Neos</strong> is protected by <strong class="text-accent">Neos Fusion</strong> in the GY.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The End Board: The Turn Skip</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-3xl mx-auto">
+                On your opponent's Draw Phase or Main Phase 1, you activate <strong class="text-accent">Favorite Contact</strong>. By placing <strong class="text-accent">Neos</strong> and 3 "Neo-Spacians" (e.g., <strong class="text-accent">Aqua Dolphin</strong>, <strong class="text-accent">Dark Panther</strong>, <strong class="text-accent">Grand Mole</strong>) from your GY back into the Deck, you summon your true boss monster.
+            </p>
+            <div class="grid grid-cols-1 gap-6 mx-auto max-w-md">
+                <!-- Cosmo Neos -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Elemental HERO Cosmo Neos</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="cosmo-img-container" class="card-image-container card-placeholder">Elemental HERO Cosmo Neos</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-accent">The Floodgate:</strong> When Special Summoned from the Extra Deck, its effect activates.</li>
+                        <li><strong class="text-accent">Un-chainable:</strong> The opponent *cannot* respond to this effect's activation.</li>
+                        <li><strong class="text-accent">Effect:</strong> For the rest of the turn, your opponent cannot activate cards, and the effects of all cards they control are negated. This effectively skips their turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">Powerful End Board:</strong> The <strong class="text-accent">Cosmo Neos</strong> lock is one of the strongest turn-skip floodgates in the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-rocket"></i></span> <strong class="text-green-300">Go-Second Power:</strong> <strong class="text-accent">Neos Fusion</strong> can send <strong class="text-accent">Rainbow Dragon</strong> to summon <strong class="text-accent">Rainbow Neos</strong>, a 1-card board wipe.</li>
+                        <li><span class="pro-icon"><i class="fas fa-cogs"></i></span> <strong class="text-green-300">"HERO" Synergy:</strong> Has full access to the "HERO" engine, including <strong class="text-accent">Stratos</strong>, <strong class="text-accent">Shadow Mist</strong>, and <strong class="text-accent">A Hero Lives</strong> for consistency.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Choke Points:</strong> The deck is very vulnerable to hand traps. <strong class="text-accent">Ash Blossom</strong> on <strong class="text-accent">EN - Engage Neo Space</strong> or <strong class="text-accent">Neos Fusion</strong> can be devastating.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Graveyard Hate:</strong> Cards like <strong class="text-accent">D.D. Crow</strong> or <strong class="text-accent">Bystials</strong> can banish key materials before <strong class="text-accent">Favorite Contact</strong> resolves.</li>
+                        <li><span class="con-icon"><i class="fas fa-brick"></i></span> <strong class="text-red-300">Drawing Bricks:</strong> Drawing the vanilla <strong class="text-accent">Elemental HERO Neos</strong> or multiple "Neo-Spacian" monsters can clog the hand and ruin combos.</li>
+                    </ul>
+                </div>
+                <!-- Tech & Engine Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Synergies & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-mask"></i></span> <strong class="text-accent">"HERO" Engine:</strong> <strong class="text-accent">Stratos</strong>, <strong class="text-accent">Shadow Mist</strong>, and <strong class="text-accent">A Hero Lives</strong> add massive consistency.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-accent">"Warrior" Engine:</strong> <strong class="text-accent">Reinforcement of the Army</strong> searches most starters.</li>
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong class="text-red-300">Banned Synergies:</strong> The deck's power was once amplified by <strong class="text-accent">Isolde, Two Tales of the Noble Knights</strong>, which is now **FORBIDDEN**.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-blue-200 mb-6 text-center">
+                    The core "Neo-Spacian" archetype remains at full power. However, some of its most powerful generic "HERO" and "Warrior" extenders have been hit, which impacts its ceiling.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Forbidden -->
+                    <div class="card combo-step-card p-4 bg-red-900/30 border-red-500">
+                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li><strong class="text-red-300">Isolde, Two Tales of the Noble Knights</strong></li>
+                            <li><strong class="text-red-300">Block Dragon</strong></li>
+                            <li><strong class="text-red-300">Spright Elf</strong></li>
+                        </ul>
+                    </div>
+                    <!-- Limited -->
+                    <div class="card combo-step-card p-4 bg-yellow-900/30 border-yellow-500">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 Per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li><span class="text-yellow-300">(None of the core archetype)</span></li>
+                        </ul>
+                    </div>
+                    <!-- Unlimited -->
+                    <div class="card combo-step-card p-4 bg-green-900/30 border-green-500">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited (3 Per Deck)</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-blue-200">
+                            <li><strong class="text-green-300">Neo Space Connector</strong></li>
+                            <li><strong class="text-green-300">EN - Engage Neo Space</strong></li>
+                            <li><strong class="text-green-300">Neos Fusion</strong></li>
+                            <li><strong class="text-green-300">Favorite Contact</strong></li>
+                            <li><strong class="text-green-300">Elemental HERO Stratos</strong></li>
+                            <li><strong class="text-green-300">A Hero Lives</strong></li>
+                            <li><strong class="text-green-300">Reinforcement of the Army</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-blue-900/30 rounded border-l-4 border-blue-400">
+                    <p class="text-sm text-blue-200"><strong>Meta Implications:</strong> The deck is fully functional and consistent, as all its core searchers and starters are Unlimited. The banning of <strong class="text-accent">Isolde</strong> removes a powerful, high-ceiling combo line from the "Warrior" variants, forcing the deck to rely more on its pure "HERO" and "Neos" engine, which is still very strong.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- JavaScript Section -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Starfield Banner Animation ---
+            const canvas = document.getElementById('starfield-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let stars = [];
+                const numStars = 300;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Star {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.z = Math.random() * canvas.width;
+                        this.size = Math.random() * 2 + 0.5;
+                        this.color = `rgba(165, 180, 252, ${Math.random() * 0.5 + 0.5})`;
+                    }
+                    update() {
+                        this.z -= 1.5;
+                        if (this.z <= 0) {
+                            this.z = canvas.width;
+                            this.x = Math.random() * canvas.width;
+                            this.y = Math.random() * canvas.height;
+                        }
+                    }
+                    draw() {
+                        let x = (this.x - canvas.width / 2) * (canvas.width / this.z) + canvas.width / 2;
+                        let y = (this.y - canvas.height / 2) * (canvas.width / this.z) + canvas.height / 2;
+                        let r = this.size * (canvas.width / this.z);
+
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initStars() {
+                    stars = [];
+                    for (let i = 0; i < numStars; i++) {
+                        stars.push(new Star());
+                    }
+                }
+
+                function animate() {
+                    ctx.fillStyle = 'rgba(10, 10, 35, 0.1)'; // Slight motion blur
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    stars.forEach(s => {
+                        s.update();
+                        s.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initStars();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initStars();
+                });
+            }
+
+            // --- Card Loading ---
+            CardLoader.loadCards({
+                'engage-img-container': 'EN - Engage Neo Space',
+                'spirit-img-container': 'Elemental HERO Spirit of Neos',
+                'fusion-img-container': 'Neos Fusion',
+                'favorite-img-container': 'Favorite Contact',
+                'cosmo-img-container': 'Elemental HERO Cosmo Neos'
+            });
+        });
+    </script>
+</body>
+</html>
+
