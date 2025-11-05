@@ -21884,6 +21884,47 @@ const archetypes = [
                     </svg>`
     },
     {
+        name: 'Ritual Art',
+        description: 'Generic Ritual support cards that use the Main Deck as a resource, featuring Advanced Ritual Art, High Ritual Art, and Urgent Ritual Art for powerful Normal Monster-based strategies.',
+        filepath: 'Ritual Art Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="ritualArtAura" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.8"/>
+                                <stop offset="50%" stop-color="#3b82f6" stop-opacity="0.5"/>
+                                <stop offset="100%" stop-color="#1e3a8a" stop-opacity="0.9"/>
+                            </radialGradient>
+                            <linearGradient id="ritualArtGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#93c5fd"/>
+                                <stop offset="100%" stop-color="#1e3a8a"/>
+                            </linearGradient>
+                            <filter id="ritualArtShadow">
+                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#ritualArtAura)" opacity="0.7">
+                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <g filter="url(#ritualArtShadow)">
+                            <circle cx="50" cy="50" r="20" fill="none" stroke="url(#ritualArtGlow)" stroke-width="3"/>
+                            <!-- Ritual flame/circle pattern -->
+                            <path d="M50 35 Q60 50 50 65 Q40 50 50 35 Z" fill="url(#ritualArtGlow)" stroke="#1e3a8a" stroke-width="2"/>
+                            <circle cx="50" cy="50" r="8" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+                        </g>
+                        <circle cx="35" cy="70" r="2" fill="#3b82f6">
+                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="65" cy="70" r="2" fill="#1e3a8a">
+                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="bold">Ritual Art</text>
+                    </svg>`
+    },
+    {
         name: 'Ritual Beast',
         description: 'A Beast-Warrior archetype that performs rituals to unleash powerful fusions for dominant control.',
         filepath: 'Ritual Beast Deck Analysis.html',
