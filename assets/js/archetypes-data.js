@@ -19149,6 +19149,58 @@ const archetypes = [
                         </svg>`
     },
     {
+        name: 'Metalmorph',
+        description: 'A modern Machine archetype that evolved from classic Trap Card origins into a sophisticated interruption-based control strategy, tributing monsters to summon heavily protected boss monsters during the opponent\'s turn.',
+        filepath: 'Metalmorph Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <radialGradient id="metalmorphCore" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" style="stop-color:#94a3b8;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#475569;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+                                </radialGradient>
+                                <linearGradient id="metalmorphSheen" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#cbd5e1;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#64748b;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
+                                </linearGradient>
+                                <filter id="metalmorphGlow">
+                                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                            </defs>
+                            <!-- Metal background -->
+                            <circle cx="50" cy="50" r="48" fill="url(#metalmorphCore)" stroke="#64748b" stroke-width="2">
+                                <animate attributeName="opacity" values="1;0.85;1" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                            <!-- Morphing metal shield -->
+                            <g filter="url(#metalmorphGlow)">
+                                <path d="M50 15 L70 35 L70 60 L50 80 L30 60 L30 35 Z" fill="url(#metalmorphSheen)" stroke="#cbd5e1" stroke-width="2">
+                                    <animate attributeName="d" 
+                                        values="M50 15 L70 35 L70 60 L50 80 L30 60 L30 35 Z;
+                                                M50 20 L65 35 L68 60 L50 75 L32 60 L35 35 Z;
+                                                M50 15 L70 35 L70 60 L50 80 L30 60 L30 35 Z" 
+                                        dur="3s" repeatCount="indefinite"/>
+                                </path>
+                                <!-- Inner mechanical core -->
+                                <circle cx="50" cy="50" r="12" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/>
+                                <circle cx="50" cy="50" r="6" fill="#475569" stroke="#cbd5e1" stroke-width="1">
+                                    <animate attributeName="r" values="6;8;6" dur="2s" repeatCount="indefinite"/>
+                                </circle>
+                            </g>
+                            <!-- Trap card corner markers -->
+                            <g opacity="0.8">
+                                <rect x="20" y="20" width="8" height="8" fill="#dc2626" stroke="#ef4444" stroke-width="1"/>
+                                <rect x="72" y="20" width="8" height="8" fill="#dc2626" stroke="#ef4444" stroke-width="1"/>
+                                <rect x="20" y="72" width="8" height="8" fill="#dc2626" stroke="#ef4444" stroke-width="1"/>
+                                <rect x="72" y="72" width="8" height="8" fill="#dc2626" stroke="#ef4444" stroke-width="1"/>
+                            </g>
+                        </svg>`
+    },
+    {
         name: 'Metaphys',
         description: 'A LIGHT Wyrm archetype focused on banishing, delayed effects, and recursive field control through ethereal monsters and spells.',
         filepath: 'Metaphys Deck Analysis.html',
