@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -282,18 +282,10 @@
             </div>
         </section>
 
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-gray-300 mb-4 text-center">
-                    The "Anotherverse" monsters themselves are unlimited. However, their viability is tied to the availability of their generic and specific support cards.
-                </p>
-                <div id="banlist-status-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <!-- Banlist statuses will be dynamically inserted here -->
-                </div>
-                 <div class="mt-6 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-400">
-                    <p class="text-sm text-gray-300"><strong>Analysis:</strong> While the core prize cards are safe, the engines that make them playable are subject to regulation. The limitation of cards like <strong class="text-accent">Reinforcement of the Army</strong> and <strong class="text-accent">Bonfire</strong> slightly reduces consistency for their respective variants, but does not cripple the strategies. The deck remains a fascinating theoretical exercise at full power.</p>
-                </div>
+        <section class="mb-8">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center"><i class="fas fa-gavel mr-2"></i>TCG Banlist Impact</h2>
+            <div id="banlist-status">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
             </div>
         </section>
 
@@ -376,117 +368,38 @@
                 });
             }
 
-            // --- CARD IMAGE & BANLIST FETCHER ---
-            const tcgBanlist = [];
-            const cardsToAnalyze = [
-                'Anotherverse Dragon', 'Anotherverse Gluttonia', 'Anotherverse Solaria', 'Anotherverse Stratios',
-                'Summoner\'s Art', 'Ancient Rules', 'Pacifis, the Phantasm City',
-                'Reinforcement of the Army', 'Bonfire', 'Dragon Shrine', 'Allure of Darkness',
-                'Number 38: Hope Harbinger Dragon Titanic Galaxy', 'Divine Dragon Knight Felgrand', 'First of the Dragons',
-                'Black Luster Soldier - Envoy of the Beginning', 'Infernal Flame Banshee'
-            ];
-            
-            const cardImageMapping = {
-                 'Anotherverse Dragon': 'anotherverse-dragon-img-container',
-                 'Anotherverse Gluttonia': 'anotherverse-gluttonia-img-container',
-                 'Anotherverse Solaria': 'anotherverse-solaria-img-container',
-                 'Anotherverse Stratios': 'anotherverse-stratios-img-container',
-                 'Summoner\'s Art': 'summoners-art-img-container',
-                 'Ancient Rules': 'ancient-rules-img-container',
-                 'Pacifis, the Phantasm City': 'pacifis-img-container',
-                 'Number 38: Hope Harbinger Dragon Titanic Galaxy': 'hope-harbinger-img-container',
-                 'Divine Dragon Knight Felgrand': 'felgrand-img-container',
-                 'First of the Dragons': 'first-of-dragons-img-container',
-            };
-
-            await fetchBanlistAndCards();
-
-            async function fetchBanlistAndCards() {
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
-                    const data = await response.json();
-                    tcgBanlist.push(...data.data);
-                } catch (error) {
-                    console.error("Failed to fetch TCG banlist from API. Will use internal data.", error);
-                    // Fallback to the JSON file if the API fails
-                    const internalBanlist = {"data":[{"ban_tcg":"Forbidden","name":"Block Dragon"},{"ban_tcg":"Forbidden","name":"Spright Elf"},{"ban_tcg":"Limited","name":"Reinforcement of the Army"},{"ban_tcg":"Limited","name":"Bonfire"}]};
-                    tcgBanlist.push(...internalBanlist.data);
-                }
-                
-                await processCards();
-            }
-
-            function getBanStatus(cardName) {
-                const card = tcgBanlist.find(c => c.name === cardName);
-                return card ? card.banlist_info?.ban_tcg : null;
-            }
-
-            async function processCards() {
-                const banlistContainer = document.getElementById('banlist-status-container');
-                
-                for (const cardName of cardsToAnalyze) {
-                    const status = getBanStatus(cardName);
-                    if (status) {
-                        let statusText = status;
-                        let colorClass = '';
-                         switch(status.toLowerCase()) {
-                            case 'forbidden': colorClass = 'banlist-forbidden'; break;
-                            case 'limited': colorClass = 'banlist-limited'; break;
-                            case 'semi-limited': statusText = 'Semi-Limited'; colorClass = 'banlist-semi-limited'; break;
-                        }
-                        const cardDiv = document.createElement('div');
-                        cardDiv.className = `p-3 rounded-lg text-center ${colorClass} text-white font-semibold`;
-                        cardDiv.textContent = `${cardName} (${statusText})`;
-                        banlistContainer.appendChild(cardDiv);
-                    }
-                }
-
-                 for (const [cardName, containerId] of Object.entries(cardImageMapping)) {
-                    const container = document.getElementById(containerId);
-                    if (!container) continue;
-
-                    const status = getBanStatus(cardName);
-
-                    try {
-                        const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${encodeURIComponent(cardName)}`);
-                        if (!response.ok) {
-                            throw new Error(`API returned status: ${response.status}`);
-                        }
-                        const data = await response.json();
-                        const imageUrl = data?.data?.[0]?.card_images?.[0]?.image_url;
-
-                        if (imageUrl) {
-                            container.innerHTML = ''; // Clear placeholder
-                            const img = document.createElement('img');
-                            img.src = imageUrl;
-                            img.alt = cardName;
-                            img.className = 'w-full h-full object-cover rounded-lg shadow-md animate-fadeIn';
-                            
-                            if (status) {
-                                 let statusText = status;
-                                 let colorClass = '';
-                                 switch(status.toLowerCase()) {
-                                    case 'forbidden': colorClass = 'banlist-forbidden'; break;
-                                    case 'limited': colorClass = 'banlist-limited'; break;
-                                    case 'semi-limited': statusText = 'Semi-Limited'; colorClass = 'banlist-semi-limited'; break;
-                                    default: break;
-                                }
-                                const tag = document.createElement('div');
-                                tag.className = `banlist-tag ${colorClass}`;
-                                tag.textContent = statusText;
-                                container.appendChild(tag);
-                            }
-                            
-                            container.appendChild(img);
-                        } else {
-                            throw new Error("Image not found.");
-                        }
-                    } catch (error) {
-                        console.error(`Failed to fetch image for "${cardName}":`, error);
-                        container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}</div>`;
-                    }
-                }}
+            // --- CARD IMAGE LOADER ---
+            CardLoader.loadCards({
+                 'anotherverse-dragon-img-container': 'Anotherverse Dragon',
+                 'anotherverse-gluttonia-img-container': 'Anotherverse Gluttonia',
+                 'anotherverse-solaria-img-container': 'Anotherverse Solaria',
+                 'anotherverse-stratios-img-container': 'Anotherverse Stratios',
+                 'summoners-art-img-container': "Summoner's Art",
+                 'ancient-rules-img-container': 'Ancient Rules',
+                 'pacifis-img-container': 'Pacifis, the Phantasm City',
+                 'hope-harbinger-img-container': 'Number 38: Hope Harbinger Dragon Titanic Galaxy',
+                 'felgrand-img-container': 'Divine Dragon Knight Felgrand',
+                 'first-of-dragons-img-container': 'First of the Dragons'
             });
+
+            // Render banlist section - automatically fetches all Anotherverse cards
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Anotherverse', {
+                relatedCards: [
+                    "Summoner's Art",
+                    'Ancient Rules',
+                    'Pacifis, the Phantasm City',
+                    'Reinforcement of the Army',
+                    'Bonfire',
+                    'Dragon Shrine',
+                    'Allure of Darkness',
+                    'Number 38: Hope Harbinger Dragon Titanic Galaxy',
+                    'Divine Dragon Knight Felgrand',
+                    'First of the Dragons',
+                    'Black Luster Soldier - Envoy of the Beginning',
+                    'Infernal Flame Banshee'
+                ]
+            });
+        });
     </script>
 </body>
 </html>

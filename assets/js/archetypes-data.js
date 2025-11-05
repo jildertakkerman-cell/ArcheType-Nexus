@@ -5903,6 +5903,70 @@ const archetypes = [
                 </svg>`
     },
     {
+        name: 'Curse of Dragon',
+        description: 'A legendary DARK Dragon engine featuring Joey\'s iconic monster, supporting Dragon and Warrior fusion strategies with powerful field control and recursion.',
+        filepath: 'Curse of Dragon Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="curse-dragon-grad" cx="0.3" cy="0.3">
+                            <stop offset="0%" stop-color="#fbbf24"/>
+                            <stop offset="40%" stop-color="#b45309"/>
+                            <stop offset="80%" stop-color="#7c2d12"/>
+                            <stop offset="100%" stop-color="#1f2937"/>
+                        </radialGradient>
+                        <radialGradient id="curse-eye-grad" cx="0.4" cy="0.2">
+                            <stop offset="0%" stop-color="#fef3c7"/>
+                            <stop offset="60%" stop-color="#fbbf24"/>
+                            <stop offset="100%" stop-color="#f59e0b"/>
+                        </radialGradient>
+                        <filter id="curse-glow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Dark aura background -->
+                    <ellipse cx="50" cy="60" rx="42" ry="35" fill="url(#curse-dragon-grad)" opacity="0.7">
+                        <animate attributeName="opacity" values="0.5;0.8;0.5" dur="3s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <!-- Dragon silhouette -->
+                    <g filter="url(#curse-glow)">
+                        <path d="M50 25 Q60 35 58 50 Q55 65 50 70 Q45 65 42 50 Q40 35 50 25 Z" 
+                              fill="#7c2d12" stroke="#b45309" stroke-width="2"/>
+                        <!-- Dragon head -->
+                        <ellipse cx="50" cy="30" rx="8" ry="6" fill="#b45309"/>
+                        <!-- Glowing eyes -->
+                        <circle cx="47" cy="29" r="2" fill="url(#curse-eye-grad)">
+                            <animate attributeName="r" values="2;2.5;2" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="53" cy="29" r="2" fill="url(#curse-eye-grad)">
+                            <animate attributeName="r" values="2;2.5;2" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Dragon wings -->
+                        <path d="M42 45 Q35 40 30 50 Q35 55 42 52 Z" fill="#b45309" opacity="0.8"/>
+                        <path d="M58 45 Q65 40 70 50 Q65 55 58 52 Z" fill="#b45309" opacity="0.8"/>
+                    </g>
+                    <!-- Curse particles -->
+                    <circle cx="30" cy="35" r="2" fill="#fbbf24" opacity="0.6">
+                        <animate attributeName="cy" values="35;30;35" dur="2.5s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="70" cy="40" r="2" fill="#f59e0b" opacity="0.6">
+                        <animate attributeName="cy" values="40;35;40" dur="3s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.6;0.2;0.6" dur="3s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- Spiral curse energy -->
+                    <path d="M50 70 Q45 75 40 80" stroke="#fbbf24" stroke-width="1.5" fill="none" opacity="0.5">
+                        <animate attributeName="opacity" values="0.5;0.8;0.5" dur="2s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M50 70 Q55 75 60 80" stroke="#f59e0b" stroke-width="1.5" fill="none" opacity="0.5">
+                        <animate attributeName="opacity" values="0.5;0.8;0.5" dur="2s" begin="1s" repeatCount="indefinite"/>
+                    </path>
+                </svg>`
+    },
+    {
         name: 'Cyber Dragon',
         description: 'An aggressive OTK strategy that swarms Level 5 Machines for powerful Xyz and Fusion summons.',
         filepath: 'Cyber Dragon Deck Analysis.html',
@@ -22385,6 +22449,87 @@ const archetypes = [
                         <circle cx="50" cy="50" r="4" fill="#ffc107"/>
                         <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">SARCOPHAGUS</text>
                     </svg>`
+    },
+    {
+        name: 'Shinobird',
+        description: 'A WIND Spirit-Ritual archetype that combines going-first combo potential with powerful board-breaking abilities, featuring Winged-Beast Ritual monsters that return to the hand.',
+        filepath: 'Shinobird Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="shinobird-spirit-grad" cx="0.3" cy="0.3">
+                            <stop offset="0%" stop-color="#e0f2fe"/>
+                            <stop offset="40%" stop-color="#7dd3fc"/>
+                            <stop offset="80%" stop-color="#0284c7"/>
+                            <stop offset="100%" stop-color="#0c4a6e"/>
+                        </radialGradient>
+                        <radialGradient id="shinobird-wing-grad" cx="0.4" cy="0.2">
+                            <stop offset="0%" stop-color="#bae6fd"/>
+                            <stop offset="60%" stop-color="#38bdf8"/>
+                            <stop offset="100%" stop-color="#0369a1"/>
+                        </radialGradient>
+                        <filter id="shinobird-glow">
+                            <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Spirit aura background -->
+                    <ellipse cx="50" cy="55" rx="38" ry="32" fill="url(#shinobird-spirit-grad)" opacity="0.6">
+                        <animate attributeName="opacity" values="0.4;0.7;0.4" dur="4s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <!-- Bird silhouette -->
+                    <g filter="url(#shinobird-glow)">
+                        <!-- Body -->
+                        <ellipse cx="50" cy="50" rx="10" ry="14" fill="#0284c7"/>
+                        <!-- Head -->
+                        <circle cx="50" cy="38" r="6" fill="#0369a1"/>
+                        <!-- Beak -->
+                        <path d="M50 38 L54 40 L50 42 Z" fill="#fbbf24"/>
+                        <!-- Eyes -->
+                        <circle cx="48" cy="37" r="1.5" fill="#e0f2fe">
+                            <animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="52" cy="37" r="1.5" fill="#e0f2fe">
+                            <animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Left wing -->
+                        <path d="M42 48 Q30 40 25 50 Q30 58 40 55 Z" fill="url(#shinobird-wing-grad)" opacity="0.8">
+                            <animateTransform attributeName="transform" type="rotate" 
+                                            values="0 42 48;-15 42 48;0 42 48" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Right wing -->
+                        <path d="M58 48 Q70 40 75 50 Q70 58 60 55 Z" fill="url(#shinobird-wing-grad)" opacity="0.8">
+                            <animateTransform attributeName="transform" type="rotate" 
+                                            values="0 58 48;15 58 48;0 58 48" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Tail feathers -->
+                        <path d="M50 64 L48 72 L50 70 L52 72 Z" fill="#0369a1"/>
+                    </g>
+                    <!-- Spirit wisps -->
+                    <circle cx="25" cy="35" r="2" fill="#7dd3fc" opacity="0.6">
+                        <animate attributeName="cy" values="35;25;35" dur="3s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.6;0.2;0.6" dur="3s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="75" cy="40" r="2" fill="#38bdf8" opacity="0.6">
+                        <animate attributeName="cy" values="40;30;40" dur="3.5s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.6;0.2;0.6" dur="3.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="35" cy="65" r="1.5" fill="#bae6fd" opacity="0.5">
+                        <animate attributeName="cy" values="65;55;65" dur="2.5s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.5;0.1;0.5" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="65" cy="68" r="1.5" fill="#7dd3fc" opacity="0.5">
+                        <animate attributeName="cy" values="68;58;68" dur="2.8s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.5;0.1;0.5" dur="2.8s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- Ritual energy circle -->
+                    <circle cx="50" cy="50" r="35" fill="none" stroke="#38bdf8" stroke-width="1" opacity="0.3" stroke-dasharray="5 5">
+                        <animateTransform attributeName="transform" type="rotate" 
+                                        values="0 50 50;360 50 50" dur="15s" repeatCount="indefinite"/>
+                    </circle>
+                </svg>`
     },
     {
         name: 'Shiranui',

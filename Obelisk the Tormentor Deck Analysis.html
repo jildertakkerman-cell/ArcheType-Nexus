@@ -561,66 +561,6 @@
                     if (p.innerHTML === "") p.innerHTML = "Error loading CardLoader";
                 });
             }
-
-            // --- Banlist Fetcher ---
-            async function fetchBanlistStatus() {
-                const container = document.getElementById('banlist-status-container');
-                const keyCards = [
-                    'Obelisk the Tormentor', 'Soul Energy MAX!!!', 'Fist of Fate', 
-                    'The Breaking Ruin God', 'Soul Crossing', 'Diviner of the Herald', 
-                    'Trias Hierarchia', 'Valkyrie Sechste', 'Valkyrie Funfte',
-                    'Block Dragon', 'Spright Elf', 'Gallant Granite'
-                ];
-                
-                const banlistUrl = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG';
-                let banlistData = {};
-
-                try {
-                    const response = await fetch(banlistUrl);
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    const data = await response.json();
-                    
-                    data.data.forEach(card => {
-                        if (card.banlist_info && card.banlist_info.ban_tcg) {
-                            banlistData[card.name] = card.banlist_info.ban_tcg;
-                        } else {
-                            banlistData[card.name] = 'Unlimited';
-                        }
-                    });
-
-                    // Build HTML
-                    let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-left">';
-                    keyCards.forEach(cardName => {
-                        const status = banlistData[cardName] || 'Unlimited'; // Default to Unlimited if not in list (like new cards)
-                        let statusClass = 'status-unlimited';
-                        let statusText = status;
-
-                        if (status === 'Banned') {
-                            statusClass = 'status-forbidden';
-                            statusText = "Forbidden";
-                        } else if (status === 'Limited') {
-                            statusClass = 'status-limited';
-                        } else if (status === 'Semi-Limited') {
-                            statusClass = 'status-semi-limited';
-                        }
-
-                        html += `<div class="p-3 bg-gray-800 rounded-lg">
-                                    <span class="text-blue-200">${cardName}:</span>
-                                    <span class="${statusClass} float-right">${statusText}</span>
-                                 </div>`;
-                    });
-                    html += '</div>';
-
-                    container.innerHTML = html;
-
-                } catch (error) {
-                    console.error('Failed to fetch banlist data:', error);
-                    container.innerHTML = `<p class="text-red-400">Could not load live banlist data. Please check your connection.</p>`;
-                }
-            }
-
-            // Remove old banlist fetcher - now using CardLoader.renderBanlistSection
-            // fetchBanlistStatus();
         });
     </script>
 </body>

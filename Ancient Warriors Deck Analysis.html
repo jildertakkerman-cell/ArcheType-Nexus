@@ -333,8 +333,9 @@
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Final Endboard: Layered Control</h2>
             <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">A typical endboard combines the archetype's own disruption with powerful, generic Link monsters to create multiple layers of interaction.</p>
             <div class="card p-6 flex flex-col md:flex-row items-center md:items-start gap-4 mx-auto max-w-2xl">
-                <div class="flex flex-col items-center gap-4">
-                    <div id="endboard-img-container" class="w-32 md:w-40 flex-shrink-0"></div>
+                <div class="flex gap-2 flex-shrink-0">
+                    <div id="endboard-ddl-img-container" class="w-32 md:w-40"></div>
+                    <div id="endboard-apollousa-img-container" class="w-32 md:w-40"></div>
                 </div>
                 <div>
                     <ul class="list-disc list-inside space-y-2 text-yellow-100">
@@ -408,10 +409,18 @@
                 </div>
             </div>
         </section>
+
+        <!-- Banlist Section -->
+        <section class="mb-8">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center"><i class="fas fa-gavel mr-2"></i>TCG Banlist Impact</h2>
+            <div id="banlist-status">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
+            </div>
+        </section>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // --- ANCIENT WARRIORS "WHISPERS OF THE THREE KINGDOMS" ANIMATION ---
             const canvas = document.getElementById('warriors-banner');
             if (canvas) {
@@ -532,125 +541,37 @@
             CardLoader.loadCards({
                 'three-visits-img-container': 'Ancient Warriors Saga - Three Visits',
                 'guan-yun-img-container': 'Ancient Warriors - Loyal Guan Yun',
-                'ddl-img-container': 'Ancient Warriors Oath - Double Dragon Lords'
+                'ddl-img-container': 'Ancient Warriors Oath - Double Dragon Lords',
+                'endboard-ddl-img-container': 'Ancient Warriors Oath - Double Dragon Lords',
+                'endboard-apollousa-img-container': 'Apollousa, Bow of the Goddess'
             });
 
-            // Load multiple cards for endboard container
-            loadMultipleCardsForEndboard();
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Ancient Warriors - Loyal Guan Yun',
+                'Ancient Warriors - Masterful Sun Mou',
+                'Ancient Warriors - Virtuous Liu Xuan',
+                'Ancient Warriors - Valiant Zhang De',
+                'Ancient Warriors - Eccentric Lu Jing',
+                'Ancient Warriors - Ambitious Cao De',
+                'Ancient Warriors Saga - Three Visits',
+                'Ancient Warriors Saga - Chivalrous Path',
+                'Ancient Warriors Saga - Defense of Changban',
+                'Ancient Warriors Oath - Double Dragon Lords'
+            ], {
+                archetypeName: 'Ancient Warriors',
+                archetypeTraits: {
+                    coreMechanic: 'conditional summoning',
+                    supportReliance: 'medium',
+                    adaptability: 'high',
+                    resilience: 'medium',
+                    keyLoss: 'medium',
+                    alternativeStrategy: 'high'
+                },
+                relatedCards: [
+                    'Apollousa, Bow of the Goddess'
+                ]
+            });
         });
-
-        // Custom function to load multiple cards in the endboard container
-        async function loadMultipleCardsForEndboard() {
-            const container = document.getElementById('endboard-img-container');
-            if (!container) return;
-
-            const cardNames = ['Ancient Warriors Oath - Double Dragon Lords', 'Apollousa, Bow of the Goddess'];
-            container.innerHTML = '';
-
-            const imageWrapper = document.createElement('div');
-            imageWrapper.className = 'flex gap-1 w-full h-full';
-
-            for (const cardName of cardNames) {
-                try {
-                    // Use CardLoader's fetchCardData function by calling loadCard for each
-                    await CardLoader.loadCard(cardName, `temp-${cardName.replace(/[^a-zA-Z0-9]/g, '-')}`);
-                    
-                    // Get the cached card data
-                    const cardInfo = CardLoader.getCachedCard(cardName);
-                    if (cardInfo) {
-                        const img = document.createElement('img');
-                        img.src = cardInfo.hosted_image_url;
-                        img.alt = cardName;
-                        img.className = 'w-1/2 h-auto rounded-lg shadow-md';
-                        
-                        // Add click listener that mimics CardLoader's popup system
-                        img.addEventListener('click', (event) => {
-                            event.stopPropagation();
-                            showCardPopup(event, cardName);
-                        });
-                        
-                        // Handle image load errors
-                        img.onerror = function() {
-                            console.error(`Image not found: ${cardName} (ID: ${cardInfo.id})`);
-                            const placeholder = document.createElement('div');
-                            placeholder.className = 'card-placeholder';
-                            placeholder.textContent = cardName;
-                            imageWrapper.appendChild(placeholder);
-                        };
-                        
-                        imageWrapper.appendChild(img);
-                    }
-                } catch (error) {
-                    console.error(`Error loading card ${cardName}:`, error);
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'card-placeholder';
-                    placeholder.textContent = cardName;
-                    imageWrapper.appendChild(placeholder);
-                }
-            }
-
-            container.appendChild(imageWrapper);
-        }
-
-        // Custom popup function that mimics CardLoader's showPopup
-        function showCardPopup(event, cardName) {
-            const popup = document.getElementById('card-popup');
-            if (!popup) return;
-            
-            const cardInfo = CardLoader.getCachedCard(cardName);
-            if (!cardInfo) return;
-
-            // Build stats string
-            let stats = '';
-            let atkDef = [];
-            if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
-            if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
-            if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
-            if (atkDef.length > 0) {
-                stats = `<p class="mt-2 text-red-400 font-bold">${atkDef.join(' ')}</p>`;
-            }
-            
-            const cardType = cardInfo.type.includes('Monster') 
-                ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` 
-                : `[${cardInfo.race} Card]`;
-
-            popup.innerHTML = `
-                <div>
-                    <h3 class="text-red-400 font-bold text-lg mb-2">${cardInfo.name}</h3>
-                    <p class="text-xs text-red-300">${cardType}</p>
-                    <div class="w-full h-px bg-red-700 my-2"></div>
-                    <p class="text-xs text-white">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
-                    ${stats}
-                </div>
-            `;
-            
-            movePopup(event);
-            popup.style.display = 'block';
-            setTimeout(() => { popup.style.opacity = 1; }, 10);
-        }
-
-        // Helper function to position popup (copied from CardLoader)
-        function movePopup(event) {
-            const popup = document.getElementById('card-popup');
-            if (!popup) return;
-            
-            const popupWidth = popup.offsetWidth;
-            const popupHeight = popup.offsetHeight;
-            const cushion = 20;
-
-            let x = event.clientX + cushion;
-            let y = event.clientY + cushion;
-
-            if (x + popupWidth > window.innerWidth) {
-                x = event.clientX - popupWidth - cushion;
-            }
-            if (y + popupHeight > window.innerHeight) {
-                y = event.clientY - popupHeight - cushion;
-            }
-
-            popup.style.left = `${x}px`;
-            popup.style.top = `${y}px`;
-        }
     </script>
     <div id="card-popup" class="fixed z-50 bg-gray-900 border-2 border-[#cd7f32] text-white p-4 rounded-lg shadow-lg max-w-xs opacity-0 transition-opacity duration-200 pointer-events-none"></div>
 </body>

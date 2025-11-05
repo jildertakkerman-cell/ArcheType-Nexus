@@ -1,0 +1,650 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shinobird Archetype</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Card Loader Script -->
+    <script src="assets/js/card-loader.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d2a2a; /* Deep Teal/Blue-Green */
+            color: #e0f7fa; /* Light Cyan */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #0f3d3d; /* Darker Teal */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border: 1px solid #1a5b5b; /* Teal Border */
+        }
+        .combo-step-card {
+            background-color: #1a5b5b; /* Medium Teal */
+            border: 1px solid #2d7a7a;
+        }
+        .pro-con-card {
+            background-color: #1a5b5b;
+            border: 1px solid #2d7a7a;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer; /* Add cursor pointer for popup */
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #0f3d3d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #0f3d3d;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #d4af37; } /* Gold */
+        .arrow-color { color: #d4af37; }
+        .heading-underline {
+            border-bottom: 2px solid #d4af37;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #d4af37;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #d4af37;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- NEW SHINOBIRD ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0d2a2a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #1a5b5b;
+        }
+
+        #wisp-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(13, 42, 42, 0.4) 0%, rgba(13, 42, 42, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Noto Serif JP', serif;
+             font-size: 2.75rem;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* Card Popup Styles (Themed) */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(13, 42, 42, 0.95); /* Dark Teal */
+            border: 1px solid #d4af37; /* Gold Border */
+            border-radius: 0.75rem;
+            color: #e0f7fa; /* Light Cyan Text */
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Noto Serif JP', serif;
+            color: #d4af37; /* Gold Title */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #d4af37; /* Gold Stats */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="wisp-canvas"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">SHINOBIRD</h1>
+            <p class="text-lg md:text-xl text-cyan-200">Analysis of a Spirit & Ritual Strategy</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-cyan-100">
+                    The <strong class="text-accent font-bold">Shinobird</strong> archetype is a Ritual-based strategy centered on WIND Winged-Beast Spirit monsters. Historically, it was a "going-second" deck focused on board-breaking. However, support from the  <em class="text-cyan-200">Age of Overlord</em> (AGOV) set fundamentally redesigned its playstyle, introducing a 
+                    <a href="https://db.ygoprodeck.com/api/v7/cardinfo.php?archetype=Shinobird" target="_blank" class="lore-link">powerful "going-first" combo engine</a>.
+                    A complete analysis requires categorizing the cards by their strategic function, from their new combo-enabling Rituals to their classic board-breaking boss monsters.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Core Archetype Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Meet the Shinobird Flock</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- New Guard (AGOV) -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-feather-alt text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The New Guard (AGOV)</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Shinobaroness Shade Peacock</h4>
+                            <p class="text-sm text-cyan-100">The 1-card starter. Ritual Summon to search <strong class="text-accent">Stars Align Above the Shrine</strong>. Returns to hand in the End Phase, triggering your Field Spell.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Shinobaron Shade Peacock</h4>
+                            <p class="text-sm text-cyan-100">The combo pivot. Summoned from the Deck, it Tributes itself to search a Spirit monster (like <strong class="text-accent">Amano-Iwato</strong>) and a Ritual Spell.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Old Guard (Originals) -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-wind text-4xl text-cyan-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Old Guard (Originals)</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Shinobaron Peacock (L8)</h4>
+                            <p class="text-sm text-cyan-100">The "Monster Breaker." Bounces up to 3 opponent's monsters, then Special Summons a Spirit from your hand (e.g., <strong class="text-accent">Amano-Iwato</strong>).</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Shinobaroness Peacock (L8)</h4>
+                            <p class="text-sm text-cyan-100">The "Backrow Breaker." Shuffles up to 3 opponent's S/T into the Deck, then Special Summons a Spirit <strong class="text-white">from your Deck</strong>'�the original Amano-Lock.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Nephthys Hybrid" Combo</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-2xl mx-auto">
+                This is the deck's primary "going-first" combo, using the "Nephthys" archetype to create a multi-interruption endboard from a single starter.
+            </p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="shade-baroness-img-container" class="card-image-container flex-shrink-0 card-placeholder">Shinobaroness Shade Peacock</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0f3d3d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Starter</h3>
+                            </div>
+                            <p class="text-cyan-100">Ritual Summon <strong class="text-accent">Shinobaroness Shade Peacock</strong>. Her effect searches <strong class="text-accent">Stars Align Above the Shrine</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="shrine-img-container" class="card-image-container flex-shrink-0 card-placeholder">Stars Align Above the Shrine</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0f3d3d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Engine</h3>
+                            </div>
+                            <p class="text-cyan-100">Activate <strong class="text-accent">Shrine</strong>. Use its effect, Tributing monsters (e.g., from <strong class="text-accent">Aratama</strong> + <strong class="text-accent">Sakitama</strong>) to Ritual Summon <strong class="text-accent">Conductor of Nephthys</strong> from the Deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="preserver-img-container" class="card-image-container flex-shrink-0 card-placeholder">Nephthys, the Sacred Preserver</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#0f3d3d] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Link Climb</h3>
+                            </div>
+                            <p class="text-cyan-100"><strong class="text-accent">Conductor</strong> summons <strong class="text-accent">Devotee of Nephthys</strong>. Link them into <strong class="text-accent">Nephthys, the Sacred Preserver</strong>, which searches your L8 <strong class="text-accent">Shinobaroness Peacock</strong> for follow-up.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The End Board</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Amano-Lock -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">End State 1: The "Amano-Lock"</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="amano-img-container" class="card-image-container card-placeholder">Amano-Iwato</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><strong class="text-accent">The Card:</strong> Amano-Iwato (Level 4 Spirit).</li>
+                        <li><strong class="text-accent">The Ruling:</strong> It only returns to the hand if *Normal Summoned*.</li>
+                        <li><strong class="text-accent">The Lock:</strong> When *Special Summoned* by a Shinobaroness, it stays on the field permanently, preventing all non-Spirit monster effects.</li>
+                    </ul>
+                </div>
+                <!-- Combo Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">End State 2: Combo-Control</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="ip-masq-img-container" class="card-image-container card-placeholder">I:P Masquerena</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><strong class="text-accent">I:P Masquerena:</strong> For reactive Link Summoning on the opponent's turn.</li>
+                        <li><strong class="text-accent">Stars Align... Milky Way:</strong> A set Trap that Ritual Summons your L8 Shinobaroness from hand as an interruption.</li>
+                        <li><strong class="text-accent">Recursive Loop:</strong> Your L4 Shade returns to hand, triggering Shrine to set Milky Way and add back resources.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">The Amano-Lock:</strong> Access to a devastating, one-sided floodgate.</li>
+                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-300">Recursive Engine:</strong> The Field Spell loop generates massive card advantage every turn.</li>
+                        <li><span class="pro-icon"><i class="fas fa-magic"></i></span> <strong class="text-green-300">Powerful Removal:</strong> L8 bosses offer non-targeting bounce and shuffle removal.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Key Chokepoints:</strong> <strong class="text-accent">Ash Blossom</strong> on the L4 Shade's search can be crippling.</li>
+                        <li><span class="con-icon"><i class="fas fa-search-minus"></i></span> <strong class="text-red-300">Droll & Lock Bird:</strong> The deck searches multiple times, making Droll a turn-ender.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Floodgates:</strong> <strong class="text-accent">Dimensional Barrier</strong> (calling Ritual) and <strong class="text-accent">Macro Cosmos</strong> are devastating.</li>
+                    </ul>
+                </div>
+                <!-- Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Key Tech & Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-cyan-100">
+                        <li><span class="neutral-icon"><i class="fas fa-gopuram"></i></span> <strong class="text-accent">Nephthys Engine:</strong> The core hybrid partner for combo builds.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-cross-star"></i></span> <strong class="text-accent">Diviner of the Herald:</strong> A 1-card starter that sends <strong class="text-accent">Herald of the Arc Light</strong> to search any Ritual piece.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-ghost"></i></span> <strong class="text-accent">"Tama" Engine:</strong> <strong class="text-accent">Aratama</strong> and <strong class="text-accent">Sakitama</strong> provide free bodies and searches.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div class="card p-6">
+                <p class="text-gray-300 mb-4 text-center">
+                    <strong class="text-green-500 font-bold">UNRESTRICTED STATUS:</strong> The Shinobird archetype and its core support cards operate at full power in the TCG.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Archetype Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>All "Shinobird" monsters (3 copies each)</li>
+                            <li>"Shinobird's Calling" (3 copies)</li>
+                            <li>"Stars Align Above the Shrine" (3 copies)</li>
+                            <li>"Stars Align across the Milky Way" (3 copies)</li>
+                        </ul>
+                    </div>
+                    <div class="card combo-step-card p-4">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Key Support Cards</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
+                            <li>"Amano-Iwato" (3 copies)</li>
+                            <li>"Preparation of Rites" (3 copies)</li>
+                            <li>"Pre-Preparation of Rites" (3 copies)</li>
+                            <li>"Diviner of the Herald" (3 copies)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With no restrictions on its core engine or powerful consistency tools, Shinobird can be played at its maximum potential, able to consistently execute its Amano-Lock or Nephthys-hybrid combos.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card Overview Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Shinobird Flock</h2>
+            <p class="text-cyan-100 mb-8 text-center max-w-2xl mx-auto">A detailed overview of the most critical cards in the strategy.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Shinobaroness Shade Peacock</h3>
+                    <p class="text-cyan-100 mb-2"><strong>Ritual/Spirit/Effect</strong></p>
+                    <p class="text-cyan-100">The 1-card starter. Searches the Field Spell. Name becomes "Shinobaroness Peacock" on field/hand, making it searchable by <strong class="text-accent">Preparation of Rites</strong>.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Stars Align Above the Shrine</h3>
+                    <p class="text-cyan-100 mb-2"><strong>Field Spell</strong></p>
+                    <p class="text-cyan-100">Ritual Summons a WIND Ritual <strong class="text-white">from the Deck</strong>. When a Spirit returns to hand, it sets <strong class="text-accent">Milky Way</strong> from Deck and recurs a resource.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Amano-Iwato</h3>
+                    <p class="text-cyan-100 mb-2"><strong>Spirit/Effect</strong></p>
+                    <p class="text-cyan-100">The floodgate. Permanently stops monster effects. Only returns to hand if <strong class="text-white">Normal Summoned</strong>, which the deck bypasses via Special Summon.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-2">Shinobaroness Peacock (L8)</h3>
+                    <p class="text-cyan-100 mb-2"><strong>Ritual/Spirit/Effect</strong></p>
+                    <p class="text-cyan-100">The original Amano-Lock enabler. Shuffles 3 S/T, then Special Summons a Spirit <strong class="text-white">from the Deck</strong>. Searchable by <strong class="text-accent">Pre-Preparation of Rites</strong>.</p>
+                </div>
+            </div>
+        
+
+        <!-- TCG Banlist Impact Section -->
+        <section>
+            <div id="banlist-status">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
+            </div>
+        </section></section>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- SHINOBIRD WISP ANIMATION ---
+            const canvas = document.getElementById('wisp-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedY = -(Math.random() * 0.8 + 0.2); // Move up
+                        this.color = Math.random() > 0.3 ? 'rgba(212, 175, 55, 0.5)' : 'rgba(224, 247, 250, 0.5)'; // Gold or Light Cyan
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+                    update() {
+                        this.y += this.speedY;
+                        this.opacity -= 0.005;
+                        if (this.y < 0 || this.opacity <= 0) {
+                            this.reset();
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color.replace('0.5)', `${this.opacity})`);
+                        ctx.shadowBlur = 5;
+                        ctx.shadowColor = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + 10;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedY = -(Math.random() * 0.8 + 0.2);
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.shadowBlur = 0;
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // This assumes card-loader.js is initialized globally
+            if (typeof CardLoader !== 'undefined') {
+                CardLoader.loadCards({
+                    'shade-baroness-img-container': 'Shinobaroness Shade Peacock',
+                    'shrine-img-container': 'Stars Align Above the Shrine',
+                    'preserver-img-container': 'Nephthys, the Sacred Preserver',
+                    'amano-img-container': 'Amano-Iwato',
+                    'ip-masq-img-container': 'I:P Masquerena',
+                    // Add other cards mentioned in the doc
+                    'shade-baron-img-container': 'Shinobaron Shade Peacock',
+                    'baron-img-container': 'Shinobaron Peacock',
+                    'baroness-img-container': 'Shinobaroness Peacock',
+                    'conductor-img-container': 'Conductor of Nephthys',
+                    'milky-way-img-container': 'Stars Align across the Milky Way',
+                    'diviner-img-container': 'Diviner of the Herald',
+                    'aratama-img-container': 'Aratama'
+                });
+            } else {
+                console.error('CardLoader is not defined. Make sure card-loader.js is loaded correctly.');
+            }
+        
+
+            // Render banlist section
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Shinobird', {
+                relatedCards: []
+            });});
+    </script>
+</body>
+</html>

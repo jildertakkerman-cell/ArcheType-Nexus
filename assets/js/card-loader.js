@@ -464,8 +464,77 @@ const CardLoader = (function () {
     async function renderBanlistSection(containerId, cards, options) {
                 const container = document.getElementById(containerId);
                 
+                if (!container) {
+                    console.error(`[CardLoader] Container with ID "${containerId}" not found`);
+                    return;
+                }
+                
+                // Detect page color scheme from existing headers or accent classes
+                const detectPageColors = () => {
+                    // Look for existing h2/h3 elements to detect text color
+                    const headers = document.querySelectorAll('h2, h3');
+                    let headerColor = 'text-white'; // default
+                    
+                    for (const header of headers) {
+                        const classes = Array.from(header.classList);
+                        const textColorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
+                        if (textColorClass) {
+                            headerColor = textColorClass;
+                            break;
+                        }
+                    }
+                    
+                    // Look for body/paragraph text color
+                    const paragraphs = document.querySelectorAll('p, li, .card p');
+                    let bodyTextColor = 'text-white'; // default
+                    
+                    for (const p of paragraphs) {
+                        const classes = Array.from(p.classList);
+                        const textColorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
+                        if (textColorClass) {
+                            bodyTextColor = textColorClass;
+                            break;
+                        }
+                    }
+                    
+                    // Look for accent color (often in strong/bold elements or specific class)
+                    const accentElements = document.querySelectorAll('.text-accent, strong[class*="text-"]');
+                    let accentColor = 'text-yellow-400'; // default
+                    
+                    for (const element of accentElements) {
+                        const classes = Array.from(element.classList);
+                        const colorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
+                        if (colorClass) {
+                            accentColor = colorClass;
+                            break;
+                        }
+                    }
+                    
+                    return { headerColor, bodyTextColor, accentColor };
+                };
+                
+                const pageColors = detectPageColors();
+                console.log('[CardLoader] Detected page colors:', pageColors);
+                
+                // Check if container has a parent section and if it needs a header
+                const parentSection = container.closest('section');
+                if (parentSection) {
+                    // Add proper spacing classes to the section
+                    if (!parentSection.classList.contains('mt-10')) {
+                        parentSection.classList.add('mt-10', 'md:mt-16', 'mb-10', 'md:mb-16');
+                    }
+                    
+                    // Inject the header if it doesn't exist
+                    if (!parentSection.querySelector('h2')) {
+                        const header = document.createElement('h2');
+                        header.className = `text-xl md:text-3xl font-bold ${pageColors.headerColor} mb-6 text-center`;
+                        header.innerHTML = '<i class="fas fa-gavel mr-2"></i>TCG Banlist Impact';
+                        parentSection.insertBefore(header, container);
+                    }
+                }
+                
                 // Show loading state
-                container.innerHTML = '<div class="card p-6 bg-gray-800"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading banlist data...</p></div>';
+                container.innerHTML = '<div class="card p-6"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading banlist data...</p></div>';
                 
                 // Fetch real banlist data from API
                 const banlist = await fetchBanlistData();
@@ -496,15 +565,60 @@ const CardLoader = (function () {
                     }
                     
                     html = `
-                        <div class="card p-6 bg-gray-800">
-                            <p class="text-center text-lg mb-4 text-gray-300">
+                        <div class="card p-8 mb-10 md:mb-16">
+                            <!-- Status Badge -->
+                            <div class="flex justify-center mb-6">
+                                <div class="inline-flex items-center px-6 py-3 bg-green-600 bg-opacity-10 border-2 border-green-500 rounded-full">
+                                    <i class="fas fa-check-circle text-green-400 text-2xl mr-3"></i>
+                                    <span class="text-green-700 font-bold text-lg uppercase tracking-wide">Fully Unrestricted</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Main Message -->
+                            <p class="text-center text-lg mb-6 ${pageColors.bodyTextColor} leading-relaxed">
                                 ${unrestrictedMsg}
                             </p>
-                            <div class="mt-4 p-3 bg-green-900 bg-opacity-50 rounded border-l-4 border-green-500">
-                                <p class="text-sm text-green-200">
-                                    <strong class="font-bold">Fully Unrestricted:</strong> 
-                                    All core "${options.archetypeName}" cards are currently at 3 copies per deck, allowing for maximum consistency and power.
-                                </p>
+                            
+                            <!-- Benefits Grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div class="bg-gradient-to-br from-green-900 to-green-800 bg-opacity-30 p-4 rounded-lg border border-green-600 border-opacity-40">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-layer-group text-green-400 text-xl mr-2"></i>
+                                        <h4 class="text-green-300 font-bold text-sm">Maximum Consistency</h4>
+                                    </div>
+                                    <p class="text-gray-200 text-xs">Play any card at your preferred ratio without restrictions</p>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-blue-900 to-blue-800 bg-opacity-30 p-4 rounded-lg border border-blue-600 border-opacity-40">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-bolt text-blue-400 text-xl mr-2"></i>
+                                        <h4 class="text-blue-300 font-bold text-sm">Full Power Combos</h4>
+                                    </div>
+                                    <p class="text-gray-200 text-xs">Access to all archetype synergies without limitations</p>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-purple-900 to-purple-800 bg-opacity-30 p-4 rounded-lg border border-purple-600 border-opacity-40">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-chess text-purple-400 text-xl mr-2"></i>
+                                        <h4 class="text-purple-300 font-bold text-sm">Strategic Freedom</h4>
+                                    </div>
+                                    <p class="text-gray-200 text-xs">No banlist constraints holding back your strategy</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Stats Box -->
+                            <div class="bg-green-900 bg-opacity-10 rounded-lg border-l-4 border-green-500 p-4">
+                                <div class="flex items-start">
+                                    <i class="fas fa-info-circle text-green-400 text-xl mr-3 mt-1"></i>
+                                    <div>
+                                        <p class="text-green-700 font-semibold mb-1">Banlist Status Summary</p>
+                                        <p class="text-sm ${pageColors.bodyTextColor}">
+                                            <strong class="text-green-400">${cards.length} core cards</strong> analyzed • 
+                                            <strong class="text-green-400">0 restrictions</strong> found • 
+                                            All cards legal at <strong class="text-green-400">3 copies</strong>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -518,21 +632,21 @@ const CardLoader = (function () {
                     }
                     
                     html = `
-                        <div class="card p-6 bg-gray-800">
-                            <p class="text-gray-300 mb-4 text-center">
+                        <div class="card p-6 mb-10 md:mb-16">
+                            <p class="${pageColors.bodyTextColor} mb-4 text-center">
                                 ${relatedImpactMsg}
                             </p>
                     `;
                     
                     // Show only related cards section
-                    html += `<div><h3 class="text-lg font-semibold text-white mb-3 text-center"><i class="fas fa-link mr-2"></i>Affected Synergistic Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                    html += `<div><h3 class="text-lg font-semibold ${pageColors.headerColor} mb-3 text-center"><i class="fas fa-link mr-2"></i>Affected Synergistic Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
                     
                     if (relatedForbidden.length > 0) {
                         html += `
-                            <div class="card combo-step-card p-4 border-l-4 border-red-500 bg-gray-900">
-                                <h4 class="text-md font-bold text-red-500 mb-2">Forbidden</h4>
-                                <ul class="list-disc list-inside space-y-1 text-xs text-gray-300">
-                                    ${relatedForbidden.map(c => `<li class="text-red-400">${c}</li>`).join('')}
+                            <div class="combo-step-card p-4 border-l-4 border-red-500">
+                                <h4 class="text-md font-bold text-red-400 mb-2">Forbidden</h4>
+                                <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
+                                    ${relatedForbidden.map(c => `<li class="text-red-300">${c}</li>`).join('')}
                                 </ul>
                             </div>
                         `;
@@ -540,10 +654,10 @@ const CardLoader = (function () {
                     
                     if (relatedLimited.length > 0) {
                         html += `
-                            <div class="card combo-step-card p-4 border-l-4 border-yellow-500 bg-gray-900">
-                                <h4 class="text-md font-bold text-yellow-500 mb-2">Limited</h4>
-                                <ul class="list-disc list-inside space-y-1 text-xs text-gray-300">
-                                    ${relatedLimited.map(c => `<li class="text-yellow-400">${c}</li>`).join('')}
+                            <div class="combo-step-card p-4 border-l-4 border-yellow-500">
+                                <h4 class="text-md font-bold text-yellow-400 mb-2">Limited</h4>
+                                <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
+                                    ${relatedLimited.map(c => `<li class="text-yellow-300">${c}</li>`).join('')}
                                 </ul>
                             </div>
                         `;
@@ -551,10 +665,10 @@ const CardLoader = (function () {
                     
                     if (relatedSemiLimited.length > 0) {
                         html += `
-                            <div class="card combo-step-card p-4 border-l-4 border-orange-500 bg-gray-900">
-                                <h4 class="text-md font-bold text-orange-500 mb-2">Semi-Limited</h4>
-                                <ul class="list-disc list-inside space-y-1 text-xs text-gray-300">
-                                    ${relatedSemiLimited.map(c => `<li class="text-orange-400">${c}</li>`).join('')}
+                            <div class="combo-step-card p-4 border-l-4 border-orange-500">
+                                <h4 class="text-md font-bold text-orange-400 mb-2">Semi-Limited</h4>
+                                <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
+                                    ${relatedSemiLimited.map(c => `<li class="text-orange-300">${c}</li>`).join('')}
                                 </ul>
                             </div>
                         `;
@@ -566,7 +680,7 @@ const CardLoader = (function () {
                     if (options.customMessages?.metaImplications) {
                         html += `
                             <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
-                                <p class="text-sm text-gray-300">
+                                <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> ${options.customMessages.metaImplications}
                                 </p>
                             </div>
@@ -574,7 +688,7 @@ const CardLoader = (function () {
                     } else if (traits.adaptability) {
                         html += `
                             <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
-                                <p class="text-sm text-gray-300">
+                                <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> Despite restrictions on support cards, ${options.archetypeName}'s ${traits.adaptability} allows it to remain competitive with adjusted builds.
                                 </p>
                             </div>
@@ -605,24 +719,24 @@ const CardLoader = (function () {
                     }
                     
                     html = `
-                        <div class="card p-6 bg-gray-800">
-                            <p class="text-gray-300 mb-4 text-center">
-                                <strong class="text-${impactColor}-500 font-bold">${impactLevel}:</strong> ${autoIntro}
+                        <div class="card p-6 mb-10 md:mb-16">
+                            <p class="${pageColors.bodyTextColor} mb-4 text-center">
+                                <strong class="text-${impactColor}-400 font-bold">${impactLevel}:</strong> ${autoIntro}
                             </p>
                     `;
                     
                     // Archetype restrictions
                     if (forbidden.length > 0 || limited.length > 0 || semiLimited.length > 0) {
-                        html += `<div class="mb-4"><h3 class="text-lg font-semibold text-white mb-3"><i class="fas fa-layer-group mr-2"></i>Archetype Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                        html += `<div class="mb-4"><h3 class="text-lg font-semibold ${pageColors.headerColor} mb-3"><i class="fas fa-layer-group mr-2"></i>Archetype Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
                         
                         if (forbidden.length > 0) {
                             html += `
-                                <div class="card combo-step-card p-4 bg-gray-900">
-                                    <h4 class="text-lg font-bold text-red-500 mb-2">
+                                <div class="combo-step-card p-4">
+                                    <h4 class="text-lg font-bold text-red-400 mb-2">
                                         <i class="fas fa-ban mr-2"></i>Forbidden (0 copies)
                                     </h4>
-                                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                                        ${forbidden.map(c => `<li><strong class="text-red-400">${c}</strong></li>`).join('')}
+                                    <ul class="list-disc list-inside space-y-1 text-sm ${pageColors.bodyTextColor}">
+                                        ${forbidden.map(c => `<li><strong class="text-red-300">${c}</strong></li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -630,12 +744,12 @@ const CardLoader = (function () {
                         
                         if (limited.length > 0) {
                             html += `
-                                <div class="card combo-step-card p-4 bg-gray-900">
-                                    <h4 class="text-lg font-bold text-yellow-500 mb-2">
+                                <div class="combo-step-card p-4">
+                                    <h4 class="text-lg font-bold text-yellow-400 mb-2">
                                         <i class="fas fa-exclamation-triangle mr-2"></i>Limited (1 copy)
                                     </h4>
-                                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                                        ${limited.map(c => `<li><strong class="text-yellow-400">${c}</strong></li>`).join('')}
+                                    <ul class="list-disc list-inside space-y-1 text-sm ${pageColors.bodyTextColor}">
+                                        ${limited.map(c => `<li><strong class="text-yellow-300">${c}</strong></li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -643,12 +757,12 @@ const CardLoader = (function () {
                         
                         if (semiLimited.length > 0) {
                             html += `
-                                <div class="card combo-step-card p-4 bg-gray-900">
-                                    <h4 class="text-lg font-bold text-orange-500 mb-2">
+                                <div class="combo-step-card p-4">
+                                    <h4 class="text-lg font-bold text-orange-400 mb-2">
                                         <i class="fas fa-exclamation-circle mr-2"></i>Semi-Limited (2 copies)
                                     </h4>
-                                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                                        ${semiLimited.map(c => `<li><strong class="text-orange-400">${c}</strong></li>`).join('')}
+                                    <ul class="list-disc list-inside space-y-1 text-sm ${pageColors.bodyTextColor}">
+                                        ${semiLimited.map(c => `<li><strong class="text-orange-300">${c}</strong></li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -659,14 +773,14 @@ const CardLoader = (function () {
                     
                     // Related cards
                     if (relatedForbidden.length > 0 || relatedLimited.length > 0 || relatedSemiLimited.length > 0) {
-                        html += `<div class="mt-4"><h3 class="text-lg font-semibold text-white mb-3"><i class="fas fa-link mr-2"></i>Synergistic Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                        html += `<div class="mt-4"><h3 class="text-lg font-semibold ${pageColors.headerColor} mb-3"><i class="fas fa-link mr-2"></i>Synergistic Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
                         
                         if (relatedForbidden.length > 0) {
                             html += `
-                                <div class="card combo-step-card p-4 border-l-4 border-red-500 bg-gray-900">
-                                    <h4 class="text-md font-bold text-red-500 mb-2">Forbidden</h4>
-                                    <ul class="list-disc list-inside space-y-1 text-xs text-gray-300">
-                                        ${relatedForbidden.map(c => `<li class="text-red-400">${c}</li>`).join('')}
+                                <div class="combo-step-card p-4 border-l-4 border-red-500">
+                                    <h4 class="text-md font-bold text-red-400 mb-2">Forbidden</h4>
+                                    <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
+                                        ${relatedForbidden.map(c => `<li class="text-red-300">${c}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -674,10 +788,10 @@ const CardLoader = (function () {
                         
                         if (relatedLimited.length > 0) {
                             html += `
-                                <div class="card combo-step-card p-4 border-l-4 border-yellow-500 bg-gray-900">
-                                    <h4 class="text-md font-bold text-yellow-500 mb-2">Limited</h4>
-                                    <ul class="list-disc list-inside space-y-1 text-xs text-gray-300">
-                                        ${relatedLimited.map(c => `<li class="text-yellow-400">${c}</li>`).join('')}
+                                <div class="combo-step-card p-4 border-l-4 border-yellow-500">
+                                    <h4 class="text-md font-bold text-yellow-400 mb-2">Limited</h4>
+                                    <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
+                                        ${relatedLimited.map(c => `<li class="text-yellow-300">${c}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -685,10 +799,10 @@ const CardLoader = (function () {
                         
                         if (relatedSemiLimited.length > 0) {
                             html += `
-                                <div class="card combo-step-card p-4 border-l-4 border-orange-500 bg-gray-900">
-                                    <h4 class="text-md font-bold text-orange-500 mb-2">Semi-Limited</h4>
-                                    <ul class="list-disc list-inside space-y-1 text-xs text-gray-300">
-                                        ${relatedSemiLimited.map(c => `<li class="text-orange-400">${c}</li>`).join('')}
+                                <div class="combo-step-card p-4 border-l-4 border-orange-500">
+                                    <h4 class="text-md font-bold text-orange-400 mb-2">Semi-Limited</h4>
+                                    <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
+                                        ${relatedSemiLimited.map(c => `<li class="text-orange-300">${c}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -701,7 +815,7 @@ const CardLoader = (function () {
                     if (options.customMessages?.metaImplications) {
                         html += `
                             <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
-                                <p class="text-sm text-gray-300">
+                                <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> ${options.customMessages.metaImplications}
                                 </p>
                             </div>
@@ -710,7 +824,7 @@ const CardLoader = (function () {
                         // Limited cards only - can highlight resilience
                         html += `
                             <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
-                                <p class="text-sm text-gray-300">
+                                <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> Thanks to its ${traits.resilience}, ${options.archetypeName} remains competitive despite the limitation${limited.length > 1 ? 's' : ''}.
                                 </p>
                             </div>
@@ -719,7 +833,7 @@ const CardLoader = (function () {
                         // Forbidden cards - can suggest alternatives
                         html += `
                             <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
-                                <p class="text-sm text-gray-300">
+                                <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> While the loss of key cards is significant, ${options.archetypeName} players can adapt by ${traits.alternativeStrategy}.
                                 </p>
                             </div>
@@ -728,7 +842,7 @@ const CardLoader = (function () {
                         const cardList = forbidden.join(', ');
                         html += `
                             <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
-                                <p class="text-sm text-gray-300">
+                                <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> The loss of ${cardList} significantly impacts the archetype's power level and consistency. Players will need to adapt their strategies accordingly.
                                 </p>
                             </div>
@@ -739,8 +853,75 @@ const CardLoader = (function () {
                 }
                 
                 container.innerHTML = html;
-            }    
+            }
 
+    /**
+     * Fetch all cards from an archetype using the YGOProDeck API
+     * @param {string} archetypeName - The archetype name (e.g., "Blue-Eyes", "Dark Magician")
+     * @returns {Promise<Array<string>>} Array of card names in the archetype
+     */
+    async function fetchArchetypeCards(archetypeName) {
+        try {
+            const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?archetype=${encodeURIComponent(archetypeName)}`;
+            console.log(`[CardLoader] Fetching archetype cards for: ${archetypeName}`);
+            
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                throw new Error(`Archetype API returned status ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (!data.data || !Array.isArray(data.data)) {
+                throw new Error('Invalid archetype API response format');
+            }
+            
+            // Extract card names
+            const cardNames = data.data.map(card => card.name);
+            console.log(`[CardLoader] Found ${cardNames.length} cards in ${archetypeName} archetype`);
+            
+            return cardNames;
+        } catch (error) {
+            console.error(`[CardLoader] Failed to fetch archetype cards for ${archetypeName}:`, error);
+            return [];
+        }
+    }
+
+    /**
+     * Render banlist section using archetype name to auto-fetch cards
+     * @param {string} containerId - ID of container element
+     * @param {string} archetypeName - Name of the archetype to fetch cards for
+     * @param {Object} options - Configuration options
+     */
+    async function renderBanlistSectionByArchetype(containerId, archetypeName, options = {}) {
+        const container = document.getElementById(containerId);
+        
+        if (!container) {
+            console.error(`[CardLoader] Container with ID "${containerId}" not found`);
+            return;
+        }
+        
+        // Show loading state
+        container.innerHTML = '<div class="card p-6"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading archetype and banlist data...</p></div>';
+        
+        // Fetch all cards in the archetype
+        const archetypeCards = await fetchArchetypeCards(archetypeName);
+        
+        if (archetypeCards.length === 0) {
+            container.innerHTML = '<div class="card p-6"><p class="text-center text-yellow-400"><i class="fas fa-exclamation-triangle mr-2"></i>Could not load archetype cards. Please check the archetype name.</p></div>';
+            return;
+        }
+        
+        // Use the regular renderBanlistSection with fetched cards
+        const finalOptions = {
+            ...options,
+            archetypeName: archetypeName
+        };
+        
+        await renderBanlistSection(containerId, archetypeCards, finalOptions);
+    }
+    
     /**
      * Get cached card data
      */
@@ -781,6 +962,8 @@ const CardLoader = (function () {
         fetchBanlistData,
         checkBanlistStatus,
         renderBanlistSection,
+        fetchArchetypeCards,
+        renderBanlistSectionByArchetype,
     };
 })();
 
