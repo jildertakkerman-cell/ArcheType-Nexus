@@ -1,6 +1,7 @@
 // Complete archetype data extracted from index.html
 // Generated on 10/03/2025 01:09:02
 // Updated on 10/22/2025 with Evol, Exchange of the Spirit, Fallen of Albaz, Feral Imp, Fleur, Flame Swordsman, Fairy Tale, Felgrand, and From the Underworld entries
+// Updated on 11/05/2025 with Sacred Beast entry
 // Total file size: 661.93 KB
 
 const archetypes = [
