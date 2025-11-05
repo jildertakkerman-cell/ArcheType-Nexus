@@ -1,6 +1,7 @@
 // Complete archetype data extracted from index.html
 // Generated on 10/03/2025 01:09:02
 // Updated on 10/22/2025 with Evol, Exchange of the Spirit, Fallen of Albaz, Feral Imp, Fleur, Flame Swordsman, Fairy Tale, Felgrand, and From the Underworld entries
+// Updated on 11/05/2025 with Sacred Beast entry
 // Total file size: 661.93 KB
 
 const archetypes = [
@@ -19213,6 +19214,58 @@ const archetypes = [
                         </svg>`
     },
     {
+        name: 'Metalmorph',
+        description: 'A modern Machine archetype that evolved from classic Trap Card origins into a sophisticated interruption-based control strategy, tributing monsters to summon heavily protected boss monsters during the opponent\'s turn.',
+        filepath: 'Metalmorph Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <radialGradient id="metalmorphCore" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" style="stop-color:#94a3b8;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#475569;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+                                </radialGradient>
+                                <linearGradient id="metalmorphSheen" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#cbd5e1;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#64748b;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
+                                </linearGradient>
+                                <filter id="metalmorphGlow">
+                                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                            </defs>
+                            <!-- Metal background -->
+                            <circle cx="50" cy="50" r="48" fill="url(#metalmorphCore)" stroke="#64748b" stroke-width="2">
+                                <animate attributeName="opacity" values="1;0.85;1" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                            <!-- Morphing metal shield -->
+                            <g filter="url(#metalmorphGlow)">
+                                <path d="M50 15 L70 35 L70 60 L50 80 L30 60 L30 35 Z" fill="url(#metalmorphSheen)" stroke="#cbd5e1" stroke-width="2">
+                                    <animate attributeName="d" 
+                                        values="M50 15 L70 35 L70 60 L50 80 L30 60 L30 35 Z;
+                                                M50 20 L65 35 L68 60 L50 75 L32 60 L35 35 Z;
+                                                M50 15 L70 35 L70 60 L50 80 L30 60 L30 35 Z" 
+                                        dur="3s" repeatCount="indefinite"/>
+                                </path>
+                                <!-- Inner mechanical core -->
+                                <circle cx="50" cy="50" r="12" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/>
+                                <circle cx="50" cy="50" r="6" fill="#475569" stroke="#cbd5e1" stroke-width="1">
+                                    <animate attributeName="r" values="6;8;6" dur="2s" repeatCount="indefinite"/>
+                                </circle>
+                            </g>
+                            <!-- Trap card corner markers -->
+                            <g opacity="0.8">
+                                <rect x="20" y="20" width="8" height="8" fill="#dc2626" stroke="#ef4444" stroke-width="1"/>
+                                <rect x="72" y="20" width="8" height="8" fill="#dc2626" stroke="#ef4444" stroke-width="1"/>
+                                <rect x="20" y="72" width="8" height="8" fill="#dc2626" stroke="#ef4444" stroke-width="1"/>
+                                <rect x="72" y="72" width="8" height="8" fill="#dc2626" stroke="#ef4444" stroke-width="1"/>
+                            </g>
+                        </svg>`
+    },
+    {
         name: 'Metaphys',
         description: 'A LIGHT Wyrm archetype focused on banishing, delayed effects, and recursive field control through ethereal monsters and spells.',
         filepath: 'Metaphys Deck Analysis.html',
@@ -21893,6 +21946,47 @@ const archetypes = [
                             <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="bold">Rikka</text>
+                    </svg>`
+    },
+    {
+        name: 'Ritual Art',
+        description: 'Generic Ritual support cards that use the Main Deck as a resource, featuring Advanced Ritual Art, High Ritual Art, and Urgent Ritual Art for powerful Normal Monster-based strategies.',
+        filepath: 'Ritual Art Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="ritualArtAura" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.8"/>
+                                <stop offset="50%" stop-color="#3b82f6" stop-opacity="0.5"/>
+                                <stop offset="100%" stop-color="#1e3a8a" stop-opacity="0.9"/>
+                            </radialGradient>
+                            <linearGradient id="ritualArtGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#93c5fd"/>
+                                <stop offset="100%" stop-color="#1e3a8a"/>
+                            </linearGradient>
+                            <filter id="ritualArtShadow">
+                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#ritualArtAura)" opacity="0.7">
+                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <g filter="url(#ritualArtShadow)">
+                            <circle cx="50" cy="50" r="20" fill="none" stroke="url(#ritualArtGlow)" stroke-width="3"/>
+                            <!-- Ritual flame/circle pattern -->
+                            <path d="M50 35 Q60 50 50 65 Q40 50 50 35 Z" fill="url(#ritualArtGlow)" stroke="#1e3a8a" stroke-width="2"/>
+                            <circle cx="50" cy="50" r="8" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+                        </g>
+                        <circle cx="35" cy="70" r="2" fill="#3b82f6">
+                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="65" cy="70" r="2" fill="#1e3a8a">
+                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="bold">Ritual Art</text>
                     </svg>`
     },
     {
@@ -24675,6 +24769,39 @@ const archetypes = [
                     </svg>`
     },
     {
+        name: "Venom",
+        description: "A Reptile archetype from Yu-Gi-Oh! GX that uses Venom Counters to weaken and control opponents, featuring Vennominaga the Deity of Poisonous Snakes as an alternate win condition boss monster.",
+        filepath: "Venom Deck Analysis.html",
+        icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="venomGradient" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#00ff00;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#004d00;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="venomGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge> 
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <circle cx="50" cy="50" r="40" fill="url(#venomGradient)" filter="url(#venomGlow)">
+                            <animate attributeName="r" values="40;42;40" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <path d="M30 40 Q35 30 50 35 Q65 30 70 40 Q75 50 70 60 Q65 70 50 75 Q35 70 30 60 Q25 50 30 40 Z" fill="#1a1a2e" stroke="#00ff00" stroke-width="2"/>
+                        <circle cx="42" cy="42" r="3" fill="#00ff00"/>
+                        <circle cx="58" cy="42" r="3" fill="#00ff00"/>
+                        <path d="M42 52 Q50 48 58 52" stroke="#00ff00" stroke-width="2" fill="none"/>
+                        <path d="M35 45 Q40 40 45 45" stroke="#00ff00" stroke-width="1" fill="none"/>
+                        <path d="M55 45 Q60 40 65 45" stroke="#00ff00" stroke-width="1" fill="none"/>
+                        <circle cx="50" cy="65" r="2" fill="#00ff00" opacity="0.7">
+                            <animate attributeName="opacity" values="0.7;0.3;0.7" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="85" text-anchor="middle" font-size="10" fill="#00ff00" font-weight="bold">Venom</text>
+                    </svg>`
+    },
+    {
         name: "Virtual World",
         description: "A deck featuring cyber monsters that excel at Pendulum summoning and controlling the field through their virtual reality effects and digital abilities.",
         filepath: "Virtual World Deck Analysis.html",
@@ -26953,6 +27080,37 @@ const archetypes = [
                         <text x="50" y="85" text-anchor="middle" font-size="7" fill="#DC143C" font-weight="bold">FROM THE</text>
                         <text x="50" y="95" text-anchor="middle" font-size="7" fill="#DC143C" font-weight="bold">UNDERWORLD</text>
                     </svg>`
+                            },
+                            {
+                                name: "Sacred Beast",
+                                description: "A DARK archetype featuring three legendary beasts—Uria, Hamon, and Raviel—that evolved from anime icons to a consistent control deck with modern support enabling efficient deployment and devastating OTK potential.",
+                                filepath: "Sacred Beast Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="sacredBeastGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#581c87;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a112e;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#sacredBeastGrad)" stroke="#7e22ce" stroke-width="2"/>
+                        <path d="M50 25 L35 45 L50 40 L65 45 Z" fill="#a855f7" opacity="0.8">
+                            <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M35 45 L25 65 L50 60 L75 65 L65 45" fill="#7e22ce" opacity="0.7">
+                            <animate attributeName="opacity" values="0.7;0.9;0.7" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+                        </path>
+                        <circle cx="40" cy="50" r="3" fill="#fde047">
+                            <animate attributeName="r" values="3;4;3" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="60" cy="50" r="3" fill="#fde047">
+                            <animate attributeName="r" values="3;4;3" dur="1.5s" begin="0.75s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="50" cy="55" r="3" fill="#fde047">
+                            <animate attributeName="r" values="3;4;3" dur="1.5s" begin="1s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="85" text-anchor="middle" font-size="9" fill="#fde047" font-weight="bold">SACRED</text>
+                        <text x="50" y="95" text-anchor="middle" font-size="9" fill="#fde047" font-weight="bold">BEAST</text>
+                        </svg>`
                             },
                             {
                                 name: "Salamangreat",

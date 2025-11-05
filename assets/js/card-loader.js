@@ -45,7 +45,7 @@ const CardLoader = (function () {
 
         popup = document.createElement('div');
         popup.id = 'card-popup';
-        popup.className = 'fixed z-50 bg-red-900 border-2 border-red-500 text-white p-4 rounded-lg shadow-lg max-w-xs max-h-96 overflow-y-auto opacity-0 transition-opacity duration-200 pointer-events-none';
+        popup.className = 'fixed z-50 bg-gray-900 border-2 border-blue-500 text-white p-4 rounded-lg shadow-lg max-w-xs max-h-96 overflow-y-auto opacity-0 transition-opacity duration-200 pointer-events-none';
         popup.style.display = 'none';
         document.body.appendChild(popup);
     }
@@ -284,7 +284,7 @@ const CardLoader = (function () {
         if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
         if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
         if (atkDef.length > 0) {
-            stats = `<p class="mt-2 text-red-400 font-bold">${atkDef.join(' ')}</p>`;
+            stats = `<p class="mt-2 text-yellow-400 font-bold">${atkDef.join(' ')}</p>`;
         }
 
         const cardType = cardInfo.type.includes('Monster')
@@ -293,9 +293,9 @@ const CardLoader = (function () {
 
         popup.innerHTML = `
             <div>
-                <h3 class="text-red-400 font-bold text-lg mb-2">${cardInfo.name}</h3>
-                <p class="text-xs text-red-300">${cardType}</p>
-                <div class="w-full h-px bg-red-700 my-2"></div>
+                <h3 class="text-blue-400 font-bold text-lg mb-2">${cardInfo.name}</h3>
+                <p class="text-xs text-gray-300">${cardType}</p>
+                <div class="w-full h-px bg-blue-500 my-2"></div>
                 <p class="text-xs text-white">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
                 ${stats}
             </div>
