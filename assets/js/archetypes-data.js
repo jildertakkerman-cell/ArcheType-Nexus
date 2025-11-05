@@ -26936,6 +26936,37 @@ const archetypes = [
                     </svg>`
                             },
                             {
+                                name: "Sacred Beast",
+                                description: "A DARK archetype featuring three legendary beasts—Uria, Hamon, and Raviel—that evolved from anime icons to a consistent control deck with modern support enabling efficient deployment and devastating OTK potential.",
+                                filepath: "Sacred Beast Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="sacredBeastGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#581c87;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a112e;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#sacredBeastGrad)" stroke="#7e22ce" stroke-width="2"/>
+                        <path d="M50 25 L35 45 L50 40 L65 45 Z" fill="#a855f7" opacity="0.8">
+                            <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M35 45 L25 65 L50 60 L75 65 L65 45" fill="#7e22ce" opacity="0.7">
+                            <animate attributeName="opacity" values="0.7;0.9;0.7" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+                        </path>
+                        <circle cx="40" cy="50" r="3" fill="#fde047">
+                            <animate attributeName="r" values="3;4;3" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="60" cy="50" r="3" fill="#fde047">
+                            <animate attributeName="r" values="3;4;3" dur="1.5s" begin="0.75s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="50" cy="55" r="3" fill="#fde047">
+                            <animate attributeName="r" values="3;4;3" dur="1.5s" begin="1s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="85" text-anchor="middle" font-size="9" fill="#fde047" font-weight="bold">SACRED</text>
+                        <text x="50" y="95" text-anchor="middle" font-size="9" fill="#fde047" font-weight="bold">BEAST</text>
+                        </svg>`
+                            },
+                            {
                                 name: "Salamangreat",
                                 description: "A deck analysis for the Salamangreat archetype.",
                                 filepath: "Salamangreat Deck Analysis.html",
