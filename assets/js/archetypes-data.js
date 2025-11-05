@@ -21885,7 +21885,7 @@ const archetypes = [
     },
     {
         name: 'Ritual Art',
-        description: 'A transformative suite of generic Ritual support cards that leverage unconventional resource pools like the Main Deck, featuring Advanced Ritual Art, High Ritual Art, and Urgent Ritual Art to enable powerful strategies through strict Normal Monster synergies.',
+        description: 'Generic Ritual support cards that use the Main Deck as a resource, featuring Advanced Ritual Art, High Ritual Art, and Urgent Ritual Art for powerful Normal Monster-based strategies.',
         filepath: 'Ritual Art Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
@@ -21911,6 +21911,7 @@ const archetypes = [
                         </ellipse>
                         <g filter="url(#ritualArtShadow)">
                             <circle cx="50" cy="50" r="20" fill="none" stroke="url(#ritualArtGlow)" stroke-width="3"/>
+                            <!-- Ritual flame/circle pattern -->
                             <path d="M50 35 Q60 50 50 65 Q40 50 50 35 Z" fill="url(#ritualArtGlow)" stroke="#1e3a8a" stroke-width="2"/>
                             <circle cx="50" cy="50" r="8" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
                         </g>
