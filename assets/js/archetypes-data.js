@@ -24623,6 +24623,39 @@ const archetypes = [
                     </svg>`
     },
     {
+        name: "Venom",
+        description: "A Reptile archetype from Yu-Gi-Oh! GX that uses Venom Counters to weaken and control opponents, featuring Vennominaga the Deity of Poisonous Snakes as an alternate win condition boss monster.",
+        filepath: "Venom Deck Analysis.html",
+        icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="venomGradient" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#00ff00;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#004d00;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="venomGlow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge> 
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <circle cx="50" cy="50" r="40" fill="url(#venomGradient)" filter="url(#venomGlow)">
+                            <animate attributeName="r" values="40;42;40" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <path d="M30 40 Q35 30 50 35 Q65 30 70 40 Q75 50 70 60 Q65 70 50 75 Q35 70 30 60 Q25 50 30 40 Z" fill="#1a1a2e" stroke="#00ff00" stroke-width="2"/>
+                        <circle cx="42" cy="42" r="3" fill="#00ff00"/>
+                        <circle cx="58" cy="42" r="3" fill="#00ff00"/>
+                        <path d="M42 52 Q50 48 58 52" stroke="#00ff00" stroke-width="2" fill="none"/>
+                        <path d="M35 45 Q40 40 45 45" stroke="#00ff00" stroke-width="1" fill="none"/>
+                        <path d="M55 45 Q60 40 65 45" stroke="#00ff00" stroke-width="1" fill="none"/>
+                        <circle cx="50" cy="65" r="2" fill="#00ff00" opacity="0.7">
+                            <animate attributeName="opacity" values="0.7;0.3;0.7" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="85" text-anchor="middle" font-size="10" fill="#00ff00" font-weight="bold">Venom</text>
+                    </svg>`
+    },
+    {
         name: "Virtual World",
         description: "A deck featuring cyber monsters that excel at Pendulum summoning and controlling the field through their virtual reality effects and digital abilities.",
         filepath: "Virtual World Deck Analysis.html",
