@@ -340,17 +340,48 @@
             </div>
         </section>
 
-        <section>
-            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-font">Current TCG Banlist Status</h2>
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
             <div id="banlist-status" class="card p-6">
-                <p class="text-center text-purple-200">Loading banlist status...</p>
+                <!-- Banlist content will be dynamically generated here -->
             </div>
         </section>
 
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Render Banlist Section ---
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'The Phantom Knights of Ancient Cloak',
+                'The Phantom Knights of Silent Boots',
+                'The Phantom Knights of Torn Scales',
+                'The Phantom Knights of Ragged Gloves',
+                'The Phantom Knights of Fragile Armor',
+                'Phantom Knights\' Fog Blade',
+                'The Phantom Knights of Rusty Bardiche',
+                'The Phantom Knights of Break Sword',
+                'Phantom Knights\' Rank-Up-Magic Launch',
+                'Dark Requiem Xyz Dragon'
+            ], {
+                archetypeName: 'Phantom Knights',
+                relatedCards: [
+                    'Cherubini, Ebon Angel of the Burning Abyss',
+                    'Leviair the Sea Dragon',
+                    'Arc Rebellion Xyz Dragon'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Phantom Knights is a DARK Warrior archetype focused on Level 3 Xyz summons and graveyard recursion, using Trap cards that can be activated from the GY.',
+                    supportReliance: 'The deck benefits from Burning Abyss synergy, Rank-Up-Magic spells, and generic DARK Xyz support.',
+                    adaptability: 'All Phantom Knights core cards remain unrestricted, allowing the deck to operate at full power.',
+                    resilience: 'The archetype is completely untouched by banlist restrictions, maintaining maximum consistency.',
+                    keyLoss: 'No archetype-specific restrictions exist; all Phantom Knights cards are available at 3 copies.',
+                    alternativeStrategy: 'Focus on pure Phantom Knights builds with Dark Requiem Xyz Dragon as the boss monster, or hybrid PK Fire with Burning Abyss for explosive combos.'
+                }
+            });
+
+            // --- Card Loader ---
             // --- GHOSTLY MIST BANNER ANIMATION ---
             const canvas = document.getElementById('mist-banner');
             if (canvas) {
@@ -416,65 +447,6 @@
 
 
             
-            // --- BANLIST CHECKER ---
-            async function checkBanlist() {
-                const banlistContainer = document.getElementById('banlist-status');
-                const pkCards = [
-                    "The Phantom Knights of Torn Scales", "The Phantom Knights of Ancient Cloak", 
-                    "The Phantom Knights of Silent Boots", "Phantom Knights' Fog Blade",
-                    "The Phantom Knights of Rusty Bardiche", "The Phantom Knights of Break Sword"
-                ];
-                
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg&archetype=Phantom%20Knights');
-                    if (!response.ok) throw new Error('Failed to fetch banlist data');
-                    const data = await response.json();
-                    
-                    let limited = [];
-                    let semiLimited = [];
-                    let forbidden = [];
-
-                    if (data.data) {
-                        data.data.forEach(card => {
-                            if (card.banlist_info && card.banlist_info.ban_tcg) {
-                                const status = card.banlist_info.ban_tcg;
-                                if (status === 'Limited') limited.push(card.name);
-                                else if (status === 'Semi-Limited') semiLimited.push(card.name);
-                                else if (status === 'Forbidden') forbidden.push(card.name);
-                            }
-                        });
-                    }
-
-                    let htmlContent = `<p class="text-center text-lg text-purple-200 mb-6">As of the current TCG format, the Phantom Knights archetype remains largely unrestricted, allowing it to operate at nearly full power.</p>`;
-                    htmlContent += '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-center">';
-
-                    const renderStatus = (title, cards, colorClass, icon) => {
-                        let content = `<div class="p-4 combo-step-card rounded-lg"><h4 class="text-xl font-bold ${colorClass} mb-2 heading-font"><i class="fas ${icon} mr-2"></i>${title}</h4>`;
-                        if (cards.length > 0) {
-                            content += '<ul class="list-none space-y-1 text-purple-200">';
-                            cards.forEach(card => content += `<li>${card}</li>`);
-                            content += '</ul>';
-                        } else {
-                            content += '<p class="text-purple-300">None</p>';
-                        }
-                        content += '</div>';
-                        return content;
-                    };
-                    
-                    htmlContent += renderStatus('Forbidden', forbidden, 'text-red-400', 'fa-ban');
-                    htmlContent += renderStatus('Limited', limited, 'text-yellow-400', 'fa-exclamation-circle');
-                    htmlContent += renderStatus('Semi-Limited', semiLimited, 'text-blue-400', 'fa-info-circle');
-
-                    htmlContent += '</div>';
-                    
-                    banlistContainer.innerHTML = htmlContent;
-
-                } catch (error) {
-                    console.error("Error fetching banlist:", error);
-                    banlistContainer.innerHTML = '<p class="text-center text-red-400">Could not load banlist status at this time.</p>';
-                }
-            }
-            
             // --- INITIALIZE PAGE CONTENT ---
             // This is the map of card IDs to card names to load
             const cardsToLoad = {
@@ -497,9 +469,6 @@
 
             // Call the CardLoader (either local or fallback)
             CardLoader.loadCards(cardsToLoad);
-            
-            // Fetch banlist status
-            checkBanlist();
         });
     </script>
 </body>

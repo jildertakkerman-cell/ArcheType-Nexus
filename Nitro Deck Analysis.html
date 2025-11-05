@@ -239,16 +239,43 @@
             </div>
         </section>
         
+                <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
-            <div id="banlist-section" class="card p-6">
-                <p class="text-gray-300 text-center">Loading banlist information...</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
             </div>
         </section>
 
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Render Banlist Section ---
+            await CardLoader.renderBanlistSection('banlist-section', [
+                'Nitro Synchron',
+                'Nitro Warrior',
+                'Junk Speeder',
+                'Quickdraw Synchron',
+                'Doppelwarrior'
+            ], {
+                archetypeName: 'Nitro',
+                relatedCards: [
+                    'Baronne de Fleur',
+                    'Crystal Wing Synchro Dragon',
+                    'PSY-Framelord Omega',
+                    'Bystial Dis Pater'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Nitro is a Synchro-focused archetype that revolves around swarming with Tuners and utilizing powerful generic Synchro monsters.',
+                    supportReliance: 'The deck heavily relies on generic Synchro boss monsters like Baronne de Fleur for its optimal Turn 1 end board.',
+                    adaptability: 'While the core Nitro and Synchron engine remains unrestricted, the forbidden status of key generic Synchros impacts the deck\'s ceiling.',
+                    resilience: 'The archetype-specific cards remain at full power, but generic boss monster restrictions reduce overall board power.',
+                    keyLoss: 'Baronne de Fleur being forbidden significantly weakens the optimal Turn 1 board setup.',
+                    alternativeStrategy: 'Focus more on the OTK potential with Nitro Warrior, leveraging its ATK-doubling effect and piercing damage to push for game on Turn 2.'
+                }
+            });
+
+
             // --- NITRO SPARK ANIMATION ---
             const canvas = document.getElementById('nitro-banner');
             if (canvas) {
@@ -309,7 +336,6 @@
                 window.addEventListener('resize', setCanvasSize);
             }
 
-
             CardLoader.loadCards({
                 'nitro-synchron-img': 'Nitro Synchron',
                 'nitro-warrior-img': 'Nitro Warrior',
@@ -320,118 +346,11 @@
                 'omega-img': 'PSY-Framelord Omega',
                 'dis-pater-img': 'Bystial Dis Pater',
             });
-
-            for (const [id, name] of Object.entries(cardsToLoad)) {
-                
-            }
-
-            // --- BANLIST SCRIPT (NEW APPROACH) ---
-            function checkBanlist() {
-                const banlistContainer = document.getElementById('banlist-section');
-                const allCardsToCheck = [
-                    "Nitro Synchron", 
-                    "Nitro Warrior", 
-                    "Junk Speeder", 
-                    "Quickdraw Synchron",
-                    "Baronne de Fleur",
-                    "Crystal Wing Synchro Dragon",
-                    "PSY-Framelord Omega",
-                    "Bystial Dis Pater"
-                ];
-
-                // Using the provided JSON data locally instead of an API call
-                const localBanlistData = {"data":[{"id":84815190,"name":"Baronne de Fleur","banlist_info":{"ban_tcg":"Forbidden"}},{"id":74586817,"name":"PSY-Framelord Omega","banlist_info":{"ban_tcg":"Limited"}}]};
-
-                try {
-                    const forbidden = [];
-                    const limited = [];
-                    const semiLimited = [];
-                    const unlimited = [];
-
-                    const cardStatus = {};
-                    if (localBanlistData && localBanlistData.data && Array.isArray(localBanlistData.data)) {
-                        allCardsToCheck.forEach(cardName => {
-                            const cardInfo = localBanlistData.data.find(c => c.name === cardName);
-                            if (cardInfo && cardInfo.banlist_info && cardInfo.banlist_info.ban_tcg) {
-                                cardStatus[cardName] = cardInfo.banlist_info.ban_tcg;
-                            } else {
-                                cardStatus[cardName] = "Unlimited";
-                            }
-                        });
-                    }
-
-
-                    allCardsToCheck.forEach(name => {
-                        const status = cardStatus[name] || "Unlimited";
-                        switch (status) {
-                            case "Forbidden":
-                                forbidden.push(name);
-                                break;
-                            case "Limited":
-                                limited.push(name);
-                                break;
-                            case "Semi-Limited":
-                                semiLimited.push(name);
-                                break;
-                            default:
-                                unlimited.push(name);
-                                break;
-                        }
-                    });
-
-                    const createListHTML = (arr, copies) => {
-                        if (arr.length === 0) return '<li>None</li>';
-                        return arr.map(name => `<li>${name} ${copies}</li>`).join('');
-                    };
-                    
-                    const forbiddenHTML = createListHTML(forbidden, '(0 copies)');
-                    const limitedHTML = createListHTML(limited.concat(semiLimited), '(1-2 copies)');
-                    const unlimitedHTML = createListHTML(unlimited, '(3 copies)');
-
-                    const banlistHTML = `
-                        <p class="text-gray-300 mb-6 text-center">
-                           The core "Nitro" and "Synchron" engine remains at full power, but key generic boss monsters used in the optimal end board have been impacted by the TCG banlist.
-                        </p>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <!-- FORBIDDEN -->
-                            <div class="card combo-step-card p-4 border-red-500/50">
-                                <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden</h4>
-                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                                    ${forbiddenHTML}
-                                </ul>
-                            </div>
-                            <!-- LIMITED -->
-                            <div class="card combo-step-card p-4 border-yellow-400/50">
-                                <h4 class="text-lg font-bold text-yellow-300 mb-2">Limited & Semi-Limited</h4>
-                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                                    ${limitedHTML}
-                                </ul>
-                            </div>
-                            <!-- UNLIMITED -->
-                            <div class="card combo-step-card p-4 border-green-500/50">
-                                <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited</h4>
-                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                                    ${unlimitedHTML}
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="mt-6 p-4 bg-gray-900 bg-opacity-40 rounded border-l-4 border-orange-500">
-                            <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core engine remains intact, the regulation of key generic boss monsters impacts the deck's overall ceiling for its Turn 1 end board, placing more emphasis on its OTK potential with Nitro Warrior.</p>
-                        </div>
-                    `;
-                    banlistContainer.innerHTML = banlistHTML;
-
-                } catch (error) {
-                    console.error('Error processing banlist:', error);
-                    banlistContainer.innerHTML = '<p class="text-red-400 text-center">Could not load banlist information.</p>';
-                }
-            }
-
-            checkBanlist();
         });
     </script>
 </body>
 </html>
+
 
 
 

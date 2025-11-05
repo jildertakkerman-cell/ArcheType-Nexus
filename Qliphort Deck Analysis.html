@@ -329,23 +329,48 @@
             </div>
         </section>
 
+        <!-- Live TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-stone-300 mb-4 text-center">
-                    <strong class="text-green-400 font-bold">LARGELY UNRESTRICTED:</strong> The core Qliphort engine is at full power, though some of its historical support tools are limited.
-                </p>
-                <div id="banlist-status-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Banlist status will be populated by JavaScript -->
-                </div>
-                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
-                    <p class="text-sm text-stone-300"><strong>Meta Implications:</strong> With its core engine intact, Qliphort remains a potent rogue strategy. The limitation on key consistency cards and floodgates requires more careful deck building, but the fundamental power of the archetype as a stun/control deck is undiminished.</p>
-                </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
             </div>
         </section>
+
     </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Render Banlist Section ---
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Qliphort Scout',
+                'Qliphort Monolith',
+                'Qliphort Helix',
+                'Qliphort Disk',
+                'Qliphort Carrier',
+                'Qliphort Stealth',
+                'Qliphort Shell',
+                'Apoqliphort Towers',
+                'Summoner\'s Art',                
+            ], {
+                archetypeName: 'Qliphort',
+                relatedCards: [
+                    'Pot of Prosperity',
+                    'Lose 1 Turn',
+                    'Vanity\'s Emptiness',
+                    'Skill Drain'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Qliphort is a EARTH Machine Pendulum archetype focused on tribute summoning high-Level monsters and using floodgate effects to lock down opponents.',
+                    supportReliance: 'The deck benefits from Pendulum support, searchers like Summoner\'s Art, and powerful floodgates like Skill Drain.',
+                    adaptability: 'Qliphort Scout is Limited (1), reducing consistency. Skill Drain at 1 also limits floodgate density.',
+                    resilience: 'The core engine remains intact, but Scout at 1 makes the deck more vulnerable to disruption of its key searcher.',
+                    keyLoss: 'Scout at 1 significantly impacts opening hand consistency, as it\'s the primary searcher for the entire archetype.',
+                    alternativeStrategy: 'Focus on Qliphort Monolith and Summoner\'s Art to search Scout, then use Pendulum Scales to summon high-Level Qliphorts and lock opponents with Skill Drain and Apoqliphort Towers.'
+                }
+            });
+
+            // --- Qliphort Banner Animation ---
             const canvas = document.getElementById('qliphort-banner');
             if (canvas) {
                 const ctx = canvas.getContext('2d');
@@ -420,52 +445,6 @@
                 'helix-img-container': 'Qliphort Helix',
                 'stealth-img-container': 'Qliphort Stealth'
             });
-
-            async function checkBanlist() {
-                const cardNames = [
-                    'Qliphort Scout',
-                    'Apoqliphort Towers',
-                    'Saqlifice',
-                    'Skill Drain',
-                    'Gozen Match',
-                    'Rivalry of Warlords',
-                    'Summon Limit',
-                    'Vanity\'s Emptiness',
-                    'Pot of Prosperity'
-                ];
-                
-                const banlistContainer = document.getElementById('banlist-status-container');
-                banlistContainer.innerHTML = ''; // Clear previous entries
-
-                const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
-                const banlistData = await response.json();
-                const banlistMap = new Map(banlistData.data.map(card => [card.name, card.banlist_info.ban_tcg]));
-
-                const cardStatus = cardNames.map(name => {
-                    return { name, status: banlistMap.get(name) || 'Unlimited' };
-                });
-                
-                const unlimitedHTML = cardStatus.filter(c => c.status === 'Unlimited').map(c => `<li><strong class="text-green-400">${c.name} (3 copies)</strong></li>`).join('');
-                const limitedHTML = cardStatus.filter(c => c.status === 'Limited').map(c => `<li><strong class="text-yellow-400">${c.name} (1 copy)</strong></li>`).join('');
-                const forbiddenHTML = cardStatus.filter(c => c.status === 'Forbidden').map(c => `<li><strong class="text-red-400">${c.name} (0 copies)</strong></li>`).join('');
-
-                const createSection = (title, html, colorClass) => {
-                    if (!html) return '';
-                    return `
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold ${colorClass} mb-2">${title}</h4>
-                            <ul class="list-disc list-inside space-y-1 text-sm text-stone-300">${html}</ul>
-                        </div>
-                    `;
-                };
-
-                banlistContainer.innerHTML = 
-                    createSection('Unrestricted Cards', unlimitedHTML, 'text-green-400') +
-                    createSection('Limited Cards', limitedHTML, 'text-yellow-400') +
-                    createSection('Forbidden Cards', forbiddenHTML, 'text-red-400');
-            }
-
-            checkBanlist();
         });
     </script>
 </body>

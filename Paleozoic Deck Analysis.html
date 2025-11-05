@@ -384,18 +384,47 @@
             </div>
         </section>
 
-        <!-- TCG Banlist Impact Section -->
+                <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16">
-            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
-            <div id="banlist-section" class="card p-6">
-                <p class="text-gray-300 text-center">Loading banlist status...</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
             </div>
         </section>
 
-
     </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Render Banlist Section ---
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Paleozoic Canadia',
+                'Paleozoic Dinomischus',
+                'Paleozoic Leanchoilia',
+                'Paleozoic Marrella',
+                'Paleozoic Olenoides',
+                'Paleozoic Pikaia',
+                'Paleozoic Opabinia',
+                'Paleozoic Anomalocaris',
+                'Paleozoic Cambroraster',
+                'Paleozoic Hallucigenia'
+            ], {
+                archetypeName: 'Paleozoic',
+                relatedCards: [
+                    'Dimensional Barrier',
+                    'Solemn Judgment',
+                    'Toadally Awesome'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Paleozoic is a WATER Aqua archetype focused on trap cards that summon themselves from the GY when another trap is activated, enabling Xyz summons and board control.',
+                    supportReliance: 'The deck benefits from generic trap support and powerful Rank 2 Xyz monsters like Toadally Awesome.',
+                    adaptability: 'All Paleozoic core cards remain unrestricted, allowing the archetype to operate at maximum consistency.',
+                    resilience: 'The archetype is completely untouched by banlist restrictions, maintaining full power.',
+                    keyLoss: 'No archetype-specific restrictions exist; key generic traps remain available to maximize disruption potential.',
+                    alternativeStrategy: 'Focus on setting multiple Paleozoic traps and using their self-summoning effects to swarm the field, then Xyz summon Toadally Awesome and control the game with trap disruption.'
+                }
+            });
+
             // --- PALEOZOIC OCEAN BANNER ANIMATION ---
             const canvas = document.getElementById('ocean-banner');
             if (canvas) {
@@ -458,75 +487,6 @@
 
 
 
-            // --- BANLIST CHECKER ---
-            async function checkBanlistStatus() {
-                const banlistSection = document.getElementById('banlist-section');
-                const paleozoicCards = [
-                    'Paleozoic Canadia', 'Paleozoic Olenoides', 'Paleozoic Dinomischus', 
-                    'Paleozoic Marrella', 'Paleozoic Leanchoilia', 'Paleozoic Pikaia', 
-                    'Paleozoic Hallucigenia', 'Paleozoic Opabinia', 'Paleozoic Anomalocaris', 'Toadally Awesome'
-                ];
-                
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
-                    if (!response.ok) throw new Error('Failed to fetch banlist data');
-                    const data = await response.json();
-                    const banlistData = data.data;
-
-                    let unrestrictedHTML = '';
-                    let limitedHTML = '';
-                    
-                    const cardStatus = paleozoicCards.map(cardName => {
-                        const cardInfo = banlistData.find(c => c.name === cardName);
-                        return {
-                            name: cardName,
-                            status: cardInfo?.banlist_info?.ban_tcg || 'Unlimited'
-                        };
-                    });
-                    
-                    const unlimitedCards = cardStatus.filter(c => c.status === 'Unlimited');
-                    const limitedCards = cardStatus.filter(c => c.status !== 'Unlimited');
-
-                    if (unlimitedCards.length > 0) {
-                        unrestrictedHTML = `
-                            <div class="card combo-step-card p-4">
-                                <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards (3 copies each)</h4>
-                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                                    ${unlimitedCards.map(c => `<li>${c.name}</li>`).join('')}
-                                </ul>
-                            </div>`;
-                    }
-
-                    if (limitedCards.length > 0) {
-                         limitedHTML = `
-                            <div class="card combo-step-card p-4">
-                                <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited/Forbidden Cards</h4>
-                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                                    ${limitedCards.map(c => `<li><strong class="text-yellow-300">${c.name} (${c.status})</strong></li>`).join('')}
-                                </ul>
-                            </div>`;
-                    }
-                    
-                    banlistSection.innerHTML = `
-                        <p class="text-gray-300 mb-4 text-center">
-                            The Paleozoic archetype itself remains largely untouched by the banlist, allowing it to operate at near full power. However, some key synergistic cards have been limited.
-                        </p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           ${unrestrictedHTML}
-                           ${limitedHTML}
-                        </div>
-                         <div class="mt-4 p-3 bg-cyan-900 bg-opacity-30 rounded border-l-4 border-cyan-500">
-                            <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core Paleozoic engine is at full strength, the limitation of key support cards like "Toadally Awesome" has shifted the deck's focus. Modern builds are still highly effective but rely more on the in-archetype Extra Deck monsters and generic board control traps.</p>
-                        </div>
-                    `;
-
-                } catch (error) {
-                    console.error('Error fetching banlist data:', error);
-                    banlistSection.innerHTML = '<p class="text-red-400 text-center">Could not load banlist status. Please try again later.</p>';
-                }
-            }
-
-
             // --- INITIALIZE PAGE ---
             CardLoader.loadCards({
                 'opabinia-img-container': 'Paleozoic Opabinia',
@@ -535,10 +495,6 @@
                 'toadally-img-container': 'Toadally Awesome',
                 'zeus-img-container': 'Divine Arsenal AA-ZEUS - Sky Thunder'
             });
-
-
-            
-            checkBanlistStatus();
         });
     </script>
 </body>

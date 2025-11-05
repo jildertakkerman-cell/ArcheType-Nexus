@@ -352,37 +352,46 @@
             </div>
         </section>
 
-        <!-- TCG Banlist Status Section -->
+                <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-gray-300 mb-4 text-center">
-                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The P.U.N.K. archetype and its core engine cards are currently at full power in the TCG format.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
-                        <ul id="banlist-unrestricted" class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <!-- This will be populated by script -->
-                        </ul>
-                    </div>
-                     <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited/Semi-Limited Support</h4>
-                        <ul id="banlist-limited" class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <!-- This will be populated by script -->
-                        </ul>
-                    </div>
-                </div>
-                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
-                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With no direct hits on the banlist, the P.U.N.K. engine remains a top-tier choice for both pure and hybrid strategies, retaining its full combo potential and consistency. Key generic support like <strong class="text-accent">Emergency Teleport</strong> is also unrestricted, further boosting its power.
-                    </p>
-                </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
             </div>
         </section>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Render Banlist Section ---
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Noh-P.U.N.K. Ze Amin',
+                'Noh-P.U.N.K. Foxy Tune',
+                'Noh-P.U.N.K. Deer Note',
+                'Ukiyoe-P.U.N.K. Amazing Dragon',
+                'Ukiyoe-P.U.N.K. Sharakusai',
+                'Ukiyoe-P.U.N.K. Rising Carp',
+                'P.U.N.K. JAM Dragon Drive',
+                'P.U.N.K. JAM Extreme Session',
+                'Joruri-P.U.N.K. Nashiwari Surprise',
+                'Joruri-P.U.N.K. Madame Spider'
+            ], {
+                archetypeName: 'P.U.N.K.',
+                relatedCards: [
+                    'Emergency Teleport',
+                    'Psychic Processor',
+                    'Psychic Feel Zone'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'P.U.N.K. is a Psychic archetype focused on GY setup, Synchro summoning, and using unique Level/Rank modulation effects to establish board control.',
+                    supportReliance: 'The deck benefits from Psychic support like Emergency Teleport and generic GY setup cards to maximize consistency.',
+                    adaptability: 'All P.U.N.K. core cards remain unrestricted, allowing the archetype to operate at maximum consistency and combo potential.',
+                    resilience: 'The archetype is completely untouched by banlist restrictions, maintaining full power.',
+                    keyLoss: 'No archetype-specific restrictions exist; Emergency Teleport at 3 enables explosive opening plays.',
+                    alternativeStrategy: 'Focus on Noh-P.U.N.K. Ze Amin and Foxy Tune to set up the GY, then use Ukiyoe-P.U.N.K. monsters to Synchro summon and establish board control with disruption.'
+                }
+            });
+
             // --- Glitch Banner Animation ---
             const canvas = document.getElementById('glitch-canvas');
             const ctx = canvas.getContext('2d');
@@ -448,58 +457,6 @@
                 'amazing-dragon-img-container': 'Ukiyoe-P.U.N.K. Amazing Dragon',
                 'punisher-img-container': 'Psychic End Punisher',
             });
-
-            // --- Banlist Verification ---
-            const punkCards = [
-                "Noh-P.U.N.K. Ze Amin", "Noh-P.U.N.K. Foxy Tune", "Noh-P.U.N.K. Ogre Dance",
-                "Gagaku-P.U.N.K. Wa Gon", "Joruri-P.U.N.K. Madame Spider", "Noh-P.U.N.K. Deer Note",
-                "Ukiyoe-P.U.N.K. Sharakusai", "Ukiyoe-P.U.N.K. Rising Carp", "P.U.N.K. JAM Dragon Drive",
-                "Ukiyoe-P.U.N.K. Amazing Dragon", "P.U.N.K. JAM Extreme Session", "Emergency Teleport"
-            ];
-
-            const unrestrictedList = document.getElementById('banlist-unrestricted');
-            const limitedList = document.getElementById('banlist-limited');
-
-            const checkBanlist = async () => {
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
-                    if (!response.ok) throw new Error('Failed to fetch banlist');
-                    const data = await response.json();
-                    const banlistData = data.data;
-
-                    let allUnrestricted = true;
-                    
-                    punkCards.forEach(cardName => {
-                        const cardInfo = banlistData.find(c => c.name === cardName);
-                        const status = cardInfo?.banlist_info?.ban_tcg || 'Unlimited';
-
-                        const listItem = document.createElement('li');
-                        listItem.textContent = `${cardName} (${status})`;
-
-                        if (status === 'Limited' || status === 'Semi-Limited') {
-                            listItem.classList.add('text-yellow-300');
-                            limitedList.appendChild(listItem);
-                            allUnrestricted = false;
-                        } else {
-                             listItem.classList.add('text-green-300');
-                             unrestrictedList.appendChild(listItem);
-                        }
-                    });
-
-                    if (limitedList.children.length === 0) {
-                        const li = document.createElement('li');
-                        li.textContent = 'No relevant support cards are on the list.';
-                        limitedList.appendChild(li);
-                    }
-
-                } catch (error) {
-                    console.error('Error checking banlist:', error);
-                    unrestrictedList.innerHTML = '<li>Error loading banlist status.</li>';
-                    limitedList.innerHTML = '<li>Error loading banlist status.</li>';
-                }
-            };
-            
-            checkBanlist();
         });
     </script>
 </body>

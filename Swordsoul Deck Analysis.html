@@ -274,43 +274,43 @@
             </div>
         </section>
         
-        <section class="mb-10 md:mb-16 mt-10">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                 <p class="text-gray-300 mb-4 text-center">
-                    The Swordsoul archetype has been impacted by the banlist mainly through its generic support cards.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-red-400 mb-2">Forbidden Cards</h4>
-                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300" id="forbidden-list">
-                           <!-- JS will populate this -->
-                        </ul>
-                    </div>
-                     <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited/Semi-Limited</h4>
-                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300" id="limited-list">
-                           <!-- JS will populate this -->
-                        </ul>
-                    </div>
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core</h4>
-                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300" id="unlimited-list">
-                            <li>All Main & Extra Deck "Swordsoul" monsters</li>
-                            <li>Swordsoul Emergence & Blackout</li>
-                            <li>Incredible Ecclesia, the Virtuous</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
-                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With the loss of <strong class="text-white">Baronne de Fleur</strong>, the deck loses a key omni-negate, making its end board slightly more fragile. However, with its core engine completely untouched and powerful alternatives available, Swordsoul remains a potent and consistent force in the metagame.</p>
-                </div>
+                        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
             </div>
         </section>
+
     </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            
+        document.addEventListener('DOMContentLoaded', async () => {
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Swordsoul of Mo Ye',
+                'Swordsoul of Taia',
+                'Swordsoul Strategist Longyuan',
+                'Incredible Ecclesia, the Virtuous',
+                'Swordsoul Emergence',
+                'Swordsoul Blackout',
+                'Swordsoul Grandmaster - Chixiao',
+                'Swordsoul Supreme Sovereign - Chengying',
+                'Swordsoul Sinister Sovereign - Qixing Longyuan',
+                'Archnemeses Protos',
+                'Baronne de Fleur'
+            ], {
+                archetypeName: 'Swordsoul',
+                archetypeTraits: {
+                    coreMechanic: 'Wyrm tuner synergy with token generation',
+                    supportReliance: 'High (Baronne Forbidden, Protos Limited - key disruptions lost)',
+                    adaptability: 'Moderate (core engine intact but lost Baronne and Protos)',
+                    resilience: 'Moderate (main deck cards unrestricted)',
+                    keyLoss: 'Baronne de Fleur Forbidden, Archnemeses Protos Limited - lost omni-negate and floodgate',
+                    alternativeStrategy: 'Shift to Chengying and generic Synchro toolbox without Baronne'
+                }
+            });
+
+            // Load card images
             CardLoader.loadCards({
                 'moye-img-container': 'Swordsoul of Mo Ye',
                 'chixiao-img-container': 'Swordsoul Grandmaster - Chixiao',
@@ -319,75 +319,6 @@
                 'baronne-end-img-container': 'Baronne de Fleur',
                 'protos-end-img-container': 'Archnemeses Protos'
             });
-
-
-            
-            // Banlist check
-            const swordsoulCards = ["Swordsoul of Mo Ye", "Swordsoul of Taia", "Swordsoul Strategist Longyuan", "Incredible Ecclesia, the Virtuous", "Swordsoul Emergence", "Swordsoul Blackout", "Swordsoul Grandmaster - Chixiao", "Swordsoul Supreme Sovereign - Chengying", "Swordsoul Sinister Sovereign - Qixing Longyuan", "Archnemeses Protos", "Baronne de Fleur"];
-            const banlistUrl = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg&format=tcg';
-            const limitedList = document.getElementById('limited-list');
-            const forbiddenList = document.getElementById('forbidden-list');
-            
-            async function checkBanlist() {
-                try {
-                    const response = await fetch(banlistUrl);
-                    const allCards = await response.json();
-                    const banlistData = allCards.data;
-
-                    const forbidden = [];
-                    const limitedAndSemiLimited = [];
-
-                    swordsoulCards.forEach(cardName => {
-                        const cardData = banlistData.find(c => c.name === cardName);
-                        
-                        if (cardData && cardData.banlist_info && cardData.banlist_info.ban_tcg) {
-                            const banStatus = cardData.banlist_info.ban_tcg;
-                            if (banStatus === "Forbidden") {
-                                forbidden.push(`${cardName}`);
-                            } else if (banStatus === "Limited") {
-                                 limitedAndSemiLimited.push(`${cardName} (1)`);
-                            } else if (banStatus === "Semi-Limited") {
-                                 limitedAndSemiLimited.push(`${cardName} (2)`);
-                            }
-                        }
-                    });
-
-                    if (forbidden.length > 0) {
-                        forbidden.forEach(cardText => {
-                            const li = document.createElement('li');
-                            li.innerHTML = `<strong class="text-red-400">${cardText}</strong>`;
-                            forbiddenList.appendChild(li);
-                        });
-                    } else {
-                        const li = document.createElement('li');
-                        li.textContent = "None";
-                        forbiddenList.appendChild(li);
-                    }
-
-                     if(limitedAndSemiLimited.length > 0){
-                       limitedAndSemiLimited.forEach(cardText => {
-                        const li = document.createElement('li');
-                        li.textContent = cardText;
-                        limitedList.appendChild(li);
-                       });
-                    } else {
-                         const li = document.createElement('li');
-                         li.textContent = "None relevant";
-                         limitedList.appendChild(li);
-                    }
-
-
-                } catch(error) {
-                    console.error("Could not fetch banlist data", error);
-                    const li = document.createElement('li');
-                    li.textContent = "Could not load status.";
-                    limitedList.appendChild(li);
-                    const li2 = li.cloneNode(true);
-                    forbiddenList.appendChild(li2);
-                }
-            }
-            
-            checkBanlist();
         });
     </script>
 </body>

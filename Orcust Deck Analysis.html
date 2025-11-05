@@ -369,44 +369,47 @@
         </div>
     </section>
 
-    <!-- TCG Banlist Status -->
-    <section class="mb-10 md:mb-16">
-        <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Current TCG Banlist Status</h2>
-        <div class="card p-6">
-            <p class="text-slate-300 mb-4 text-center">
-                The Orcust archetype has seen its power checked by the Forbidden & Limited list over the years. Here is its current standing:
-            </p>
-            <div id="banlist-status-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-center">
-                <!-- Banlist status will be injected here by JS -->
-                <div class="card combo-step-card p-4">
-                    <h4 class="text-lg font-bold text-yellow-400">Limited (1 per Deck)</h4>
-                    <ul class="list-none space-y-1 text-sm text-slate-300" id="limited-list">
-                        <li>Loading...</li>
-                    </ul>
-                </div>
-                <div class="card combo-step-card p-4">
-                    <h4 class="text-lg font-bold text-green-400">Unlimited (3 per Deck)</h4>
-                    <ul class="list-none space-y-1 text-sm text-slate-300" id="unlimited-list">
-                        <li>Loading...</li>
-                    </ul>
-                </div>
-                 <div class="card combo-step-card p-4">
-                    <h4 class="text-lg font-bold text-red-500">Forbidden (0 per Deck)</h4>
-                    <ul class="list-none space-y-1 text-sm text-slate-300" id="forbidden-list">
-                        <li>Loading...</li>
-                    </ul>
-                </div>
+                <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
             </div>
-        </div>
-    </section>
+        </section>
 
 </div>
-
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+        // --- Render Banlist Section ---
+        await CardLoader.renderBanlistSection('banlist-status', [
+            'Orcust Harp Horror',
+            'Orcustrated Return',
+            'Orcustrion',
+            'Galatea, the Orcust Automaton',
+            'Dingirsu, the Orcust of the Evening Star',
+            'Orcust Knightmare',
+            'Orcust Cymbal Skeleton',
+            'World Legacy - "World Wand"',
+            'Orcust Crescendo',
+            'Girsu, the Orcust Mekk-Knight'
+        ], {
+            archetypeName: 'Orcust',
+            relatedCards: [
+                'Knightmare Mermaid',
+                'I:P Masquerena',
+                'Lib the World Key Blademaster'
+            ],
+            archetypeTraits: {
+                coreMechanic: 'Orcust is a DARK Machine archetype focused on GY recursion, Link climbing, and establishing a powerful control board with Dingirsu and disruption.',
+                supportReliance: 'The deck benefits from World Legacy support, DARK Machine synergy, and powerful Link monsters to extend plays.',
+                adaptability: 'Orcust Harp Horror and Orcustrated Return are Limited (1 each), significantly reducing consistency and recovery power.',
+                resilience: 'Key combo starters are Limited, making the deck more vulnerable to disruption and less able to recover from board wipes.',
+                keyLoss: 'Orcust Harp Horror at 1 severely limits the archetype\'s ability to swarm and set up combo lines, while Orcustrated Return at 1 reduces recovery potential.',
+                alternativeStrategy: 'Focus on Girsu as the primary starter to send Orcust monsters to the GY, then use Galatea and Dingirsu to establish board control with minimal resources.'
+            }
+        });
 
-
-        // --- CARDS TO LOAD IMAGES FOR ---
+        // --- CARD IMAGE LOADER ---
         CardLoader.loadCards({
             'girsu-img-container': 'Girsu, the Orcust Mekk-Knight',
             'galatea-img-container': 'Galatea, the Orcust Automaton',
@@ -415,85 +418,9 @@
             'cymbal-skeleton-img-container': 'Orcust Cymbal Skeleton',
             'sp-little-knight-img-container': 'S:P Little Knight'
         });
-
-        for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
-            fetchAndDisplayCardImage(cardName, containerId);
-        }
-
-        // --- BANLIST CHECKER ---
-        const orcustCardNames = [
-            "Orcust Harp Horror",
-            "Girsu, the Orcust Mekk-Knight",
-            "Galatea, the Orcust Automaton",
-            "Orcust Knightmare",
-            "Orcust Cymbal Skeleton",
-            "Orcustrated Babel",
-            "Orcust Crescendo",
-            "Dingirsu, the Orcust of the Evening Star"
-        ];
-        
-        const banlistUrl = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg';
-        
-        const statusMap = {
-            "Limited": document.getElementById('limited-list'),
-            "Semi-Limited": document.getElementById('unlimited-list'), // Grouping semi with unlimited for this UI
-            "Unlimited": document.getElementById('unlimited-list'),
-            "Banned": document.getElementById('forbidden-list')
-        };
-        
-        // Clear loading text
-        Object.values(statusMap).forEach(ul => {
-            if(ul) ul.innerHTML = '';
-        });
-
-        async function checkBanlistStatus() {
-            try {
-                const response = await fetch(banlistUrl);
-                const data = await response.json();
-                const cardData = data.data;
-
-                const cardStatuses = orcustCardNames.map(name => {
-                    const card = cardData.find(c => c.name === name);
-                    if (card && card.banlist_info && card.banlist_info.ban_tcg) {
-                        return { name: name, status: card.banlist_info.ban_tcg };
-                    }
-                    return { name: name, status: "Unlimited" }; // Default to unlimited if not on list
-                });
-
-                cardStatuses.forEach(item => {
-                    const listElement = statusMap[item.status];
-                    if (listElement) {
-                        const li = document.createElement('li');
-                        li.textContent = item.name;
-                        listElement.appendChild(li);
-                    } else if (item.status === "Semi-Limited") { // Explicitly handle semi-limited
-                         const li = document.createElement('li');
-                         li.innerHTML = `${item.name} <span class="text-blue-400">(Semi-Limited)</span>`;
-                         statusMap["Unlimited"].appendChild(li); // Add to the 'Unlimited' column
-                    }
-                });
-
-                 // Check if any list is empty and add a message
-                Object.values(statusMap).forEach(ul => {
-                    if (ul && ul.children.length === 0) {
-                        const li = document.createElement('li');
-                        li.textContent = 'None';
-                        li.className = 'text-gray-500';
-                        ul.appendChild(li);
-                    }
-                });
-
-            } catch (error) {
-                console.error("Error fetching banlist data:", error);
-                 Object.values(statusMap).forEach(ul => {
-                    if(ul) ul.innerHTML = '<li>Error loading status</li>';
-                });
-            }
-        }
-
-        checkBanlistStatus();
     });
 </script>
+
 
 </body>
 </html>

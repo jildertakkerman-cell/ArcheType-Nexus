@@ -291,35 +291,46 @@
             </div>
         </section>
 
+        <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16">
-            <h2 class="text-2xl font-bold text-white mb-6 text-center heading-underline">TCG Banlist Impact</h2>
-            <div class="card p-6">
-                <p class="text-gray-300 mb-4 text-center">
-                    <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The core Magician Girl archetype has no direct hits on the Forbidden & Limited list. Its primary power comes from its synergy with external engines.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="pro-con-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core</h4>
-                        <ul id="unrestricted-list" class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <!-- JS will populate this -->
-                        </ul>
-                    </div>
-                    <div class="pro-con-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited/Semi-Limited Support</h4>
-                         <ul id="limited-list" class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <!-- JS will populate this -->
-                        </ul>
-                    </div>
-                </div>
-                <div class="mt-4 p-3 bg-purple-900 bg-opacity-30 rounded border-l-4 border-pink-400">
-                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core "Magician Girl" engine is at full power, its effectiveness is tied to the availability of powerful generic Spellcaster support and Dark Magician cards. The deck operates as a consistent, if fragile, engine for more powerful strategies rather than a standalone threat.</p>
-                </div>
+            <h2 class="text-2xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
             </div>
         </section>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Render Banlist Section ---
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Dark Magician Girl',
+                'Berry Magician Girl',
+                'Chocolate Magician Girl',
+                'Lemon Magician Girl',
+                'Apple Magician Girl',
+                'Kiwi Magician Girl',
+                'Magician Girl\'s Invitation',
+                'Chocolate Magician Girl (Fusion)'
+            ], {
+                archetypeName: 'Magician Girl',
+                relatedCards: [
+                    'Dark Magician',
+                    'Magicians\' Souls',
+                    'Illusion of Chaos',
+                    'Magician\'s Soul Servant',
+                    'Magician\'s Rod'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Magician Girls function as a defensive Spellcaster engine that redirects attacks and triggers search effects, designed to stall while assembling Dark Magician-based control locks.',
+                    supportReliance: 'The archetype is heavily dependent on Dark Magician support cards and generic Spellcaster engines for competitive viability.',
+                    adaptability: 'Magician Girls can serve as a tribute fodder engine or defensive stall package in various Spellcaster strategies.',
+                    resilience: 'The archetype remains at full power with all core cards unrestricted, though its effectiveness is tied to external support availability.',
+                    keyLoss: 'No archetype-specific restrictions exist; the deck\'s meta viability is primarily limited by the overall power level of Spellcaster support rather than banlist hits.',
+                    alternativeStrategy: 'Focus on pure defensive stalling and gradual board control through Dark Magician Girl beatdown when key support pieces are unavailable.'
+                }
+            });
+
             // --- Sparkle Banner Animation ---
             const canvas = document.getElementById('sparkle-banner');
             if (canvas) {
@@ -404,54 +415,10 @@
                 'combo-chocolate-img-container': 'Chocolate Magician Girl',
                 'combo-apple-img-container': 'Apple Magician Girl',
             });
-
-
-            // --- Banlist Verification ---
-            const magicianGirlCards = [
-                "Berry Magician Girl", "Chocolate Magician Girl", "Lemon Magician Girl", 
-                "Apple Magician Girl", "Kiwi Magician Girl", "Dark Magician Girl",
-                "Magicians' Souls", "Illusion of Chaos", "Soul Servant", "Magician's Rod"
-            ];
-            
-            const unrestrictedList = document.getElementById('unrestricted-list');
-            const limitedList = document.getElementById('limited-list');
-            
-            async function checkBanlist() {
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
-                    const data = await response.json();
-                    const banlistData = data.data;
-
-                    magicianGirlCards.forEach(cardName => {
-                        const card = banlistData.find(c => c.name === cardName);
-                        const listItem = document.createElement('li');
-                        listItem.textContent = cardName;
-
-                        if (card && card.banlist_info && card.banlist_info.ban_tcg) {
-                             listItem.textContent += ` (${card.banlist_info.ban_tcg})`;
-                             if(card.banlist_info.ban_tcg === 'Limited' || card.banlist_info.ban_tcg === 'Semi-Limited'){
-                                limitedList.appendChild(listItem);
-                             } else {
-                                // For forbidden cards, but none are expected in this list
-                             }
-                        } else {
-                            unrestrictedList.appendChild(listItem);
-                        }
-                    });
-
-                } catch (error) {
-                    console.error("Failed to fetch banlist data:", error);
-                     unrestrictedList.innerHTML = '<li>Could not load banlist data.</li>';
-                     limitedList.innerHTML = '<li>Could not load banlist data.</li>';
-                }
-            }
-            
-            checkBanlist();
         });
     </script>
 </body>
 </html>
-
 
 
 

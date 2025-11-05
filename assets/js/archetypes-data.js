@@ -18034,7 +18034,7 @@ const archetypes = [
     {
         name: 'Malefic',
         description: 'A Field Spell-dependent archetype that summons corrupted versions of iconic monsters while controlling the field through Malefic World and powerful boss monsters.',
-        filepath: 'assets/js/Malefic Deck Analysis.html',
+        filepath: 'Malefic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="maleficCore" cx="50%" cy="50%" r="50%">
