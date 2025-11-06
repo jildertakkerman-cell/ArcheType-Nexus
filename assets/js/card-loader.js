@@ -45,8 +45,11 @@ const CardLoader = (function () {
 
         popup = document.createElement('div');
         popup.id = 'card-popup';
-        popup.className = 'fixed z-50 bg-gray-900 border-2 border-blue-500 text-white p-4 rounded-lg shadow-lg max-w-xs max-h-96 overflow-y-auto opacity-0 transition-opacity duration-200 pointer-events-none';
+        popup.className = 'z-50 bg-gray-900 border-2 border-blue-500 text-white p-4 rounded-lg shadow-lg max-h-96 overflow-y-auto opacity-0 transition-opacity duration-200 pointer-events-none';
+        popup.style.position = 'fixed';
         popup.style.display = 'none';
+        popup.style.maxWidth = 'min(350px, calc(100vw - 40px))'; // Responsive max-width
+        popup.style.width = 'auto';
         document.body.appendChild(popup);
     }
 
@@ -267,12 +270,23 @@ const CardLoader = (function () {
      * Show popup with card details
      */
     function showPopup(event, cardName) {
-        if (currentCard === cardName) {
+        // Stop event propagation to prevent immediate hide
+        event.stopPropagation();
+        
+        // If clicking the same card, toggle popup off
+        if (currentCard === cardName && activePopup) {
             hidePopup();
             return;
         }
 
-        hidePopup();
+        // Force hide previous popup immediately without delay
+        if (activePopup) {
+            activePopup.style.opacity = 0;
+            activePopup.style.display = 'none';
+            activePopup = null;
+            currentCard = null;
+        }
+        
         if (!popup) return;
 
         const cardInfo = cardDataCache[cardName];
@@ -325,25 +339,48 @@ const CardLoader = (function () {
     }
 
     /**
-     * Position popup near cursor
+     * Position popup near cursor (using fixed positioning relative to viewport)
      */
     function movePopup(event) {
         if (!popup) return;
 
-        const popupWidth = popup.offsetWidth;
-        const popupHeight = popup.offsetHeight;
+        const popupWidth = popup.offsetWidth || 300; // fallback width
+        const popupHeight = popup.offsetHeight || 400; // fallback height
         const cushion = 20;
+        const isMobile = window.innerWidth <= 768;
 
-        let x = event.clientX + cushion;
-        let y = event.clientY + cushion;
+        let x, y;
 
-        if (x + popupWidth > window.innerWidth) {
-            x = event.clientX - popupWidth - cushion;
+        if (isMobile) {
+            // On mobile, center the popup horizontally and position near top
+            x = (window.innerWidth - popupWidth) / 2;
+            y = cushion;
+            
+            // Ensure it fits within screen bounds
+            if (x < cushion) x = cushion;
+            if (x + popupWidth > window.innerWidth - cushion) {
+                x = window.innerWidth - popupWidth - cushion;
+            }
+        } else {
+            // Desktop: position near cursor
+            x = event.clientX + cushion;
+            y = event.clientY + cushion;
+
+            // Keep popup within viewport bounds
+            if (x + popupWidth > window.innerWidth) {
+                x = event.clientX - popupWidth - cushion;
+            }
+            if (y + popupHeight > window.innerHeight) {
+                y = event.clientY - popupHeight - cushion;
+            }
+
+            // Ensure popup doesn't go off-screen to the left or top
+            if (x < cushion) x = cushion;
+            if (y < cushion) y = cushion;
         }
-        if (y + popupHeight > window.innerHeight) {
-            y = event.clientY - popupHeight - cushion;
-        }
 
+        // Use fixed positioning (stays in viewport, doesn't scroll with page)
+        popup.style.position = 'fixed';
         popup.style.left = `${x}px`;
         popup.style.top = `${y}px`;
     }
