@@ -783,12 +783,12 @@ const CardLoader = (function () {
                         
                         if (forbidden.length > 0) {
                             html += `
-                                <div class="combo-step-card p-4">
-                                    <h4 class="text-lg font-bold text-red-400 mb-2">
-                                        <i class="fas fa-ban mr-2"></i>Forbidden (0 copies)
+                                <div class="combo-step-card p-4 border-l-4 border-red-500">
+                                    <h4 class="text-lg font-bold text-red-400 mb-2 text-left">
+                                        <i class="fas fa-ban mr-2"></i>Forbidden
                                     </h4>
-                                    <ul class="list-disc list-inside space-y-1 text-sm ${pageColors.bodyTextColor}">
-                                        ${forbidden.map(c => `<li><strong class="text-red-300">${c}</strong></li>`).join('')}
+                                    <ul class="list-none space-y-1 text-sm ${pageColors.bodyTextColor} text-left">
+                                        ${forbidden.map(c => `<li class="text-red-300">• ${c}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -796,12 +796,12 @@ const CardLoader = (function () {
                         
                         if (limited.length > 0) {
                             html += `
-                                <div class="combo-step-card p-4">
-                                    <h4 class="text-lg font-bold text-yellow-400 mb-2">
-                                        <i class="fas fa-exclamation-triangle mr-2"></i>Limited (1 copy)
+                                <div class="combo-step-card p-4 border-l-4 border-yellow-500">
+                                    <h4 class="text-lg font-bold text-yellow-400 mb-2 text-left">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>Limited
                                     </h4>
-                                    <ul class="list-disc list-inside space-y-1 text-sm ${pageColors.bodyTextColor}">
-                                        ${limited.map(c => `<li><strong class="text-yellow-300">${c}</strong></li>`).join('')}
+                                    <ul class="list-none space-y-1 text-sm ${pageColors.bodyTextColor} text-left">
+                                        ${limited.map(c => `<li class="text-yellow-300">• ${c}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -809,12 +809,12 @@ const CardLoader = (function () {
                         
                         if (semiLimited.length > 0) {
                             html += `
-                                <div class="combo-step-card p-4">
-                                    <h4 class="text-lg font-bold text-orange-400 mb-2">
-                                        <i class="fas fa-exclamation-circle mr-2"></i>Semi-Limited (2 copies)
+                                <div class="combo-step-card p-4 border-l-4 border-orange-500">
+                                    <h4 class="text-lg font-bold text-orange-400 mb-2 text-left">
+                                        <i class="fas fa-exclamation-circle mr-2"></i>Semi-Limited
                                     </h4>
-                                    <ul class="list-disc list-inside space-y-1 text-sm ${pageColors.bodyTextColor}">
-                                        ${semiLimited.map(c => `<li><strong class="text-orange-300">${c}</strong></li>`).join('')}
+                                    <ul class="list-none space-y-1 text-sm ${pageColors.bodyTextColor} text-left">
+                                        ${semiLimited.map(c => `<li class="text-orange-300">• ${c}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -830,9 +830,9 @@ const CardLoader = (function () {
                         if (relatedForbidden.length > 0) {
                             html += `
                                 <div class="combo-step-card p-4 border-l-4 border-red-500">
-                                    <h4 class="text-md font-bold text-red-400 mb-2">Forbidden</h4>
-                                    <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
-                                        ${relatedForbidden.map(c => `<li><strong class="text-red-300">${c}</strong></li>`).join('')}
+                                    <h4 class="text-md font-bold text-red-400 mb-2 text-left">Forbidden</h4>
+                                    <ul class="list-none space-y-1 text-xs ${pageColors.bodyTextColor} text-left">
+                                        ${relatedForbidden.map(c => `<li class="text-red-300">• ${c}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -841,9 +841,9 @@ const CardLoader = (function () {
                         if (relatedLimited.length > 0) {
                             html += `
                                 <div class="combo-step-card p-4 border-l-4 border-yellow-500">
-                                    <h4 class="text-md font-bold text-yellow-400 mb-2">Limited</h4>
-                                    <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
-                                        ${relatedLimited.map(c => `<li><strong class="text-yellow-300">${c}</strong></li>`).join('')}
+                                    <h4 class="text-md font-bold text-yellow-400 mb-2 text-left">Limited</h4>
+                                    <ul class="list-none space-y-1 text-xs ${pageColors.bodyTextColor} text-left">
+                                        ${relatedLimited.map(c => `<li class="text-yellow-300">• ${c}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -852,9 +852,9 @@ const CardLoader = (function () {
                         if (relatedSemiLimited.length > 0) {
                             html += `
                                 <div class="combo-step-card p-4 border-l-4 border-orange-500">
-                                    <h4 class="text-md font-bold text-orange-400 mb-2">Semi-Limited</h4>
-                                    <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
-                                        ${relatedSemiLimited.map(c => `<li><strong class="text-orange-300">${c}</strong></li>`).join('')}
+                                    <h4 class="text-md font-bold text-orange-400 mb-2 text-left">Semi-Limited</h4>
+                                    <ul class="list-none space-y-1 text-xs ${pageColors.bodyTextColor} text-left">
+                                        ${relatedSemiLimited.map(c => `<li class="text-orange-300">• ${c}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
