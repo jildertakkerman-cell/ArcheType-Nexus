@@ -626,22 +626,22 @@ const CardLoader = (function () {
                             </div>
                             
                             <!-- Stats Box -->
-                            <div class="mt-16 bg-green-900 bg-opacity-15 rounded-lg border-l-2 border-green-600 border-opacity-30 p-3">
+                            <div class="mt-8 bg-gray-900 bg-opacity-60 rounded border border-gray-700 p-3">
                                 <div class="flex items-start">
-                                    <i class="fas fa-info-circle text-green-600 text-sm mr-2 mt-1"></i>
+                                    <i class="fas fa-info-circle text-gray-400 text-xs mr-2 mt-0.5"></i>
                                     <div class="flex-1">
-                                        <p class="text-green-800 font-semibold mb-1 text-xs">Banlist Status Summary</p>
-                                        <p class="text-xs ${pageColors.bodyTextColor}">
-                                            <button class="text-green-500 font-bold hover:text-green-400 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                        <p class="text-gray-300 font-semibold mb-1" style="font-size: 0.7rem;">Banlist Status Summary</p>
+                                        <p class="text-gray-400" style="font-size: 0.65rem; line-height: 1.3;">
+                                            <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
                                                 ${cards.length} core cards
                                             </button>
-                                            <span class="hidden mt-2 block text-xs bg-gray-800 bg-opacity-50 p-2 rounded border border-green-600">
-                                                <strong class="text-green-300">Cards checked:</strong><br>
+                                            <span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600" style="font-size: 0.65rem;">
+                                                <strong class="text-gray-200">Cards checked:</strong><br>
                                                 ${cards.sort().map(c => `• ${c}`).join('<br>')}
                                             </span>
                                             analyzed • 
-                                            <strong class="text-green-600">0 restrictions</strong> found • 
-                                            All cards legal at <strong class="text-green-600">3 copies</strong>
+                                            <strong class="text-gray-200">0 restrictions</strong> found • 
+                                            All cards legal at <strong class="text-gray-200">3 copies</strong>
                                         </p>
                                     </div>
                                 </div>
@@ -725,22 +725,22 @@ const CardLoader = (function () {
                     
                     // Stats Box
                     html += `
-                        <div class="mt-16 bg-blue-900 bg-opacity-15 rounded-lg border-l-2 border-blue-600 border-opacity-30 p-3">
+                        <div class="mt-8 bg-gray-900 bg-opacity-60 rounded border border-gray-700 p-3">
                             <div class="flex items-start">
-                                <i class="fas fa-info-circle text-blue-600 text-sm mr-2 mt-1"></i>
+                                <i class="fas fa-info-circle text-gray-400 text-xs mr-2 mt-0.5"></i>
                                 <div class="flex-1">
-                                    <p class="text-blue-800 font-semibold mb-1 text-xs">Banlist Status Summary</p>
-                                    <p class="text-xs ${pageColors.bodyTextColor}">
-                                        <button class="text-green-500 font-bold hover:text-green-400 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                    <p class="text-gray-300 font-semibold mb-1" style="font-size: 0.7rem;">Banlist Status Summary</p>
+                                    <p class="text-gray-400" style="font-size: 0.65rem; line-height: 1.3;">
+                                        <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
                                             ${cards.length} core cards
                                         </button>
-                                        <span class="hidden mt-2 block text-xs bg-gray-800 bg-opacity-50 p-2 rounded border border-blue-600">
-                                            <strong class="text-blue-300">Cards checked:</strong><br>
+                                        <span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600" style="font-size: 0.65rem;">
+                                            <strong class="text-gray-200">Cards checked:</strong><br>
                                             ${cards.sort().map(c => `• ${c}`).join('<br>')}
                                         </span>
                                         analyzed • 
-                                        <strong class="text-green-600">0 archetype restrictions</strong> • 
-                                        <strong class="text-yellow-600">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''} restricted</strong>
+                                        <strong class="text-gray-200">0 archetype restrictions</strong> • 
+                                        <strong class="text-gray-300">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''} restricted</strong>
                                     </p>
                                 </div>
                             </div>
@@ -907,23 +907,23 @@ const CardLoader = (function () {
                     const totalRestricted = totalArchetypeRestricted + totalRelatedRestricted;
                     
                     html += `
-                        <div class="mt-16 bg-${forbidden.length > 0 ? 'red' : 'yellow'}-900 bg-opacity-15 rounded-lg border-l-2 border-${forbidden.length > 0 ? 'red' : 'yellow'}-600 border-opacity-30 p-3">
+                        <div class="mt-8 bg-gray-900 bg-opacity-60 rounded border border-gray-700 p-3">
                             <div class="flex items-start">
-                                <i class="fas fa-info-circle text-${forbidden.length > 0 ? 'red' : 'yellow'}-600 text-sm mr-2 mt-1"></i>
+                                <i class="fas fa-info-circle text-gray-400 text-xs mr-2 mt-0.5"></i>
                                 <div class="flex-1">
-                                    <p class="text-${forbidden.length > 0 ? 'red' : 'yellow'}-800 font-semibold mb-1 text-xs">Banlist Status Summary</p>
-                                    <p class="text-xs ${pageColors.bodyTextColor}">
-                                        <button class="text-blue-600 font-bold hover:text-blue-500 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                    <p class="text-gray-300 font-semibold mb-1" style="font-size: 0.7rem;">Banlist Status Summary</p>
+                                    <p class="text-gray-400" style="font-size: 0.65rem; line-height: 1.3;">
+                                        <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
                                             ${cards.length} core cards
                                         </button>
-                                        <span class="hidden mt-2 block text-xs bg-gray-800 bg-opacity-50 p-2 rounded border border-${forbidden.length > 0 ? 'red' : 'yellow'}-600 max-h-48 overflow-y-auto">
-                                            <strong class="text-${forbidden.length > 0 ? 'red' : 'yellow'}-300">Cards checked:</strong><br>
+                                        <span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;">
+                                            <strong class="text-gray-200">Cards checked:</strong><br>
                                             ${cards.sort().map(c => `• ${c}`).join('<br>')}
                                         </span>
                                         analyzed • 
-                                        <strong class="${forbidden.length > 0 ? 'text-red-600' : 'text-yellow-600'}">${totalRestricted} total restriction${totalRestricted !== 1 ? 's' : ''}</strong> found
-                                        ${totalArchetypeRestricted > 0 ? ` • <strong class="text-red-600">${totalArchetypeRestricted} archetype card${totalArchetypeRestricted !== 1 ? 's' : ''}</strong>` : ''}
-                                        ${totalRelatedRestricted > 0 ? ` • <strong class="text-yellow-600">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''}</strong>` : ''}
+                                        <strong class="text-gray-200">${totalRestricted} total restriction${totalRestricted !== 1 ? 's' : ''}</strong> found
+                                        ${totalArchetypeRestricted > 0 ? ` • <strong class="text-gray-300">${totalArchetypeRestricted} archetype card${totalArchetypeRestricted !== 1 ? 's' : ''}</strong>` : ''}
+                                        ${totalRelatedRestricted > 0 ? ` • <strong class="text-gray-300">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''}</strong>` : ''}
                                     </p>
                                 </div>
                             </div>

@@ -334,18 +334,17 @@
             </div>
         </section>
 
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
-            <h2 class="text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div id="banlist-status-container" class="card p-6">
-                <!-- Banlist status will be injected here by JavaScript -->
-                <p class="text-center text-amber-100">Loading banlist status...</p>
+        <!-- TCG Banlist Impact Section -->
+        <section>
+            <div id="banlist-status">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSectionByArchetype -->
             </div>
         </section>
 
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // --- FLAME BANNER ANIMATION ---
             const canvas = document.getElementById('flame-banner');
             if (canvas) {
@@ -420,87 +419,51 @@
                 'combo-diabellstar-img-container': 'Diabellstar the Black Witch',
                 'combo-original-sinful-spoils-img-container': 'Original Sinful Spoils - Snake-Eye'
             });
-            CardLoader.loadCards({
-                'apollousa-img-container': 'Apollousa, Bow of the Goddess',
-                'ip-masquerena-img-container': 'I:P Masquerena',
-                'combo-ash-img-container': 'Snake-Eye Ash',
-                'combo-poplar-img-container': 'Snake-Eyes Poplar',
-                'combo-flamberge-img-container': 'Snake-Eyes Flamberge Dragon',
-                'combo-wanted-img-container': 'WANTED: Seeker of Sinful Spoils',
-                'combo-diabellstar-img-container': 'Diabellstar the Black Witch',
-                'combo-original-sinful-spoils-img-container': 'Original Sinful Spoils - Snake-Eye'
-            });
 
-            // --- BANLIST CHECKER ---
-            const keyCards = [
-                "Snake-Eye Ash",
-                "Snake-Eyes Poplar",
-                "Diabellstar the Black Witch",
-                "WANTED: Seeker of Sinful Spoils",
-                "Original Sinful Spoils - Snake-Eye",
-                "Bonfire"
-            ];
-
-            async function checkBanlistStatus() {
-                const container = document.getElementById('banlist-status-container');
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
-                    if (!response.ok) throw new Error('Failed to fetch banlist data.');
-                    const data = await response.json();
+            // --- RENDER BANLIST SECTION ---
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Snake-Eyes', {
+                relatedCards: [
+                    // Sinful Spoils Package
+                    'Diabellstar the Black Witch',
+                    'WANTED: Seeker of Sinful Spoils',
+                    'Original Sinful Spoils - Snake-Eye',
                     
-                    const banlistData = data.data;
-                    let html = '<ul class="space-y-3">';
-
-                    keyCards.forEach(cardName => {
-                        const card = banlistData.find(c => c.name === cardName);
-                        let status = 'Unlimited';
-                        let colorClass = 'text-green-400';
-                        let icon = 'fa-check-circle';
-                        
-                        if (card && card.banlist_info && card.banlist_info.ban_tcg) {
-                            status = card.banlist_info.ban_tcg;
-                            if (status === 'Forbidden') {
-                                colorClass = 'text-red-400';
-                                icon = 'fa-ban';
-                            } else if (status === 'Limited') {
-                                colorClass = 'text-yellow-400';
-                                icon = 'fa-exclamation-triangle';
-                            } else if (status === 'Semi-Limited') {
-                                colorClass = 'text-orange-400';
-                                icon = 'fa-exclamation-circle';
-                            }
-                        }
-                        
-                        html += `
-                            <li class="flex items-center ${colorClass}">
-                                <i class="fas ${icon} mr-3"></i>
-                                <span class="font-bold">${cardName}:</span>
-                                <span class="ml-2">${status}</span>
-                            </li>
-                        `;
-            // --- CARD LOADING ---
-            CardLoader.loadCards({
-                'apollousa-img-container': 'Apollousa, Bow of the Goddess',
-                'ip-masquerena-img-container': 'I:P Masquerena',
-                'combo-ash-img-container': 'Snake-Eye Ash',
-                'combo-poplar-img-container': 'Snake-Eyes Poplar',
-                'combo-flamberge-img-container': 'Snake-Eyes Flamberge Dragon',
-                'combo-wanted-img-container': 'WANTED: Seeker of Sinful Spoils',
-                'combo-diabellstar-img-container': 'Diabellstar the Black Witch',
-                'combo-original-sinful-spoils-img-container': 'Original Sinful Spoils - Snake-Eye'
-            });
-        });
-
-                    html += '</ul>';
-                    container.innerHTML = html;
-
-                } catch (error) {
-                    console.error("Error checking banlist:", error);
-                    container.innerHTML = '<p class="text-center text-red-400">Could not load banlist status.</p>';
+                    // Key FIRE Support
+                    'Bonfire',
+                    
+                    // Fire King Synergy
+                    'Fire King High Avatar Kirin',
+                    'Fire King Sanctuary',
+                    'Fire King Island',
+                    
+                    // Generic Links
+                    'Apollousa, Bow of the Goddess',
+                    'I:P Masquerena',
+                    'S:P Little Knight',
+                    'Linkuriboh',
+                    'Amphibious Swarmship Amblowhale',
+                    'Promethean Princess, Bestower of Flames',
+                    'Salamangreat Raging Phoenix',
+                    
+                    // Generic Staples
+                    'Ash Blossom & Joyous Spring',
+                    'Nibiru, the Primal Being',
+                    'Dimension Shifter',
+                    'Infinite Impermanence',
+                    'Called by the Grave',
+                    'Crossout Designator',
+                    'Triple Tactics Talent',
+                    'D.D. Crow'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Dual-resource strategy placing monsters in Spell & Trap Zone as Continuous Spells, creating protected repository and cost fodder for powerful effects. Seamlessly integrated Level 1 FIRE engine with Diabellstar/Sinful Spoils package provides exceptional consistency',
+                    supportReliance: 'Highly reliant on Level 1 FIRE starters (Snake-Eye Ash, Bonfire) and bridging cards (Original Sinful Spoils - Snake-Eye) to initiate combo sequences. Divine Temple of the Snake-Eye is critical for placing Flamberge Dragon in S/T Zone',
+                    adaptability: 'Extremely versatile and compact engine enabling numerous hybrid builds. Premier variant is Fire King synergy where Snake-Eye destruction costs trigger Fire King on-destruction effects. Functions as pure strategy or engine for other FIRE decks',
+                    resilience: 'Exceptional resilience with multiple one-card starters and extenders allowing play through 2-3 interruptions. Resource recursion through Flamberge Dragon and searchers provides strong grind game. Weak to floodgates like Dimension Shifter preventing Special Summons',
+                    keyLoss: 'Multiple hits across banlist history severely impacting consistency and power: Snake-Eye Ash Limited reduces starter count, Bonfire Limited eliminates redundancy, WANTED: Seeker of Sinful Spoils Limited weakens Diabellstar access. I:P Masquerena Limited restricts key endboard piece',
+                    alternativeStrategy: 'Pure Snake-Eye builds maximizing archetype cards and generic FIRE support, Fire King hybrid leveraging mutual destruction synergies for explosive plays, Salamangreat hybrid using shared FIRE typing and Link climbing synergies, or Branded Snake-Eye variants using Fusion toolbox'
                 }
-            }
-
-            checkBanlistStatus();
+            });
         });
     </script>
 </html>

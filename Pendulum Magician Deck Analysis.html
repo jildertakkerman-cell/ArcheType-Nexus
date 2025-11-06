@@ -422,86 +422,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         'apollousa-img-container': 'Apollousa, Bow of the Goddess',
         'time-pendulumgraph-img-container': 'Time Pendulumgraph',
         'dweller-img-container': 'Abyss Dweller',
-        'ip-img-container': 'I:P Masquerena',
+        'ip-img-container': 'I:P Masquerena'
     });
 
-    for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
-        fetchAndDisplayCardImage(cardName, containerId);
-    }
-    
-    // --- Banlist Logic ---
-    const banlistContainer = document.getElementById('banlist-section');
-    const keyCards = [
-        { name: "Heavymetalfoes Electrumite", role: "Once the core Link-2 starter, its absence forces more creative combo lines." },
-        { name: "Astrograph Sorcerer", role: "A primary engine for the 'Destruction Economy,' turning any destruction into a Special Summon and a search." },
-        { name: "Performapal Skullcrobat Joker", role: "The deck's premier Normal Summon and consistency tool." },
-        { name: "Harmonizing Magician", role: "The most powerful main deck extender, enabling easy Synchro and Xyz plays." },
-        { name: "Double Iris Magician", role: "Essential for searching the powerful 'Pendulumgraph' cards." },
-        { name: "Baronne de Fleur", role: "A generic Synchro boss that provides a powerful omni-negate, historically a key piece of the end board."},
-        { name: "Apollousa, Bow of the Goddess", role: "A generic Link boss for multiple monster negations, previously a staple of the deck's final board."},
-        { name: "Abyss Dweller", role: "A generic Xyz monster used to shut down opponent's Graveyard effects, crippling many popular strategies."}
-    ];
-
-    async function checkBanlist() {
-        try {
-            const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
-            const data = await response.json();
-            const banlist = data.data;
-
-            let limitedHTML = '<div><h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 per Deck)</h4><ul class="list-disc list-inside space-y-2 text-sm text-indigo-200">';
-            let forbiddenHTML = '<div><h4 class="text-lg font-bold text-red-400 mb-2">Forbidden Cards (0 per Deck)</h4><ul class="list-disc list-inside space-y-2 text-sm text-indigo-200">';
-            let unlimitedHTML = '<div><h4 class="text-lg font-bold text-green-400 mb-2">Unlimited Cards (3 per Deck)</h4><ul class="list-disc list-inside space-y-2 text-sm text-indigo-200">';
-
-            let hasLimited = false;
-            let hasForbidden = false;
-
-            for (const card of keyCards) {
-                const foundCard = banlist.find(bCard => bCard.name === card.name);
-                const status = foundCard?.banlist_info?.ban_tcg || 'Unlimited';
-
-                let itemHTML = `<li><strong class="text-accent">${card.name}:</strong> ${status}. ${card.role}</li>`;
-
-                if (status === 'Limited') {
-                    limitedHTML += itemHTML;
-                    hasLimited = true;
-                } else if (status === 'Forbidden') {
-                    forbiddenHTML += itemHTML;
-                    hasForbidden = true;
-                } else {
-                    unlimitedHTML += itemHTML;
-                }
-            }
-
-            limitedHTML += '</ul></div>';
-            forbiddenHTML += '</ul></div>';
-            unlimitedHTML += '</ul></div>';
-            
-            let finalHTML = `<p class="text-indigo-200 mb-4 text-center">The archetype's power is heavily influenced by the TCG Forbidden & Limited List, which moderates its most explosive enablers and generic boss monsters.</p>`;
-            finalHTML += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">`;
-            if(hasForbidden) finalHTML += forbiddenHTML;
-            if(hasLimited) finalHTML += limitedHTML;
-            finalHTML += unlimitedHTML;
-            finalHTML += `</div>`;
-            finalHTML += `<div class="mt-6 p-3 bg-indigo-900 bg-opacity-30 rounded border-l-4 border-indigo-500">
-                             <p class="text-sm text-indigo-200"><strong>Meta Implications:</strong> With its most powerful generic boss monsters and the crucial Link enabler <strong class="text-accent">Heavymetalfoes Electrumite</strong> forbidden, the deck must rely on in-archetype finishers and more skillful piloting. While still highly potent, its ceiling and consistency are intentionally checked by the banlist to promote a healthier meta.</p>
-                         </div>`;
-
-
-            banlistContainer.innerHTML = finalHTML;
-
-        } catch (error) {
-            console.error('Failed to fetch banlist data:', error);
-            banlistContainer.innerHTML = '<p class="text-red-400">Could not load banlist information. Please try again later.</p>';
+    // --- RENDER BANLIST SECTION ---
+    await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Magician', {
+        relatedCards: [
+            'Harmonizing Magician',
+            'Double Iris Magician',
+            'Wisdom-Eye Magician',
+            'Oafdragon Magician',
+            'Performapal Skullcrobat Joker',
+            'Chronograph Sorcerer',
+            'Timegazer Magician',
+            'Stargazer Magician',
+            'Astrograph Sorcerer',
+            'Heavymetalfoes Electrumite',
+            'Zefraath',
+            'Mythical Beast Jackal King',
+            'Baronne de Fleur',
+            'Apollousa, Bow of the Goddess',
+            'Abyss Dweller',
+            'Duelist Alliance',
+            'Pendulum Call',
+            'Sky Iris'
+        ],
+        archetypeTraits: {
+            coreMechanic: 'Pendulum Magician (often called "Magician" or "Pendulum" archetype) is a Pendulum-based strategy that excels at swarming the field through large-scale Pendulum Summons, enabling access to powerful Extra Deck monsters. The archetype uses low and high Pendulum Scales to facilitate massive summons while leveraging searchers like Harmonizing Magician and destruction effects from Double Iris Magician.',
+            supportReliance: 'Very high reliance on generic Pendulum support and banned enablers - the deck historically depended on Astrograph Sorcerer (Forbidden) and Heavymetalfoes Electrumite (Forbidden) for consistency and explosive plays. Currently relies on Duelist Alliance, Pendulum Call, and generic Link/Synchro monsters to maintain viability.',
+            adaptability: 'Exceptional adaptability through hybrid strategies - can incorporate Odd-Eyes, Performapal, Mythical Beast, Endymion, or Zefra engines to enhance consistency and create varied end boards. The Pendulum mechanic allows pivoting between aggressive swarm tactics and control-oriented setups with Counter Traps.',
+            resilience: 'Significantly weakened from its peak power level - with Astrograph Sorcerer and Heavymetalfoes Electrumite Forbidden, and multiple key cards Limited (Harmonizing Magician, Double Iris Magician, Wisdom-Eye Magician), the deck operates at reduced consistency. However, the core engine remains functional with unrestricted access to many Pendulum support cards.',
+            keyLoss: 'The Forbidden status of Astrograph Sorcerer removed the deck\'s best one-card combo starter and searcher. Heavymetalfoes Electrumite being Forbidden eliminated the primary Link-2 that enabled Pendulum recycling and searching. Harmonizing Magician at Limited reduces Tuner access for Synchro plays. Further restrictions on Performapal Skullcrobat Joker would cripple consistency.',
+            alternativeStrategy: 'Focus on pure Magician builds with Pendulum Call and Duelist Alliance for consistency, utilizing in-archetype disruption through Timebreaker Magician and Purple Poison Magician. Alternatively, incorporate Mythical Beast or Endymion engines for additional spell counter synergy and access to powerful monsters like Jackal King for negation.'
         }
-    }
-
-    checkBanlist();
-
-
-            // Render banlist section
-            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Pendulum Magician', {
-                relatedCards: []
-            });});
+    });
+});
 </script>
 </body>
 </html>

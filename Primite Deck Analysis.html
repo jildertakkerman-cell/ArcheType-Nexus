@@ -306,7 +306,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const canvas = document.getElementById('excavation-banner');
             if (canvas) {
                 const ctx = canvas.getContext('2d');
@@ -374,83 +374,34 @@
                 'drillbeam-board-img': 'Primite Drillbeam'
             });
 
-
-            async function checkBanlist() {
-                const banlistContainer = document.getElementById('banlist-status');
-                try {
-                    const primiteCards = [
-                        "Primite Another Beryl", "Primite Lordly Lode", "Primite Imperial Dragon", 
-                        "Primite Drillbeam", "Primite Echo", "Primite Roar"
-                    ];
-                    
-                    const banlistResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
-                     if (!banlistResponse.ok) {
-                        throw new Error(`Failed to load banlist from API.`);
-                    }
-                    const banlistData = await banlistResponse.json();
-
-                    let banlistHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
-                    
-                    const checkCard = (cardName) => {
-                        const cardInfo = banlistData.data.find(card => card.name === cardName);
-                        if (cardInfo && cardInfo.banlist_info && cardInfo.banlist_info.ban_tcg) {
-                            return cardInfo.banlist_info.ban_tcg;
-                        }
-                        return 'Unlimited';
-                    };
-
-                    let coreRestricted = false;
-                    let externalRestricted = false;
-                    let coreHTML = '<div class="card combo-step-card p-4"><h4 class="text-lg font-bold text-green-400 mb-2">Core Archetype</h4><ul class="list-disc list-inside space-y-1 text-sm text-gray-300">';
-                    let externalHTML = '<div class="card combo-step-card p-4"><h4 class="text-lg font-bold text-yellow-400 mb-2">Common Tech & Synergies</h4><ul class="list-disc list-inside space-y-1 text-sm text-gray-300">';
-                    
-                    primiteCards.forEach(cardName => {
-                        const status = checkCard(cardName);
-                        if(status !== 'Unlimited') {
-                            coreRestricted = true;
-                            coreHTML += `<li><strong class="text-red-400">${cardName} (${status})</strong></li>`;
-                        }
-                    });
-
-                    if(!coreRestricted) {
-                         coreHTML += '<li>All core "Primite" cards are Unlimited.</li>';
-                    }
-                     
-                    // Check some common synergistic cards
-                    const synergisticCards = ["Called by the Grave", "Hieratic Seal of the Heavenly Spheres"];
-                     synergisticCards.forEach(cardName => {
-                        const status = checkCard(cardName);
-                        if(status !== 'Unlimited') {
-                            externalRestricted = true;
-                            externalHTML += `<li><strong class="text-yellow-400">${cardName} (${status})</strong></li>`;
-                        }
-                    });
-                     if(!externalRestricted){
-                         externalHTML += '<li>No common synergistic cards are currently on the list.</li>';
-                     }
-
-
-                    coreHTML += '</ul></div>';
-                    externalHTML += '</ul></div>';
-                    
-                    banlistContainer.innerHTML = `
-                        <p class="text-gray-300 mb-4 text-center">
-                            <strong class="text-green-400 font-bold">ARCHETYPE UNRESTRICTED:</strong> The Primite archetype operates at full power. However, some common synergistic cards may be limited.
-                        </p>
-                        ${banlistHTML}${coreHTML}${externalHTML}</div>
-                        <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
-                            <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its core engine untouched, Primite remains a highly consistent and powerful strategy, able to adapt to various metagames by pairing with different Normal Monster packages.</p>
-                        </div>
-                    `;
-
-
-                } catch (error) {
-                    console.error("Error checking banlist:", error);
-                    banlistContainer.innerHTML = `<p class="text-red-400">Could not retrieve banlist information from the API.</p>`;
+            // Implement modern archetype banlist functionality
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Primite', {
+                relatedCards: [
+                    'Blue-Eyes White Dragon',
+                    'Dark Magician',
+                    'Mystical Elf',
+                    'Hitotsu-Me Giant',
+                    'Tri-Horned Dragon',
+                    'Toon Kingdom',
+                    'Heart of the Underdog',
+                    'Unexpected Dai',
+                    'Advanced Draw',
+                    'Magical Dimension',
+                    'Hieratic Seal of the Heavenly Spheres',
+                    'Called by the Grave',
+                    'Crossout Designator',
+                    'Pot of Prosperity',
+                    'Triple Tactics Talent'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Normal Monster excavation and Special Summoning with targeted removal',
+                    supportReliance: 'Another Beryl excavates and summons, Lordly Lode provides targeted removal',
+                    adaptability: 'Can be paired with any powerful Normal Monster package (Blue-Eyes, Dark Magician, Toon, etc.)',
+                    resilience: 'Echo provides GY recursion, Roar offers protection and searching',
+                    keyLoss: 'No banlist restrictions on core cards',
+                    alternativeStrategy: 'Imperial Dragon provides draw power to dig for Normal Monsters, Drillbeam serves as additional targeted disruption'
                 }
-            }
-
-            checkBanlist();
+            });
         });
     </script>
 </body>

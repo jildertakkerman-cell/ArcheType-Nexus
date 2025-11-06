@@ -311,7 +311,7 @@
         </section>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // Starry sky background effect
             const canvas = document.getElementById('starry-sky');
             if (canvas) {
@@ -372,7 +372,6 @@
                 });
             }
 
-
             CardLoader.loadCards({
                 'tarotrei-img-container': 'Prediction Princess Tarotrei',
                 'tarotreith-img-container': 'Prediction Princess Tarotreith',
@@ -383,82 +382,34 @@
                 'end-deus-img-container': 'Deus X-Krawler',
             });
 
-
-            // Banlist check
-            const banlistContainer = document.getElementById('banlist-status');
-            const cardsToCheck = {
-                "Herald of the Arc Light": "Key Ritual support via Diviner engine",
-            };
-
-            const checkBanlist = async () => {
-                banlistContainer.innerHTML = '<p class="text-center text-purple-200">Analyzing banlist status...</p>';
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
-                    if (!response.ok) throw new Error('Failed to fetch banlist');
-                    const banlistData = await response.json();
-                    const cardData = banlistData.data;
-
-                    let restrictedHTML = '';
-                    let hasRestrictions = false;
-
-                    for (const cardName in cardsToCheck) {
-                        const cardInfo = cardData.find(c => c.name === cardName);
-                         if (cardInfo && cardInfo.banlist_info && cardInfo.banlist_info.ban_tcg) {
-                            const status = cardInfo.banlist_info.ban_tcg;
-                            if (status === 'Limited' || status === 'Semi-Limited' || status === 'Forbidden') {
-                                hasRestrictions = true;
-                                let colorClass = status === 'Forbidden' ? 'text-red-400' : 'text-yellow-300';
-                                restrictedHTML += `<li><strong class="${colorClass}">${cardName} (${status})</strong> - ${cardsToCheck[cardName]}</li>`;
-                            }
-                        }
-                    }
-
-                    let summaryHTML = '';
-                    let implicationsHTML = '';
-                    let gridHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
-
-                    if (hasRestrictions) {
-                        summaryHTML = `<p class="text-purple-200 mb-4 text-center">
-                            <strong class="text-yellow-400 font-bold">MINIMAL IMPACT:</strong> The Prediction Princess archetype itself is at full power, but a key generic support card is on the banlist.
-                        </p>`;
-                        
-                        gridHTML += `<div class="combo-step-card p-4">
-                                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Restricted Cards</h4>
-                                        <ul class="list-disc list-inside space-y-1 text-sm text-purple-200">${restrictedHTML}</ul>
-                                     </div>`;
-                        
-                        implicationsHTML = `<div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
-                            <p class="text-sm text-purple-200"><strong>Meta Implications:</strong> While the core engine is untouched, the limitation of "Herald of the Arc Light" slightly reduces the consistency and power of the Diviner of the Herald engine, a popular starter for the deck. The deck's primary lockdown strategy, however, remains fully intact.</p>
-                        </div>`;
-                    } else {
-                         summaryHTML = `<p class="text-purple-200 mb-4 text-center">
-                            <strong class="text-green-400 font-bold">UNRESTRICTED STATUS:</strong> The Prediction Princess archetype and its key support operate at full power in the current TCG format.
-                        </p>`;
-                         implicationsHTML = `<div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
-                            <p class="text-sm text-purple-200"><strong>Meta Implications:</strong> With complete access to all archetype components and generic support, Prediction Princess can operate at its intended power level, making it a viable competitive choice.</p>
-                        </div>`;
-                    }
-
-                    gridHTML += `<div class="combo-step-card p-4">
-                                    <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
-                                    <ul class="list-disc list-inside space-y-1 text-sm text-purple-200">
-                                        <li>All "Prediction Princess" monsters & spells</li>
-                                        <li>Key Floodgates (Guard Dog, Deus X-Krawler, etc.)</li>
-                                        <li>Diviner of the Herald</li>
-                                        <li>Pre-Preparation of Rites</li>
-                                    </ul>
-                                 </div>`;
-                    
-                    gridHTML += '</div>';
-                    banlistContainer.innerHTML = summaryHTML + gridHTML + implicationsHTML;
-
-                } catch (error) {
-                    console.error('Failed to load or parse banlist:', error);
-                    banlistContainer.innerHTML = '<p class="text-center text-red-400">Could not retrieve banlist information.</p>';
+            // Implement modern archetype banlist functionality
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Prediction Princess', {
+                relatedCards: [
+                    'Guard Dog',
+                    'Deus X-Krawler',
+                    'Morphing Jar',
+                    'Morphing Jar #2',
+                    'Cyber Jar',
+                    'Pot of The Forbidden',
+                    'Diviner of the Herald',
+                    'Herald of the Arc Light',
+                    'Pre-Preparation of Rites',
+                    'Preparation of Rites',
+                    'Advanced Ritual Art',
+                    'Manju of the Ten Thousand Hands',
+                    'Senju of the Thousand Hands',
+                    'Impcantation Candoll',
+                    'Impcantation Talismandra'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Ritual Summoning + Flip Effect lockdown control',
+                    supportReliance: 'Tarotrei and Tarotreith create a repeatable loop to summon and trigger powerful generic Flip monsters',
+                    adaptability: 'Tutor the perfect floodgate for any matchup via Tarotreith\'s effect',
+                    resilience: 'Recursive engine allows re-establishing locks turn after turn',
+                    keyLoss: 'Herald of the Arc Light Limited status slightly reduces Diviner engine consistency',
+                    alternativeStrategy: 'Guard Dog and Deus X-Krawler provide matchup-specific lockdowns that prevent opponents from playing'
                 }
-            };
-            
-            checkBanlist();
+            });
         });
     </script>
 </body>
