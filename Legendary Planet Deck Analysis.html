@@ -388,33 +388,8 @@
         <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-gray-300 mb-4 text-center">
-                    Verifying Legendary Planet status against the live TCG Forbidden & Limited list...
-                </p>
-                <div id="banlist-status-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden</h4>
-                        <ul id="forbidden-list" class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <li>Loading...</li>
-                        </ul>
-                    </div>
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited</h4>
-                        <ul id="limited-list" class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <li>Loading...</li>
-                        </ul>
-                    </div>
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted</h4>
-                        <ul id="unrestricted-list" class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <li>Loading...</li>
-                        </ul>
-                    </div>
-                </div>
-                <div id="banlist-summary" class="mt-4 p-3 bg-gray-900 bg-opacity-30 rounded border-l-4 border-gray-500">
-                    <p class="text-sm text-gray-300">Loading summary...</p>
-                </div>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
             </div>
         </section>
 
@@ -426,7 +401,7 @@
                     The "Legendary Planet" series is a fascinating case study. It is a <strong class="text-accent font-bold">constellation of individual stars rather than a unified galaxy</strong>. Their power is not found in unity but in highly specialized, individual applications within carefully constructed external support shells.
                 </p>
                 <p class="text-indigo-200 mt-4">
-                    Ultimately, they offer a rewarding challenge for the dedicated duelist and creative deck builder'”a puzzle box of powerful, lore-rich effects waiting for the right combination of support to unlock their potential.
+                    Ultimately, they offer a rewarding challenge for the dedicated duelist and creative deck builder'ï¿½a puzzle box of powerful, lore-rich effects waiting for the right combination of support to unlock their potential.
                 </p>
             </div>
         </section>
@@ -515,102 +490,23 @@
                 console.error("CardLoader is not defined. Make sure card-loader.js is loaded correctly.");
             }
 
-            // --- Banlist Fetcher ---
-            async function fetchBanlistStatus() {
-                const planetCards = [
-                    "The Tyrant Neptune",
-                    "The Despair Uranus",
-                    "The Blazing Mars",
-                    "The Tripper Mercury",
-                    "The Suppression Pluto",
-                    "The Grand Jupiter",
-                    "The Supremacy Sun",
-                    "The Big Saturn",
-                    "Elemental HERO Terra Firma"
-                ];
-
-                const forbiddenListEl = document.getElementById('forbidden-list');
-                const limitedListEl = document.getElementById('limited-list');
-                const unrestrictedListEl = document.getElementById('unrestricted-list');
-                const summaryEl = document.getElementById('banlist-summary');
-
-                // Clear loading text
-                forbiddenListEl.innerHTML = '';
-                limitedListEl.innerHTML = '';
-                unrestrictedListEl.innerHTML = '';
-
-                let forbiddenCount = 0;
-                let limitedCount = 0;
-                let hasError = false;
-
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
-                    if (!response.ok) throw new Error(`Network response was not ok (${response.status})`);
-                    const data = await response.json();
-                    
-                    // Check if data.data exists and is an array
-                    if (!data || !Array.isArray(data.data)) {
-                        throw new Error("Invalid API response structure");
-                    }
-
-                    const banlistData = data.data;
-
-                    const banlistMap = new Map();
-                    for (const card of banlistData) {
-                        if (card.banlist_info && card.banlist_info.ban_tcg) {
-                            banlistMap.set(card.name, card.banlist_info.ban_tcg);
-                        }
-                    }
-
-                    for (const cardName of planetCards) {
-                        const status = banlistMap.get(cardName);
-                        const li = document.createElement('li');
-                        li.textContent = cardName;
-
-                        if (status === 'Banned') {
-                            li.className = 'text-red-400 font-bold';
-                            forbiddenListEl.appendChild(li);
-                            forbiddenCount++;
-                        } else if (status === 'Limited') {
-                            li.className = 'text-yellow-400 font-bold';
-                            limitedListEl.appendChild(li);
-                            limitedCount++;
-                        } else {
-                            unrestrictedListEl.appendChild(li);
-                        }
-                    }
-                    
-                } catch (error) {
-                    console.error('Failed to fetch banlist:', error);
-                    hasError = true;
+            // Render banlist section
+            CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Legendary Planet', {
+                relatedCards: [
+                    'The Tyrant Neptune',
+                    'Lyrilusc - Independent Nightingale',
+                    'Elemental HERO Terra Firma',
+                    'March of the Monarchs'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Individual Planet boss monsters with unique effects',
+                    supportReliance: 'Minimal archetype cohesion, each Planet functions independently',
+                    adaptability: 'Each Planet requires specific deck builds around its effect',
+                    resilience: 'Very low - Planets are fragmented with no unified strategy',
+                    keyLoss: 'The Tyrant Neptune ban removed the most infamous FTK combo potential',
+                    alternativeStrategy: 'Use individual Planets as boss monsters in dedicated strategies (Uranus in Monarch, Mars in Pyro, etc.)'
                 }
-
-                // Final summary generation
-                if (hasError) {
-                    forbiddenListEl.innerHTML = '<li>Error loading status</li>';
-                    limitedListEl.innerHTML = '<li>Error loading status</li>';
-                    unrestrictedListEl.innerHTML = '<li>Error loading status</li>';
-                    summaryEl.className = 'mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500';
-                    summaryEl.innerHTML = `<p class="text-sm text-red-400"><strong>Error:</strong> Failed to load live banlist data. Please check the connection or API status.</p>`;
-                } else {
-                    if (forbiddenListEl.innerHTML === '') forbiddenListEl.innerHTML = '<li>None</li>';
-                    if (limitedListEl.innerHTML === '') limitedListEl.innerHTML = '<li>None</li>';
-                    if (unrestrictedListEl.innerHTML === '') unrestrictedListEl.innerHTML = '<li>None</li>';
-
-                    let summaryText = '';
-                    if (forbiddenCount > 0) {
-                        summaryEl.className = 'mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500';
-                        summaryText = `<strong>Meta Implications:</strong> The series is critically impacted by the ban of "The Tyrant Neptune," which removes its most infamous and powerful combo. The other planets remain fully unrestricted and can be used as individual boss monsters in their respective strategies.`;
-                    } else {
-                        summaryEl.className = 'mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500';
-                        summaryText = `<strong>Meta Implications:</strong> With all "Legendary Planet" cards unrestricted, the series can be explored to its full, albeit fragmented, potential. Each planet can be used as a unique boss monster for its dedicated strategy without limitation.`;
-                    }
-                    summaryEl.innerHTML = `<p class="text-sm text-gray-300">${summaryText}</p>`;
-                }
-            }
-
-            // Run the banlist fetcher
-            fetchBanlistStatus();
+            });
         });
     </script>
 </body>

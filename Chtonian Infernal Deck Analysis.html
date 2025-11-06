@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -253,22 +253,10 @@
 
         <!-- TCG Banlist Status Section -->
         <section class="animate-fadeIn" style="animation-delay: 0.8s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-gray-300 mb-4 text-center">
-                    The "Infernal" and "Chthonian" cards have seen minimal impact from the banlist, with one notable exception.
-                </p>
-                <div id="banlist-status" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Banlist data will be populated here by JavaScript -->
-                    <div class="card combo-step-card p-4 animate-pulse">
-                        <h4 class="text-lg font-bold text-gray-400 mb-2">Loading Banlist Data...</h4>
-                        <div class="h-4 bg-gray-600 rounded w-3/4"></div>
-                    </div>
-                </div>
-                 <div class="mt-4 p-3 bg-gray-900 bg-opacity-30 rounded border-l-4 border-gray-500">
-                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The "Evil HERO" strategy remains at full power. The limitation of "Infernity Launcher" affects a different "Infernal"-adjacent archetype but is relevant to the broader theme of "Hell"-named cards in the OCG.</p>
-                </div>
-            </div>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">
+                <i class="fas fa-gavel mr-2"></i>Current TCG Banlist Status
+            </h2>
+            <div id="banlist-status"></div>
         </section>
     </div>
     <script>
@@ -339,58 +327,23 @@
                 });
             }
 
-            // --- BANLIST CHECKER ---
-            async function checkBanlist() {
-                const banlistContainer = document.getElementById('banlist-status');
-                if (!banlistContainer) return;
-
-                const cardsToCheck = ['Infernity Launcher', 'Evil HERO Adusted Gold', 'Xtra HERO Infernal Devicer', 'Dark Fusion'];
-                const banlistUrl = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg';
-
-                let html = '';
-
-                try {
-                    const response = await fetch(banlistUrl);
-                    const data = await response.json();
-
-                    const banlistData = data.data.reduce((acc, card) => {
-                        if(card.banlist_info && card.banlist_info.ban_tcg) {
-                           acc[card.name] = card.banlist_info.ban_tcg;
-                        }
-                        return acc;
-                    }, {});
-
-                    cardsToCheck.forEach(cardName => {
-                        const status = banlistData[cardName] || 'Unlimited';
-                        let statusColor = 'text-green-400';
-                        if (status === 'Limited' || status === 'Semi-Limited') {
-                            statusColor = 'text-yellow-400';
-                        } else if (status === 'Banned') {
-                            statusColor = 'text-red-400';
-                        }
-
-                        html += `
-                            <div class="card combo-step-card p-4">
-                                <h4 class="text-lg font-bold text-amber-100 mb-2">${cardName}</h4>
-                                <p class="text-sm ${statusColor} font-bold">${status}</p>
-                            </div>
-                        `;
-                    });
-
-                } catch (error) {
-                    console.error("Failed to fetch banlist data:", error);
-                    html = '<p class="text-red-400">Could not load banlist data. Please try again later.</p>';
-                }
-
-                banlistContainer.innerHTML = html;
-            }
-
-            checkBanlist();
-
             // --- CARD LOADING ---
             CardLoader.loadCards({
                 'malicious-bane-img': 'Evil HERO Malicious Bane',
                 'infernal-gainer-img': 'Evil HERO Infernal Gainer'
+            });
+
+            // --- BANLIST SECTION ---
+            CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Evil HERO', {
+                relatedCards: ['Dark Calling', 'Dark Fusion', 'Infernity Launcher'],
+                archetypeTraits: {
+                    coreMechanic: "DARK Fusion summoning and graveyard recursion",
+                    supportReliance: "high",
+                    adaptability: "moderate",
+                    resilience: "moderate",
+                    keyLoss: "Some Evil HERO Fusions and fusion spells are critical to the strategy",
+                    alternativeStrategy: "Can incorporate generic DARK and Fiend support"
+                }
             });
         });
     </script>

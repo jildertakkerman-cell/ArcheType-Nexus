@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -482,41 +482,18 @@
         </div>
     </section>
 
-    <!-- TCG Banlist Status Section -->
-    <section class="mb-10 md:mb-16">
-        <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center">TCG Banlist Status</h2>
-        <div id="banlist-status"></div>
+    <!-- BANLIST STATUS -->
+    <section class="mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 text-center heading-underline">Current TCG Banlist Status</h2>
+        <div id="banlist-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center p-6 card">Loading banlist information...</div>
+        </div>
+        <div id="banlist-analysis" class="mt-6"></div>
     </section>
-
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
-    await CardLoader.renderBanlistSection('banlist-status', [
-        'Blue-Eyes White Dragon',
-        'Blue-Eyes Alternative White Dragon',
-        'Blue-Eyes Chaos MAX Dragon',
-        'Blue-Eyes Spirit Dragon',
-        'Azure-Eyes Silver Dragon',
-        'The White Stone of Ancients',
-        'The White Stone of Legend',
-        'Sage with Eyes of Blue',
-        'Trade-In',
-        'Return of the Dragon Lords',
-        'Dragon Shrine',
-        'Melody of Awakening Dragon'
-    ], {
-        archetypeName: 'Blue-Eyes',
-        archetypeTraits: {
-            coreMechanic: 'LIGHT Dragon beatdown with Level 8 synergy',
-            supportReliance: 'Low (all core cards unrestricted)',
-            adaptability: 'Strong (works with Bystials and other Dragon support)',
-            resilience: 'Strong (full power core)',
-            keyLoss: 'No restrictions - fully operational',
-            alternativeStrategy: 'Classic Dragon Link hybrid or Primite control build'
-        }
-    });
-    
+document.addEventListener('DOMContentLoaded', () => {
     // --- CANVAS ANIMATION ---
     const canvas = document.getElementById('light-particles-canvas');
     if (canvas) {
@@ -567,9 +544,120 @@ document.addEventListener('DOMContentLoaded', async () => {
         'pdeb-container': 'Primite Dragon Ether Beryl',
         'pd-container': 'Primite Drillbeam'
     });
+
+    // --- BANLIST FETCHER ---
+    const fetchBanlist = async () => {
+        const container = document.getElementById('banlist-container');
+        const analysisContainer = document.getElementById('banlist-analysis');
+        if (!container || !analysisContainer) return; // Exit if elements aren't found
+        
+        try {
+            const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
+            if (!response.ok) throw new Error('Failed to fetch banlist');
+            const data = await response.json();
+
+            const relevantCards = [
+                "Bystial Magnamhut", "Bystial Druiswurm", "The Bystial Lubellion", 
+                "Called by the Grave", "Branded Fusion", "Crossout Designator"
+            ];
+            
+            const banlistStatus = { forbidden: [], limited: [], semiLimited: [] };
+
+            if (data.data && Array.isArray(data.data)) {
+                data.data.forEach(card => {
+                    if (relevantCards.includes(card.name)) {
+                        // Check if banlist_info and ban_tcg exist
+                        if (card.banlist_info && card.banlist_info.ban_tcg) {
+                            const status = card.banlist_info.ban_tcg.toLowerCase();
+                            if (status === 'banned') banlistStatus.forbidden.push(card.name);
+                            else if (status === 'limited') banlistStatus.limited.push(card.name);
+                            else if (status === 'semi-limited') banlistStatus.semiLimited.push(card.name);
+                        }
+                    }
+                });
+            }
+
+            const createBanlistSection = (title, cards, color) => {
+                let cardList = cards.length > 0 ? cards.map(c => `<li class="text-${color}-200">${c}</li>`).join('') : `<li class="text-${color}-200">None relevant</li>`;
+                return `
+                    <div class="bg-gradient-to-br from-${color}-900/30 to-${color}-800/20 border border-${color}-500/30 rounded-lg p-4 card">
+                        <h3 class="text-lg font-bold text-${color}-400 mb-3 flex items-center">
+                            <i class="fas ${title === 'Forbidden' ? 'fa-ban' : title === 'Limited' ? 'fa-exclamation-triangle' : 'fa-pause'} mr-2"></i>${title} (${cards.length})
+                        </h3>
+                        <ul class="space-y-1 text-sm">${cardList}</ul>
+                    </div>
+                `;
+            };
+
+            container.innerHTML = `
+                ${createBanlistSection('Forbidden', banlistStatus.forbidden, 'red')}
+                ${createBanlistSection('Limited', banlistStatus.limited, 'orange')}
+                ${createBanlistSection('Semi-Limited', banlistStatus.semiLimited, 'yellow')}
+            `;
+
+            analysisContainer.innerHTML = `
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-accent mb-4"><i class="fas fa-info-circle mr-2"></i>Banlist Impact Analysis</h3>
+                    <div class="text-sm text-sky-200 space-y-2">
+                        <p><strong>Moderate Impact on Hybrids:</strong> The limitations on key <span class="text-accent">Bystial</span> monsters reduce the consistency and disruptive power of the popular Blue-Eyes Bystial hybrid variant, forcing a greater reliance on the core engine.</p>
+                        <p><strong>Reduced Protection:</strong> With <span class="text-accent">Called by the Grave</span> and <span class="text-accent">Crossout Designator</span> Limited, the deck has fewer tools to protect its critical Normal Summon of <span class="text-accent">Sage with Eyes of Blue</span> from hand traps.</p>
+                        <p><strong>Core Archetype Intact:</strong> Crucially, all "Blue-Eyes" specific cards remain completely unrestricted. This preserves the archetype's primary strategies, ensuring the legend of the white dragon continues to be a formidable force on its own terms.</p>
+                    </div>
+                </div>
+            `;
+
+        } catch (error) {
+            container.innerHTML = `<div class="text-center p-6 card col-span-3 text-red-400">Failed to load banlist data.</div>`;
+            console.error('Banlist Fetch Error:', error);
+        }
+    };
+
+    fetchBanlist();
 });
 </script>
 
+
+    <!-- TCG Banlist Impact Section -->
+    <section class="mb-10 md:mb-16">
+        <div id="banlist-status"></div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
+            // Load cards first so they're in the cache for banlist auto-extraction
+            CardLoader.loadCards({
+        'bewd-container': 'Blue-Eyes White Dragon',
+        'beawd-container': 'Blue-Eyes Alternative White Dragon',
+        'bejd-container': 'Blue-Eyes Jet Dragon',
+        'sweob-container': 'Sage with Eyes of Blue',
+        'mow-container': 'Maiden of White', // <-- ADDED
+        'twsoa-container': 'The White Stone of Ancients',
+        'twsol-container': 'The White Stone of Legend',
+        'dod-container': 'Dictator of D.',
+        'sweob2-container': 'Spirit with Eyes of Blue',
+        'besd-container': 'Blue-Eyes Spirit Dragon',
+        'aesd-container': 'Azure-Eyes Silver Dragon',
+        'hsohs-container': 'Hieratic Seal of the Heavenly Spheres',
+        'betd-container': 'Blue-Eyes Tyrant Dragon',
+        'nhdrtg-container': 'Number 38: Hope Harbinger Dragon Titanic Galaxy',
+        'nbeud-container': 'Neo Blue-Eyes Ultimate Dragon',
+        'pdeb-container': 'Primite Dragon Ether Beryl',
+        'pd-container': 'Primite Drillbeam'
+    
+            });
+            
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Blue-Eyes', {
+                archetypeTraits: {
+                    coreMechanic: 'high-ATK LIGHT Dragon synergy and fusion summoning',
+                    supportReliance: 'Moderate',
+                    adaptability: 'Moderate adaptability with various build options',
+                    resilience: 'High resilience due to extensive support cards',
+                    keyLoss: 'key consistency and protection cards',
+                    alternativeStrategy: 'focusing on alternative build paths and tech choices'
+                }
+            });
+        });
+    </script>
 </body>
 </html>
-

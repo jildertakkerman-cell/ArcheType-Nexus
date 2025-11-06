@@ -293,31 +293,6 @@
             </div>
         </section>
 
-        <!-- TCG Banlist Status Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-gray-300 mb-4 text-center">
-                    The "Coach" engine and its primary support cards are largely untouched by the current TCG banlist, though some generic support has been hit.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Cards</h4>
-                        <ul id="unrestricted-list" class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <!-- JS will populate this -->
-                        </ul>
-                    </div>
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited & Semi-Limited</h4>
-                        <ul id="limited-list" class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                           <!-- JS will populate this -->
-                        </ul>
-                    </div>
-                </div>
-                <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
-                    <p id="banlist-implications" class="text-sm text-gray-300"></p>
-                </div>
-            </div>
         
 
         <!-- TCG Banlist Impact Section -->
@@ -406,69 +381,7 @@
                     setCanvasSize();
                     initPlays();
                 });
-            }
-
-
-            
-            async function checkBanlistStatus() {
-                const unrestrictedList = document.getElementById('unrestricted-list');
-                const limitedList = document.getElementById('limited-list');
-                const implications = document.getElementById('banlist-implications');
-
-                const coreCards = [
-                    "Coach Captain Bearman",
-                    "Coach King Giantrainer",
-                    "Coach Soldier Wolfbark",
-                    "Fire Formation - Tensu",
-                    "Reinforcement of the Army",
-                    "Pot of Prosperity",
-                    "Fire Formation - Tenki", // Now Limited
-                ];
-
-                let limitedCount = 0;
-                
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
-                    if (!response.ok) throw new Error('Failed to fetch banlist');
-                    const banlistData = await response.json();
-                    
-                    const banlistMap = new Map();
-                    banlistData.data.forEach(card => {
-                        if (card.banlist_info && card.banlist_info.ban_tcg) {
-                           banlistMap.set(card.name, card.banlist_info.ban_tcg);
-                        }
-                    });
-
-                    coreCards.forEach(cardName => {
-                        const status = banlistMap.get(cardName);
-                        const li = document.createElement('li');
-                        li.textContent = cardName;
-
-                        if (status === 'Limited' || status === 'Semi-Limited') {
-                             li.innerHTML += ` <strong class="text-yellow-400">(${status})</strong>`;
-                             limitedList.appendChild(li);
-                             limitedCount++;
-                        } else if (status === 'Forbidden') {
-                             li.innerHTML += ` <strong class="text-red-400">(Forbidden)</strong>`;
-                             limitedList.appendChild(li);
-                        } else {
-                            unrestrictedList.appendChild(li);
-                        }
-                    });
-
-                    if (limitedCount > 0) {
-                        implications.textContent = 'With key searchers like "Fire Formation - Tenki" Limited, the engine\'s consistency is slightly reduced, requiring more careful deck construction to ensure access to combo pieces.';
-                    } else {
-                        implications.textContent = 'With all core components at full power, the Coach engine can operate with maximum consistency. The primary limitations come from generic staples rather than archetype-specific hits.';
-                    }
-
-
-                } catch(error) {
-                    console.error("Error fetching banlist:", error);
-                    unrestrictedList.innerHTML = '<li>Error loading banlist status.</li>';
-                    limitedList.innerHTML = '<li>Error loading banlist status.</li>';
-                }
-            }
+            }                
 
 
             CardLoader.loadCards({
@@ -478,11 +391,7 @@
                 'endboard-giantrainer-img-container': 'Coach King Giantrainer',
                 'goblin-img-container': 'Coach Goblin'
             });
-
-
-            
-            checkBanlistStatus();
-        
+           
 
             // Render banlist section
             await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Coach', {
@@ -491,6 +400,5 @@
     </script>
 </body>
 </html>
-
 
 

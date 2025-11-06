@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -471,22 +471,10 @@
 
         <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.9s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-gray-300 mb-4 text-center">
-                    This section will dynamically check the status of all key "Inca" and support cards against the TCG banlist.
-                </p>
-                <!-- This div will be populated by the script -->
-                <div id="banlist-status-content">
-                    <div class="flex justify-center items-center">
-                        <svg class="animate-spin h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span class="ml-3">Verifying card status against TCG Banlist...</span>
-                    </div>
-                </div>
-            </div>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">
+                <i class="fas fa-gavel mr-2"></i>Current TCG Banlist Status
+            </h2>
+            <div id="banlist-status"></div>
         </section>
     </div>
 
@@ -589,99 +577,26 @@
                 }
             }
 
-            // --- 3. DYNAMIC BANLIST FETCHER ---
-            async function fetchBanlistStatus() {
-                const statusContainer = document.getElementById('banlist-status-content');
-                // Key cards from the DOCX to check
-                const cardsToCheck = [
-                    'Sun Dragon Inti', 'Moon Dragon Quilla', 'Ascator, Dawnwalker', 
-                    'Supay, Duskwalker', 'Fire Ant Ascator', 'Supay', 'Oracle of the Sun', 
-                    'Apocatequil', 'Temple of the Sun', 'Earthbound Immortal Wiraqocha Rasca', 
-                    'Earthbound Greater Linewalker', 'Earthbound Geoglyph', 'Artifact Scythe', 
-                    'Artifact Moralltach', 'Artifact Sanctum', 'Synchro Overtake'
-                ];
-                
-                const cardsToCheckSet = new Set(cardsToCheck.map(name => name.toLowerCase()));
-                
-                const lists = {
-                    Forbidden: [],
-                    Limited: [],
-                    'Semi-Limited': []
-                };
+            // --- CARD LOADING ---
+            CardLoader.loadCards({
+                'inti-img': 'Supay, Guardian of the Sun',
+                'inca-fusion-img': 'Earthbound Fusion'
+            });
 
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    
-                    const data = await response.json();
-                    
-                    if (data.data) {
-                        // Filter the entire API response to find our cards
-                        for (const card of data.data) {
-                            if (cardsToCheckSet.has(card.name.toLowerCase())) {
-                                const banStatus = card.banlist_info?.ban_tcg;
-                                if (banStatus && lists[banStatus]) {
-                                    lists[banStatus].push(card.name);
-                                }
-                            }
-                        }
-                    }
-
-                    // Build the HTML to display the status
-                    let html = '';
-                    let hasRestrictions = false;
-
-                    if (lists.Forbidden.length > 0) {
-                        hasRestrictions = true;
-                        html += `<div class="card combo-step-card p-4 mb-4">
-                                     <h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4>
-                                     <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">`;
-                        lists.Forbidden.forEach(cardName => {
-                            html += `<li><strong class="text-red-400">${cardName} (0 copies)</strong></li>`;
-                        });
-                        html += `</ul></div>`;
-                    }
-
-                    if (lists.Limited.length > 0) {
-                        hasRestrictions = true;
-                        html += `<div class="card combo-step-card p-4 mb-4">
-                                     <h4 class="text-lg font-bold text-yellow-500 mb-2">Limited Cards</h4>
-                                     <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">`;
-                        lists.Limited.forEach(cardName => {
-                            html += `<li><strong class="text-yellow-400">${cardName} (1 copy)</strong></li>`;
-                        });
-                        html += `</ul></div>`;
-                    }
-
-                    if (lists['Semi-Limited'].length > 0) {
-                        hasRestrictions = true;
-                        html += `<div class="card combo-step-card p-4 mb-4">
-                                     <h4 class="text-lg font-bold text-blue-400 mb-2">Semi-Limited Cards</h4>
-                                     <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">`;
-                        lists['Semi-Limited'].forEach(cardName => {
-                            html += `<li><strong class="text-blue-300">${cardName} (2 copies)</strong></li>`;
-                        });
-                        html += `</ul></div>`;
-                    }
-
-                    // If no cards were found on any list
-                    if (!hasRestrictions) {
-                        html = `<div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
-                                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> All key "Inca" series and related support cards are currently unrestricted in the TCG. The deck can be played at its full, intended power level.</p>
-                                </div>`;
-                    }
-
-                    statusContainer.innerHTML = html;
-
-                } catch (error) {
-                    console.error("Failed to fetch banlist status:", error);
-                    statusContainer.innerHTML = `<p class="text-red-400">Could not verify banlist status. Please check your network connection or the API endpoint.</p>`;
+            // --- BANLIST SECTION ---
+            CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Inca', {
+                relatedCards: ['Supay'],
+                archetypeTraits: {
+                    coreMechanic: "Earthbound Immortal support with field spell dependency",
+                    supportReliance: "moderate",
+                    adaptability: "low",
+                    resilience: "low",
+                    keyLoss: "Relies on field spells and Earthbound Immortal synergy",
+                    alternativeStrategy: "Can incorporate generic EARTH and field spell support"
                 }
-            }
-
-            // Run the banlist fetcher
-            fetchBanlistStatus();
+            });
         });
     </script>
 </body>
 </html>
+

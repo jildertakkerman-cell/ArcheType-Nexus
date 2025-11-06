@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -495,20 +495,8 @@
         <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.7s;">
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-orange-100 mb-4 text-center">
-                    The Gren Maju strategy relies heavily on generic limited and semi-limited cards. Its power is directly tied to the availability of these consistency tools.
-                </p>
-                <!-- This div will be populated by JavaScript -->
-                <div id="banlist-status-container">
-                    <div id="banlist-loading" class="text-center text-lg text-amber-300">
-                        <i class="fas fa-sync fa-spin mr-2"></i>
-                        Verifying current TCG banlist status...
-                    </div>
-                    <div id="banlist-content" class="hidden">
-                        <!-- JS will build this list -->
-                    </div>
-                </div>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
             </div>
         </section>
 
@@ -599,78 +587,30 @@
                 'endboard-garzett-img': 'Great Maju Garzett'
             });
 
-            // --- BANLIST FETCHER ---
-            async function fetchBanlist() {
-                const apiUrl = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg';
-                const loadingDiv = document.getElementById('banlist-loading');
-                const contentDiv = document.getElementById('banlist-content');
-                
-                const cardsToCheck = [
+            // Render banlist section
+            CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Maju', {
+                relatedCards: [
                     'Pot of Desires',
+                    'Pot of Extravagance',
+                    'Pot of Prosperity',
+                    'Gizmek Orochi, the Serpentron Sky Slasher',
                     'Dimensional Fissure',
                     'Macro Cosmos',
-                    'Gold Sarcophagus',
-                    'Tour Guide From the Underworld',
-                    'Necroface',
-                    'Sangan',
-                    'Witch of the Black Forest'
-                ];
-
-                try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) {
-                        throw new Error(`API error: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    
-                    // Create a lookup map for banlist status
-                    const banlistMap = new Map();
-                    if (data && data.data) {
-                        data.data.forEach(card => {
-                            if (card.banlist_info && card.banlist_info.ban_tcg) {
-                                banlistMap.set(card.name, card.banlist_info.ban_tcg);
-                            } else {
-                                banlistMap.set(card.name, 'Unlimited');
-                            }
-                        });
-                    }
-
-                    // Build HTML
-                    let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
-                    cardsToCheck.forEach(cardName => {
-                        const status = banlistMap.get(cardName) || 'Unlimited';
-                        let statusClass = 'status-unlimited';
-                        if (status === 'Banned') {
-                            statusClass = 'status-forbidden';
-                        } else if (status === 'Limited') {
-                            statusClass = 'status-limited';
-                        } else if (status === 'Semi-Limited') {
-                            statusClass = 'status-semi-limited';
-                        }
-
-                        html += `
-                            <div class="card combo-step-card p-3">
-                                <span class="font-bold text-white">${cardName}:</span>
-                                <span class_name="${statusClass}">${status}</span>
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
-
-                    // Display content
-                    contentDiv.innerHTML = html;
-                    loadingDiv.classList.add('hidden');
-                    contentDiv.classList.remove('hidden');
-
-                } catch (error) {
-                    console.error('Failed to fetch banlist:', error);
-                    loadingDiv.innerHTML = '<i class="fas fa-exclamation-triangle text-red-400 mr-2"></i> Failed to verify banlist status.';
-                    loadingDiv.classList.remove('text-amber-300');
-                    loadingDiv.classList.add('text-red-400');
+                    'Danger! Bigfoot!',
+                    'Danger!? Tsuchinoko?',
+                    'Danger!? Jackalope?',
+                    'The Monarchs Stormforth',
+                    'Kaiju' 
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Beatdown strategy using monsters that gain ATK from banished cards',
+                    supportReliance: 'Heavy reliance on generic draw and banish cards (Pot cards, Dimensional Fissure)',
+                    adaptability: 'Versatile engine that can incorporate various draw and banish engines',
+                    resilience: 'Moderate resilience through multiple Maju monsters and Kaiju board breaking',
+                    keyLoss: 'Power directly tied to availability of Pot cards and banish enablers on banlist',
+                    alternativeStrategy: 'Focus on Kaiju/Tribute stall with defensive traps if draw power is limited'
                 }
-            }
-
-            fetchBanlist();
+            });
         });
     </script>
 </body>

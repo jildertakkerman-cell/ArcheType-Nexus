@@ -536,6 +536,25 @@ const CardLoader = (function () {
                 // Show loading state
                 container.innerHTML = '<div class="card p-6"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading banlist data...</p></div>';
                 
+                // Auto-extract related cards from cache and merge with manual ones
+                let relatedCards = options.relatedCards || [];
+                
+                // Wait a bit for loadCards to populate the cache
+                await new Promise(resolve => setTimeout(resolve, 100));
+                const autoExtracted = extractRelatedCardsFromCache(cards);
+                
+                // Merge manual and auto-extracted cards (avoid duplicates)
+                const manualSet = new Set(relatedCards.map(c => c.toLowerCase()));
+                const merged = [...relatedCards];
+                
+                for (const card of autoExtracted) {
+                    if (!manualSet.has(card.toLowerCase())) {
+                        merged.push(card);
+                    }
+                }
+                
+                console.log(`[CardLoader] Final related cards: ${relatedCards.length} manual + ${merged.length - relatedCards.length} auto-extracted = ${merged.length} total`);
+                
                 // Fetch real banlist data from API
                 const banlist = await fetchBanlistData();
                 
@@ -543,9 +562,9 @@ const CardLoader = (function () {
                 const forbidden = cards.filter(c => banlist[c] === 'Forbidden');
                 const limited = cards.filter(c => banlist[c] === 'Limited');
                 const semiLimited = cards.filter(c => banlist[c] === 'Semi-Limited');
-                const relatedForbidden = (options.relatedCards || []).filter(c => banlist[c] === 'Forbidden');
-                const relatedLimited = (options.relatedCards || []).filter(c => banlist[c] === 'Limited');
-                const relatedSemiLimited = (options.relatedCards || []).filter(c => banlist[c] === 'Semi-Limited');
+                const relatedForbidden = merged.filter(c => banlist[c] === 'Forbidden');
+                const relatedLimited = merged.filter(c => banlist[c] === 'Limited');
+                const relatedSemiLimited = merged.filter(c => banlist[c] === 'Semi-Limited');
                 
                 const hasRestrictions = forbidden.length > 0 || limited.length > 0 || semiLimited.length > 0;
                 const hasRelatedRestrictions = relatedForbidden.length > 0 || relatedLimited.length > 0 || relatedSemiLimited.length > 0;
@@ -592,7 +611,7 @@ const CardLoader = (function () {
                                 <div class="bg-gradient-to-br from-blue-900 to-blue-800 bg-opacity-30 p-4 rounded-lg border border-blue-600 border-opacity-40">
                                     <div class="flex items-center mb-2">
                                         <i class="fas fa-bolt text-blue-400 text-xl mr-2"></i>
-                                        <h4 class="text-blue-300 font-bold text-sm">Full Power Combos</h4>
+                                        <h4 class="text-blue-300 font-bold text-sm">Full Strength Plays</h4>
                                     </div>
                                     <p class="text-gray-200 text-xs">Access to all archetype synergies without limitations</p>
                                 </div>
@@ -607,15 +626,22 @@ const CardLoader = (function () {
                             </div>
                             
                             <!-- Stats Box -->
-                            <div class="bg-green-900 bg-opacity-10 rounded-lg border-l-4 border-green-500 p-4">
+                            <div class="mt-16 bg-green-900 bg-opacity-15 rounded-lg border-l-2 border-green-600 border-opacity-30 p-3">
                                 <div class="flex items-start">
-                                    <i class="fas fa-info-circle text-green-400 text-xl mr-3 mt-1"></i>
-                                    <div>
-                                        <p class="text-green-700 font-semibold mb-1">Banlist Status Summary</p>
-                                        <p class="text-sm ${pageColors.bodyTextColor}">
-                                            <strong class="text-green-400">${cards.length} core cards</strong> analyzed • 
-                                            <strong class="text-green-400">0 restrictions</strong> found • 
-                                            All cards legal at <strong class="text-green-400">3 copies</strong>
+                                    <i class="fas fa-info-circle text-green-600 text-sm mr-2 mt-1"></i>
+                                    <div class="flex-1">
+                                        <p class="text-green-800 font-semibold mb-1 text-xs">Banlist Status Summary</p>
+                                        <p class="text-xs ${pageColors.bodyTextColor}">
+                                            <button class="text-green-500 font-bold hover:text-green-400 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                                ${cards.length} core cards
+                                            </button>
+                                            <span class="hidden mt-2 block text-xs bg-gray-800 bg-opacity-50 p-2 rounded border border-green-600">
+                                                <strong class="text-green-300">Cards checked:</strong><br>
+                                                ${cards.sort().map(c => `• ${c}`).join('<br>')}
+                                            </span>
+                                            analyzed • 
+                                            <strong class="text-green-600">0 restrictions</strong> found • 
+                                            All cards legal at <strong class="text-green-600">3 copies</strong>
                                         </p>
                                     </div>
                                 </div>
@@ -630,6 +656,8 @@ const CardLoader = (function () {
                     } else {
                         relatedImpactMsg = `The ${options.archetypeName} archetype itself is largely untouched by the TCG banlist, but key synergistic cards it relies on are affected.`;
                     }
+                    
+                    const totalRelatedRestricted = relatedForbidden.length + relatedLimited.length + relatedSemiLimited.length;
                     
                     html = `
                         <div class="card p-6 mb-10 md:mb-16">
@@ -689,11 +717,35 @@ const CardLoader = (function () {
                         html += `
                             <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
                                 <p class="text-sm ${pageColors.bodyTextColor}">
-                                    <strong>Meta Implications:</strong> Despite restrictions on support cards, ${options.archetypeName}'s ${traits.adaptability} allows it to remain competitive with adjusted builds.
+                                    <strong>Meta Implications:</strong> Despite restrictions on support cards, ${options.archetypeName}'s ${traits.adaptability} allows the deck to remain viable with alternative tech choices.
                                 </p>
                             </div>
                         `;
                     }
+                    
+                    // Stats Box
+                    html += `
+                        <div class="mt-16 bg-blue-900 bg-opacity-15 rounded-lg border-l-2 border-blue-600 border-opacity-30 p-3">
+                            <div class="flex items-start">
+                                <i class="fas fa-info-circle text-blue-600 text-sm mr-2 mt-1"></i>
+                                <div class="flex-1">
+                                    <p class="text-blue-800 font-semibold mb-1 text-xs">Banlist Status Summary</p>
+                                    <p class="text-xs ${pageColors.bodyTextColor}">
+                                        <button class="text-green-500 font-bold hover:text-green-400 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                            ${cards.length} core cards
+                                        </button>
+                                        <span class="hidden mt-2 block text-xs bg-gray-800 bg-opacity-50 p-2 rounded border border-blue-600">
+                                            <strong class="text-blue-300">Cards checked:</strong><br>
+                                            ${cards.sort().map(c => `• ${c}`).join('<br>')}
+                                        </span>
+                                        analyzed • 
+                                        <strong class="text-green-600">0 archetype restrictions</strong> • 
+                                        <strong class="text-yellow-600">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''} restricted</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                     
                     html += `</div>`;
                 } else {
@@ -780,7 +832,7 @@ const CardLoader = (function () {
                                 <div class="combo-step-card p-4 border-l-4 border-red-500">
                                     <h4 class="text-md font-bold text-red-400 mb-2">Forbidden</h4>
                                     <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
-                                        ${relatedForbidden.map(c => `<li class="text-red-300">${c}</li>`).join('')}
+                                        ${relatedForbidden.map(c => `<li><strong class="text-red-300">${c}</strong></li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -791,7 +843,7 @@ const CardLoader = (function () {
                                 <div class="combo-step-card p-4 border-l-4 border-yellow-500">
                                     <h4 class="text-md font-bold text-yellow-400 mb-2">Limited</h4>
                                     <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
-                                        ${relatedLimited.map(c => `<li class="text-yellow-300">${c}</li>`).join('')}
+                                        ${relatedLimited.map(c => `<li><strong class="text-yellow-300">${c}</strong></li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -802,7 +854,7 @@ const CardLoader = (function () {
                                 <div class="combo-step-card p-4 border-l-4 border-orange-500">
                                     <h4 class="text-md font-bold text-orange-400 mb-2">Semi-Limited</h4>
                                     <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
-                                        ${relatedSemiLimited.map(c => `<li class="text-orange-300">${c}</li>`).join('')}
+                                        ${relatedSemiLimited.map(c => `<li><strong class="text-orange-300">${c}</strong></li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -825,7 +877,7 @@ const CardLoader = (function () {
                         html += `
                             <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
                                 <p class="text-sm ${pageColors.bodyTextColor}">
-                                    <strong>Meta Implications:</strong> Thanks to its ${traits.resilience}, ${options.archetypeName} remains competitive despite the limitation${limited.length > 1 ? 's' : ''}.
+                                    <strong>Meta Implications:</strong> Thanks to its ${traits.resilience}, ${options.archetypeName} remains playable despite the limitation${limited.length > 1 ? 's' : ''}.
                                 </p>
                             </div>
                         `;
@@ -848,6 +900,35 @@ const CardLoader = (function () {
                             </div>
                         `;
                     }
+                    
+                    // Stats Box
+                    const totalArchetypeRestricted = forbidden.length + limited.length + semiLimited.length;
+                    const totalRelatedRestricted = relatedForbidden.length + relatedLimited.length + relatedSemiLimited.length;
+                    const totalRestricted = totalArchetypeRestricted + totalRelatedRestricted;
+                    
+                    html += `
+                        <div class="mt-16 bg-${forbidden.length > 0 ? 'red' : 'yellow'}-900 bg-opacity-15 rounded-lg border-l-2 border-${forbidden.length > 0 ? 'red' : 'yellow'}-600 border-opacity-30 p-3">
+                            <div class="flex items-start">
+                                <i class="fas fa-info-circle text-${forbidden.length > 0 ? 'red' : 'yellow'}-600 text-sm mr-2 mt-1"></i>
+                                <div class="flex-1">
+                                    <p class="text-${forbidden.length > 0 ? 'red' : 'yellow'}-800 font-semibold mb-1 text-xs">Banlist Status Summary</p>
+                                    <p class="text-xs ${pageColors.bodyTextColor}">
+                                        <button class="text-blue-600 font-bold hover:text-blue-500 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                            ${cards.length} core cards
+                                        </button>
+                                        <span class="hidden mt-2 block text-xs bg-gray-800 bg-opacity-50 p-2 rounded border border-${forbidden.length > 0 ? 'red' : 'yellow'}-600 max-h-48 overflow-y-auto">
+                                            <strong class="text-${forbidden.length > 0 ? 'red' : 'yellow'}-300">Cards checked:</strong><br>
+                                            ${cards.sort().map(c => `• ${c}`).join('<br>')}
+                                        </span>
+                                        analyzed • 
+                                        <strong class="${forbidden.length > 0 ? 'text-red-600' : 'text-yellow-600'}">${totalRestricted} total restriction${totalRestricted !== 1 ? 's' : ''}</strong> found
+                                        ${totalArchetypeRestricted > 0 ? ` • <strong class="text-red-600">${totalArchetypeRestricted} archetype card${totalArchetypeRestricted !== 1 ? 's' : ''}</strong>` : ''}
+                                        ${totalRelatedRestricted > 0 ? ` • <strong class="text-yellow-600">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''}</strong>` : ''}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                     
                     html += `</div>`;
                 }
@@ -889,6 +970,25 @@ const CardLoader = (function () {
     }
 
     /**
+     * Extract cards from the cache that are not part of the archetype
+     * Useful for auto-populating relatedCards from loadCards() calls
+     * @param {Array<string>} archetypeCards - Array of archetype card names
+     * @returns {Array<string>} Array of card names that are loaded but not in archetype
+     */
+    function extractRelatedCardsFromCache(archetypeCards) {
+        const loadedCards = Object.keys(cardDataCache);
+        const archetypeSet = new Set(archetypeCards.map(c => c.toLowerCase()));
+        
+        // Filter out cards that are in the archetype
+        const relatedCards = loadedCards.filter(cardName => {
+            return !archetypeSet.has(cardName.toLowerCase());
+        });
+        
+        console.log(`[CardLoader] Found ${relatedCards.length} related cards from cache:`, relatedCards);
+        return relatedCards;
+    }
+
+    /**
      * Render banlist section using archetype name to auto-fetch cards
      * @param {string} containerId - ID of container element
      * @param {string} archetypeName - Name of the archetype to fetch cards for
@@ -908,14 +1008,61 @@ const CardLoader = (function () {
         // Fetch all cards in the archetype
         const archetypeCards = await fetchArchetypeCards(archetypeName);
         
+        // Auto-extract related cards from cache and merge with manual ones
+        let relatedCards = options.relatedCards || [];
+        
+        // Wait a bit for loadCards to populate the cache
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         if (archetypeCards.length === 0) {
-            container.innerHTML = '<div class="card p-6"><p class="text-center text-yellow-400"><i class="fas fa-exclamation-triangle mr-2"></i>Could not load archetype cards. Please check the archetype name.</p></div>';
+            // Archetype not found - check if we have any related cards to analyze
+            const autoExtracted = extractRelatedCardsFromCache([]);
+            
+            // Merge manual and auto-extracted cards (avoid duplicates)
+            const manualSet = new Set(relatedCards.map(c => c.toLowerCase()));
+            const merged = [...relatedCards];
+            
+            for (const card of autoExtracted) {
+                if (!manualSet.has(card.toLowerCase())) {
+                    merged.push(card);
+                }
+            }
+            
+            if (merged.length === 0) {
+                container.innerHTML = '<div class="card p-6"><p class="text-center text-yellow-400"><i class="fas fa-exclamation-triangle mr-2"></i>Could not load archetype cards and no related cards found. Please check the archetype name.</p></div>';
+                return;
+            }
+            
+            // Use only related cards for analysis
+            console.log(`[CardLoader] Archetype "${archetypeName}" not found. Analyzing ${merged.length} related cards only.`);
+            const finalOptions = {
+                ...options,
+                relatedCards: [],
+                archetypeName: archetypeName
+            };
+            
+            await renderBanlistSection(containerId, merged, finalOptions);
             return;
         }
+        
+        const autoExtracted = extractRelatedCardsFromCache(archetypeCards);
+        
+        // Merge manual and auto-extracted cards (avoid duplicates)
+        const manualSet = new Set(relatedCards.map(c => c.toLowerCase()));
+        const merged = [...relatedCards];
+        
+        for (const card of autoExtracted) {
+            if (!manualSet.has(card.toLowerCase())) {
+                merged.push(card);
+            }
+        }
+        
+        console.log(`[CardLoader] Final related cards: ${relatedCards.length} manual + ${merged.length - relatedCards.length} auto-extracted = ${merged.length} total`);
         
         // Use the regular renderBanlistSection with fetched cards
         const finalOptions = {
             ...options,
+            relatedCards: merged,
             archetypeName: archetypeName
         };
         
@@ -964,6 +1111,7 @@ const CardLoader = (function () {
         renderBanlistSection,
         fetchArchetypeCards,
         renderBanlistSectionByArchetype,
+        extractRelatedCardsFromCache,
     };
 })();
 

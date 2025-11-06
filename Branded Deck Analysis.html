@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -763,6 +763,89 @@
                 'guardian-chimera-img': 'Guardian Chimera',
                 'mirrorjade-end-img': 'Mirrorjade the Iceblade Dragon'
             });
+
+            // --- BANLIST FETCHER ---
+            async function fetchBanlistAndApply() {
+                const banlistUrl = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG';
+                const banlist = {};
+                
+                try {
+                    const response = await fetch(banlistUrl);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    const data = await response.json();
+                    
+                    if (data.data) {
+                        data.data.forEach(card => {
+                            if (card.banlist_info && card.banlist_info.ban_tcg) {
+                                banlist[card.name] = card.banlist_info.ban_tcg; // "Forbidden", "Limited", "Semi-Limited"
+                            }
+                        });
+                    }
+                    
+                    applyBanlistStatus(banlist);
+
+                } catch (error) {
+                    console.error('Failed to fetch TCG banlist:', error);
+                    const statusElements = document.querySelectorAll('.ban-status');
+                    statusElements.forEach(el => {
+                        el.textContent = 'Error loading status';
+                        el.className = 'ban-status text-gray-500';
+                    });
+                    document.getElementById('banlist-implications').innerHTML = '<p class="text-sm text-red-400"><strong>Meta Implications:</strong> Could not load live banlist data. Please check your connection.</p>';
+                }
+            }
+
+            function applyBanlistStatus(banlist) {
+                const statusElements = document.querySelectorAll('.ban-status');
+                let forbiddenCount = 0;
+                let limitedCount = 0;
+
+                statusElements.forEach(el => {
+                    const strongEl = el.closest('li').querySelector('strong');
+                    if (!strongEl || !strongEl.dataset.cardName) return;
+
+                    const cardName = strongEl.dataset.cardName;
+                    const status = banlist[cardName] || 'Unlimited';
+                    
+                    let text = status;
+                    let cssClass = 'ban-status font-bold ';
+
+                    switch (status) {
+                        case 'Forbidden':
+                            text = 'FORBIDDEN (0 Copies)';
+                            cssClass += 'text-red-400';
+                            forbiddenCount++;
+                            break;
+                        case 'Limited':
+                            text = 'LIMITED (1 Copy)';
+                            cssClass += 'text-yellow-400';
+                            limitedCount++;
+                            break;
+                        case 'Semi-Limited':
+                            text = 'SEMI-LIMITED (2 Copies)';
+                            cssClass += 'text-blue-400';
+                            limitedCount++;
+                            break;
+                        default:
+                            text = 'UNLIMITED (3 Copies)';
+                            cssClass += 'text-green-400';
+                    }
+                    
+                    el.textContent = text;
+                    el.className = cssClass;
+                });
+
+                // Update implications box
+                const implicationsBox = document.getElementById('banlist-implications');
+                if (forbiddenCount > 0 || limitedCount > 0) {
+                    implicationsBox.className = 'mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500';
+                    implicationsBox.innerHTML = `<p class="text-sm text-red-300"><strong>Meta Implications:</strong> The deck's power is actively managed by the F&L list, with ${forbiddenCount + limitedCount} key or related cards restricted. Players must build around these limitations, especially the loss of key extenders or tech.</p>`;
+                } else {
+                    implicationsBox.className = 'mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500';
+                    implicationsBox.innerHTML = `<p class="text-sm text-green-300"><strong>Meta Implications:</strong> With its core engine and key support largely unrestricted, the "Branded" archetype operates at a very high power level, relying on its inherent consistency and recursive power.</p>`;
+                }
+            }
+
         });
     </script>
 </body>
