@@ -301,24 +301,14 @@
             </div>
         </section>
         
+        <!-- TCG Banlist Status -->
         <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                 <p id="banlist-status" class="text-gray-300 mb-4 text-center">
-                    Loading banlist status...
-                </p>
-                <div id="banlist-details" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
-                    <!-- Banlist details will be populated here by script -->
-                </div>
-                <div id="meta-implications" class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500 hidden">
-                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With its core engine completely unrestricted, the "Worm" archetype operates at its full, intended power level. Its success is not hindered by the Forbidden & Limited list, but rather by its inherent speed relative to the modern metagame. The deck's primary challenge remains overcoming faster, combo-heavy strategies.</p>
-                </div>
-            </div>
+            <div id="banlist-status"></div>
         </section>
 
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const canvas = document.getElementById('nebula-canvas');
             if(canvas){
                 const ctx = canvas.getContext('2d');
@@ -396,78 +386,6 @@
                 });
             }
 
-            async function checkBanlist() {
-                const banlistStatusEl = document.getElementById('banlist-status');
-                const banlistDetailsEl = document.getElementById('banlist-details');
-                const metaImplicationsEl = document.getElementById('meta-implications');
-
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
-                    if (!response.ok) throw new Error('Failed to fetch banlist');
-                    const data = await response.json();
-
-                    const banlistData = data.data;
-                    let limitedCards = [];
-
-                    cardsToCheck.forEach(cardName => {
-                        const cardInfo = banlistData.find(c => c.name === cardName);
-                        if (cardInfo && cardInfo.banlist_info && cardInfo.banlist_info.ban_tcg !== 'Unlimited') {
-                            limitedCards.push({ name: cardName, status: cardInfo.banlist_info.ban_tcg });
-                        }
-                    });
-
-                    if (limitedCards.length > 0) {
-                         banlistStatusEl.innerHTML = `<strong class="text-yellow-400 font-bold">SOME RESTRICTIONS:</strong> Certain synergistic cards are on the F&L list:`;
-
-                        let forbiddenHtml = '';
-                        let limitedHtml = '';
-
-                        limitedCards.forEach(card => {
-                            if (card.status === 'Forbidden') {
-                                if (!forbiddenHtml) forbiddenHtml += `<div class="card combo-step-card p-4"><h4 class="text-lg font-bold text-red-500 mb-2">Forbidden Cards</h4><ul class="list-disc list-inside space-y-1 text-sm text-gray-300">`;
-                                forbiddenHtml += `<li><strong class="text-red-400">${card.name} (0 copies)</strong></li>`;
-                            } else {
-                                if (!limitedHtml) limitedHtml += `<div class="card combo-step-card p-4"><h4 class="text-lg font-bold text-yellow-400 mb-2">Limited/Semi-Limited Cards</h4><ul class="list-disc list-inside space-y-1 text-sm text-gray-300">`;
-                                limitedHtml += `<li><strong class="text-yellow-300">${card.name} (${card.status})</strong></li>`;
-                            }
-                        });
-
-                        if (forbiddenHtml) banlistDetailsEl.innerHTML += forbiddenHtml + '</ul></div>';
-                        if (limitedHtml) banlistDetailsEl.innerHTML += limitedHtml + '</ul></div>';
-
-                        metaImplicationsEl.className = 'mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500';
-                        metaImplicationsEl.innerHTML = `<p class="text-sm text-gray-300"><strong>Meta Implications:</strong> While the core "Worm" engine is untouched, the limitation of key generic support like "King of the Feral Imps" slightly impacts the deck's consistency and power ceiling, requiring players to find alternative ways to access their starters.</p>`;
-
-                    } else {
-                        banlistStatusEl.innerHTML = `<strong class="text-green-400 font-bold">FULLY UNRESTRICTED:</strong> The "Worm" archetype and its key generic support operate at full power.`;
-                         banlistDetailsEl.innerHTML = `
-                            <div class="card combo-step-card p-4">
-                                <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Core</h4>
-                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                                    <li>All "Worm" monsters (3 copies each)</li>
-                                    <li>W Nebula Meteorite (3 copies)</li>
-                                </ul>
-                            </div>
-                            <div class="card combo-step-card p-4">
-                                <h4 class="text-lg font-bold text-green-400 mb-2">Unrestricted Support</h4>
-                                <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                                    <li>King of the Feral Imps</li>
-                                    <li>Honest</li>
-                                </ul>
-                            </div>
-                        `;
-                    }
-                    banlistDetailsEl.classList.remove('hidden');
-                    metaImplicationsEl.classList.remove('hidden');
-
-                } catch (error) {
-                    console.error("Error fetching banlist:", error);
-                    banlistStatusEl.textContent = 'Could not load banlist status.';
-                }
-            }
-
-            checkBanlist();
-
             // --- CARD LOADING ---
             CardLoader.loadCards({
                 'xex-yagan-img-container': 'Worm Xex',
@@ -475,6 +393,49 @@
                 'king-img-container-combo': 'Worm King',
                 'king-img-container': 'Worm King',
                 'zero-img-container': 'Worm Zero'
+            });
+
+            // --- BANLIST SECTION ---
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Worm', {
+                relatedCards: [
+                    // Generic Rank 4 toolbox
+                    'King of the Feral Imps',
+                    'Abyss Dweller',
+                    'Tornado Dragon',
+                    'Castel, the Skyblaster Musketeer',
+                    // Generic LIGHT support
+                    'Honest',
+                    // Generic draw engines
+                    'Pot of Prosperity',
+                    'Pot of Extravagance',
+                    'Pot of Desires',
+                    // Hand traps
+                    'Ash Blossom & Joyous Spring',
+                    'Effect Veiler',
+                    'Infinite Impermanence',
+                    'Nibiru, the Primal Being',
+                    'Droll & Lock Bird',
+                    // Generic disruption
+                    'Called by the Grave',
+                    'Crossout Designator',
+                    'Triple Tactics Talent',
+                    'Triple Tactics Thrust',
+                    // Defensive options
+                    'Solemn Judgment',
+                    'Solemn Strike',
+                    // Generic boss monsters
+                    'Accesscode Talker',
+                    'Apollousa, Bow of the Goddess',
+                    'Borreload Savage Dragon'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Flip effect-based control and disruption with W Nebula Meteorite as the cornerstone Field Spell',
+                    supportReliance: 'moderate (benefits from Rank 4 Xyz toolbox and LIGHT support like Honest)',
+                    adaptability: 'low (highly linear strategy centered on Flip effects and field spell dependency)',
+                    resilience: 'low (extremely vulnerable to backrow removal and disruption due to setup-heavy plays)',
+                    keyLoss: 'King of the Feral Imps prohibition reducing consistency in searching Worm Xex',
+                    alternativeStrategy: 'utilizing generic Reptile support and alternative Rank 4 Xyz monsters as consistency tools'
+                }
             });
         });
     </script>

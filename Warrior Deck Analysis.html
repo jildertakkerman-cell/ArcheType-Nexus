@@ -344,41 +344,12 @@
             </div>
         </section>
 
-         <!-- TCG Banlist Status Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-gray-300 mb-4 text-center">
-                    <strong class="text-red-500 font-bold">CRITICAL IMPACT:</strong> The Warrior combo engine has been significantly impacted by the TCG banlist.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-red-500 mb-2">Key Forbidden Cards</h4>
-                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <li><strong class="text-red-400">Isolde, Two Tales of the Noble Knights (0 copies)</strong> - The central engine is banned.</li>
-                            <li><strong class="text-red-400">Original Sinful Spoils - Snake-Eye (0 copies)</strong> - Disables the powerful Diabellstar starter engine.</li>
-                            <li><strong class="text-red-400">Linkross (0 copies)</strong> - A formerly critical combo extender.</li>
-                        </ul>
-                    </div>
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-yellow-500 mb-2">Key Limited Cards</h4>
-                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                             <li><strong class="text-yellow-400">Reinforcement of the Army (1 copy)</strong> - The most versatile searcher is at one.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="mt-4 p-3 bg-red-900 bg-opacity-30 rounded border-l-4 border-red-500">
-                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> The prohibition of key cards like <strong class="text-accent">Isolde</strong> and <strong class="text-accent">Original Sinful Spoils - Snake-Eye</strong> has effectively dismantled the modern Warrior combo engine as described. While individual Warrior archetypes like Infernoble Knights still exist, they must rely on entirely different, and generally less powerful, strategies to function. The "Warrior Pile" deck is no longer a top-tier contender in its classic form.</p>
-                </div>
-            </div>
-        
-
         <!-- TCG Banlist Impact Section -->
         <section>
             <div id="banlist-status">
                 <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
             </div>
-        </section></section>
+        </section>
 
     </div>
     <script>
@@ -460,13 +431,56 @@
                 'angelica-ring-img-container': "Angelica's Angelic Ring"
             };
 
-
-            // Render banlist section
-            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Warrior', {
-                relatedCards: []
-            });});
+            // Fetch all cards with "Warrior" in their name dynamically
+            console.log('[Warrior Page] Fetching cards with "Warrior" in name...');
+            try {
+                const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=Warrior');
+                const data = await response.json();
+                const warriorCards = data.data.map(card => card.name);
+                console.log(`[Warrior Page] Found ${warriorCards.length} cards with "Warrior" in name`);
+                
+                // Add key Warrior support cards
+                const warriorSupport = [
+                    'Isolde, Two Tales of the Noble Knights',
+                    'Reinforcement of the Army'
+                ];
+                
+                // Combine warrior name cards with support cards
+                const allCards = [...warriorCards, ...warriorSupport];
+                console.log(`[Warrior Page] Total cards to check: ${allCards.length}`);
+                
+                // Use renderBanlistSection with the fetched warrior cards
+                await CardLoader.renderBanlistSection('banlist-status', allCards, {
+                    archetypeName: 'Warrior',
+                    archetypeTraits: {
+                        coreMechanic: 'diverse collection of Warrior-type monsters with various strategies and mechanics',
+                        supportReliance: 'variable support reliance (some cards are self-contained, others work within specific archetypes)',
+                        adaptability: 'extremely high adaptability (Warrior cards span multiple archetypes and playstyles)',
+                        resilience: 'varies by specific archetype and strategy',
+                        keyLoss: 'specific powerful Warrior cards or support',
+                        alternativeStrategy: 'exploring different Warrior-based archetypes or hybrid builds'
+                    }
+                });
+            } catch (error) {
+                console.error('[Warrior Page] Error fetching Warrior cards:', error);
+                // Fallback to empty list if fetch fails
+                await CardLoader.renderBanlistSection('banlist-status', [], {
+                    archetypeName: 'Warrior',
+                    archetypeTraits: {
+                        coreMechanic: 'diverse collection of Warrior-type monsters',
+                        supportReliance: 'variable',
+                        adaptability: 'high',
+                        resilience: 'varies',
+                        keyLoss: 'specific cards',
+                        alternativeStrategy: 'exploring alternatives'
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
+
+
 
 
