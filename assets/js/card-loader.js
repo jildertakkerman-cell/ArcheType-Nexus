@@ -673,10 +673,10 @@ const CardLoader = (function () {
                                                 ${cards.length} core cards
                                             </button>
                                             <span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600" style="font-size: 0.65rem;">
-                                                <strong class="text-gray-200">Cards checked:</strong><br>
+                                                <strong class="text-gray-200">Core cards checked:</strong><br>
                                                 ${cards.sort().map(c => `• ${c}`).join('<br>')}
                                             </span>
-                                            analyzed • 
+                                            ${merged.length > 0 ? ` + <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">${merged.length} related cards</button><span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600" style="font-size: 0.65rem;"><strong class="text-gray-200">Related cards checked:</strong><br>${merged.sort().map(c => `• ${c}`).join('<br>')}</span>` : ''} analyzed • 
                                             <strong class="text-gray-200">0 restrictions</strong> found • 
                                             All cards legal at <strong class="text-gray-200">3 copies</strong>
                                         </p>
@@ -772,10 +772,10 @@ const CardLoader = (function () {
                                             ${cards.length} core cards
                                         </button>
                                         <span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600" style="font-size: 0.65rem;">
-                                            <strong class="text-gray-200">Cards checked:</strong><br>
+                                            <strong class="text-gray-200">Core cards checked:</strong><br>
                                             ${cards.sort().map(c => `• ${c}`).join('<br>')}
                                         </span>
-                                        analyzed • 
+                                        ${merged.length > 0 ? ` + <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">${merged.length} related cards</button><span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600" style="font-size: 0.65rem;"><strong class="text-gray-200">Related cards checked:</strong><br>${merged.sort().map(c => `• ${c}`).join('<br>')}</span>` : ''} analyzed • 
                                         <strong class="text-gray-200">0 archetype restrictions</strong> • 
                                         <strong class="text-gray-300">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''} restricted</strong>
                                     </p>
@@ -954,10 +954,10 @@ const CardLoader = (function () {
                                             ${cards.length} core cards
                                         </button>
                                         <span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;">
-                                            <strong class="text-gray-200">Cards checked:</strong><br>
+                                            <strong class="text-gray-200">Core cards checked:</strong><br>
                                             ${cards.sort().map(c => `• ${c}`).join('<br>')}
                                         </span>
-                                        analyzed • 
+                                        ${merged.length > 0 ? ` + <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">${merged.length} related cards</button><span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;"><strong class="text-gray-200">Related cards checked:</strong><br>${merged.sort().map(c => `• ${c}`).join('<br>')}</span>` : ''} analyzed • 
                                         <strong class="text-gray-200">${totalRestricted} total restriction${totalRestricted !== 1 ? 's' : ''}</strong> found
                                         ${totalArchetypeRestricted > 0 ? ` • <strong class="text-gray-300">${totalArchetypeRestricted} archetype card${totalArchetypeRestricted !== 1 ? 's' : ''}</strong>` : ''}
                                         ${totalRelatedRestricted > 0 ? ` • <strong class="text-gray-300">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''}</strong>` : ''}
