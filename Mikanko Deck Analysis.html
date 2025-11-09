@@ -222,14 +222,6 @@
             </div>
         </section>
 
-        <!-- TCG Banlist Status Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
-            <div id="banlist-status" class="card p-6">
-                <!-- Banlist content will be dynamically generated here -->
-            </div>
-        </section>
-
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Cast of Dancers: Core Cards</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -377,29 +369,35 @@
             </div>
         </section>
 
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
             <div id="banlist-status" class="card p-6">
-                <p class="text-center text-lg text-yellow-100">Loading banlist status...</p>
+                <!-- Banlist content will be dynamically generated here -->
             </div>
         </section>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+
+                        CardLoader.loadCards({
+                'arabesque-img-container': 'Mikanko Water Arabesque',
+                'hare-img-container': 'Ha-Re the Sword Mikanko',
+                'kaiju-img-container': 'Gameciel, the Sea Turtle Kaiju',
+                'ohime-img-container': 'Ohime the Manifested Mikanko',
+            });    
             // --- Render Banlist Section ---
-            await CardLoader.renderBanlistSection('banlist-status', [
-                'Ha-Re the Sword Mikanko',
-                'Hu-Li the Jewel Mikanko',
-                'Ohime the Manifested Mikanko',
-                'Arabesque of the Mikanko',
-                'Mikanko Water Arabesque',
-                'Mikanko Fire Dance',
-                'Mikanko Spiritwalk',
-                'Mikanko Reflection Rondo'
-            ], {
-                archetypeName: 'Mikanko',
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Mikanko', {
                 relatedCards: [
+                    'Ha-Re the Sword Mikanko',
+                    'Hu-Li the Jewel Mikanko',
+                    'Ohime the Manifested Mikanko',
+                    'Arabesque of the Mikanko',
+                    'Mikanko Water Arabesque',
+                    'Mikanko Fire Dance',
+                    'Mikanko Spiritwalk',
+                    'Mikanko Reflection Rondo',
                     'Ikalusian the Immersive Mikanko',
                     'Preparation of Rites',
                     'Pre-Preparation of Rites',
@@ -481,75 +479,10 @@
                     setCanvasSize();
                     initParticles();
                 });
-            }
+            }   
 
-            CardLoader.loadCards({
-                'arabesque-img-container': 'Mikanko Water Arabesque',
-                'hare-img-container': 'Ha-Re the Sword Mikanko',
-                'kaiju-img-container': 'Gameciel, the Sea Turtle Kaiju',
-                'ohime-img-container': 'Ohime the Manifested Mikanko',
-            });
 
-            // --- BANLIST CHECKER ---
-            const mikankoCards = [
-                "Ohime the Manifested Mikanko", "Ha-Re the Sword Mikanko", "Hu-Li the Jewel Mikanko",
-                "Ni-Ni the Mirror Mikanko", "Mikanko Water Arabesque", "The Great Mikanko Ceremony",
-                "Mikanko Rivalry", "Mikanko Reflection Rondo"
-            ];
-
-            const banlistAPI = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg';
-            const banlistContainer = document.getElementById('banlist-status');
-
-            async function checkBanlist() {
-                try {
-                    const response = await fetch(banlistAPI);
-                    const data = await response.json();
-                    const bannedCards = data.data;
-
-                    let limitedCards = [];
-                    let semiLimitedCards = [];
-                    let forbiddenCards = [];
-
-                    bannedCards.forEach(card => {
-                        if (mikankoCards.includes(card.name)) {
-                            if (card.banlist_info.ban_tcg === 'Limited') {
-                                limitedCards.push(card.name);
-                            } else if (card.banlist_info.ban_tcg === 'Semi-Limited') {
-                                semiLimitedCards.push(card.name);
-                            } else if (card.banlist_info.ban_tcg === 'Forbidden') {
-                                forbiddenCards.push(card.name);
-                            }
-                        }
-                    });
-
-                    let statusHTML = `
-                        <p class="text-center text-lg mb-4">
-                            As of the current TCG format, the Mikanko archetype is almost entirely unrestricted, allowing it to operate at full capacity.
-                        </p>
-                    `;
-                    
-                    if (limitedCards.length > 0 || semiLimitedCards.length > 0 || forbiddenCards.length > 0) {
-                         statusHTML += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">`;
-                        if(forbiddenCards.length > 0) statusHTML += `<div><h4 class="text-lg font-bold text-red-400 mb-2">Forbidden (0 copies)</h4><ul class="list-disc list-inside text-sm text-blue-200">${forbiddenCards.map(c => `<li>${c}</li>`).join('')}</ul></div>`;
-                        if(limitedCards.length > 0) statusHTML += `<div><h4 class="text-lg font-bold text-yellow-400 mb-2">Limited (1 copy)</h4><ul class="list-disc list-inside text-sm text-blue-200">${limitedCards.map(c => `<li>${c}</li>`).join('')}</ul></div>`;
-                        if(semiLimitedCards.length > 0) statusHTML += `<div><h4 class="text-lg font-bold text-blue-400 mb-2">Semi-Limited (2 copies)</h4><ul class="list-disc list-inside text-sm text-blue-200">${semiLimitedCards.map(c => `<li>${c}</li>`).join('')}</ul></div>`;
-                        statusHTML += `</div>`;
-                    } else {
-                         statusHTML += `
-                            <div class="mt-4 p-3 bg-green-900 bg-opacity-50 rounded border-l-4 border-green-500">
-                                <p class="text-sm text-green-200"><strong class="font-bold">Fully Unrestricted:</strong> All core "Mikanko" cards are currently at 3 copies per deck, allowing for maximum consistency and power.</p>
-                            </div>
-                         `;
-                    }
-                    banlistContainer.innerHTML = statusHTML;
-
-                } catch (error) {
-                    console.error("Failed to fetch banlist data:", error);
-                    banlistContainer.innerHTML = '<p class="text-center text-red-400">Could not load banlist status. Please check your connection.</p>';
-                }
-            }
-
-            checkBanlist();
+      
         });
     </script>
     <div id="card-popup"></div>

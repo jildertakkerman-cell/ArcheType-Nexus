@@ -16230,7 +16230,7 @@ const archetypes = [
     },
 
     {
-        name: 'Live?Twin',
+        name: 'Live★Twin',
         description: 'A LIGHT Cyberse archetype focused on Link summoning and cyber-idol themes, utilizing twin monster pairs and streaming-based effects for consistent field presence and disruption.',
         filepath: 'Live Twin Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -21407,6 +21407,25 @@ const archetypes = [
                         <circle cx="60" cy="40" r="3" fill="#66fcf1"/>
                         <circle cx="50" cy="55" r="4" fill="#66fcf1"/>
                         <text x="50" y="75" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">PSEUDO</text>
+                    </svg>`
+    },
+    {
+        name: 'Psychic',
+        description: 'The Psychic monster type represents one of the most dynamic and evolving design philosophies in Yu-Gi-Oh!, featuring versatile engines capable of enabling vast strategies through psionic minds and powerful archetypes like P.U.N.K., Kozmo, and Virtual World.',
+        filepath: 'Psychic Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="psychicGrad" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a0f30;stop-opacity:1" />
+                            </radialGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#psychicGrad)" stroke="#a855f7" stroke-width="2"/>
+                        <path d="M30 40 Q40 30 50 35 Q60 30 70 40 Q65 50 70 60 Q60 70 50 65 Q40 70 30 60 Q35 50 30 40 Z" fill="none" stroke="#a855f7" stroke-width="3"/>
+                        <circle cx="42" cy="42" r="4" fill="#a855f7"/>
+                        <circle cx="58" cy="42" r="4" fill="#a855f7"/>
+                        <circle cx="50" cy="58" r="5" fill="#a855f7"/>
+                        <text x="50" y="80" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">PSYCHIC</text>
                     </svg>`
     },
     {

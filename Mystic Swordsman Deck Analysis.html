@@ -455,35 +455,10 @@
         </section>
 
         <!-- TCG Banlist Status Section -->
+        <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.2s;">
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-gray-300 mb-4 text-center">
-                    <strong class="text-yellow-400 font-bold">PARTIALLY RESTRICTED:</strong> The core "Mystic Swordsman" archetype is unlimited, but its key consistency tool is Limited.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-yellow-400 mb-2">Limited Cards (1 per deck)</h4>
-                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <li><strong class="text-yellow-300 lore-link" data-card-name="Reinforcement of the Army">Reinforcement of the Army</strong> - The deck's primary searcher.</li>
-                        </ul>
-                    </div>
-                    <div class="card combo-step-card p-4">
-                        <h4 class="text-lg font-bold text-green-400 mb-2">Unlimited Cards (3 per deck)</h4>
-                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-300">
-                            <li>All "Mystic Swordsman" monsters (LV2, LV4, LV6)</li>
-                            <li><strong class="lore-link" data-card-name="Level Up!">Level Up!</strong></li>
-                            <li><strong class="lore-link" data-card-name="Book of Moon">Book of Moon</strong></li>
-                            <li><strong class="lore-link" data-card-name="Giant Rat">Giant Rat</strong></li>
-                            <li><strong class="lore-link" data-card-name="The Warrior Returning Alive">The Warrior Returning Alive</strong></li>
-                            <li><strong class="lore-link" data-card-name="Nobleman of Crossout">Nobleman of Crossout</strong></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
-                    <p class="text-sm text-gray-300"><strong>Meta Implications:</strong> With <strong class="text-accent lore-link" data-card-name="Reinforcement of the Army">Reinforcement of the Army</strong> at 1, the deck loses significant consistency. It must rely more on drawing <strong class="text-accent lore-link" data-card-name="Mystic Swordsman LV2">Mystic Swordsman LV2</strong> naturally or using slower methods like <strong class="text-accent lore-link" data-card-name="Giant Rat">Giant Rat</strong>, hindering its ability to execute its core "Level Up!" combo reliably.</p>
-                </div>
-            </div>
+            <div id="banlist-status" class="card p-6"></div>
         </section>
     </div>
 
@@ -497,6 +472,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+            CardLoader.loadCards({
+                'ms-lv2-img-container': 'Mystic Swordsman LV2',
+                'ms-lv4-img-container': 'Mystic Swordsman LV4',
+                'ms-lv6-img-container': 'Mystic Swordsman LV6',
+                'ms-lv2-combo-img': 'Mystic Swordsman LV2',
+                'ms-lv4-combo-img': 'Mystic Swordsman LV4',
+                'book-of-moon-img': 'Book of Moon',
+                'ms-lv4-strike-img': 'Mystic Swordsman LV4'
+            });
             // --- INK WASH ANIMATION ---
             const canvas = document.getElementById('ink-canvas');
             if (canvas) {
@@ -566,144 +550,32 @@
                     setCanvasSize();
                     initParticles();
                 });
-            }
-
-            // --- CARD LOADING ---
-            // This relies on card-loader.js being loaded and the existence of the hidden div
-            if (typeof CardLoader !== 'undefined') {
-                // Load visible images and attach click listeners to their containers
-                const visibleCardsToLoad = {
-                    'ms-lv2-img-container': 'Mystic Swordsman LV2',
-                    'ms-lv4-img-container': 'Mystic Swordsman LV4',
-                    'ms-lv6-img-container': 'Mystic Swordsman LV6',
-                    'ms-lv2-combo-img': 'Mystic Swordsman LV2',
-                    'ms-lv4-combo-img': 'Mystic Swordsman LV4',
-                    'book-of-moon-img': 'Book of Moon',
-                    'ms-lv4-strike-img': 'Mystic Swordsman LV4',
-                };
-
-                // Load hidden data for text link popups
-                const hiddenCardsToLoad = {
-                    'level-up-img': 'Level Up!',
-                    'rota-img': 'Reinforcement of the Army',
-                    'giant-rat-img': 'Giant Rat',
-                    'warrior-returning-img': 'The Warrior Returning Alive',
-                    'nobleman-img': 'Nobleman of Crossout',
-                };
-                
-                // Combine and load all card data. The hidden containers will ensure the data is cached.
-                CardLoader.loadCards({...visibleCardsToLoad, ...hiddenCardsToLoad});
-
-                // --- Local Popup Logic for Text Links ---
-                const popup = document.getElementById('card-popup');
-                let activePopup = null;
-                let lastShown = 0;
-                let currentCard = null;
-
-                function hidePopup() {
-                    if (Date.now() - lastShown < 100) return;
-                    if (activePopup) {
-                        activePopup.style.opacity = 0;
-                        setTimeout(() => { 
-                            if (activePopup) activePopup.style.display = 'none'; 
-                        }, 200);
-                        activePopup = null;
-                        currentCard = null;
-                    }
-                }
-
-                function movePopup(event) {
-                    if (!popup) return;
-                    
-                    const popupWidth = popup.offsetWidth;
-                    const popupHeight = popup.offsetHeight;
-                    const cushion = 20;
-
-                    let x = event.clientX + cushion;
-                    let y = event.clientY + cushion;
-
-                    if (x + popupWidth > window.innerWidth) {
-                        x = event.clientX - popupWidth - cushion;
-                    }
-                    if (y + popupHeight > window.innerHeight) {
-                        y = event.clientY - popupHeight - cushion;
-                    }
-
-                    popup.style.left = `${x}px`;
-                    popup.style.top = `${y}px`;
-                }
-
-                function showTextPopup(event, cardName) {
-                    if (currentCard === cardName) {
-                        hidePopup();
-                        return;
-                    }
-                    
-                    hidePopup();
-                    if (!popup || typeof CardLoader === 'undefined') return;
-                    
-                    const cardInfo = CardLoader.getCachedCard(cardName);
-                    
-                    // If card data is still missing (shouldn't happen if CardLoader.loadCards finished),
-                    // try to preload it, and then call showTextPopup again.
-                    if (!cardInfo) {
-                        CardLoader.preloadCards([cardName]).then(() => {
-                            showTextPopup(event, cardName);
-                        });
-                        return;
-                    }
-
-                    // Build stats string
-                    let stats = '';
-                    let atkDef = [];
-                    if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
-                    if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
-                    if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
-                    if (atkDef.length > 0) {
-                        stats = `<p id="card-popup-stats" class="mt-2 font-bold">${atkDef.join(' ')}</p>`;
-                    }
-                    
-                    const cardType = cardInfo.type.includes('Monster') 
-                        ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]` 
-                        : `[${cardInfo.race} Card]`;
-
-                    popup.innerHTML = `
-                        <div>
-                            <h3>${cardInfo.name}</h3>
-                            <p class="text-xs text-yellow-100">${cardType}</p>
-                            <div class="w-full h-px bg-[#7a5f3f] my-2"></div>
-                            <p class="text-xs text-white">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
-                            ${stats}
-                        </div>
-                    `;
-                    
-                    movePopup(event);
-                    popup.style.display = 'block';
-                    setTimeout(() => { popup.style.opacity = 1; }, 10);
-                    activePopup = popup;
-                    lastShown = Date.now();
-                    currentCard = cardName;
-                }
-
-                document.querySelectorAll('.lore-link').forEach(link => {
-                    const cardName = link.getAttribute('data-card-name');
-                    if (cardName) {
-                        link.addEventListener('click', (event) => {
-                            event.stopPropagation();
-                            showTextPopup(event, cardName);
-                        });
-                    }
-                });
-
-                // Global click to hide
-                document.addEventListener('click', hidePopup);
-            }
+            }            
         
 
             // Render banlist section
             await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Mystic Swordsman', {
-                relatedCards: []
-            });});
+                relatedCards: [
+                    'Mystic Swordsman LV2',
+                    'Mystic Swordsman LV4',
+                    'Mystic Swordsman LV6',
+                    'Level Up!',
+                    'Book of Moon',
+                    'Giant Rat',
+                    'The Warrior Returning Alive',
+                    'Nobleman of Crossout',
+                    'Reinforcement of the Army'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Mystic Swordsman monsters punish face-down monsters and rely on "Level Up!" to climb to higher levels.',
+                    supportReliance: 'The deck relies on generic Warrior and Level support cards for consistency.',
+                    adaptability: 'Functions best in formats with many set monsters and can pivot to control with Book of Moon and Giant Rat.',
+                    resilience: 'No direct restrictions on Mystic Swordsman monsters, but key support cards like Reinforcement of the Army are limited.',
+                    keyLoss: 'Losing Reinforcement of the Army or Level Up! would severely impact consistency and combo potential.',
+                    alternativeStrategy: 'Use Giant Rat and The Warrior Returning Alive for recursion and board presence.'
+                }
+            });
+        });
     </script>
 </body>
 </html>

@@ -450,7 +450,11 @@
             if (canvas) {
                 const ctx = canvas.getContext('2d');
                 let particles = [];
-                const numParticles = 200; // Increased particle count
+                const numParticles = 50; // Reduced from 200 for better performance
+                let animationId;
+                let lastTime = 0;
+                const targetFPS = 30; // Limit to 30 FPS instead of 60
+                const frameInterval = 1000 / targetFPS;
 
                 const setCanvasSize = () => {
                     canvas.width = canvas.offsetWidth;
@@ -461,10 +465,11 @@
                     constructor() {
                         this.x = Math.random() * canvas.width;
                         this.y = Math.random() * canvas.height;
-                        this.vx = (Math.random() - 0.5) * 0.3; // Slower movement
+                        this.vx = (Math.random() - 0.5) * 0.3;
                         this.vy = (Math.random() - 0.5) * 0.3;
-                        this.size = Math.random() * 1.5 + 0.5; // Smaller stars
-                        this.alpha = Math.random() * 0.7 + 0.3; // Brighter stars
+                        this.size = Math.random() * 1.5 + 0.5;
+                        this.alpha = Math.random() * 0.7 + 0.3;
+                        this.connections = []; // Cache nearby particles
                     }
 
                     update() {
@@ -475,14 +480,15 @@
                     }
 
                     draw() {
+                        ctx.save();
                         ctx.globalAlpha = this.alpha;
                         ctx.fillStyle = '#fef08a';
-                        // Add a glowing effect
                         ctx.shadowBlur = 8;
                         ctx.shadowColor = '#fef08a';
                         ctx.beginPath();
                         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                         ctx.fill();
+                        ctx.restore();
                     }
                 }
 
@@ -493,45 +499,63 @@
                     }
                 }
 
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.shadowBlur = 0; // Reset shadow for lines
-                    
-                    particles.forEach(p => {
-                        p.update();
-                        p.draw();
-                    });
+                function animate(currentTime) {
+                    if (currentTime - lastTime >= frameInterval) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        
+                        // Draw particles
+                        particles.forEach(p => {
+                            p.update();
+                            p.draw();
+                        });
 
-                    // Fainter, more numerous connecting lines
-                    ctx.globalAlpha = 0.03;
-                    ctx.strokeStyle = '#93c5fd';
-                    for (let i = 0; i < particles.length; i++) {
-                        for (let j = i + 1; j < particles.length; j++) {
-                            const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
-                            if (dist < 120) {
-                                ctx.beginPath();
-                                ctx.moveTo(particles[i].x, particles[i].y);
-                                ctx.lineTo(particles[j].x, particles[j].y);
-                                ctx.stroke();
+                        // Optimized connecting lines - only check nearby particles
+                        ctx.save();
+                        ctx.globalAlpha = 0.03;
+                        ctx.strokeStyle = '#93c5fd';
+                        ctx.lineWidth = 0.5;
+                        
+                        for (let i = 0; i < particles.length; i++) {
+                            const p1 = particles[i];
+                            // Only check next 10 particles to reduce complexity
+                            for (let j = i + 1; j < Math.min(i + 11, particles.length); j++) {
+                                const p2 = particles[j];
+                                const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                                if (dist < 80) { // Reduced connection distance
+                                    ctx.beginPath();
+                                    ctx.moveTo(p1.x, p1.y);
+                                    ctx.lineTo(p2.x, p2.y);
+                                    ctx.stroke();
+                                }
                             }
                         }
+                        ctx.restore();
+                        
+                        lastTime = currentTime;
                     }
                     
-                    requestAnimationFrame(animate);
+                    animationId = requestAnimationFrame(animate);
                 }
 
                 setCanvasSize();
                 initParticles();
-                animate();
+                animate(0);
 
                 window.addEventListener('resize', () => {
                     setCanvasSize();
                     initParticles();
                 });
+
+                // Cleanup on page unload
+                window.addEventListener('beforeunload', () => {
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                    }
+                });
             }
 
 
-            CardLoader.loadCards({
+            await CardLoader.loadCards({
                 'dritte-img-container': 'Valkyrie Dritte',
                 'ride-img-container': 'Ride of the Valkyries',
                 'mischief-img-container': 'Mischief of the Time Goddess',
@@ -542,7 +566,31 @@
 
             // Render banlist section
             await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Valkyrie', {
-                relatedCards: []
+                relatedCards: [
+                    'Valkyrie Dritte',
+                    'Ride of the Valkyries',
+                    'Mischief of the Time Goddess',
+                    'Valkyrie Erda',
+                    'Valkyrie Brunhilde',
+                    'Valkyrie Chur',
+                    'Valkyrie Funfte',
+                    'Goddess Verdande\'s Guidance',
+                    'Goddess Urd\'s Verdict',
+                    'Goddess Skuld\'s Oracle',
+                    'Nordic Relic Laevateinn',
+                    'Nordic Relic Brisingamen',
+                    'Nordic Relic Megingjord',
+                    'Solemn Judgment',
+                    'Bottomless Trap Hole'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'LIGHT Fairy archetype focused on Nordic mythology themes, centered around Valkyrie monsters that can Special Summon themselves from the hand by sending Nordic Relic Equip Spells to the Graveyard. The deck emphasizes control and disruption through powerful Trap Cards and high-level Synchro/Xyz Summons.',
+                    supportReliance: 'High reliance on Nordic Relic support cards for consistency and enabling Special Summons. The archetype benefits from generic LIGHT Fairy support but requires specific Nordic Relics to function. Trap Card support like Solemn Judgment enhances the control elements.',
+                    adaptability: 'Moderate adaptability with multiple summoning methods (Synchro, Xyz, Link) and various disruption tools. Can pivot between aggressive plays with Ride of the Valkyries or control strategies with Trap Cards. The Nordic Relic engine provides flexibility in deck construction.',
+                    resilience: 'Good resilience due to Trap Card protection and the ability to recover Nordic Relics from the Graveyard. The archetype can maintain board presence through multiple summoning options. However, it\'s vulnerable to cards that prevent Trap activation or destroy backrow.',
+                    keyLoss: 'Nordic Relic Laevateinn is Limited in the TCG, reducing the deck\'s ability to search key pieces. Restrictions on Valkyrie Dritte would limit the primary extender. If Solemn Judgment were limited, the control elements would be significantly weakened.',
+                    alternativeStrategy: 'Focus on a Trap-heavy control build using multiple Solemn cards and Nordic Relic support for disruption, or emphasize Synchro/Xyz climbing with Ride of the Valkyries for aggressive plays. The Mischief engine provides additional combo potential for explosive turns.'
+                }
             });});
     </script>
 </body>

@@ -371,67 +371,16 @@
             </div>
         </section>
 
-        <!-- TCG Banlist Status Section -->
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
-            <div class="card p-6">
-                <p class="text-purple-200 mb-6 text-center">
-                    The Zombie World strategy remains highly viable, with most of its core and tech cards available. Status is fetched live from the TCG banlist API.
-                </p>
-                <div id="status-loading" class="text-center text-accent">
-                    <i class="fas fa-spinner fa-spin fa-2x"></i>
-                    <p class="mt-2">Fetching current banlist status...</p>
-                </div>
-                <div id="banlist-status-content" style="display: none;" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-center">
-                    <!-- Core Cards -->
-                    <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-white mb-2">Zombie World</h4>
-                        <span id="status-zombie-world"></span>
-                    </div>
-                    <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-white mb-2">Doomking Balerdroch</h4>
-                        <span id="status-doomking"></span>
-                    </div>
-                    <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-white mb-2">Uni-Zombie</h4>
-                        <span id="status-uni-zombie"></span>
-                    </div>
-                    <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-white mb-2">Shiranui Solitaire</h4>
-                        <span id="status-solitaire"></span>
-                    </div>
-                    <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-white mb-2">Mezuki</h4>
-                        <span id="status-mezuki"></span>
-                    </div>
-                    <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-white mb-2">Glow-Up Bloom</h4>
-                        <span id="status-bloom"></span>
-                    </div>
-                    <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-white mb-2">Necroworld Banshee</h4>
-                        <span id="status-banshee"></span>
-                    </div>
-                    <!-- Tech Cards -->
-                    <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-white mb-2">Super Polymerization</h4>
-                        <span id="status-super-poly"></span>
-                    </div>
-                    <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-white mb-2">Rivalry of Warlords</h4>
-                        <span id="status-rivalry"></span>
-                    </div>
-                    <div class="combo-step-card p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-white mb-2">Eldlich the Golden Lord</h4>
-                        <span id="status-eldlich"></span>
-                    </div>
-                </div>
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16">
+            <div id="banlist-status" class="container mx-auto">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
             </div>
         </section>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // --- ZOMBIE MIASMA ANIMATION ---
             const canvas = document.getElementById('miasma-canvas');
             if (canvas) {
@@ -497,94 +446,37 @@
                 });
             }
 
-            // --- BANLIST FETCHER SCRIPT ---
-            async function fetchBanlistStatus() {
-                const banlistContainer = document.getElementById('banlist-status-content');
-                const statusLoading = document.getElementById('status-loading');
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=TCG');
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    const data = await response.json();
-                    
-                    const banlist = data.data;
-                    const cardStatus = {};
-                    banlist.forEach(card => {
-                        cardStatus[card.name] = card.banlist_info.ban_tcg;
-                    });
+            await CardLoader.loadCards(cardsToLoad);
 
-                    const cardsToUpdate = {
-                        'status-zombie-world': 'Zombie World',
-                        'status-doomking': 'Doomking Balerdroch',
-                        'status-uni-zombie': 'Uni-Zombie',
-                        'status-solitaire': 'Shiranui Solitaire',
-                        'status-mezuki': 'Mezuki',
-                        'status-bloom': 'Glow-Up Bloom',
-                        'status-banshee': 'Necroworld Banshee',
-                        'status-super-poly': 'Super Polymerization',
-                        'status-rivalry': 'Rivalry of Warlords',
-                        'status-eldlich': 'Eldlich the Golden Lord'
-                    };
 
-                    const statusColors = {
-                        'Limited': 'text-yellow-400',
-                        'Semi-Limited': 'text-blue-400',
-                        'Banned': 'text-red-500',
-                        'Unlimited': 'text-green-400'
-                    };
-
-                    const statusIcons = {
-                        'Limited': '<i class="fas fa-exclamation-circle ml-1"></i>',
-                        'Semi-Limited': '<i class="fas fa-exclamation-triangle ml-1"></i>',
-                        'Banned': '<i class="fas fa-ban ml-1"></i>',
-                        'Unlimited': '<i class="fas fa-check-circle ml-1"></i>'
-                    };
-
-                    Object.entries(cardsToUpdate).forEach(([elementId, cardName]) => {
-                        const element = document.getElementById(elementId);
-                        if (element) {
-                            const status = cardStatus[cardName] || 'Unlimited';
-                            const color = statusColors[status] || 'text-green-400';
-                            const icon = statusIcons[status] || statusIcons['Unlimited'];
-                            element.className = `font-bold ${color}`;
-                            element.innerHTML = `${status} ${icon}`;
-                        }
-                    });
-
-                    if (statusLoading) statusLoading.style.display = 'none';
-                    if (banlistContainer) banlistContainer.style.display = 'grid'; // Use grid to match the layout
-
-                } catch (error) {
-                    console.error('Failed to fetch banlist data:', error);
-                    if (statusLoading) {
-                        statusLoading.innerHTML = '<p class="text-red-400"><i class="fas fa-times-circle mr-2"></i>Failed to load banlist data. Please try refreshing.</p>';
-                    }
+            // --- RENDER BANLIST SECTION ---
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Zombie World', {
+                relatedCards: [
+                    'Zombie World',
+                    'Doomking Balerdroch',
+                    'Uni-Zombie',
+                    'Shiranui Solitaire',
+                    'Mezuki',
+                    'Glow-Up Bloom',
+                    'Necroworld Banshee',
+                    'Vampire Sucker',
+                    'Red-Eyes Zombie Dragon Lord',
+                    'Skeletal Dragon Felgrand',
+                    'Super Polymerization',
+                    'Rivalry of Warlords',
+                    'Eldlich the Golden Lord',
+                    'Gozen Match',
+                    'Called by the Grave'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Zombie World is a Zombie-Type archetype that transforms the field into a Zombie World when activated, enabling powerful Zombie Synchro and Xyz Summons. The strategy focuses on milling cards to the Graveyard and reviving powerful Zombie monsters for board control and disruption.',
+                    supportReliance: 'Moderate reliance on Zombie support cards, with strong synergy with Shiranui and other Zombie archetypes. The deck benefits from generic Zombie support like Mezuki and Uni-Zombie for recursion, while maintaining independence from external support cards.',
+                    adaptability: 'High adaptability with multiple summoning options (Synchro, Xyz, Link) and various disruption tools. Can function as a pure Zombie World strategy or hybridize with other Zombie themes. The milling mechanics provide flexibility in deck construction.',
+                    resilience: 'Good resilience due to Graveyard recursion and milling mechanics that maintain resource availability. The archetype can recover from disruption through repeated Zombie World activations and monster revival effects.',
+                    keyLoss: 'Zombie World itself is Limited in the TCG, reducing the deck\'s ability to establish board control. Doomking Balerdroch is also Limited, limiting the primary boss monster. Restrictions on Super Polymerization would impact the deck\'s ability to steal opponent\'s monsters.',
+                    alternativeStrategy: 'Focus on Eldlich variants for a control-oriented build with Zombie World as lockdown, or emphasize Shiranui synergies for a more aggressive milling strategy. The deck can also pivot to pure Zombie beatdown without Zombie World if needed.'
                 }
-            }
-
-            // --- CARD IMAGE FETCHER SCRIPT ---
-            // CardLoader.js is imported in <head>, so we can just call it.
-            // Ensure CardLoader.init() has run, which it should have via its own DOMContentLoaded listener.
-
-            const cardsToLoad = {
-                'uni-zombie-img-container': 'Uni-Zombie',
-                'zombie-world-img-container': 'Zombie World',
-                'doomking-img-container-combo': 'Doomking Balerdroch',
-                'doomking-img-container': 'Doomking Balerdroch',
-                'sucker-img-container': 'Vampire Sucker',
-                // Adding other cards mentioned in the doc
-                'banshee-img-container': 'Necroworld Banshee',
-                'bloom-img-container': 'Glow-Up Bloom',
-                'solitaire-img-container': 'Shiranui Solitaire',
-                'mezuki-img-container': 'Mezuki',
-                'dragon-lord-img-container': 'Red-Eyes Zombie Dragon Lord',
-                'felgrand-img-container': 'Skeletal Dragon Felgrand',
-                'super-poly-img-container': 'Super Polymerization',
-                'rivalry-img-container': 'Rivalry of Warlords'
-            };
-
-            // Call the functions on load
-            fetchBanlistStatus();
-            CardLoader.loadCards(cardsToLoad);
+            });
         });
     </script>
 </body>
