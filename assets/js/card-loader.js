@@ -234,14 +234,32 @@ const CardLoader = (function () {
     /**
      * Display card image in container
      */
-    function displayCardImage(cardInfo, container) {
+    async function displayCardImage(cardInfo, container) {
         const imageUrl = cardInfo.hosted_image_url;
-
         if (!imageUrl) {
             container.innerHTML = `<div class="card-placeholder">${cardInfo.name}</div>`;
             return;
         }
 
+        // Check banlist status
+        let banStatus = null;
+        if (typeof fetchBanlistData === 'function') {
+            // Use cached banlist if available
+            if (!banlistData) banlistData = await fetchBanlistData();
+            banStatus = banlistData[cardInfo.name];
+        }
+
+        // Clear container before rendering
+        container.innerHTML = '';
+
+        // Create wrapper for image and badge
+        const cardWrapper = document.createElement('div');
+        cardWrapper.style.display = 'flex';
+        cardWrapper.style.flexDirection = 'column';
+        cardWrapper.style.alignItems = 'center';
+        cardWrapper.style.width = '100%';
+
+        // Create image element
         const img = document.createElement('img');
         img.src = imageUrl;
         img.alt = cardInfo.name;
@@ -262,8 +280,95 @@ const CardLoader = (function () {
             }
         };
 
-        container.innerHTML = '';
-        container.appendChild(img);
+        cardWrapper.appendChild(img);
+
+        // If banned, add visual indication
+        if (banStatus === 'Forbidden') {
+            container.classList.add('banned-card');
+            const badge = document.createElement('div');
+            badge.className = 'banned-badge';
+            badge.innerHTML = '<i class="fas fa-ban" style="margin-right:4px;font-size:0.8em;vertical-align:-0.1em;"></i>FORBIDDEN';
+            badge.style.position = 'absolute';
+            badge.style.top = '6px';
+            badge.style.right = '6px';
+            badge.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+            badge.style.color = 'white';
+            badge.style.fontWeight = '700';
+            badge.style.padding = '3px 10px';
+            badge.style.borderRadius = '20px';
+            badge.style.fontSize = '0.65rem';
+            badge.style.zIndex = '10';
+            badge.style.pointerEvents = 'none';
+            badge.style.textTransform = 'uppercase';
+            badge.style.letterSpacing = '0.05em';
+            badge.style.boxShadow = '0 4px 12px rgba(220,38,38,0.3), 0 2px 4px rgba(0,0,0,0.2)';
+            badge.style.border = '1px solid rgba(255,255,255,0.2)';
+            badge.style.backdropFilter = 'blur(4px)';
+            container.style.position = 'relative';
+            container.appendChild(cardWrapper);
+            container.appendChild(badge);
+            img.style.border = '2px solid #dc2626';
+            img.style.opacity = '0.6'; // faded effect
+        } else if (banStatus === 'Limited') {
+            container.classList.remove('banned-card');
+            img.style.border = '';
+            img.style.opacity = '0.95'; // slightly faded
+            // Place badge below image inside wrapper
+            const badge = document.createElement('div');
+            badge.className = 'limited-badge';
+            badge.innerHTML = '<span style="font-weight:900;font-size:0.85em;color:#92400e;margin-right:5px;vertical-align:-0.1em;">1</span>LIMITED';
+            badge.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+            badge.style.color = '#92400e';
+            badge.style.fontWeight = '700';
+            badge.style.padding = '3px 10px';
+            badge.style.borderRadius = '16px';
+            badge.style.fontSize = '0.55rem';
+            badge.style.margin = '4px auto 0 auto';
+            badge.style.display = 'block';
+            badge.style.width = 'fit-content';
+            badge.style.textAlign = 'center';
+            badge.style.textTransform = 'uppercase';
+            badge.style.letterSpacing = '0.06em';
+            badge.style.boxShadow = '0 2px 6px rgba(251,191,36,0.3), 0 1px 2px rgba(0,0,0,0.1)';
+            badge.style.border = '1px solid rgba(251,191,36,0.5)';
+            badge.style.pointerEvents = 'none';
+            badge.style.transition = 'transform 0.2s ease';
+            badge.style.transform = 'scale(0.95)';
+            cardWrapper.appendChild(badge);
+            container.appendChild(cardWrapper);
+        } else if (banStatus === 'Semi-Limited') {
+            container.classList.remove('banned-card');
+            img.style.border = '';
+            img.style.opacity = '0.98'; // barely faded
+            // Place badge below image inside wrapper
+            const badge = document.createElement('div');
+            badge.className = 'semilimited-badge';
+            badge.innerHTML = '<span style="font-weight:900;font-size:0.85em;color:#9a3412;margin-right:5px;vertical-align:-0.1em;">2</span>SEMI-LIMITED';
+            badge.style.background = 'linear-gradient(135deg, #fb923c 0%, #ea580c 100%)';
+            badge.style.color = '#9a3412';
+            badge.style.fontWeight = '700';
+            badge.style.padding = '3px 10px';
+            badge.style.borderRadius = '16px';
+            badge.style.fontSize = '0.55rem';
+            badge.style.margin = '4px auto 0 auto';
+            badge.style.display = 'block';
+            badge.style.width = 'fit-content';
+            badge.style.textAlign = 'center';
+            badge.style.textTransform = 'uppercase';
+            badge.style.letterSpacing = '0.06em';
+            badge.style.boxShadow = '0 2px 6px rgba(251,146,60,0.3), 0 1px 2px rgba(0,0,0,0.1)';
+            badge.style.border = '1px solid rgba(251,146,60,0.5)';
+            badge.style.pointerEvents = 'none';
+            badge.style.transition = 'transform 0.2s ease';
+            badge.style.transform = 'scale(0.95)';
+            cardWrapper.appendChild(badge);
+            container.appendChild(cardWrapper);
+        } else {
+            container.classList.remove('banned-card');
+            img.style.border = '';
+            img.style.opacity = '1';
+            container.appendChild(cardWrapper);
+        }
     }
 
     /**
