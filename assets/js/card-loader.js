@@ -246,7 +246,16 @@ const CardLoader = (function () {
         if (typeof fetchBanlistData === 'function') {
             // Use cached banlist if available
             if (!banlistData) banlistData = await fetchBanlistData();
-            banStatus = banlistData[cardInfo.name];
+            // Case-insensitive lookup
+            banStatus = banlistData[cardInfo.name] || (() => {
+                const lowerName = cardInfo.name.toLowerCase();
+                for (const [key, status] of Object.entries(banlistData)) {
+                    if (key.toLowerCase() === lowerName) {
+                        return status;
+                    }
+                }
+                return null;
+            })();
         }
 
         // Clear container before rendering
@@ -254,6 +263,7 @@ const CardLoader = (function () {
 
         // Create wrapper for image and badge
         const cardWrapper = document.createElement('div');
+        cardWrapper.style.position = 'relative';
         cardWrapper.style.display = 'flex';
         cardWrapper.style.flexDirection = 'column';
         cardWrapper.style.alignItems = 'center';
@@ -304,16 +314,16 @@ const CardLoader = (function () {
             badge.style.boxShadow = '0 4px 12px rgba(220,38,38,0.3), 0 2px 4px rgba(0,0,0,0.2)';
             badge.style.border = '1px solid rgba(255,255,255,0.2)';
             badge.style.backdropFilter = 'blur(4px)';
-            container.style.position = 'relative';
-            container.appendChild(cardWrapper);
-            container.appendChild(badge);
+            cardWrapper.appendChild(badge);
             img.style.border = '2px solid #dc2626';
             img.style.opacity = '0.6'; // faded effect
+            container.innerHTML = '';
+            container.appendChild(cardWrapper);
         } else if (banStatus === 'Limited') {
             container.classList.remove('banned-card');
             img.style.border = '';
             img.style.opacity = '0.95'; // slightly faded
-            // Place badge below image inside wrapper
+            // Position badge in bottom left corner of card image
             const badge = document.createElement('div');
             badge.className = 'limited-badge';
             badge.innerHTML = '<span style="font-weight:900;font-size:0.85em;color:#92400e;margin-right:5px;vertical-align:-0.1em;">1</span>LIMITED';
@@ -323,9 +333,9 @@ const CardLoader = (function () {
             badge.style.padding = '3px 10px';
             badge.style.borderRadius = '16px';
             badge.style.fontSize = '0.55rem';
-            badge.style.margin = '4px auto 0 auto';
-            badge.style.display = 'block';
-            badge.style.width = 'fit-content';
+            badge.style.position = 'absolute';
+            badge.style.bottom = '6px';
+            badge.style.left = '6px';
             badge.style.textAlign = 'center';
             badge.style.textTransform = 'uppercase';
             badge.style.letterSpacing = '0.06em';
@@ -334,13 +344,17 @@ const CardLoader = (function () {
             badge.style.pointerEvents = 'none';
             badge.style.transition = 'transform 0.2s ease';
             badge.style.transform = 'scale(0.95)';
+            badge.style.zIndex = '10';
+            badge.style.backdropFilter = 'blur(2px)';
+            badge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.10)';
             cardWrapper.appendChild(badge);
+            container.innerHTML = '';
             container.appendChild(cardWrapper);
         } else if (banStatus === 'Semi-Limited') {
             container.classList.remove('banned-card');
             img.style.border = '';
             img.style.opacity = '0.98'; // barely faded
-            // Place badge below image inside wrapper
+            // Position badge in bottom left corner of card image
             const badge = document.createElement('div');
             badge.className = 'semilimited-badge';
             badge.innerHTML = '<span style="font-weight:900;font-size:0.85em;color:#9a3412;margin-right:5px;vertical-align:-0.1em;">2</span>SEMI-LIMITED';
@@ -350,9 +364,9 @@ const CardLoader = (function () {
             badge.style.padding = '3px 10px';
             badge.style.borderRadius = '16px';
             badge.style.fontSize = '0.55rem';
-            badge.style.margin = '4px auto 0 auto';
-            badge.style.display = 'block';
-            badge.style.width = 'fit-content';
+            badge.style.position = 'absolute';
+            badge.style.bottom = '6px';
+            badge.style.left = '6px';
             badge.style.textAlign = 'center';
             badge.style.textTransform = 'uppercase';
             badge.style.letterSpacing = '0.06em';
@@ -361,12 +375,17 @@ const CardLoader = (function () {
             badge.style.pointerEvents = 'none';
             badge.style.transition = 'transform 0.2s ease';
             badge.style.transform = 'scale(0.95)';
+            badge.style.zIndex = '10';
+            badge.style.backdropFilter = 'blur(2px)';
+            badge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.10)';
             cardWrapper.appendChild(badge);
+            container.innerHTML = '';
             container.appendChild(cardWrapper);
         } else {
             container.classList.remove('banned-card');
             img.style.border = '';
             img.style.opacity = '1';
+            container.innerHTML = '';
             container.appendChild(cardWrapper);
         }
     }
@@ -700,13 +719,29 @@ const CardLoader = (function () {
                 // Fetch real banlist data from API
                 const banlist = await fetchBanlistData();
                 
+                // Helper function for case-insensitive banlist lookup
+                function getBanlistStatus(cardName, banlistMap) {
+                    // First try exact match
+                    if (banlistMap[cardName]) {
+                        return banlistMap[cardName];
+                    }
+                    // Then try case-insensitive match
+                    const lowerName = cardName.toLowerCase();
+                    for (const [key, status] of Object.entries(banlistMap)) {
+                        if (key.toLowerCase() === lowerName) {
+                            return status;
+                        }
+                    }
+                    return null;
+                }
+                
                 // Check which cards are banned
-                const forbidden = cards.filter(c => banlist[c] === 'Forbidden');
-                const limited = cards.filter(c => banlist[c] === 'Limited');
-                const semiLimited = cards.filter(c => banlist[c] === 'Semi-Limited');
-                const relatedForbidden = merged.filter(c => banlist[c] === 'Forbidden');
-                const relatedLimited = merged.filter(c => banlist[c] === 'Limited');
-                const relatedSemiLimited = merged.filter(c => banlist[c] === 'Semi-Limited');
+                const forbidden = cards.filter(c => getBanlistStatus(c, banlist) === 'Forbidden');
+                const limited = cards.filter(c => getBanlistStatus(c, banlist) === 'Limited');
+                const semiLimited = cards.filter(c => getBanlistStatus(c, banlist) === 'Semi-Limited');
+                const relatedForbidden = merged.filter(c => getBanlistStatus(c, banlist) === 'Forbidden');
+                const relatedLimited = merged.filter(c => getBanlistStatus(c, banlist) === 'Limited');
+                const relatedSemiLimited = merged.filter(c => getBanlistStatus(c, banlist) === 'Semi-Limited');
                 
                 const hasRestrictions = forbidden.length > 0 || limited.length > 0 || semiLimited.length > 0;
                 const hasRelatedRestrictions = relatedForbidden.length > 0 || relatedLimited.length > 0 || relatedSemiLimited.length > 0;
@@ -1063,7 +1098,7 @@ const CardLoader = (function () {
                                             ${cards.sort().map(c => `• ${c}`).join('<br>')}
                                         </span>
                                         ${merged.length > 0 ? ` + <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">${merged.length} related cards</button><span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;"><strong class="text-gray-200">Related cards checked:</strong><br>${merged.sort().map(c => `• ${c}`).join('<br>')}</span>` : ''} analyzed • 
-                                        <strong class="text-gray-200">${totalRestricted} total restriction${totalRestricted !== 1 ? 's' : ''}</strong> found
+                                        <strong class="text-gray-200">${totalRestricted} total restriction${totalRestricted !== 1 ? 's' : ''} found
                                         ${totalArchetypeRestricted > 0 ? ` • <strong class="text-gray-300">${totalArchetypeRestricted} archetype card${totalArchetypeRestricted !== 1 ? 's' : ''}</strong>` : ''}
                                         ${totalRelatedRestricted > 0 ? ` • <strong class="text-gray-300">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''}</strong>` : ''}
                                     </p>
