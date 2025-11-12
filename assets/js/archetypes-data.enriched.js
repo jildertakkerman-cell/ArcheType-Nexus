@@ -23,9 +23,8 @@ const archetypes = [
                         <circle cx="50" cy="55" r="4" fill="#f472b6"/>
                         <text x="50" y="75" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">D.D.</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'D/D',
@@ -43,9 +42,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="8" fill="#e0aaff"/>
                         <text x="50" y="57" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">D/D</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mythical beast',
@@ -103,9 +101,8 @@ const archetypes = [
                             <!-- Archetype label -->
                             <text x="50" y="95" text-anchor="middle" font-size="12" fill="#5f4bb6" font-weight="bold">Mythical Beast</text>
                         </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Myutant',
@@ -157,9 +154,8 @@ const archetypes = [
                                 <!-- Archetype label -->
                                 <text x="50" y="95" text-anchor="middle" font-size="12" fill="#004d40" font-weight="bold">Myutant</text>
                             </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Naturia',
@@ -204,16 +200,15 @@ const archetypes = [
                                         <!-- Archetype label -->
                                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#2d6a4f" font-weight="bold">Naturia</text>
                                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
-        name: 'Neo-Spacian',
-        description: 'A unique archetype based around Neo-Spacian monsters and Contact Fusion with Elemental HERO Neos, enabling flexible strategies through multiple fusion forms and diverse card effects.',
-        filepath: 'Neo Spacian Deck Analysis.html',
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    name: 'Neo-Spacian',
+    description: 'A unique archetype based around Neo-Spacian monsters and Contact Fusion with Elemental HERO Neos, enabling flexible strategies through multiple fusion forms and diverse card effects.',
+    filepath: 'Neo Spacian Deck Analysis.html',
+    icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <radialGradient id="neosAura" cx="50%" cy="40%" r="60%">
                 <stop offset="0%" stop-color="#fff" stop-opacity="0.7"/>
@@ -242,10 +237,9 @@ const archetypes = [
         <!-- Archetype label -->
         <text x="50" y="94" text-anchor="middle" font-size="12" fill="#1877c9" font-weight="bold">Neo-Spacian</text>
     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
-    },
+        firstReleaseDate: None,
+        latestReleaseDate: None
+},
     {
         name: 'Nekroz',
         description: 'A WATER Ritual archetype focused on ritual summoning, searching, and versatile monster effects.',
@@ -285,9 +279,8 @@ const archetypes = [
                         </ellipse>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#3a0ca3" font-weight="bold">Nekroz</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dark Magician',
@@ -308,9 +301,8 @@ const archetypes = [
                         <circle cx="50" cy="70" r="8" fill="#7209b7" stroke="#c77dff" stroke-width="2"/>
                         <path d="M42 70 L58 70 M50 62 L50 78" stroke="#e0aaff" stroke-width="2"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dark Scorpion',
@@ -331,9 +323,8 @@ const archetypes = [
                         <circle cx="42" cy="50" r="2" fill="#8b949e"/>
                         <circle cx="58" cy="50" r="2" fill="#8b949e"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dark World',
@@ -345,9 +336,8 @@ const archetypes = [
                         <circle cx="50" cy="35" r="8" fill="#7209b7"/>
                         <path d="M30 65 Q50 80 70 65" stroke="#7209b7" stroke-width="3" fill="none"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dark Lucius',
@@ -368,9 +358,8 @@ const archetypes = [
                         <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">DARK</text>
                         <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LUCIUS</text>
                     </svg>`,
-        firstReleaseDate: '2006-11-15',
-        latestReleaseDate: '2006-11-15'
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dark Blade',
@@ -390,9 +379,8 @@ const archetypes = [
                         <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">DARK</text>
                         <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">BLADE</text>
                     </svg>`,
-        firstReleaseDate: '2004-01-03',
-        latestReleaseDate: '2023-11-17',
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Duston',
@@ -404,9 +392,8 @@ const archetypes = [
                         <path d="M30 30 L35 35 M65 35 L70 30 M30 70 L35 65 M70 70 L65 65" stroke="#e76f51" stroke-width="2"/>
                         <circle cx="50" cy="50" r="8" fill="#e76f51"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Duel Dragon',
@@ -427,9 +414,8 @@ const archetypes = [
                         <text x="50" y="70" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">DUEL</text>
                         <text x="50" y="82" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">DRAGON</text>
                     </svg>`,
-        firstReleaseDate: '2012-03-20',
-        latestReleaseDate: '2015-02-10',
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Earthbound',
@@ -442,9 +428,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="15" fill="none" stroke="#5a189a" stroke-width="2"/>
                         <circle cx="50" cy="50" r="5" fill="#5a189a"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Eldlich',
@@ -561,9 +546,8 @@ const archetypes = [
                             <animate attributeName="r" values="47;49;47" dur="4s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Egyptian God',
@@ -584,9 +568,8 @@ const archetypes = [
                         <text x="50" y="80" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">EGYPTIAN</text>
                         <text x="50" y="90" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">GOD</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -712,9 +695,8 @@ const archetypes = [
                             <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="10s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -940,9 +922,8 @@ const archetypes = [
                                         transform-origin="50 35"/>
                     </path>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Entity',
@@ -964,9 +945,8 @@ const archetypes = [
                         <circle cx="65" cy="65" r="2" fill="#6a5acd"/>
                         <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">ENTITY</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Engine Token',
@@ -987,9 +967,8 @@ const archetypes = [
                         <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">ENGINE</text>
                         <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">TOKEN</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'End of the World',
@@ -1010,9 +989,8 @@ const archetypes = [
                         <text x="50" y="80" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">END OF</text>
                         <text x="50" y="90" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">WORLD</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Endymion',
@@ -1034,9 +1012,8 @@ const archetypes = [
                         <circle cx="25" cy="50" r="4" fill="#fbbf24" opacity="0.9"/>
                         <text x="50" y="56" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SC</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -1151,9 +1128,8 @@ const archetypes = [
                             <animateTransform attributeName="transform" type="rotate" values="10 80 40;-10 80 40;10 80 40" dur="4s" repeatCount="indefinite"/>
                         </path>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -1287,9 +1263,8 @@ const archetypes = [
                             <animateTransform attributeName="transform" type="translate" values="0,0;-25,-10;-50,-20" dur="3s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -1412,9 +1387,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#f8fafc" font-weight="bold">DARK</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -1428,9 +1402,8 @@ const archetypes = [
                         <path d="M25 35 Q50 25 75 35" stroke="#8b5cf6" stroke-width="2" fill="none"/>
                         <path d="M25 65 Q50 75 75 65" stroke="#8b5cf6" stroke-width="2" fill="none"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Exodia',
@@ -1452,9 +1425,8 @@ const archetypes = [
                         <path d="M50 50 L50 30 M50 50 L25 50 M50 50 L75 50 M50 50 L35 75 M50 50 L65 75" stroke="#DAA520" stroke-width="3" opacity="0.8"/>
                         <circle cx="50" cy="50" r="5" fill="#FFFFFF"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Exosister',
@@ -1468,9 +1440,8 @@ const archetypes = [
                         <circle cx="45" cy="35" r="3" fill="#ffd166"/>
                         <circle cx="55" cy="35" r="3" fill="#ffd166"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'F.A.',
@@ -1492,9 +1463,8 @@ const archetypes = [
                         <path d="M15 50 Q50 35 85 50" stroke="#ffffff" stroke-width="2" fill="none" opacity="0.8"/>
                         <text x="50" y="55" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">FA</text>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Fabled',
@@ -1565,9 +1535,8 @@ const archetypes = [
                         <path d="M70 55 Q80 50 85 60 Q80 70 70 65" fill="url(#synchroGrad)" opacity="0.7"/>
                         <path d="M70 55 Q75 45 80 55" fill="url(#synchroGrad)" opacity="0.5"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Favorite',
@@ -1651,9 +1620,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
                         </path>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Fiendschmidt',
@@ -1678,9 +1646,8 @@ const archetypes = [
                         <path d="M25 25 Q35 15 45 25" stroke="#ef4444" stroke-width="2" fill="none"/>
                         <path d="M55 25 Q65 15 75 25" stroke="#ef4444" stroke-width="2" fill="none"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Fire Fist',
@@ -1704,9 +1671,8 @@ const archetypes = [
                         <path d="M20 45 Q30 35 40 45" stroke="#f97316" stroke-width="2" fill="none"/>
                         <path d="M60 45 Q70 35 80 45" stroke="#f97316" stroke-width="2" fill="none"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gravekeeper\'s',
@@ -1782,9 +1748,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Graydle',
@@ -1814,9 +1779,8 @@ const archetypes = [
                             <ellipse cx="50" cy="30" rx="4" ry="2" fill="#fbbf24" opacity="0.7"/>
                             <ellipse cx="50" cy="30" rx="2" ry="1" fill="#64748b" opacity="0.7"/>
                         </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Fire King',
@@ -1842,9 +1806,8 @@ const archetypes = [
                         <path d="M55 30 Q65 20 75 30" stroke="#f97316" stroke-width="2" fill="none"/>
                         <circle cx="50" cy="75" r="4" fill="#fbbf24" opacity="0.8"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Firewall',
@@ -1871,9 +1834,8 @@ const archetypes = [
                         <circle cx="70" cy="70" r="3" fill="#a7f3d0" opacity="0.8"/>
                         <text x="50" y="56" text-anchor="middle" font-size="12" fill="#67e8f9" font-weight="bold">FW</text>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Fishborg',
@@ -1900,9 +1862,8 @@ const archetypes = [
                         <circle cx="25" cy="55" r="2" fill="#67e8f9" opacity="0.8"/>
                         <path d="M75 45 L85 40 L85 50 Z" fill="#0284c7" stroke="#164e63" stroke-width="1"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Flamvell',
@@ -1937,9 +1898,8 @@ const archetypes = [
                         <!-- Synchro energy rings -->
                         <circle cx="50" cy="50" r="35" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.3" stroke-dasharray="3,3"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Fluffal',
@@ -1990,9 +1950,8 @@ const archetypes = [
                         <circle cx="20" cy="60" r="1" fill="#fbbf24" opacity="0.7"/>
                         <circle cx="80" cy="65" r="1.5" fill="#f59e0b" opacity="0.8"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Floowandereeze',
@@ -2030,9 +1989,8 @@ const archetypes = [
                         <circle cx="75" cy="25" r="8" fill="none" stroke="#fbbf24" stroke-width="2"/>
                         <path d="M75 20 L75 30 M70 25 L80 25" stroke="#fbbf24" stroke-width="1"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Flower Cardian',
@@ -2082,9 +2040,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="35" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.4" stroke-dasharray="2,2"/>
                         <circle cx="50" cy="50" r="28" fill="none" stroke="#f87171" stroke-width="1" opacity="0.3" stroke-dasharray="3,3"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Frog',
@@ -2123,9 +2080,8 @@ const archetypes = [
                         <ellipse cx="35" cy="60" rx="4" ry="8" fill="url(#frogGrad)" stroke="#059669" stroke-width="1" transform="rotate(-30 35 60)"/>
                         <ellipse cx="65" cy="60" rx="4" ry="8" fill="url(#frogGrad)" stroke="#059669" stroke-width="1" transform="rotate(30 65 60)"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Fusion',
@@ -2214,9 +2170,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.6;0.3;0.6" dur="2s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Fur Hire',
@@ -2331,9 +2286,8 @@ const archetypes = [
                         <line x1="62" y1="36" x2="68" y2="34" stroke="#78350f" stroke-width="1.5"/>
                         <line x1="62" y1="40" x2="68" y2="42" stroke="#78350f" stroke-width="1.5"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Fortune Lady',
@@ -2384,9 +2338,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="35" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.4" stroke-dasharray="3,2"/>
                         <circle cx="50" cy="50" r="40" fill="none" stroke="#c084fc" stroke-width="1" opacity="0.3" stroke-dasharray="2,3"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Fossil',
@@ -2424,9 +2377,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="35" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.3" stroke-dasharray="2,2"/>
                         <circle cx="50" cy="50" r="28" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.2" stroke-dasharray="1,3"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Danger!',
@@ -2437,9 +2389,8 @@ const archetypes = [
                         <text x="50" y="65" text-anchor="middle" font-size="40" fill="#ffffff" font-weight="bold">!</text>
                         <circle cx="50" cy="40" r="8" fill="#f94144"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Cyberdark',
@@ -2666,9 +2617,8 @@ const archetypes = [
                         <animate attributeName="width" values="2;6;2" dur="3s" repeatCount="indefinite"/>
                     </rect>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Abyss Actor',
@@ -2814,9 +2764,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.7;1;0.7" dur="5s" repeatCount="indefinite"/>
                         </rect>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Adamancipator',
@@ -2837,9 +2786,8 @@ const archetypes = [
                         <circle cx="35" cy="50" r="3" fill="#fbbf24"/>
                         <circle cx="50" cy="50" r="5" fill="#ffffff" stroke="#4c1d95" stroke-width="2"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Alien',
@@ -2860,9 +2808,8 @@ const archetypes = [
                         <circle cx="50" cy="85" r="8" fill="#10b981" opacity="0.9"/>
                         <text x="50" y="89" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">A</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Allure Queen',
@@ -2884,9 +2831,8 @@ const archetypes = [
                         <circle cx="50" cy="17" r="3" fill="#ffffff"/>
                         <circle cx="60" cy="22" r="3" fill="#ffffff"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ally of Justice',
@@ -2906,9 +2852,8 @@ const archetypes = [
                         <rect x="45" y="20" width="10" height="60" fill="#fbbf24" opacity="0.8"/>
                         <rect x="20" y="45" width="60" height="10" fill="#fbbf24" opacity="0.8"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Altergeist',
@@ -2920,9 +2865,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="10" fill="#dbeafe" />
                         <path d="M 50 50 L 50 95" stroke="#34d399" stroke-width="4" stroke-linecap="round" />
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Amazement',
@@ -2934,9 +2878,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="15" fill="#fff" stroke="#1a1a3a" stroke-width="3"/>
                         <text x="50" y="55" text-anchor="middle" font-size="14" fill="#1a1a3a" font-weight="bold">A</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Amazoness',
@@ -2982,9 +2925,8 @@ const archetypes = [
                         <!-- Fusion energy ring -->
                         <circle cx="50" cy="50" r="38" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.4" stroke-dasharray="3,2"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Amorphage',
@@ -2994,9 +2936,8 @@ const archetypes = [
                         <path d="M 50 10 L 85 30 L 85 70 L 50 90 L 15 70 L 15 30 Z" fill="#4a0e5f" stroke="#abff4f" stroke-width="2" />
                         <path d="M 40 40 L 50 25 L 60 40 L 70 35 L 75 50 L 60 60 L 65 75 L 50 70 L 35 75 L 40 60 L 25 50 L 30 35 Z" fill="#abff4f" />
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ancient Gear',
@@ -3203,9 +3144,8 @@ const archetypes = [
                             <rect x="87" y="93" width="8" height="2" fill="#fbbf24"/>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ancient Warriors',
@@ -3256,9 +3196,8 @@ const archetypes = [
                     <path d="M46 70 L54 70 M50 66 L50 78" stroke="#92400e" stroke-width="2"/>
                     <path d="M47 75 L53 75" stroke="#92400e" stroke-width="1.5"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Appliancer',
@@ -3269,9 +3208,8 @@ const archetypes = [
                                 <path d="M 30 30 L 70 70 M 70 30 L 30 70" stroke="#a5b4fc" stroke-width="5"/>
                                 <circle cx="50" cy="50" r="10" fill="#fff"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Aquaactress',
@@ -3427,9 +3365,8 @@ const archetypes = [
                     <circle cx="48" cy="37" r="0.5" fill="#0891b2"/>
                     <circle cx="52" cy="37" r="0.5" fill="#0891b2"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Arcana Force',
@@ -3441,9 +3378,8 @@ const archetypes = [
                                 <path d="M50 60 L60 80 L50 100 L40 80 Z" fill="#fde047" opacity="0.7"/>
                                 <circle cx="50" cy="50" r="5" fill="#fff"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Archfiend',
@@ -3471,9 +3407,8 @@ const archetypes = [
                     <!-- Flame accents -->
                     <path d="M50 70 Q45 75 50 80 Q55 75 50 70" fill="#f43f5e" opacity="0.8"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Red Dragon Archfiend',
@@ -3483,9 +3418,8 @@ const archetypes = [
                                 <path d="M50 10 C 40 40, 20 50, 50 90 C 80 50, 60 40, 50 10 Z" fill="#b91c1c" stroke="#fecaca" stroke-width="3" />
                                 <path d="M50 10 L 70 30 L 90 20 L 80 50 L 90 80 L 70 70 L 50 90 L 30 70 L 10 80 L 20 50 L 10 20 L 30 30 Z" fill="none" stroke="#ef4444" stroke-width="2"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Argostars',
@@ -3496,9 +3430,8 @@ const archetypes = [
                     <path d="M50 25 L75 50 L50 75 L25 50 Z" fill="#4299e1"/>
                     <path d="M50 10 L50 90 M10 50 L90 50" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Armed Dragon',
@@ -3549,9 +3482,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="38" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.4" stroke-dasharray="3,2"/>
                         <circle cx="50" cy="50" r="32" fill="none" stroke="#dc2626" stroke-width="1" opacity="0.3" stroke-dasharray="2,3"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Armored Xyz',
@@ -3589,9 +3521,8 @@ const archetypes = [
                         <circle cx="75" cy="40" r="2" fill="#8b5cf6" opacity="0.6"/>
                         <circle cx="50" cy="80" r="1.5" fill="#4c1d95" opacity="0.8"/>
                 </svg>`,
-        firstReleaseDate: "2023-10-19",
-        latestReleaseDate: "2024-10-11",
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Aroma',
@@ -3613,9 +3544,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="8" fill="#ffffff" stroke="#15803d" stroke-width="2"/>
                         <circle cx="50" cy="50" r="3" fill="#fbbf24"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Artifact',
@@ -3638,9 +3568,8 @@ const archetypes = [
                         <circle cx="35" cy="70" r="4" fill="#fbbf24" opacity="0.8"/>
                         <circle cx="65" cy="70" r="4" fill="#fbbf24" opacity="0.8"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Artmage',
@@ -3663,9 +3592,8 @@ const archetypes = [
                         <circle cx="65" cy="50" r="3" fill="#ef4444"/>
                         <circle cx="50" cy="65" r="3" fill="#06b6d4"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ashened',
@@ -3735,9 +3663,8 @@ const archetypes = [
                             <path d="M0,-1.5 L0.4,0 L1.5,0 L0.6,0.8 L1,2.5 L0,1.5 L-1,2.5 L-0.6,0.8 L-1.5,0 L-0.4,0 Z" fill="#f59e0b" opacity="0.8"/>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Assault Mode',
@@ -3748,9 +3675,8 @@ const archetypes = [
                 <path d="M50 30 L50 70 M30 50 L70 50" stroke="#111827" stroke-width="4" stroke-linecap="round"/>
                 <circle cx="50" cy="50" r="10" fill="#fff"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Atlantean',
@@ -3975,9 +3901,8 @@ const archetypes = [
                         <animate attributeName="width" values="3;8;3" dur="2s" repeatCount="indefinite"/>
                     </rect>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Azamina',
@@ -4119,9 +4044,8 @@ const archetypes = [
                         <animate attributeName="opacity" values="0.1;0.7;0.1" dur="2s" repeatCount="indefinite"/>
                     </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     // --- B.E.S. ENTRY ---
     {
@@ -4290,9 +4214,8 @@ const archetypes = [
                         <animate attributeName="stroke-dashoffset" values="10;0" dur="2s" repeatCount="indefinite"/>
                     </path>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     // --- BAMBOO SWORD ENTRY ---
     {
@@ -4304,9 +4227,8 @@ const archetypes = [
                     <path d="M 20 20 L 80 80" stroke="#a7f3d0" stroke-width="6" stroke-linecap="round"/>
                     <circle cx="50" cy="50" r="30" fill="none" stroke="#6ee7b7" stroke-width="3"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     // --- BARBAROS ENTRY ---
     {
@@ -4318,9 +4240,8 @@ const archetypes = [
                     <path d="M 30 40 L 50 30 L 70 40" stroke="#2a201a" stroke-width="3" stroke-linecap="round"/>
                     <path d="M 50 30 L 50 60" stroke="#2a201a" stroke-width="3" stroke-linecap="round"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     // --- BATTERYMAN ENTRY ---
     {
@@ -4334,9 +4255,8 @@ const archetypes = [
         <circle cx="50" cy="70" r="8" fill="#101728"/>
         <path d="M 30 50 L 70 50" stroke="#101728" stroke-width="4" stroke-linecap="round"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     // --- BATTLEGUARD ENTRY ---
     {
@@ -4348,9 +4268,8 @@ const archetypes = [
         <path d="M50 30 L 70 50 L 50 70 L 30 50 Z" fill="#b91c1c" stroke="#f3f4f6" stroke-width="1.5"/>
         <path d="M 50 10 L 50 90" stroke="#f3f4f6" stroke-width="2" stroke-linecap="round"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     // --- BATTLEWASP ENTRY ---
     {
@@ -4373,9 +4292,8 @@ const archetypes = [
                         <circle cx="55" cy="45" r="4" fill="#dc2626"/>
                         <path d="M40 75 L45 85 L55 85 L60 75" stroke="#92400e" stroke-width="3" fill="none"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     // --- BATTLIN' BOXER ENTRY ---
     {
@@ -4453,9 +4371,8 @@ const archetypes = [
                         <path d="M75 70 L65 75 L75 80" fill="#92400e" stroke="#451a03" stroke-width="2"/>
                         <circle cx="50" cy="55" r="6" fill="#fbbf24"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Black Luster Soldier',
@@ -4466,9 +4383,8 @@ const archetypes = [
                 <path d="M 50 10 L 50 100" stroke="#d4af37" stroke-width="2"/>
                 <path d="M 20 30 L 80 30" stroke="#d4af37" stroke-width="2"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Blackwing',
@@ -4489,9 +4405,8 @@ const archetypes = [
                         <path d="M40 40 L60 40" stroke="#ffffff" stroke-width="2"/>
                         <path d="M40 60 L60 60" stroke="#ffffff" stroke-width="2"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Blue-Eyes',
@@ -4627,9 +4542,8 @@ const archetypes = [
                         <!-- Imposing outer frame -->
                         <circle cx="50" cy="50" r="47" fill="none" stroke="#334155" stroke-width="1" opacity="0.8"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Bounzer',
@@ -4639,9 +4553,8 @@ const archetypes = [
                 <path d="M50 10 L85 25 L85 75 L50 90 L15 75 L15 25 Z" fill="#f97316" stroke="#fff" stroke-width="2"/>
                 <path d="M50 35 L50 65 M30 50 L70 50" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Bujin',
@@ -4652,9 +4565,8 @@ const archetypes = [
                 <path d="M50 20 L80 50 L50 80 L20 50 Z" fill="none" stroke="#1a1a1a" stroke-width="3"/>
                 <circle cx="50" cy="50" r="10" fill="#fff"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Burning Abyss',
@@ -4676,9 +4588,8 @@ const archetypes = [
                         <circle cx="50" cy="20" r="2" fill="#fbbf24" opacity="0.9"/>
                         <path d="M20 80 Q50 60 80 80" stroke="#dc2626" stroke-width="2" fill="none" opacity="0.6"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Buster Blader',
@@ -4719,9 +4630,8 @@ const archetypes = [
                         <circle cx="50" cy="75" r="6" fill="#1e40af" stroke="#3b82f6" stroke-width="1"/>
                         <path d="M46 73 L54 73" stroke="#f8fafc" stroke-width="1"/>
                 </svg>`,
-        firstReleaseDate: '2002-10-20',
-        latestReleaseDate: '2020-03-20'
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Bystial',
@@ -4839,9 +4749,8 @@ const archetypes = [
                         <animate attributeName="opacity" values="0.3;0.7;0.3" dur="3s" repeatCount="indefinite"/>
                     </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Butterspy',
@@ -4988,9 +4897,8 @@ const archetypes = [
                                 values="0 50 50;360 50 50" dur="15s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Celtic Guard',
@@ -5001,9 +4909,8 @@ const archetypes = [
                     <path d="M 50 15 L 50 85" stroke="#a7f3d0" stroke-width="3"/>
                     <path d="M 20 40 L 80 40" stroke="#a7f3d0" stroke-width="3"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Centur-Ion',
@@ -5014,9 +4921,8 @@ const archetypes = [
                     <path d="M50 20 L80 35 L80 65 L50 80 L20 65 L20 35 Z" fill="#dc2626" />
                     <circle cx="50" cy="50" r="10" fill="#fca5a5" />
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Chaos',
@@ -5027,9 +4933,8 @@ const archetypes = [
                 <path d="M50 10 A 40 40 0 0 1 50 90" fill="#eab308" />
                 <path d="M50 10 A 40 40 0 0 0 50 90" fill="#a855f7" />
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Charmer',
@@ -5257,9 +5162,8 @@ const archetypes = [
                                         values="0 50 50;360 50 50" dur="15s" repeatCount="indefinite"/>
                     </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Chemicritter',
@@ -5270,9 +5174,8 @@ const archetypes = [
                     <circle cx="50" cy="50" r="10" fill="#63b3ed" />
                     <path d="M50 25 V 40 M50 60 V 75 M30 50 H 40 M60 50 H 70" stroke="#fff" stroke-width="2" />
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Chronomaly',
@@ -5316,9 +5219,8 @@ const archetypes = [
                     <path d="M12 50 L25 50" stroke="#40e0d0" stroke-width="2" opacity="0.6"/>
                     <path d="M75 50 L88 50" stroke="#40e0d0" stroke-width="2" opacity="0.6"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Cloudian',
@@ -5536,9 +5438,8 @@ const archetypes = [
                         <animate attributeName="opacity" values="0.3;0.1;0.3" dur="6s" repeatCount="indefinite"/>
                     </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Codebreaker',
@@ -5551,9 +5452,8 @@ const archetypes = [
                     <path d="M45 45 H 70" stroke="#ff00ff" stroke-width="4" />
                     <path d="M25 55 H 55" stroke="#00ffff" stroke-width="4" />
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Code Talker',
@@ -5564,9 +5464,8 @@ const archetypes = [
                     <path d="M50 35 L 50 65 M 35 50 L 65 50" stroke="#c0c0ff" stroke-width="4" stroke-linecap="round"/>
                     <path d="M50 35 L 65 50 M 35 50 L 50 65" stroke="#c0c0ff" stroke-width="4" stroke-linecap="round"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Constellar',
@@ -5746,9 +5645,8 @@ const archetypes = [
                         <animate attributeName="stroke-dashoffset" values="6;0" dur="4s" repeatCount="indefinite"/>
                     </path>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Crusadia',
@@ -5759,9 +5657,8 @@ const archetypes = [
                     <path d="M50 30 L70 50 L50 70 L30 50 Z" fill="#f59e0b"/>
                     <path d="M50 10 L 50 30 M 90 50 L 70 50 M 50 90 L 50 70 M 10 50 L 30 50" stroke="#eff6ff" stroke-width="2"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Crystal Beast',
@@ -5934,9 +5831,8 @@ const archetypes = [
                         <animate attributeName="opacity" values="0.1;0.7;0.1" dur="2s" repeatCount="indefinite"/>
                     </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Crystron',
@@ -5947,9 +5843,8 @@ const archetypes = [
                     <path d="M50 10 L50 90 M15 35 L85 65 M15 65 L85 35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 4"/>
                     <circle cx="50" cy="50" r="10" fill="#e0f2fe"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Cubic',
@@ -5961,9 +5856,8 @@ const archetypes = [
                     <path d="M50 45 L50 85" stroke="#d058c0" stroke-width="2"/>
                     <path d="M20 70 L50 45 L80 70" stroke="#d058c0" stroke-width="2" stroke-dasharray="3 3"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Cyclone',
@@ -5982,9 +5876,8 @@ const archetypes = [
                         <circle cx="50" cy="45" r="3" fill="#4ade80"/>
                         <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">CYCLONE</text>
                     </svg>`,
-        firstReleaseDate: '2007-11-14',
-        latestReleaseDate: '2018-04-05',
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Cyber Girl',
@@ -5996,10 +5889,8 @@ const archetypes = [
                     <path d="M40 60 Q50 80 60 60" stroke="#fff" stroke-width="2" fill="none"/>
                     <path d="M30 50 L70 50" stroke="#fff" stroke-width="2"/>
                 </svg>`,
-        firstReleaseDate: "2005-11-16",
-        latestReleaseDate: "2017-10-02",
-    
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Cyber Angel',
@@ -6227,9 +6118,8 @@ const archetypes = [
                                         values="0 50 50;-360 50 50" dur="25s" repeatCount="indefinite"/>
                     </ellipse>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Curse of Dragon',
@@ -6294,9 +6184,8 @@ const archetypes = [
                         <animate attributeName="opacity" values="0.5;0.8;0.5" dur="2s" begin="1s" repeatCount="indefinite"/>
                     </path>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Cyber Dragon',
@@ -6510,9 +6399,8 @@ const archetypes = [
                                         values="0 50 50;-360 50 50" dur="12s" repeatCount="indefinite"/>
                     </ellipse>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dracotail',
@@ -6633,9 +6521,8 @@ const archetypes = [
                         <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.5s" repeatCount="indefinite"/>
                     </path>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Deskbot',
@@ -6647,9 +6534,8 @@ const archetypes = [
                         <path d="M35 60 L65 60" stroke="#22d3ee" stroke-width="4"/>
                         <path d="M30 50 L70 50" stroke="#fff" stroke-width="2" stroke-dasharray="4 2"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Designator',
@@ -6667,9 +6553,8 @@ const archetypes = [
                         <circle cx="50" cy="30" r="4" fill="#f87171"/>
                         <text x="50" y="70" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">DESIGNATOR</text>
                     </svg>`,
-        firstReleaseDate: '2004-01-10',
-        latestReleaseDate: '2021-01-10',
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -6790,9 +6675,8 @@ const archetypes = [
                         <!-- Vigilante Mask Effect -->
                         <path d="M40 45 Q50 40 60 45 Q58 48 50 49 Q42 48 40 45 Z" fill="#1e1b4b" opacity="0.8" stroke="#7c3aed" stroke-width="1"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Deep Sea',
@@ -6812,9 +6696,8 @@ const archetypes = [
                         <circle cx="50" cy="60" r="4" fill="#60a5fa"/>
                         <text x="50" y="85" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">DEEP SEA</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -6827,9 +6710,8 @@ const archetypes = [
                         <path d="M35 60 Q50 50 65 60 Q50 70 35 60" fill="#fff"/>
                         <circle cx="50" cy="50" r="5" fill="#e9d5ff"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Diabellstar',
@@ -6841,9 +6723,8 @@ const archetypes = [
                         <path d="M30 30 L70 70 M30 70 L70 30" stroke="#fff" stroke-width="2"/>
                         <circle cx="50" cy="50" r="5" fill="#fff"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dinomist',
@@ -7065,9 +6946,8 @@ const archetypes = [
                                         values="0 50 50;-360 50 50" dur="18s" repeatCount="indefinite"/>
                     </ellipse>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dinomorphia',
@@ -7216,9 +7096,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.8;0;0.8" dur="6s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dinowrestler',
@@ -7231,9 +7110,8 @@ const archetypes = [
                         <path d="M35 45 L65 45" stroke="#fff" stroke-width="2"/>
                         <path d="M40 35 L60 35" stroke="#fff" stroke-width="2"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Djinn',
@@ -7454,9 +7332,8 @@ const archetypes = [
                                         values="0 50 50;-360 50 50" dur="22s" repeatCount="indefinite"/>
                     </ellipse>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dododo',
@@ -7532,9 +7409,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Doodle Beast',
@@ -7548,9 +7424,8 @@ const archetypes = [
                         <circle cx="40" cy="40" r="4" fill="#eab308"/>  <!-- Eye 1 -->
                         <circle cx="60" cy="40" r="4" fill="#eab308"/>  <!-- Eye 2 -->
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dogmatika',
@@ -7644,9 +7519,8 @@ const archetypes = [
                         <line x1="30" y1="85" x2="70" y2="85" stroke="#f59e0b" stroke-width="2" opacity="0.7"/>
                         <line x1="25" y1="90" x2="75" y2="90" stroke="#f59e0b" stroke-width="1.5" opacity="0.5"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Doll Monster',
@@ -7868,9 +7742,8 @@ const archetypes = [
                         <animate attributeName="width" values="8;4;8" dur="3s" repeatCount="indefinite"/>
                     </rect>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dominus',
@@ -7883,12 +7756,11 @@ const archetypes = [
                         <path d="M30 65 L70 65" stroke="#fff" stroke-width="3"/>  <!-- Base line -->
                         <path d="M40 55 L60 55" stroke="#818cf8" stroke-width="2"/>  <!-- Middle line -->
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
-        name: 'DoomZ',
+        name: 'Doom-Z',
         description: 'A combo-oriented Xyz strategy focused on intentional self-destruction.',
         filepath: 'Doom-Z Archetype Deep Dive.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -7896,9 +7768,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="15" fill="#fff" />
                         <path d="M 50 35 L 50 65 M 35 50 L 65 50" stroke="#e53e3e" stroke-width="4" stroke-linecap="round" />
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'YUMMY',
@@ -7971,9 +7842,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="38" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.4" stroke-dasharray="3,2"/>
                         <circle cx="50" cy="50" r="32" fill="none" stroke="#fef3c7" stroke-width="1" opacity="0.3" stroke-dasharray="2,3"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Darklord',
@@ -7984,9 +7854,8 @@ const archetypes = [
                         <path d="M50 30 L65 45 L50 60 L35 45 Z" fill="#fff"/>
                         <path d="M50 10 L50 90" stroke="#fff" stroke-width="2"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dracoslayer',
@@ -8144,9 +8013,8 @@ const archetypes = [
                         <animate attributeName="opacity" values="0.7;0.2;0.7" dur="1.5s" repeatCount="indefinite"/>
                     </path>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dragon Ruler',
@@ -8160,9 +8028,8 @@ const archetypes = [
                         <circle cx="65" cy="60" r="8" fill="#854d0e"/>  <!-- Earth -->
                         <circle cx="50" cy="50" r="10" fill="#fff" stroke="#991b1b" stroke-width="2"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dragonmaid',
@@ -8298,9 +8165,8 @@ const archetypes = [
                     </circle>
                     <path d="M48 50 L52 50" stroke="#ffffff" stroke-width="1" opacity="0.9"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dream Mirror',
@@ -8313,9 +8179,8 @@ const archetypes = [
                         <path d="M35 60 L65 40" stroke="#fff" stroke-width="2"/>
                         <circle cx="50" cy="50" r="5" fill="#fff"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Drytron',
@@ -8331,9 +8196,8 @@ const archetypes = [
                         <circle cx="30" cy="70" r="4" fill="#fff"/>
                         <circle cx="70" cy="70" r="4" fill="#fff"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dragunity',
@@ -8503,9 +8367,8 @@ const archetypes = [
                             <circle cx="85" cy="85" r="1.5" fill="#fbbf24"/>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Dual Avatar',
@@ -8519,9 +8382,8 @@ const archetypes = [
                         <circle cx="35" cy="40" r="5" fill="#1e1b4b"/>  <!-- Inner Light -->
                         <circle cx="65" cy="60" r="5" fill="#f7f7f7"/>  <!-- Inner Dark -->
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'G Golem',
@@ -8602,9 +8464,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.3;0.1;0.3" dur="4s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gadget',
@@ -8729,9 +8590,8 @@ const archetypes = [
                             <rect x="73" y="47" width="4" height="6" fill="#6b7280"/>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gaia',
@@ -8775,9 +8635,8 @@ const archetypes = [
                         <!-- OTK indicator -->
                         <text x="50" y="85" text-anchor="middle" font-size="6" fill="#ffffff" font-weight="bold">OTK</text>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gagaga',
@@ -8910,9 +8769,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.4;0.2;0.4" dur="3s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gandora',
@@ -9045,9 +8903,8 @@ const archetypes = [
                         <path d="M50 80 Q65 85 70 95" stroke="url(#gandoraBodyGrad)" stroke-width="8" fill="none" stroke-linecap="round"/>
                         <polygon points="68,93 72,97 70,95" fill="#6b7280"/>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gate Guardian',
@@ -9107,9 +8964,8 @@ const archetypes = [
                             <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="8s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Geargia',
@@ -9278,9 +9134,8 @@ const archetypes = [
                             </rect>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gearfried',
@@ -9327,9 +9182,8 @@ const archetypes = [
                         <circle cx="35" cy="75" r="1.5" fill="#f59e0b" opacity="0.7"/>
                         <circle cx="65" cy="75" r="1.5" fill="#dc2626" opacity="0.7"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Genex',
@@ -9431,9 +9285,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.6;0.1;0.6" dur="3.5s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gem-Knight',
@@ -9549,9 +9402,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.2;0.5;0.2" dur="4s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Generaider',
@@ -9692,9 +9544,8 @@ const archetypes = [
                         <rect x="45" y="75" width="10" height="6" rx="2" fill="#1f2937" stroke="#374151" stroke-width="1"/>
                         <text x="50" y="79" text-anchor="middle" font-size="6" fill="#fbbf24" font-weight="bold">9</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ghoti',
@@ -9815,9 +9666,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.8;0.3;0.8" dur="3s" repeatCount="indefinite"/>
                         </path>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ghostrick',
@@ -9973,9 +9823,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gigo',
@@ -10027,9 +9876,8 @@ const archetypes = [
                         <circle cx="50" cy="80" r="6" fill="#4a7c8c" opacity="0.7"/>
                         <text x="50" y="83" text-anchor="middle" font-size="5" fill="#e0f2f1" font-weight="bold">C</text>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gimmick Puppet',
@@ -10160,9 +10008,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.6;1;0.6" dur="6s" repeatCount="indefinite"/>
                         </path>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gishki',
@@ -10282,9 +10129,8 @@ const archetypes = [
                             <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="15s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Galaxy-Photon',
@@ -10412,9 +10258,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.9s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gladiator Beast',
@@ -10559,9 +10404,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.3;0.7;0.3" dur="5s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Glacial Beast',
@@ -10623,9 +10467,8 @@ const archetypes = [
                             <circle cx="85" cy="80" r="1" fill="#3a6b8e"/>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Golden Castle of Stromberg',
@@ -10687,9 +10530,8 @@ const archetypes = [
                         <!-- Crown on top -->
                         <polygon points="46,25 50,20 54,25 52,28 50,25 48,28" fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Goblin',
@@ -10848,9 +10690,8 @@ const archetypes = [
                             <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="8s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gogogo',
@@ -11001,9 +10842,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gold Pride',
@@ -11168,9 +11008,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gouki',
@@ -11328,9 +11167,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.3;0.7;0.3" dur="4s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gunkan',
@@ -11428,9 +11266,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.6;1;0.6" dur="2.2s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Gusto',
@@ -11543,9 +11380,8 @@ const archetypes = [
                             <animate attributeName="rx" values="4;6;4;3;4" dur="2.8s" repeatCount="indefinite"/>
                         </ellipse>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Harpie',
@@ -11653,9 +11489,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
                         </path>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -11757,9 +11592,8 @@ const archetypes = [
                             <animateTransform attributeName="transform" type="translate" values="0,0;-8,-8;-16,-16" dur="2s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -11870,9 +11704,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
                         </ellipse>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -11985,9 +11818,8 @@ const archetypes = [
                             <animate attributeName="d" values="M20 60 Q35 50 50 60 Q65 50 80 60;M20 55 Q35 65 50 55 Q65 65 80 55;M20 60 Q35 50 50 60 Q65 50 80 60" dur="2.5s" repeatCount="indefinite"/>
                         </path>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -12121,9 +11953,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.6s" repeatCount="indefinite"/>
                         </line>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -12277,9 +12108,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.2;0.6;0.2" dur="4s" repeatCount="indefinite"/>
                         </rect>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -12418,9 +12248,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.9;0.3;0" dur="3s" repeatCount="indefinite"/>
                         </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -12576,9 +12405,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.9;0.3;0" dur="3.8s" repeatCount="indefinite"/>
                         </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -12739,9 +12567,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.8;0.3;0" dur="3.5s" repeatCount="indefinite"/>
                         </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -12906,9 +12733,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="1s"/>
                         </text>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -12987,9 +12813,8 @@ const archetypes = [
                             <animate attributeName="r" values="6;8;6" dur="2s" repeatCount="indefinite"/>
                         </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -13155,9 +12980,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
                         </text>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -13282,9 +13106,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
                         </text>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -13407,9 +13230,8 @@ const archetypes = [
                             <animateTransform attributeName="transform" type="scale" values="1 1;1.2 1;1 1" dur="4s" repeatCount="indefinite"/>
                         </ellipse>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -13550,9 +13372,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.9;0.5;0.9" dur="3s" repeatCount="indefinite" begin="1.5s"/>
                         </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -13710,9 +13531,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.3;0.1;0.3" dur="6s" repeatCount="indefinite"/>
                         </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -13885,9 +13705,8 @@ const archetypes = [
                             </polygon>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -14047,9 +13866,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.5;0.2;0.5" dur="2.5s" repeatCount="indefinite"/>
                         </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -14253,9 +14071,8 @@ const archetypes = [
                             </polygon>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -14436,9 +14253,8 @@ const archetypes = [
                             </polygon>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -14654,9 +14470,8 @@ const archetypes = [
                             </polygon>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -14890,9 +14705,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.2;0.5;0.2" dur="6s" repeatCount="indefinite" begin="3s"/>
                         </line>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -15091,9 +14905,8 @@ const archetypes = [
                             </polygon>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -15319,9 +15132,8 @@ const archetypes = [
                             </polygon>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -15441,9 +15253,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="4" fill="#fff" font-weight="bold">!</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -15585,9 +15396,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="4" fill="#f8fafc" font-weight="bold">BEAST</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -15753,9 +15563,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#f8fafc" font-weight="bold">PSYCHIC</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -15941,9 +15750,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#f8fafc" font-weight="bold">INSECT</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -16127,9 +15935,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#f8fafc" font-weight="bold">FIEND</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -16289,9 +16096,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#f8fafc" font-weight="bold">FIEND</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -16402,9 +16208,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#f8fafc" font-weight="bold">FIRE</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -16570,9 +16375,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#f8fafc" font-weight="bold">PYRO</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -16681,9 +16485,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#fef3c7" font-weight="bold">DRAGON</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -16704,9 +16507,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="4" fill="#a3e635"/>
                         <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">GREED</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -16819,9 +16621,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#1f2937" font-weight="bold">LIGHT</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -16935,8 +16736,9 @@ const archetypes = [
                             </rect>
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#1f2937" font-weight="bold">LIGHT</text>
                         </g>
-                </svg>`
-
+                </svg>`,
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -17074,9 +16876,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#f8fafc" font-weight="bold">DARK</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -17229,9 +17030,8 @@ const archetypes = [
                             <text x="0" y="1" text-anchor="middle" font-size="3.5" fill="#e0d8f0" font-weight="bold">DARK</text>
                         </g>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -17368,9 +17168,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.5;1;0.5" dur="1.3s" repeatCount="indefinite"/>
                         </rect>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -17517,9 +17316,8 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3.5s" repeatCount="indefinite"/>
                         </path>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -17634,9 +17432,8 @@ const archetypes = [
                             <animateTransform attributeName="transform" type="translate" values="0,0;-3,-8;0,0" dur="4.2s" repeatCount="indefinite"/>
                         </circle>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Lyrilusc',
@@ -17698,9 +17495,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Machina',
@@ -17778,9 +17574,8 @@ const archetypes = [
                             </path>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Madolche',
@@ -17872,9 +17667,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Magical Muskets',
@@ -17998,9 +17792,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Magician Girl',
@@ -18099,9 +17892,8 @@ const archetypes = [
                             </path>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Magikey',
@@ -18248,9 +18040,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Magnet Warrior',
@@ -18383,9 +18174,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Majestic',
@@ -18542,9 +18332,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Majespecter',
@@ -18730,9 +18519,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Malefic',
@@ -18919,9 +18707,8 @@ const archetypes = [
                             <text x="50" y="14" text-anchor="middle" font-size="6" fill="#dc2626" font-weight="bold">FIELD</text>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Maliss',
@@ -19101,9 +18888,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Malicevorous',
@@ -19188,9 +18974,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mannadium',
@@ -19379,9 +19164,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Marinces',
@@ -19519,9 +19303,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mekk-knight',
@@ -19661,9 +19444,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Melodious',
@@ -19718,9 +19500,8 @@ const archetypes = [
                                 <text x="30" y="70" font-size="14" fill="#fbb6ce" font-weight="bold">&#9834;</text>
                             </g>
                         </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Melffy',
@@ -19759,9 +19540,8 @@ const archetypes = [
                                 <text x="50" y="80" font-size="14" fill="#fef9c3" font-weight="bold">&#128054;</text>
                             </g>
                         </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Meklord',
@@ -19800,9 +19580,8 @@ const archetypes = [
                                 <text x="50" y="88" text-anchor="middle" font-size="6" fill="#d1d5db" font-weight="bold">SYNCHRO ABSORB</text>
                             </g>
                         </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Memento',
@@ -19840,9 +19619,8 @@ const archetypes = [
                                 <text x="50" y="80" font-size="14" fill="#f3f4f6" font-weight="bold">&#9877;</text>
                             </g>
                         </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Metalfoes',
@@ -19880,9 +19658,8 @@ const archetypes = [
                                 <text x="50" y="80" font-size="14" fill="#f59e0b" font-weight="bold">&#9874;</text>
                             </g>
                         </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Metalmorph',
@@ -19935,9 +19712,8 @@ const archetypes = [
                                 <rect x="72" y="72" width="8" height="8" fill="#dc2626" stroke="#ef4444" stroke-width="1"/>
                             </g>
                         </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Metaphys',
@@ -19975,9 +19751,8 @@ const archetypes = [
                                 <text x="50" y="80" font-size="14" fill="#f3f4f6" font-weight="bold">&#9733;</text>
                             </g>
                         </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Magistus',
@@ -20152,9 +19927,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Pendulum Magician',
@@ -20282,9 +20056,8 @@ const archetypes = [
                             </circle>
                         </g>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: '@Ignister',
@@ -20297,9 +20070,8 @@ const archetypes = [
                         <path d="M 50 35 L 50 65" stroke="#0d121c" stroke-width="4" stroke-linecap="round" />
                         <path d="M 35 50 L 65 50" stroke="#0d121c" stroke-width="4" stroke-linecap="round" />
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mermail',
@@ -20317,9 +20089,8 @@ const archetypes = [
                         <circle cx="50" cy="35" r="8" fill="#e0f2fe" stroke="#38bdf8" stroke-width="2"/>
                         <text x="50" y="80" text-anchor="middle" font-size="16" fill="#0ea5e9" font-weight="bold">Mermail</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mikanko',
@@ -20373,9 +20144,8 @@ const archetypes = [
                         <!-- Text -->
                         <text x="50" y="80" text-anchor="middle" font-size="15" fill="#f59e42" font-weight="bold">Mikanko</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mimighoul',
@@ -20450,9 +20220,8 @@ const archetypes = [
                         <!-- Text -->
                         <text x="50" y="85" text-anchor="middle" font-size="15" fill="#a78bfa" font-weight="bold">Mimighoul</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mist Valley',
@@ -20470,9 +20239,8 @@ const archetypes = [
                         <circle cx="50" cy="45" r="7" fill="#a7f3d0" stroke="#38bdf8" stroke-width="2"/>
                         <text x="50" y="80" text-anchor="middle" font-size="15" fill="#38bdf8" font-weight="bold">Mist Valley</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mitsurugi',
@@ -20490,9 +20258,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="7" fill="#fff7e6" stroke="#f87171" stroke-width="2"/>
                         <text x="50" y="80" text-anchor="middle" font-size="15" fill="#f87171" font-weight="bold">Mitsurugi</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mokey Mokey',
@@ -20510,9 +20277,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="7" fill="#fde68a" stroke="#fbbf24" stroke-width="2"/>
                         <text x="50" y="80" text-anchor="middle" font-size="15" fill="#fbbf24" font-weight="bold">Mokey Mokey</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mathmech',
@@ -20529,9 +20295,8 @@ const archetypes = [
                         <rect x="40" y="35" width="20" height="20" rx="6" fill="#fff" stroke="#f472b6" stroke-width="2"/>
                         <text x="50" y="80" text-anchor="middle" font-size="15" fill="#818cf8" font-weight="bold">Mathmech</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mayakashi',
@@ -20548,9 +20313,8 @@ const archetypes = [
                         <rect x="40" y="35" width="20" height="20" rx="6" fill="#fff" stroke="#fca5a5" stroke-width="2"/>
                         <text x="50" y="80" text-anchor="middle" font-size="15" fill="#7c3aed" font-weight="bold">Mayakashi</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Morphtronic',
@@ -20631,9 +20395,8 @@ const archetypes = [
         <animateTransform attributeName="transform" type="rotate" from="360 50 50" to="0 50 50" dur="5s" repeatCount="indefinite"/>
     </circle>
 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Megalith',
@@ -20651,9 +20414,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="7" fill="#a3e635" stroke="#fbbf24" stroke-width="2"/>
                         <text x="50" y="80" text-anchor="middle" font-size="15" fill="#a3e635" font-weight="bold">Megalith</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Materiactor',
@@ -20671,9 +20433,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="7" fill="#818cf8" stroke="#fbbf24" stroke-width="2"/>
                         <text x="50" y="80" text-anchor="middle" font-size="15" fill="#818cf8" font-weight="bold">Materiactor</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mystical Beasts of the Forest',
@@ -20714,9 +20475,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#155d27" font-weight="bold">Mystical Beasts</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Nephthys',
@@ -20758,9 +20518,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#d7263d" font-weight="bold">Nepthys</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Nimble',
@@ -20801,9 +20560,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#005792" font-weight="bold">Nimble</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Nemleria',
@@ -20844,9 +20602,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#92400e" font-weight="bold">Nemleria</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ninja',
@@ -20887,9 +20644,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#111827" font-weight="bold">Ninja</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Noble Knight',
@@ -20930,9 +20686,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#374151" font-weight="bold">Noble Knight</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Nitro',
@@ -20973,9 +20728,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Nitro</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Nordic',
@@ -21016,9 +20770,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="bold">Nordic</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Nouvelles',
@@ -21059,9 +20812,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#374151" font-weight="bold">Nouvelles</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Number',
@@ -21102,9 +20854,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#d97706" font-weight="bold">Number</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Odd-Eyes',
@@ -21145,9 +20896,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#7c3aed" font-weight="bold">Odd-Eyes</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Of the Swamp',
@@ -21168,9 +20918,8 @@ const archetypes = [
                         <path d="M40 65 Q45 60 50 65 Q55 60 60 65" stroke="#2dd4bf" stroke-width="2" fill="none"/>
                         <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">SWAMP</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ogdoadic',
@@ -21211,9 +20960,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#047857" font-weight="bold">Ogdoadic</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ojama',
@@ -21254,9 +21002,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#c2410c" font-weight="bold">Ojama</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Orcust',
@@ -21297,9 +21044,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#0f172a" font-weight="bold">Orcust</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Morganite',
@@ -21340,9 +21086,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#be185d" font-weight="bold">Morganite</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Numeron',
@@ -21383,9 +21128,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1d4ed8" font-weight="bold">Numeron</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Nemesis',
@@ -21426,9 +21170,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Nemesis</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Paleozoic',
@@ -21469,9 +21212,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#0369a1" font-weight="bold">Paleozoic</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Paladin of Dragon',
@@ -21491,9 +21233,8 @@ const archetypes = [
                         <path d="M45 60 Q50 55 55 60" stroke="#facc15" stroke-width="2" fill="none"/>
                         <text x="50" y="80" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">PALADIN</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'P.U.N.K.',
@@ -21534,9 +21275,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#92400e" font-weight="bold">P.U.N.K.</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Parshath',
@@ -21577,9 +21317,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#f59e0b" font-weight="bold">Parshath</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Pendulum Pile',
@@ -21620,9 +21359,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#7c3aed" font-weight="bold">Pendulum Pile</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Penguin',
@@ -21663,9 +21401,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="bold">Penguin</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Phantasm Spiral',
@@ -21706,9 +21443,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#047857" font-weight="bold">Phantasm Spiral</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Performage',
@@ -21749,9 +21485,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#c2410c" font-weight="bold">Performage</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Mega Phantom Beast',
@@ -21792,15 +21527,14 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#111827" font-weight="bold">Mega Phantom Beast</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
-        name: 'Phantom Knights',
-        description: 'A DARK Warrior archetype specializing in graveyard recursion and rapid swarming, the Phantom Knights enable powerful Rank 3 Xyz plays while providing unique Trap cards that turn into monsters. Their resource loop and disruption tools make them a staple for combo and control strategies alike.',
-        filepath: 'Phantom knights Deck Analysis.html',
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    name: 'Phantom Knights',
+    description: 'A DARK Warrior archetype specializing in graveyard recursion and rapid swarming, the Phantom Knights enable powerful Rank 3 Xyz plays while providing unique Trap cards that turn into monsters. Their resource loop and disruption tools make them a staple for combo and control strategies alike.',
+    filepath: 'Phantom knights Deck Analysis.html',
+    icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <radialGradient id="pkCloak" cx="55%" cy="40%" r="60%">
                 <stop offset="0%" stop-color="#54546a" stop-opacity="0.8"/>
@@ -21850,10 +21584,9 @@ const archetypes = [
         <text x="50" y="96" text-anchor="middle" font-size="11" font-weight="bold"
             fill="#02e0e3" font-family="Orbitron, sans-serif">Phantom Knights</text>
       </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
-    },
+        firstReleaseDate: None,
+        latestReleaseDate: None
+},
     {
         name: 'Pot of',
         description: 'A series of iconic Spell Cards that revolutionized Yu-Gi-Oh by providing powerful draw and search effects, featuring legendary cards like Pot of Greed, Pot of Desires, and Pot of Prosperity.',
@@ -21872,9 +21605,8 @@ const archetypes = [
                         <circle cx="50" cy="55" r="4" fill="#99f6e4"/>
                         <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">POT OF</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Potan',
@@ -21915,9 +21647,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#525252" font-weight="bold">Potan</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Plunder Patrol',
@@ -21958,9 +21689,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Plunder Patrol</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Power Tool',
@@ -22001,9 +21731,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#374151" font-weight="bold">Power Tool</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Prank Kids',
@@ -22044,9 +21773,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#d97706" font-weight="bold">Prank Kids</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Predaplant',
@@ -22087,9 +21815,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#14532d" font-weight="bold">Predaplant</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Prediction Princess',
@@ -22130,9 +21857,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#6d28d9" font-weight="bold">Prediction Princess</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Primite',
@@ -22173,9 +21899,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#451a03" font-weight="bold">Primite</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Prophecy',
@@ -22216,9 +21941,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="bold">Prophecy</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Pseudo Trap Monster',
@@ -22238,9 +21962,8 @@ const archetypes = [
                         <circle cx="50" cy="55" r="4" fill="#66fcf1"/>
                         <text x="50" y="75" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">PSEUDO</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Psychic',
@@ -22260,9 +21983,8 @@ const archetypes = [
                         <circle cx="50" cy="58" r="5" fill="#a855f7"/>
                         <text x="50" y="80" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">PSYCHIC</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Psy-Frame',
@@ -22303,9 +22025,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4c1d95" font-weight="bold">Psy-Frame</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Purrely',
@@ -22346,9 +22067,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="bold">Purrely</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Qliphort',
@@ -22389,9 +22109,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#111827" font-weight="bold">Qliphort</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ragnaraika',
@@ -22432,9 +22151,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#14532d" font-weight="bold">Ragnaraika</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Rebel Bots',
@@ -22475,9 +22193,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#374151" font-weight="bold">Rebel Bots</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Radiant Typhoon',
@@ -22518,9 +22235,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#0369a1" font-weight="bold">Radiant Typhoon</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Raidraptor',
@@ -22561,9 +22277,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Raidraptor</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Reactor',
@@ -22604,9 +22319,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#0e7490" font-weight="bold">Reactor</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Regenesis',
@@ -22647,9 +22361,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#047857" font-weight="bold">Regenesis</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Rescue',
@@ -22669,9 +22382,8 @@ const archetypes = [
                         <circle cx="50" cy="55" r="4" fill="#facc15"/>
                         <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">RESCUE</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Relinquished',
@@ -22712,9 +22424,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4c1d95" font-weight="bold">Relinquished</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Reptiliane',
@@ -22755,9 +22466,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#14532d" font-weight="bold">Reptiliane</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Rescue ACE',
@@ -22798,9 +22508,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1d4ed8" font-weight="bold">Rescue ACE</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Rikka',
@@ -22841,9 +22550,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="bold">Rikka</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ritual Art',
@@ -22885,9 +22593,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="bold">Ritual Art</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ritual Beast',
@@ -22928,9 +22635,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4c1d95" font-weight="bold">Ritual Beast</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Risebell',
@@ -22950,9 +22656,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="4" fill="#67e8f9"/>
                         <text x="50" y="75" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">RISEBELL</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Roid',
@@ -22993,9 +22698,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#374151" font-weight="bold">Roid</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Rokket',
@@ -23036,9 +22740,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Rokket</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Runick',
@@ -23079,9 +22782,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4c1d95" font-weight="bold">Runick</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Royal',
@@ -23101,9 +22803,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="4" fill="#FFD700"/>
                         <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">ROYAL</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Rose Dragon',
@@ -23144,9 +22845,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="bold">Rose Dragon</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ryu-Ge',
@@ -23187,9 +22887,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#0369a1" font-weight="bold">Ryuge</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Ryzeal',
@@ -23230,9 +22929,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4c1d95" font-weight="bold">Ryzeal</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Red-Eyes',
@@ -23273,9 +22971,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Red-Eyes</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'S-Force',
@@ -23316,9 +23013,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1d4ed8" font-weight="bold">S-Force</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Sasuke',
@@ -23338,9 +23034,8 @@ const archetypes = [
                         <circle cx="50" cy="55" r="4" fill="#f87171"/>
                         <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SASUKE</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Scareclaw',
@@ -23381,9 +23076,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#9a3412" font-weight="bold">Scareclaw</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'X-saber',
@@ -23424,9 +23118,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#374151" font-weight="bold">X-saber</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Shark',
@@ -23467,9 +23160,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#0369a1" font-weight="bold">Shark</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Shining Sarcophagus',
@@ -23488,9 +23180,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="4" fill="#ffc107"/>
                         <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">SARCOPHAGUS</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Shinobird',
@@ -23572,9 +23263,8 @@ const archetypes = [
                                         values="0 50 50;360 50 50" dur="15s" repeatCount="indefinite"/>
                     </circle>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Shiranui',
@@ -23615,9 +23305,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4c1d95" font-weight="bold">Shiranui</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Simorgh',
@@ -23658,9 +23347,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Simorgh</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Signer Dragon',
@@ -23680,9 +23368,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="4" fill="#f43f5e"/>
                         <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">SIGNER</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Six Samurai',
@@ -23723,9 +23410,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Six Samurai</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: 'Skyblaster',
@@ -23766,9 +23452,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#0369a1" font-weight="bold">Skyblaster</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -23802,9 +23487,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4682b4" font-weight="bold">Sky Striker</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -23841,9 +23525,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#dc143c" font-weight="bold">Snake-Eyes</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -23864,11 +23547,10 @@ const archetypes = [
                         <circle cx="50" cy="55" r="4" fill="#fcd34d"/>
                         <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">MAGICIAN</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
-    {
+        {
         name: 'Skull Servant',
         description: 'A Zombie archetype that specializes in milling cards to the Graveyard to swarm the field with low-level Zombie monsters, featuring powerful boss monsters like King of the Skull Servants.',
         filepath: 'Skull Servant Deck Analysis.html',
@@ -23887,11 +23569,10 @@ const archetypes = [
                 <text x="50" y="80" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SKULL</text>
                 <text x="50" y="90" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SERVANT</text>
                 </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
-    {
+        {
         name: 'Sky Scourge',
         description: 'A LIGHT archetype that focuses on milling cards to the Graveyard to enable powerful effects and combos, featuring monsters that gain power when sent to the Graveyard.',
         filepath: 'Sky Scourge Deck Analysis.html',
@@ -23911,11 +23592,10 @@ const archetypes = [
                         <text x="50" y="75" text-anchor="middle" font-size="10" fill="#000000" font-weight="bold">SKY</text>
                         <text x="50" y="87" text-anchor="middle" font-size="10" fill="#000000" font-weight="bold">SCOURGE</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
-    {
+     {
         name: 'Skyscraper',
         description: 'An archetype focused on building tall structures and overwhelming opponents with height-based strategies.',
         filepath: 'Skyscraper Deck Analysis.html',
@@ -23952,9 +23632,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#696969" font-weight="bold">Skyscraper</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -23989,9 +23668,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#b8860b" font-weight="bold">Sphinx</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24027,9 +23705,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#696969" font-weight="bold">Scrap</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24051,9 +23728,8 @@ const archetypes = [
                         <path d="M25 35 L35 35 M75 35 L85 35 M25 65 L35 65 M75 65 L85 65" stroke="#ec4899" stroke-width="1"/>
                         <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SPIDER</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24091,9 +23767,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#87ceeb" font-weight="bold">Spirit message</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24115,9 +23790,8 @@ const archetypes = [
                         <path d="M40 60 Q45 55 50 60 Q55 55 60 60" stroke="#5eead4" stroke-width="2" fill="none"/>
                         <text x="50" y="75" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">SPIRIT</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24155,9 +23829,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#ff69b4" font-weight="bold">Solfachord</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24196,9 +23869,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#32cd32" font-weight="bold">Spright</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24233,9 +23905,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#006400" font-weight="bold">Springans</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24274,9 +23945,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#2f4f4f" font-weight="bold">SPYRAL</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24310,9 +23980,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#ffd700" font-weight="bold">Star Seraph</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24333,9 +24002,8 @@ const archetypes = [
                         <circle cx="50" cy="50" r="4" fill="#93c5fd"/>
                         <text x="50" y="75" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">STAR WARRIOR</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24370,9 +24038,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#c0c0c0" font-weight="bold">Stardust</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24433,9 +24100,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#32cd32" font-weight="bold">Sunavalon</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24472,9 +24138,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#696969" font-weight="bold">Super Defence Robot</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24509,9 +24174,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#8b4513" font-weight="bold">Subterror</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24549,9 +24213,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#6a5acd" font-weight="bold">Super Quant</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24586,9 +24249,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#dc143c" font-weight="bold">Swordsoul</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24626,9 +24288,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#b22222" font-weight="bold">Superheavy Samurai</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24663,9 +24324,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#228b22" font-weight="bold">Sylvan</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24702,9 +24362,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4682b4" font-weight="bold">Synchron</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24742,9 +24401,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#00bfff" font-weight="bold">T.G.</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24779,9 +24437,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4169e1" font-weight="bold">Tearlaments</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24815,9 +24472,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#dc143c" font-weight="bold">Tenyi</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24854,9 +24510,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#87ceeb" font-weight="bold">The Weather</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24893,9 +24548,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#ffd700" font-weight="bold">The Agents</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24917,9 +24571,8 @@ const archetypes = [
                         <path d="M35 50 L45 45 M55 45 L65 50 M40 55 L45 60 M55 60 L60 55" stroke="#f59e0b" stroke-width="2"/>
                         <text x="50" y="80" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">THREE MUSKETEERS</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24941,9 +24594,8 @@ const archetypes = [
                         <path d="M45 58 L50 55 L55 58" stroke="#fcd34d" stroke-width="1" fill="none"/>
                         <text x="50" y="80" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">TEMPLE OF THE KINGS</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24965,9 +24617,8 @@ const archetypes = [
                         <path d="M40 65 Q45 60 50 65 Q55 60 60 65" stroke="#D7263D" stroke-width="2" fill="none"/>
                         <text x="50" y="80" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">STYGIAN</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -24989,9 +24640,8 @@ const archetypes = [
                         <circle cx="52" cy="50" r="2" fill="#e0e7ff"/>
                         <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">SUPREME KING</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -25026,9 +24676,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#ffd700" font-weight="bold">Starry Knight</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -25065,9 +24714,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#2f4f4f" font-weight="bold">Stealth Kragen</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -25104,9 +24752,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#ff69b4" font-weight="bold">Symphonic Warrior</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -25143,9 +24790,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#dc143c" font-weight="bold">Tenpai Dragon</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
 
     {
@@ -25182,9 +24828,8 @@ const archetypes = [
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="12" fill="#8b0000" font-weight="bold">Therion</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: None,
+        latestReleaseDate: None
     },
     {
         name: "Thunder Dragon",
@@ -26831,9 +26476,7 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="9" fill="#000000" font-weight="bold">Black Dinosaur</text>
-                    </svg>`,
-                    firstReleaseDate: '2005-10-20',
-                    latestReleaseDate: '2014-12-24',
+                    </svg>`
     },
     {
         name: "Barrier Statue",
@@ -26872,9 +26515,7 @@ const archetypes = [
                         <rect x="30" y="50" width="5" height="15" fill="url(#barrierGradient)"/>
                         <rect x="65" y="50" width="5" height="15" fill="url(#barrierGradient)"/>
                         <text x="50" y="95" text-anchor="middle" font-size="9" fill="#696969" font-weight="bold">Barrier Statue</text>
-                    </svg>`,                    
-                    firstReleaseDate: '2006-11-15',
-                    latestReleaseDate: '2006-11-15',
+                    </svg>`
     },
     {
         name: "Coach",
@@ -26912,9 +26553,7 @@ const archetypes = [
                             <animateTransform attributeName="transform" type="translate" values="0 0;-5 0;0 0" dur="1s" repeatCount="indefinite"/>
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#ff6347" font-weight="bold">Coach</text>
-                    </svg>`,
-                    firstReleaseDate: '2013-12-07',  
-latestReleaseDate: '2013-08-09',
+                    </svg>`
     },
     {
         name: "Cosmic Dragon",
@@ -26958,9 +26597,7 @@ latestReleaseDate: '2013-08-09',
                             <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="4s" repeatCount="indefinite"/>
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="9" fill="#000080" font-weight="bold">Cosmic Dragon</text>
-                    </svg>`,
-                    firstReleaseDate: '2010-08-31',
-                    latestReleaseDate: '2023-07-28',
+                    </svg>`
     },
     {
         name: "Book",
@@ -26995,10 +26632,7 @@ latestReleaseDate: '2013-08-09',
                             <animateTransform attributeName="transform" type="rotate" values="0 30 45;10 30 45;0 30 45" dur="2s" repeatCount="indefinite"/>
                         </rect>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#8b4513" font-weight="bold">Book</text>
-                    </svg>`,
-                    firstReleaseDate: '2004-01-11',
-                    latestReleaseDate: '2021-04-06',
-
+                    </svg>`
     },
     {
         name: "Chtonian Infernal",
@@ -27042,10 +26676,7 @@ latestReleaseDate: '2013-08-09',
                             <animate attributeName="d" values="M70 60 Q80 55 85 60 Q80 65 70 60;M70 60 Q85 50 90 60 Q85 70 70 60" dur="2s" repeatCount="indefinite"/>
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="8" fill="#8b0000" font-weight="bold">Chtonian Infernal</text>
-                    </svg>`,
-                        firstReleaseDate: '2005-03-19',
-                        latestReleaseDate: '2025-09-26',
-                    
+                    </svg>`
     },
     {
         name: "Adventure",
@@ -27083,9 +26714,7 @@ latestReleaseDate: '2013-08-09',
                         <rect x="60" y="50" width="10" height="8" fill="#daa520" stroke="#000000" stroke-width="1"/>
                         <circle cx="65" cy="52" r="1" fill="#ffd700"/>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#daa520" font-weight="bold">Adventure</text>
-                    </svg>`,
-        firstReleaseDate: '2022-01-28',
-        latestReleaseDate: '2022-10-21',
+                    </svg>`
     },
     {
         name: "Charity",
@@ -27126,9 +26755,7 @@ latestReleaseDate: '2013-08-09',
                         <!-- Shield -->
                         <ellipse cx="50" cy="70" rx="10" ry="5" fill="#c0c0c0" stroke="#000000" stroke-width="1"/>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#ff69b4" font-weight="bold">Charity</text>
-                    </svg>`,
-                    firstReleaseDate: '2007-07-30',  // D.D. Crow release date
-                    latestReleaseDate: '2014-05-16', 
+                    </svg>`
     },
     {
         name: "Ancient Fairy Dragon",
@@ -27220,9 +26847,7 @@ latestReleaseDate: '2013-08-09',
                             <animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/>
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#add8e6" font-weight="bold">Clear World</text>
-                    </svg>`,
-                    firstReleaseDate: '2009-11-17',  
-                    latestReleaseDate: '2025-03-14',
+                    </svg>`
     },
     {
         name: "Crashbug",
@@ -27268,9 +26893,7 @@ latestReleaseDate: '2013-08-09',
                             <animateTransform attributeName="transform" type="scale" values="1 1;1.2 1;1 1" dur="2s" repeatCount="indefinite"/>
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#696969" font-weight="bold">Crashbug</text>
-                    </svg>`,
-                    firstReleaseDate: '2011-08-16',  
-                    latestReleaseDate: '2011-08-16',
+                    </svg>`
     },
     {
         name: "Cocoon of Evolution",
@@ -27310,9 +26933,7 @@ latestReleaseDate: '2013-08-09',
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="8" fill="#228B22" font-weight="bold">Cocoon</text>
                         <text x="50" y="105" text-anchor="middle" font-size="8" fill="#228B22" font-weight="bold">Evolution</text>
-                    </svg>`,
-                    firstReleaseDate: '2002-06-26',  
-                    latestReleaseDate: '2024-08-23',    
+                    </svg>`
     },
     {
         name: "C Series",
@@ -27353,10 +26974,7 @@ latestReleaseDate: '2013-08-09',
                             <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite" begin="1s"/>
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#FFFFFF" font-weight="bold">C Series</text>
-                    </svg>`,
-                    firstReleaseDate: '2009-01-09',  // D.D. Crow release date
-                    latestReleaseDate: '2023-10-02', 
-
+                    </svg>`
     },
     {
         name: "P series",
@@ -27454,9 +27072,7 @@ latestReleaseDate: '2013-08-09',
                         <text x="15" y="25" font-size="6" fill="#FFFFFF" opacity="0.7">0101</text>
                         <text x="75" y="85" font-size="6" fill="#FFFFFF" opacity="0.7">1010</text>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#00FF00" font-weight="bold">Cyberse</text>
-                    </svg>`,                    
-        firstReleaseDate: '2017-04-08',
-        latestReleaseDate: '2025-05-05',
+                    </svg>`
     },
     {
         name: "A-to-Z",
@@ -27507,9 +27123,7 @@ latestReleaseDate: '2013-08-09',
                             </marker>
                         </defs>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#FFD700" font-weight="bold">A-to-Z</text>
-                    </svg>`,
-                    firstReleaseDate: '2003-05-16',  
-                    latestReleaseDate: '2025-08-23',
+                    </svg>`
     },
     {
         name: "Cupid",
@@ -27598,9 +27212,7 @@ latestReleaseDate: '2013-08-09',
                             <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="5s" repeatCount="indefinite"/>
                         </polygon>
                         <text x="50" y="95" text-anchor="middle" font-size="8" fill="#9370DB" font-weight="bold">Anotherverse</text>
-                    </svg>`,
-        firstReleaseDate: '2022-08-28',  // D.D. Crow release date
-        latestReleaseDate: '2025-08-06',  // Most recent D.D. support
+                    </svg>`
     },
     {
         name: "Backup",
@@ -27637,9 +27249,7 @@ latestReleaseDate: '2013-08-09',
                         <rect x="42" y="65" width="16" height="10" rx="2" fill="#FFD700" stroke="#000000" stroke-width="1"/>
                         <path d="M46 65 Q46 60 50 60 Q54 60 54 65" stroke="#000000" stroke-width="1" fill="none"/>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#4682B4" font-weight="bold">Backup</text>
-                    </svg>`,
-                    firstReleaseDate: '2017-04-07',
-                    latestReleaseDate: '2025-05-02',
+                    </svg>`
     },
     {
         name: "Cataclysmic",
@@ -27731,9 +27341,7 @@ latestReleaseDate: '2013-08-09',
                             <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1s" repeatCount="indefinite" begin="0.5s"/>
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#228B22" font-weight="bold">Cicada</text>
-                    </svg>`,
-                    firstReleaseDate: '2020-07-24',  
-                    latestReleaseDate: '2022-11-18',
+                    </svg>`
     },
     {
         name: "Counter Fairy",
@@ -28203,12 +27811,12 @@ latestReleaseDate: '2013-08-09',
                         <text x="50" y="85" text-anchor="middle" font-size="7" fill="#DC143C" font-weight="bold">FROM THE</text>
                         <text x="50" y="95" text-anchor="middle" font-size="7" fill="#DC143C" font-weight="bold">UNDERWORLD</text>
                     </svg>`
-    },
-    {
-        name: "Sacred Beast",
-        description: "A DARK archetype featuring three legendary beasts—Uria, Hamon, and Raviel—that evolved from anime icons to a consistent control deck with modern support enabling efficient deployment and devastating OTK potential.",
-        filepath: "Sacred Beast Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Sacred Beast",
+                                description: "A DARK archetype featuring three legendary beasts—Uria, Hamon, and Raviel—that evolved from anime icons to a consistent control deck with modern support enabling efficient deployment and devastating OTK potential.",
+                                filepath: "Sacred Beast Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sacredBeastGrad" cx="50%" cy="50%" r="50%">
                                 <stop offset="0%" style="stop-color:#581c87;stop-opacity:1" />
@@ -28234,12 +27842,12 @@ latestReleaseDate: '2013-08-09',
                         <text x="50" y="85" text-anchor="middle" font-size="9" fill="#fde047" font-weight="bold">SACRED</text>
                         <text x="50" y="95" text-anchor="middle" font-size="9" fill="#fde047" font-weight="bold">BEAST</text>
                         </svg>`
-    },
-    {
-        name: "Salamangreat",
-        description: "A deck analysis for the Salamangreat archetype.",
-        filepath: "Salamangreat Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Salamangreat",
+                                description: "A deck analysis for the Salamangreat archetype.",
+                                filepath: "Salamangreat Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                         <radialGradient id="salamangreatGrad" cx="50%" cy="50%" r="50%">
                         <stop offset="0%" style="stop-color:#e74c3c;stop-opacity:1" />
@@ -28252,12 +27860,12 @@ latestReleaseDate: '2013-08-09',
                         </path>
                         <text x="50" y="57" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">SALAMANGREAT</text>
                         </svg>`
-    },
-    {
-        name: "Shaddol",
-        description: "A deck analysis for the Shaddol archetype.",
-        filepath: "Shaddol Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Shaddol",
+                                description: "A deck analysis for the Shaddol archetype.",
+                                filepath: "Shaddol Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                         <radialGradient id="shaddolGrad" cx="50%" cy="50%" r="50%">
                         <stop offset="0%" style="stop-color:#2c3e50;stop-opacity:1" />
@@ -28270,12 +27878,12 @@ latestReleaseDate: '2013-08-09',
                         </path>
                         <text x="50" y="57" text-anchor="middle" font-size="12" fill="#9b59b6" font-weight="bold">SHADDOL</text>
                         </svg>`
-    },
-    {
-        name: "Gorgonic",
-        description: "A parasitic archetype focused on summoning Gorgonic Guardian for powerful control and disruption effects through petrification mechanics.",
-        filepath: "Gorgonic Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Gorgonic",
+                                description: "A parasitic archetype focused on summoning Gorgonic Guardian for powerful control and disruption effects through petrification mechanics.",
+                                filepath: "Gorgonic Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                         <radialGradient id="gorgonicGrad" cx="50%" cy="50%" r="50%">
                         <stop offset="0%" style="stop-color:#4a3a4a;stop-opacity:1" />
@@ -28288,12 +27896,12 @@ latestReleaseDate: '2013-08-09',
                         </path>
                         <text x="50" y="57" text-anchor="middle" font-size="10" fill="#9370DB" font-weight="bold">GORGONIC</text>
                         </svg>`
-    },
-    {
-        name: "Gizmek",
-        description: "A machine archetype centered around Gizmek Uro, focusing on high-level summons and control through mechanical synergies and token generation.",
-        filepath: "Gizmek Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Gizmek",
+                                description: "A machine archetype centered around Gizmek Uro, focusing on high-level summons and control through mechanical synergies and token generation.",
+                                filepath: "Gizmek Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                         <defs>
                                         <radialGradient id="gizmekGrad" cx="50%" cy="50%" r="50%">
                                         <stop offset="0%" style="stop-color:#708090;stop-opacity:1" />
@@ -28308,12 +27916,12 @@ latestReleaseDate: '2013-08-09',
                                         </g>
 <text x="50" y="57" text-anchor="middle" font-size="12" fill="#4682b4" font-weight="bold">GIZMEK</text>
 </svg>`
-    },
-    {
-        name: "Guardragon",
-        description: "A dragon archetype that utilizes guard and dragon synergies to summon powerful monsters and control the field through strategic positioning and effects.",
-        filepath: "Guardragon Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Guardragon",
+                                description: "A dragon archetype that utilizes guard and dragon synergies to summon powerful monsters and control the field through strategic positioning and effects.",
+                                filepath: "Guardragon Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="guardragonGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#8b4513;stop-opacity:1" />
@@ -28326,12 +27934,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="57" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">GUARDRAGON</text>
 </svg>`
-    },
-    {
-        name: "Grepher",
-        description: "A small archetype centered around Grepher, utilizing fusion mechanics and graveyard effects for control and disruption through banishing and special summoning.",
-        filepath: "Grepher Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Grepher",
+                                description: "A small archetype centered around Grepher, utilizing fusion mechanics and graveyard effects for control and disruption through banishing and special summoning.",
+                                filepath: "Grepher Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="grepherGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#4b0082;stop-opacity:1" />
@@ -28344,12 +27952,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="57" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">GREPHER</text>
 </svg>`
-    },
-    {
-        name: "Goyo",
-        description: "A Synchro-focused archetype centered around Goyo Guardian, utilizing Level 6 Synchro mechanics for powerful field control and disruption through monster taking effects.",
-        filepath: "Goyo Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Goyo",
+                                description: "A Synchro-focused archetype centered around Goyo Guardian, utilizing Level 6 Synchro mechanics for powerful field control and disruption through monster taking effects.",
+                                filepath: "Goyo Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="goyoGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#2e8b57;stop-opacity:1" />
@@ -28362,12 +27970,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="57" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">GOYO</text>
 </svg>`
-    },
-    {
-        name: "Hand",
-        description: "A small archetype featuring Hand monsters that support various strategies through hand manipulation and trap card synergies for control and disruption.",
-        filepath: "Hand Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Hand",
+                                description: "A small archetype featuring Hand monsters that support various strategies through hand manipulation and trap card synergies for control and disruption.",
+                                filepath: "Hand Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="handGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#ff6347;stop-opacity:1" />
@@ -28380,12 +27988,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="57" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">HAND</text>
 </svg>`
-    },
-    {
-        name: "Herald",
-        description: "A Fairy archetype centered around Herald of Perfection, utilizing Spell and Trap card manipulation for powerful negation and control effects through heraldic summons.",
-        filepath: "Herald Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Herald",
+                                description: "A Fairy archetype centered around Herald of Perfection, utilizing Spell and Trap card manipulation for powerful negation and control effects through heraldic summons.",
+                                filepath: "Herald Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="heraldGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#ffd700;stop-opacity:1" />
@@ -28398,12 +28006,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="57" text-anchor="middle" font-size="12" fill="#000000" font-weight="bold">HERALD</text>
 </svg>`
-    },
-    {
-        name: "Helios",
-        description: "A LIGHT archetype centered around Helios - The Primordial Sun, utilizing level manipulation and LIGHT monster synergies for powerful Synchro and Xyz summons through solar mechanics.",
-        filepath: "Helios Deck analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Helios",
+                                description: "A LIGHT archetype centered around Helios - The Primordial Sun, utilizing level manipulation and LIGHT monster synergies for powerful Synchro and Xyz summons through solar mechanics.",
+                                filepath: "Helios Deck analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="heliosGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#ffff00;stop-opacity:1" />
@@ -28416,12 +28024,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="57" text-anchor="middle" font-size="12" fill="#000000" font-weight="bold">HELIOS</text>
 </svg>`
-    },
-    {
-        name: "Hex Sealed Fusion",
-        description: "An archetype centered around Hex Sealed Fusion, utilizing fusion mechanics and hex-sealed monsters for powerful fusion summons and strategic control through sealed effects.",
-        filepath: "Hex Sealed Fusion Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Hex Sealed Fusion",
+                                description: "An archetype centered around Hex Sealed Fusion, utilizing fusion mechanics and hex-sealed monsters for powerful fusion summons and strategic control through sealed effects.",
+                                filepath: "Hex Sealed Fusion Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="hexGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#8b0000;stop-opacity:1" />
@@ -28435,12 +28043,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="55" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">HEX SEALED</text>
 <text x="50" y="65" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">FUSION</text>
 </svg>`
-    },
-    {
-        name: "Hunder",
-        description: "A Thunder archetype centered around Hunder, utilizing level 4 Thunder monsters for beatdown strategies and Synchro support through electrical synergies.",
-        filepath: "hunder Deck analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Hunder",
+                                description: "A Thunder archetype centered around Hunder, utilizing level 4 Thunder monsters for beatdown strategies and Synchro support through electrical synergies.",
+                                filepath: "hunder Deck analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="hunderGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#ffff00;stop-opacity:1" />
@@ -28453,12 +28061,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="57" text-anchor="middle" font-size="12" fill="#000000" font-weight="bold">HUNDER</text>
 </svg>`
-    },
-    {
-        name: "Infernal Flame",
-        description: "A Pyro-focused series that provides generic support and consistency for Pyro monster strategies, centered around the powerful Infernal Flame Banshee that enables access to key Pyro starters.",
-        filepath: "Infernal Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Infernal Flame",
+                                description: "A Pyro-focused series that provides generic support and consistency for Pyro monster strategies, centered around the powerful Infernal Flame Banshee that enables access to key Pyro starters.",
+                                filepath: "Infernal Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="infernalGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#ff4500;stop-opacity:1" />
@@ -28475,12 +28083,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">INFERNAL</text>
 <text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">FLAME</text>
 </svg>`
-    },
-    {
-        name: "Lair of Darkness",
-        description: "A synergistic engine centered around the Lair of Darkness Field Spell, enabling control strategies by tributing opponent's monsters to fuel disruptive effects and resource denial for DARK attribute decks.",
-        filepath: "Lair of Darkness Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Lair of Darkness",
+                                description: "A synergistic engine centered around the Lair of Darkness Field Spell, enabling control strategies by tributing opponent's monsters to fuel disruptive effects and resource denial for DARK attribute decks.",
+                                filepath: "Lair of Darkness Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="lairGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#2d1b69;stop-opacity:1" />
@@ -28497,12 +28105,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LAIR OF</text>
 <text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">DARKNESS</text>
 </svg>`
-    },
-    {
-        name: "Branded",
-        description: "A Fusion-centric archetype revolving around Fallen of Albaz and Branded Fusion, enabling powerful Fusion summons and control strategies through synergistic support cards and graveyard manipulation.",
-        filepath: "Branded Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Branded",
+                                description: "A Fusion-centric archetype revolving around Fallen of Albaz and Branded Fusion, enabling powerful Fusion summons and control strategies through synergistic support cards and graveyard manipulation.",
+                                filepath: "Branded Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="brandedGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#4f3a6a;stop-opacity:1" />
@@ -28518,12 +28126,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">BRANDED</text>
 </svg>`
-    },
-    {
-        name: "Ecclesia",
-        description: "A versatile engine centered around Ecclesia monsters, providing powerful support and synergy across multiple strategies including Branded, Despia, and Swordsoul through resource generation, revival effects, and enabling unaffected boss monsters.",
-        filepath: "Ecclesia Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Ecclesia",
+                                description: "A versatile engine centered around Ecclesia monsters, providing powerful support and synergy across multiple strategies including Branded, Despia, and Swordsoul through resource generation, revival effects, and enabling unaffected boss monsters.",
+                                filepath: "Ecclesia Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="ecclesiaGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#1a2033;stop-opacity:1" />
@@ -28539,12 +28147,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">ECCLESIA</text>
 </svg>`
-    },
-    {
-        name: "Inca",
-        description: "A thematic Synchro series centered around Sun Dragon Inti and Moon Dragon Quilla, featuring a recursive loop between the two boss monsters for resilient, self-sustaining gameplay and celestial-themed strategies.",
-        filepath: "Inca Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Inca",
+                                description: "A thematic Synchro series centered around Sun Dragon Inti and Moon Dragon Quilla, featuring a recursive loop between the two boss monsters for resilient, self-sustaining gameplay and celestial-themed strategies.",
+                                filepath: "Inca Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="incaGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
@@ -28560,12 +28168,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">INCA</text>
 </svg>`
-    },
-    {
-        name: "Imperial traps",
-        description: "A series of powerful Trap Cards including Imperial Order, Imperial Iron Wall, Imperial Custom, and Imperial Tombs of Necrovalley, providing versatile control and disruption effects for various strategies.",
-        filepath: "Imperial traps Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Imperial traps",
+                                description: "A series of powerful Trap Cards including Imperial Order, Imperial Iron Wall, Imperial Custom, and Imperial Tombs of Necrovalley, providing versatile control and disruption effects for various strategies.",
+                                filepath: "Imperial traps Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="imperialGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#2c2a4a;stop-opacity:1" />
@@ -28582,12 +28190,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">IMPERIAL</text>
 <text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">TRAPS</text>
 </svg>`
-    },
-    {
-        name: "Inpachi",
-        description: "A thematic collection of Normal Monsters including Inpachi, Blazing Inpachi, Charcoal Inpachi, and Woodborg Inpachi, providing versatile support for generic engines through their EARTH/Machine and FIRE/Pyro attributes.",
-        filepath: "Inpachi Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Inpachi",
+                                description: "A thematic collection of Normal Monsters including Inpachi, Blazing Inpachi, Charcoal Inpachi, and Woodborg Inpachi, providing versatile support for generic engines through their EARTH/Machine and FIRE/Pyro attributes.",
+                                filepath: "Inpachi Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="inpachiGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#2b1d1d;stop-opacity:1" />
@@ -28603,12 +28211,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">INPACHI</text>
 </svg>`
-    },
-    {
-        name: "Jar",
-        description: "A thematic series of monsters with powerful Flip effects, centered around the infamous 'Empty Jar' deck-out strategy featuring Morphing Jar, Cyber Jar, and other jar-themed cards for explosive turn plays.",
-        filepath: "Jar Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Jar",
+                                description: "A thematic series of monsters with powerful Flip effects, centered around the infamous 'Empty Jar' deck-out strategy featuring Morphing Jar, Cyber Jar, and other jar-themed cards for explosive turn plays.",
+                                filepath: "Jar Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="jarGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#2b2518;stop-opacity:1" />
@@ -28624,12 +28232,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">JAR</text>
 </svg>`
-    },
-    {
-        name: "Lightray",
-        description: "A series of powerful LIGHT attribute boss monsters that require specific resource thresholds in the Graveyard or banished zone to summon, enabling control strategies when paired with engines like Lightsworn or Thunder Dragon.",
-        filepath: "Lightray Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Lightray",
+                                description: "A series of powerful LIGHT attribute boss monsters that require specific resource thresholds in the Graveyard or banished zone to summon, enabling control strategies when paired with engines like Lightsworn or Thunder Dragon.",
+                                filepath: "Lightray Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="lightrayGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#1a2340;stop-opacity:1" />
@@ -28645,12 +28253,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">LIGHTRAY</text>
 </svg>`
-    },
-    {
-        name: "Horn of Heaven",
-        description: "A series of Counter Trap Cards focused on summon negation, including Horn of Heaven, Black Horn of Heaven, and Grand Horn of Heaven, providing reactive disruption against various summoning methods.",
-        filepath: "Horn of Heaven Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Horn of Heaven",
+                                description: "A series of Counter Trap Cards focused on summon negation, including Horn of Heaven, Black Horn of Heaven, and Grand Horn of Heaven, providing reactive disruption against various summoning methods.",
+                                filepath: "Horn of Heaven Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="hornGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
@@ -28667,12 +28275,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">HORN OF</text>
 <text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">HEAVEN</text>
 </svg>`
-    },
-    {
-        name: "Light and Darkness Dragon",
-        description: "A Chaos Dragon archetype centered around Light and Darkness Dragon and its Fusion evolution Dragonlord, featuring powerful negation effects, revival mechanics, and LIGHT/DARK Dragon support for strategic control.",
-        filepath: "Light and Darkness Dragon Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Light and Darkness Dragon",
+                                description: "A Chaos Dragon archetype centered around Light and Darkness Dragon and its Fusion evolution Dragonlord, featuring powerful negation effects, revival mechanics, and LIGHT/DARK Dragon support for strategic control.",
+                                filepath: "Light and Darkness Dragon Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="dualityGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#0a0a10;stop-opacity:1" />
@@ -28693,12 +28301,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LIGHT &amp;</text>
 <text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">DARKNESS</text>
 </svg>`
-    },
-    {
-        name: "Majestic Mech",
-        description: "A GX-era series of three powerful Main Deck monsters (Ohka, Goryu, Senku) that function as standalone Synchro tools rather than a cohesive archetype, featuring mechanical themes and high-level mechanics.",
-        filepath: "Majestic Mech Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Majestic Mech",
+                                description: "A GX-era series of three powerful Main Deck monsters (Ohka, Goryu, Senku) that function as standalone Synchro tools rather than a cohesive archetype, featuring mechanical themes and high-level mechanics.",
+                                filepath: "Majestic Mech Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="mechGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
@@ -28718,12 +28326,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="85" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">MAJESTIC</text>
 <text x="50" y="95" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">MECH</text>
 </svg>`
-    },
-    {
-        name: "Madoor",
-        description: "A series of thematically linked aquatic monsters (Aqua Madoor, Neo Aqua Madoor, Lightray Madoor, Glacier Aqua Madoor) spanning two decades, representing the evolution of Yu-Gi-Oh! card design from individual monsters to modern archetypes.",
-        filepath: "Madoor Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Madoor",
+                                description: "A series of thematically linked aquatic monsters (Aqua Madoor, Neo Aqua Madoor, Lightray Madoor, Glacier Aqua Madoor) spanning two decades, representing the evolution of Yu-Gi-Oh! card design from individual monsters to modern archetypes.",
+                                filepath: "Madoor Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="iceGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#0a121f;stop-opacity:1" />
@@ -28742,12 +28350,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">MADOOR</text>
 </svg>`
-    },
-    {
-        name: "Maju",
-        description: "A series of Fiend monsters focused on achieving overwhelming ATK values through banished card accumulation (Gren Maju Da Eiza) or tribute mechanics (Garzett variants), enabling OTK and beatdown strategies.",
-        filepath: "Maju Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Maju",
+                                description: "A series of Fiend monsters focused on achieving overwhelming ATK values through banished card accumulation (Gren Maju Da Eiza) or tribute mechanics (Garzett variants), enabling OTK and beatdown strategies.",
+                                filepath: "Maju Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="fireGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#1a0a0a;stop-opacity:1" />
@@ -28766,12 +28374,12 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">MAJU</text>
 </svg>`
-    },
-    {
-        name: "Mystic Swordsman",
-        description: "An LV series of EARTH Warrior monsters (LV2, LV4, LV6) that excel at destroying face-down monsters but suffer from a design contradiction that hinders their progression mechanics.",
-        filepath: "Mystic Swordsman Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Mystic Swordsman",
+                                description: "An LV series of EARTH Warrior monsters (LV2, LV4, LV6) that excel at destroying face-down monsters but suffer from a design contradiction that hinders their progression mechanics.",
+                                filepath: "Mystic Swordsman Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="swordGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#1a100a;stop-opacity:1" />
@@ -28788,12 +28396,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">MYSTIC</text>
 <text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">SWORDSMAN</text>
 </svg>`
-    },
-    {
-        name: "Mirror Force",
-        description: "A series of Trap Cards that destroy, bounce, or remove Attack Position monsters, evolving from the iconic Mirror Force to various specialized variants for different strategic purposes.",
-        filepath: "Mirror Force Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            },
+                            {
+                                name: "Mirror Force",
+                                description: "A series of Trap Cards that destroy, bounce, or remove Attack Position monsters, evolving from the iconic Mirror Force to various specialized variants for different strategic purposes.",
+                                filepath: "Mirror Force Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="mirrorGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#0d121c;stop-opacity:1" />
@@ -28812,13 +28420,13 @@ latestReleaseDate: '2013-08-09',
 </path>
 <text x="50" y="85" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">MIRROR</text>
 <text x="50" y="95" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">FORCE</text>
-</svg>`
-    },
-    {
-        name: "Mystical Elf",
-        description: "A sophisticated Normal Monster control strategy centered around Mystical Elf - White Lightning, featuring powerful interaction effects and revival mechanics for strategic LIGHT Spellcaster support in a modern Yu-Gi-Oh! context.",
-        filepath: "Mystical Elf Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+</svg>`                            
+                        },
+                        {
+                                name: "Mystical Elf",
+                                description: "A sophisticated Normal Monster control strategy centered around Mystical Elf - White Lightning, featuring powerful interaction effects and revival mechanics for strategic LIGHT Spellcaster support in a modern Yu-Gi-Oh! context.",
+                                filepath: "Mystical Elf Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="mysticalGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#0c142a;stop-opacity:1" />
@@ -28835,12 +28443,12 @@ latestReleaseDate: '2013-08-09',
 </circle>
 <text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">MYSTICAL ELF</text>
 </svg>`
-    },
-    {
-        name: "Monarch",
-        description: "A control-oriented strategy built upon Tribute Summoning mechanics, featuring powerful monarch monsters and support cards that transform tributing into advantage generation while invalidating opponents' Extra Deck access.",
-        filepath: "Monarch Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        },
+                        {
+                                name: "Monarch",
+                                description: "A control-oriented strategy built upon Tribute Summoning mechanics, featuring powerful monarch monsters and support cards that transform tributing into advantage generation while invalidating opponents' Extra Deck access.",
+                                filepath: "Monarch Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="monarchGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#18181b;stop-opacity:1" />
@@ -28854,12 +28462,12 @@ latestReleaseDate: '2013-08-09',
 <path d="M46 46 L54 54 M54 46 L46 54" stroke="#fbbf24" stroke-width="1"/>
 <text x="50" y="85" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">MONARCH</text>
 </svg>`
-    },
-    {
-        name: "Legendary Planet",
-        description: "A thematic series of ten formidable monsters representing celestial bodies from our solar system, functioning as individual boss monsters rather than a mechanically cohesive archetype, each requiring specialized external support engines to unlock their potential.",
-        filepath: "Legendary Planet Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        },
+                        {
+                                name: "Legendary Planet",
+                                description: "A thematic series of ten formidable monsters representing celestial bodies from our solar system, functioning as individual boss monsters rather than a mechanically cohesive archetype, each requiring specialized external support engines to unlock their potential.",
+                                filepath: "Legendary Planet Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="cosmicGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#0c0a1a;stop-opacity:1" />
@@ -28882,12 +28490,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LEGENDARY</text>
 <text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">PLANET</text>
 </svg>`
-    },
-    {
-        name: "Lost World",
-        description: "A Dinosaur archetype centered around the powerful Lost World Field Spell that creates tokens, provides targeting protection, and enables devastating combo chains through strategic destruction and revival mechanics.",
-        filepath: "Lost World Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        },
+                        {
+                                name: "Lost World",
+                                description: "A Dinosaur archetype centered around the powerful Lost World Field Spell that creates tokens, provides targeting protection, and enables devastating combo chains through strategic destruction and revival mechanics.",
+                                filepath: "Lost World Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="jungleGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#0a1a1a;stop-opacity:1" />
@@ -28907,12 +28515,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="85" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">LOST</text>
 <text x="50" y="95" text-anchor="middle" font-size="8" fill="#ffffff" font-weight="bold">WORLD</text>
 </svg>`
-    },
-    {
-        name: "Mudragon",
-        description: "A versatile series of three monsters that serve as strategic enablers bridging different summoning mechanics, featuring a Tuner, Synchro conduit, and powerful Fusion boss monster with Attribute manipulation effects.",
-        filepath: "Mudragon Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        },
+                        {
+                                name: "Mudragon",
+                                description: "A versatile series of three monsters that serve as strategic enablers bridging different summoning mechanics, featuring a Tuner, Synchro conduit, and powerful Fusion boss monster with Attribute manipulation effects.",
+                                filepath: "Mudragon Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="swampGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#0a141a;stop-opacity:1" />
@@ -28933,12 +28541,12 @@ latestReleaseDate: '2013-08-09',
 <path d="M55 45 Q60 40 65 45" stroke="#2dd4bf" stroke-width="1" fill="none"/>
 <text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">MUDRAGON</text>
 </svg>`
-    },
-    {
-        name: "Kaiser Glider",
-        description: "A series of retrained monsters featuring the powerful Kaiser Glider - Golden Burst, a high-skill disruption tool that can remove protected monsters by tributing them as cost, bypassing targeting and destruction immunities.",
-        filepath: "Kaiser Glider Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        },
+                        {
+                                name: "Kaiser Glider",
+                                description: "A series of retrained monsters featuring the powerful Kaiser Glider - Golden Burst, a high-skill disruption tool that can remove protected monsters by tributing them as cost, bypassing targeting and destruction immunities.",
+                                filepath: "Kaiser Glider Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="imperialGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#0a0d1f;stop-opacity:1" />
@@ -28960,12 +28568,12 @@ latestReleaseDate: '2013-08-09',
 <text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">KAISER</text>
 <text x="50" y="95" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">GLIDER</text>
 </svg>`
-    },
-    {
-        name: "Die Roll",
-        description: "A unique strategy centered around dice-rolling mechanics, featuring cards like Dice Dungeon and Dimension Dice that create explosive, unpredictable game states through calculated probability and risk management.",
-        filepath: "Die Roll Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        },
+                        {
+                                name: "Die Roll",
+                                description: "A unique strategy centered around dice-rolling mechanics, featuring cards like Dice Dungeon and Dimension Dice that create explosive, unpredictable game states through calculated probability and risk management.",
+                                filepath: "Die Roll Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="casinoGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
@@ -28989,15 +28597,13 @@ latestReleaseDate: '2013-08-09',
 <path d="M35 35 Q45 25 55 35" stroke="#ffd700" stroke-width="1" fill="none"/>
 <path d="M45 65 Q55 55 65 65" stroke="#ffd700" stroke-width="1" fill="none"/>
 <text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">DIE ROLL</text>
-</svg>`,
-firstReleaseDate: "2003-01-03",
-latestReleaseDate: '2024-09-02'
-    },
-    {
-        name: "Digital Bug",
-        description: "A LIGHT Insect-Type archetype that manipulates battle positions to generate advantage and swarm the field for Xyz Summons, featuring a xenophobic system where monsters can only be used for Insect-Type Xyz Summons.",
-        filepath: "Digital Bug Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+</svg>`
+                        },
+                        {
+                                name: "Digital Bug",
+                                description: "A LIGHT Insect-Type archetype that manipulates battle positions to generate advantage and swarm the field for Xyz Summons, featuring a xenophobic system where monsters can only be used for Insect-Type Xyz Summons.",
+                                filepath: "Digital Bug Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="digitalGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#020617;stop-opacity:1" />
@@ -29019,12 +28625,12 @@ latestReleaseDate: '2024-09-02'
 <text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">DIGITAL</text>
 <text x="50" y="95" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">BUG</text>
 </svg>`
-    },
-    {
-        name: "Doriado",
-        description: "An elemental-themed archetype centered around Ritual Summoning and attribute manipulation, featuring powerful cards like Elemental Mistress Doriado that count as all four main attributes to enable devastating trap effects.",
-        filepath: "Doriado Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        },
+                        {
+                                name: "Doriado",
+                                description: "An elemental-themed archetype centered around Ritual Summoning and attribute manipulation, featuring powerful cards like Elemental Mistress Doriado that count as all four main attributes to enable devastating trap effects.",
+                                filepath: "Doriado Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="elementalGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
@@ -29046,12 +28652,12 @@ latestReleaseDate: '2024-09-02'
 <path d="M48 35 Q53 30 58 35" stroke="#9f7aea" stroke-width="1" fill="none"/>
 <text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">DORIADO</text>
 </svg>`
-    },
-    {
-        name: "Diabolos",
-        description: "A DARK monster archetype centered around tributing mechanics and the Lair of Darkness field spell, featuring powerful disruption and hand control through strategic monster tributes and token generation.",
-        filepath: "Diabolos Deck Analysis.html",
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        },
+                        {
+                                name: "Diabolos",
+                                description: "A DARK monster archetype centered around tributing mechanics and the Lair of Darkness field spell, featuring powerful disruption and hand control through strategic monster tributes and token generation.",
+                                filepath: "Diabolos Deck Analysis.html",
+                                icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="demonicGrad" cx="50%" cy="50%" r="50%">
 <stop offset="0%" style="stop-color:#110f1b;stop-opacity:1" />
@@ -29072,9 +28678,7 @@ latestReleaseDate: '2024-09-02'
 <path d="M42 35 Q47 30 52 35" stroke="#f472b6" stroke-width="1" fill="none"/>
 <path d="M48 35 Q53 30 58 35" stroke="#f472b6" stroke-width="1" fill="none"/>
 <text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">DIABOLOS</text>
-</svg>`,
-firstReleaseDate: "2007-05-16",
-latestReleaseDate: "2018-04-20"
+</svg>`                        
     },
 
     {

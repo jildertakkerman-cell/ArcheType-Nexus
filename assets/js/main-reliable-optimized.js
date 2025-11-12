@@ -4,11 +4,12 @@ class ArchetypeLoader {
         this.archetypes = [];
         this.displayedArchetypes = [];
         this.currentPage = 0;
-        this.pageSize = 24; // Show 24 archetypes per page for better performance
+        this.pageSize = 24;
         this.isLoading = false;
         this.searchQuery = '';
         this.sortBy = 'az';
         this.alphabetFilter = 'all';
+        this.categoryFilter = 'all';
         this.scrollPosition = 0;
         this.scrollRestoreKey = 'archetype-scroll-position';
         this.alphabetRestoreKey = 'archetype-alphabet-filter';
@@ -20,6 +21,7 @@ class ArchetypeLoader {
         this.setupEventListeners();
         this.setupScrollMemory();
         await this.loadArchetypes();
+        await this.fetchArchetypeDates();
         this.hideLoading();
         this.restoreSearchQuery();
         this.restoreAlphabetFilter();
@@ -32,17 +34,15 @@ class ArchetypeLoader {
         document.getElementById('search-input').addEventListener('keyup', 
             this.debounce(() => this.handleSearch(), 300));
         document.getElementById('sort-by').addEventListener('change', () => this.handleSort());
+        document.getElementById('category-filter').addEventListener('change', () => this.handleCategoryFilter());
         document.getElementById('load-more-btn').addEventListener('click', () => this.loadMore());
         
-        // Set up alphabet navigation
         document.querySelectorAll('.alphabet-btn').forEach(btn => {
             btn.addEventListener('click', () => this.handleAlphabetFilter(btn.dataset.letter));
         });
         
-        // Set up infinite scroll
         this.setupInfiniteScroll();
         
-        // Add click listeners to archetype cards to save scroll position, alphabet filter, and search query
         document.addEventListener('click', (e) => {
             const archetypeCard = e.target.closest('a[href$=".html"]');
             if (archetypeCard) {
@@ -57,11 +57,10 @@ class ArchetypeLoader {
         try {
             this.showLoading();
             
-            // Load the full archetype data asynchronously but efficiently
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = 'assets/js/archetypes-data.js';
-                script.defer = true; // Load asynchronously but maintain order
+                script.defer = true;
                 
                 script.onload = () => {
                     if (typeof archetypes !== 'undefined' && Array.isArray(archetypes)) {
@@ -82,20 +81,162 @@ class ArchetypeLoader {
         }
     }
 
+    normalizeArchetypeName(name) {
+        return name.replace(/-/g, '');
+    }
+
+    async fetchArchetypeDates() {
+        try {
+            console.log('Fetching archetype release dates...');
+
+            const nameMapping = new Map();
+            for (const archetype of this.archetypes) {
+                const normalized = this.normalizeArchetypeName(archetype.name);
+                nameMapping.set(normalized, archetype.name);
+            }
+
+            // Check cache first
+            const cacheKey = 'archetype-dates-cache';
+            const cacheExpiryKey = 'archetype-dates-cache-expiry';
+            const now = Date.now();
+            const cacheExpiry = localStorage.getItem(cacheExpiryKey);
+            
+            if (cacheExpiry && now < parseInt(cacheExpiry)) {
+                const cached = localStorage.getItem(cacheKey);
+                if (cached) {
+                    const archetypeDates = new Map(JSON.parse(cached));
+                    this.updateArchetypesWithDates(archetypeDates);
+                    console.log('Using cached archetype dates');
+                    return;
+                }
+            }
+
+            // Fetch all card sets
+            const setResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardsets.php');
+            if (!setResponse.ok) {
+                throw new Error(`Failed to fetch card sets: ${setResponse.statusText}`);
+            }
+            const allSets = await setResponse.json();
+
+            const setReleaseDates = new Map();
+            for (const set of allSets) {
+                if (set.set_name && set.tcg_date) {
+                    setReleaseDates.set(set.set_name, set.tcg_date);
+                }
+            }
+
+            // Fetch all card info
+            const cardResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php');
+            if (!cardResponse.ok) {
+                throw new Error(`Failed to fetch card info: ${cardResponse.statusText}`);
+            }
+            const allCardsData = await cardResponse.json();
+            const allCards = allCardsData.data;
+
+            // Process cards to find dates for each archetype
+            const archetypeDates = new Map();
+            const archetypeCardDates = {};
+
+            for (const card of allCards) {
+                if (!card.archetype || !card.card_sets) continue;
+
+                const normalizedArchetype = this.normalizeArchetypeName(card.archetype);
+                const actualName = nameMapping.get(normalizedArchetype);
+                if (!actualName) continue;
+
+                // Find the earliest set release date for this card (its original release)
+                let cardEarliestDate = null;
+                for (const cardSet of card.card_sets) {
+                    const tcgDate = setReleaseDates.get(cardSet.set_name);
+                    if (!tcgDate) continue;
+                    
+                    // Only consider dates up to today to avoid future reprints
+                    const setDate = new Date(tcgDate);
+                    const today = new Date();
+                    if (setDate > today) continue;
+                    
+                    if (!cardEarliestDate || tcgDate < cardEarliestDate) {
+                        cardEarliestDate = tcgDate;
+                    }
+                }
+                if (!cardEarliestDate) continue;
+
+                if (!archetypeCardDates[actualName]) archetypeCardDates[actualName] = [];
+                archetypeCardDates[actualName].push(cardEarliestDate);
+            }
+
+            // For each archetype:
+            // - First release = earliest card release (when archetype began)
+            // - Latest support = latest card's original release (most recent new card)
+            for (const [archetypeName, cardDates] of Object.entries(archetypeCardDates)) {
+                if (cardDates.length === 0) continue;
+                
+                const earliest = cardDates.reduce((a, b) => a < b ? a : b);
+                const latest = cardDates.reduce((a, b) => a > b ? a : b);
+                
+                archetypeDates.set(archetypeName, { earliest, latest });
+                
+                // Debug log for Bamboo Sword
+                if (archetypeName.toLowerCase().includes('bamboo')) {
+                    console.log(`${archetypeName} dates:`, cardDates);
+                    console.log(`Earliest: ${earliest}, Latest: ${latest}`);
+                }
+            }
+
+            // Cache the results for 24 hours
+            localStorage.setItem(cacheKey, JSON.stringify([...archetypeDates]));
+            localStorage.setItem(cacheExpiryKey, (now + 24 * 60 * 60 * 1000).toString());
+
+            this.updateArchetypesWithDates(archetypeDates);
+
+            console.log('Archetype dates fetched and cached');
+        } catch (error) {
+            console.error('Error fetching archetype dates:', error);
+        }
+    }
+
+    updateArchetypesWithDates(archetypeDates) {
+        for (const archetype of this.archetypes) {
+            if (archetype.firstReleaseDate === null || archetype.firstReleaseDate === undefined) {
+                const dates = archetypeDates.get(archetype.name);
+                if (dates) {
+                    archetype.firstReleaseDate = dates.earliest;
+                    archetype.latestReleaseDate = dates.latest;
+                    archetype.fromAPI = true;
+                } else {
+                    archetype.firstReleaseDate = null;
+                    archetype.latestReleaseDate = null;
+                    archetype.fromAPI = false;
+                }
+            } else {
+                archetype.fromAPI = false;
+            }
+        }
+    }
+
     filterAndSort() {
-        // Filter by search query and alphabet
         let filtered = this.archetypes.filter(archetype => {
             const matchesSearch = archetype.name.toLowerCase().includes(this.searchQuery.toLowerCase());
             const matchesAlphabet = this.alphabetFilter === 'all' || 
                                   archetype.name.toLowerCase().startsWith(this.alphabetFilter.toLowerCase());
-            return matchesSearch && matchesAlphabet;
+            const matchesCategory = this.categoryFilter === 'all' ||
+                                  (this.categoryFilter === 'archetypes' && archetype.fromAPI) ||
+                                  (this.categoryFilter === 'series' && !archetype.fromAPI);
+            return matchesSearch && matchesAlphabet && matchesCategory;
         });
 
-        // Sort
         if (this.sortBy === 'az') {
             filtered.sort((a, b) => a.name.localeCompare(b.name));
         } else if (this.sortBy === 'za') {
             filtered.sort((a, b) => b.name.localeCompare(a.name));
+        } else if (this.sortBy === 'firstAsc') {
+            filtered.sort((a, b) => this.compareDates(a.firstReleaseDate, b.firstReleaseDate, true));
+        } else if (this.sortBy === 'firstDesc') {
+            filtered.sort((a, b) => this.compareDates(a.firstReleaseDate, b.firstReleaseDate, false));
+        } else if (this.sortBy === 'latestAsc') {
+            filtered.sort((a, b) => this.compareDates(a.latestReleaseDate, b.latestReleaseDate, true));
+        } else if (this.sortBy === 'latestDesc') {
+            filtered.sort((a, b) => this.compareDates(a.latestReleaseDate, b.latestReleaseDate, false));
         }
 
         this.displayedArchetypes = filtered;
@@ -103,13 +244,25 @@ class ArchetypeLoader {
         this.updateAlphabetButtons();
     }
 
+    compareDates(dateA, dateB, ascending) {
+        if (dateA === null && dateB === null) return 0;
+        if (dateA === null) return 1;
+        if (dateB === null) return -1;
+
+        const comparison = dateA.localeCompare(dateB);
+        return ascending ? comparison : -comparison;
+    }
+
     displayArchetypes(reset = true) {
+        if (reset) {
+            this.currentPage = 0;
+        }
+        
         const grid = document.getElementById('archetype-grid');
         const loadMoreContainer = document.getElementById('load-more-container');
-        
+
         if (reset) {
             grid.innerHTML = '';
-            this.currentPage = 0;
         }
 
         const startIndex = this.currentPage * this.pageSize;
@@ -122,17 +275,13 @@ class ArchetypeLoader {
             return;
         }
 
-        // Use document fragment for efficient DOM updates
         const fragment = document.createDocumentFragment();
-        
         pageArchetypes.forEach((archetype, index) => {
             const cardElement = this.createArchetypeCard(archetype, startIndex + index);
             fragment.appendChild(cardElement);
         });
-        
         grid.appendChild(fragment);
 
-        // Show/hide load more button
         if (endIndex < this.displayedArchetypes.length) {
             loadMoreContainer.classList.remove('hidden');
         } else {
@@ -142,7 +291,6 @@ class ArchetypeLoader {
         grid.classList.remove('hidden');
         this.currentPage++;
         
-        // Lazy load icons for better performance
         this.lazyLoadIcons();
     }
 
@@ -152,12 +300,10 @@ class ArchetypeLoader {
         card.className = 'card p-6 text-center block';
         card.setAttribute('data-index', index);
         
-        // Create icon container with placeholder initially
         const iconContainer = document.createElement('div');
         iconContainer.className = 'card-image';
         iconContainer.setAttribute('data-archetype-name', archetype.name);
         
-        // Show a loading placeholder initially
         iconContainer.innerHTML = `
             <div class="icon-loading bg-gray-700 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
@@ -165,8 +311,12 @@ class ArchetypeLoader {
         `;
 
         const title = document.createElement('h2');
-        title.className = 'text-2xl font-bold text-gray-100 mb-2';
+        title.className = 'text-2xl font-bold text-gray-100 mb-1';
         title.textContent = archetype.name;
+
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'text-xs text-gray-400 mb-2 uppercase tracking-wide';
+        categoryDiv.textContent = archetype.fromAPI ? 'Archetype' : 'Series';
 
         const description = document.createElement('p');
         description.className = 'text-gray-400';
@@ -174,6 +324,23 @@ class ArchetypeLoader {
 
         card.appendChild(iconContainer);
         card.appendChild(title);
+        card.appendChild(categoryDiv);
+
+        if (archetype.firstReleaseDate || archetype.latestReleaseDate) {
+            const datesDiv = document.createElement('div');
+            datesDiv.className = 'text-sm text-gray-500 mb-2';
+            let datesText = '';
+            if (archetype.firstReleaseDate) {
+                datesText += `Release: ${new Date(archetype.firstReleaseDate).getFullYear()}`;
+            }
+            if (archetype.latestReleaseDate) {
+                if (datesText) datesText += ' | ';
+                datesText += `Support: ${new Date(archetype.latestReleaseDate).getFullYear()}`;
+            }
+            datesDiv.textContent = datesText;
+            card.appendChild(datesDiv);
+        }
+
         card.appendChild(description);
 
         return card;
@@ -188,20 +355,18 @@ class ArchetypeLoader {
             const archetype = this.archetypes.find(a => a.name === archetypeName);
             
             if (archetype && archetype.icon) {
-                // Use Intersection Observer for efficient lazy loading
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
-                            // Replace loading placeholder with actual icon
                             setTimeout(() => {
                                 iconContainer.innerHTML = archetype.icon;
-                            }, Math.random() * 200); // Stagger loading for smoother experience
+                            }, Math.random() * 200);
                             observer.unobserve(entry.target);
                         }
                     });
                 }, { 
                     threshold: 0.1,
-                    rootMargin: '50px' // Start loading slightly before coming into view
+                    rootMargin: '50px'
                 });
                 
                 observer.observe(iconContainer);
@@ -228,7 +393,6 @@ class ArchetypeLoader {
         
         this.isLoading = true;
         
-        // Add a small delay to prevent rapid firing and show loading state
         const loadBtn = document.getElementById('load-more-btn');
         const originalText = loadBtn.textContent;
         loadBtn.textContent = 'Loading...';
@@ -246,12 +410,10 @@ class ArchetypeLoader {
         this.searchQuery = document.getElementById('search-input').value;
         this.saveSearchQuery(this.searchQuery);
         
-        // If user is searching and not already on "All", switch to "All" filter
         if (this.searchQuery.trim() !== '' && this.alphabetFilter !== 'all') {
             this.alphabetFilter = 'all';
             this.saveAlphabetFilter('all');
             
-            // Update active button visually
             document.querySelectorAll('.alphabet-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
@@ -264,6 +426,12 @@ class ArchetypeLoader {
 
     handleSort() {
         this.sortBy = document.getElementById('sort-by').value;
+        this.filterAndSort();
+        this.displayArchetypes(true);
+    }
+
+    handleCategoryFilter() {
+        this.categoryFilter = document.getElementById('category-filter').value;
         this.filterAndSort();
         this.displayArchetypes(true);
     }
@@ -297,7 +465,6 @@ class ArchetypeLoader {
         this.hideLoading();
     }
 
-    // Utility function for debouncing search
     debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -310,24 +477,20 @@ class ArchetypeLoader {
         };
     }
 
-    // Scroll position memory functionality
     setupScrollMemory() {
-        // Save scroll position and alphabet filter before page unload
         window.addEventListener('beforeunload', () => {
             this.saveScrollPosition();
             this.saveAlphabetFilter(this.alphabetFilter);
         });
 
-        // Save scroll position periodically while scrolling
         let scrollTimeout;
         window.addEventListener('scroll', () => {
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(() => {
                 this.saveScrollPosition();
-            }, 100); // Debounced to avoid excessive saves
+            }, 100);
         });
 
-        // Handle browser back/forward navigation
         window.addEventListener('popstate', () => {
             setTimeout(() => {
                 this.restoreAlphabetFilter();
@@ -342,7 +505,6 @@ class ArchetypeLoader {
             localStorage.setItem(this.scrollRestoreKey, scrollY.toString());
             this.scrollPosition = scrollY;
         } catch (e) {
-            // Fallback for private browsing or storage issues
             this.scrollPosition = scrollY;
         }
     }
@@ -353,19 +515,17 @@ class ArchetypeLoader {
             if (savedPosition !== null) {
                 const scrollY = parseInt(savedPosition, 10);
                 if (!isNaN(scrollY)) {
-                    // Use requestAnimationFrame to ensure the page is fully rendered
                     requestAnimationFrame(() => {
                         setTimeout(() => {
                             window.scrollTo({
                                 top: scrollY,
                                 behavior: 'smooth'
                             });
-                        }, 200); // Small delay to ensure content is loaded
+                        }, 200);
                     });
                 }
             }
         } catch (e) {
-            // Fallback for private browsing or storage issues
             if (this.scrollPosition > 0) {
                 requestAnimationFrame(() => {
                     setTimeout(() => {
@@ -382,26 +542,21 @@ class ArchetypeLoader {
     clearScrollPosition() {
         try {
             localStorage.removeItem(this.scrollRestoreKey);
-        } catch (e) {
-            // Ignore errors
-        }
+        } catch (e) {}
         this.scrollPosition = 0;
     }
 
-    // Alphabet filtering functionality
     handleAlphabetFilter(letter) {
         this.alphabetFilter = letter;
         this.saveAlphabetFilter(letter);
         this.filterAndSort();
         this.displayArchetypes(true);
         
-        // Update active button
         document.querySelectorAll('.alphabet-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         document.querySelector(`[data-letter="${letter}"]`).classList.add('active');
         
-        // Clear search when using alphabet filter (optional)
         if (letter !== 'all') {
             document.getElementById('search-input').value = '';
             this.searchQuery = '';
@@ -409,14 +564,12 @@ class ArchetypeLoader {
     }
 
     updateAlphabetButtons() {
-        // Get available letters from current archetypes
         const availableLetters = new Set();
         this.archetypes.forEach(archetype => {
             const firstLetter = archetype.name.charAt(0).toLowerCase();
             availableLetters.add(firstLetter);
         });
 
-        // Update button states
         document.querySelectorAll('.alphabet-btn').forEach(btn => {
             const letter = btn.dataset.letter;
             if (letter === 'all') {
@@ -432,14 +585,10 @@ class ArchetypeLoader {
         });
     }
 
-    // Alphabet filter memory functionality
     saveAlphabetFilter(letter) {
         try {
             localStorage.setItem(this.alphabetRestoreKey, letter);
-        } catch (e) {
-            // Fallback for private browsing or storage issues
-            // Could use sessionStorage as fallback if needed
-        }
+        } catch (e) {}
     }
 
     restoreAlphabetFilter() {
@@ -448,7 +597,6 @@ class ArchetypeLoader {
             if (savedLetter !== null) {
                 this.alphabetFilter = savedLetter;
                 
-                // Update active button state
                 requestAnimationFrame(() => {
                     document.querySelectorAll('.alphabet-btn').forEach(btn => {
                         btn.classList.remove('active');
@@ -459,22 +607,17 @@ class ArchetypeLoader {
                     }
                 });
                 
-                // Apply the filter
                 this.filterAndSort();
             }
         } catch (e) {
-            // Fallback to default if restoration fails
             this.alphabetFilter = 'all';
         }
     }
 
-    // Search query memory functionality
     saveSearchQuery(query) {
         try {
             localStorage.setItem(this.searchRestoreKey, query);
-        } catch (e) {
-            // Fallback for private browsing or storage issues
-        }
+        } catch (e) {}
     }
 
     restoreSearchQuery() {
@@ -483,17 +626,14 @@ class ArchetypeLoader {
             if (savedQuery !== null) {
                 this.searchQuery = savedQuery;
                 
-                // Update search input field
                 const searchInput = document.getElementById('search-input');
                 if (searchInput) {
                     searchInput.value = savedQuery;
                 }
                 
-                // Apply the search filter
                 this.filterAndSort();
             }
         } catch (e) {
-            // Fallback to default if restoration fails
             this.searchQuery = '';
         }
     }
@@ -501,9 +641,7 @@ class ArchetypeLoader {
     clearSearchQuery() {
         try {
             localStorage.removeItem(this.searchRestoreKey);
-        } catch (e) {
-            // Ignore errors
-        }
+        } catch (e) {}
         this.searchQuery = '';
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
@@ -514,9 +652,7 @@ class ArchetypeLoader {
     clearAlphabetFilter() {
         try {
             localStorage.removeItem(this.alphabetRestoreKey);
-        } catch (e) {
-            // Ignore errors
-        }
+        } catch (e) {}
         this.alphabetFilter = 'all';
     }
 }
