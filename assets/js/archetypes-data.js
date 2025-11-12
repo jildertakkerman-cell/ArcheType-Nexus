@@ -27509,7 +27509,7 @@ latestReleaseDate: '2013-08-09',
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#FFD700" font-weight="bold">A-to-Z</text>
                     </svg>`,
                     firstReleaseDate: '2003-05-16',  
-                    latestReleaseDate: '2025-08-23',
+                    latestReleaseDate: '2025-03-14',
     },
     {
         name: "Cupid",
