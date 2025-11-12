@@ -70,7 +70,7 @@ const CardLoader = (function () {
         }
 
         try {
-            const injectionPoint = document.querySelector('.container');
+            const injectionPoint = document.body;
             if (!injectionPoint) {
                 console.log('Form injection point not found.');
                 return;
