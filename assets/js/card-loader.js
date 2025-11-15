@@ -690,7 +690,11 @@ const CardLoader = (function () {
                         const header = document.createElement('h2');
                         header.className = `text-xl md:text-3xl font-bold ${pageColors.headerColor} mb-6 text-center`;
                         header.innerHTML = '<i class="fas fa-gavel mr-2"></i>TCG Banlist Impact';
-                        parentSection.insertBefore(header, container);
+                        if (parentSection === container) {
+                            container.insertBefore(header, container.firstChild);
+                        } else {
+                            parentSection.insertBefore(header, container);
+                        }
                     }
                 }
                 
@@ -1254,6 +1258,151 @@ const CardLoader = (function () {
     }
 
     /**
+     * Render a section with links to YGOProDeck deck searches
+     * @param {string} containerId - ID of container element
+     * @param {string} archetypeName - Display name of the archetype (e.g., "Gouki", "Blue-Eyes")
+     * @param {Object} options - Configuration options
+     * @param {string} [options.archetypeSlug] - The URL slug (e.g., "gouki"). If not provided, generated from archetypeName.
+     * @param {string} [options.customHeader] - Optional custom header text.
+     */
+    async function renderDeckSearchSection(containerId, archetypeName, options = {}) {
+        console.log(`[CardLoader] renderDeckSearchSection called for: ${archetypeName}`);
+        const container = document.getElementById(containerId);
+        
+        if (!container) {
+            console.error(`[CardLoader] Deck Search container with ID "${containerId}" not found`);
+            return;
+        }
+
+        // Check if archetype exists by fetching cards
+        const archetypeCards = await fetchArchetypeCards(archetypeName);
+        const archetypeExists = archetypeCards.length > 0;
+
+        // --- Begin Helper (Copied from renderBanlistSection for consistency) ---
+        // Detect page color scheme from existing headers or accent classes
+        const detectPageColors = () => {
+            const headers = document.querySelectorAll('h2, h3');
+            let headerColor = 'text-white'; // default
+            for (const header of headers) {
+                const classes = Array.from(header.classList);
+                const textColorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
+                if (textColorClass) {
+                    headerColor = textColorClass;
+                    break;
+                }
+            }
+            
+            // Look for body/paragraph text color
+            const paragraphs = document.querySelectorAll('p, li, .card p');
+            let bodyTextColor = 'text-blue-200'; // default to match banlist
+            
+            for (const p of paragraphs) {
+                const classes = Array.from(p.classList);
+                const textColorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
+                if (textColorClass) {
+                    bodyTextColor = textColorClass;
+                    break;
+                }
+            }
+            
+            return { headerColor, bodyTextColor };
+        };
+        const pageColors = detectPageColors();
+        // --- End Helper ---
+
+        // Handle parent section and header
+        const parentSection = container.closest('section');
+        if (parentSection) {
+            // Add spacing classes to the section if not present
+            if (!parentSection.classList.contains('mt-10')) {
+                parentSection.classList.add('mt-10', 'md:mt-16', 'mb-10', 'md:mb-16');
+            }
+            
+            // Inject the header if it doesn't exist
+            if (!parentSection.querySelector('h2')) {
+                const header = document.createElement('h2');
+                header.className = `text-xl md:text-3xl font-bold ${pageColors.headerColor} mb-6 text-center`;
+                // Use custom header or generate one
+                header.innerHTML = options.customHeader || `<i class="fas fa-search-plus mr-2"></i>Find ${archetypeName} Decks`;
+                if (parentSection === container) {
+                    container.insertBefore(header, container.firstChild);
+                } else {
+                    parentSection.insertBefore(header, container);
+                }
+            }
+        }
+
+        let competitiveUrl, casualUrl;
+
+        if (archetypeExists) {
+            // Use the archetype name with spaces encoded for URL
+            const encodedArchetypeName = encodeURIComponent(archetypeName);
+            console.log(`[CardLoader] Archetype found. Using encoded archetype name for URLs: ${encodedArchetypeName}`);
+
+            // Define YGOProDeck URLs based on your examples
+            competitiveUrl = `https://ygoprodeck.com/deck-search/?tournament=tier-2&_sft_post_tag=${encodedArchetypeName}&offset=0`;
+            casualUrl = `https://ygoprodeck.com/deck-search/?_sft_post_tag=${encodedArchetypeName}&offset=0`;
+        } else {
+            // Fallback to card-based search using a loaded card name from cache
+            const loadedCardNames = Object.keys(cardDataCache);
+            let encodedCardName;
+            
+            if (loadedCardNames.length > 0) {
+                // Use the first loaded card name for the search
+                const firstCardName = loadedCardNames[0];
+                encodedCardName = encodeURIComponent(firstCardName);
+                console.log(`[CardLoader] Archetype not found. Using loaded card name for fallback search: ${firstCardName}`);
+            } else {
+                // Last resort: use archetype name (though this shouldn't happen if cards were loaded)
+                encodedCardName = encodeURIComponent(archetypeName);
+                console.log(`[CardLoader] Archetype not found and no cards in cache. Using archetype name for fallback search: ${archetypeName}`);
+            }
+
+            competitiveUrl = `https://ygoprodeck.com/deck-search/?tournament=tier-2&cardcode=${encodedCardName}%7C&offset=0`;
+            casualUrl = `https://ygoprodeck.com/deck-search/?cardcode=${encodedCardName}%7C&offset=0`;
+        }
+
+        // Generate the HTML for the buttons
+        const html = `
+            <div class="card p-6">
+                <p class="text-center mb-6 ${pageColors.bodyTextColor}">
+                    <i class="fas fa-search-plus mr-2 text-accent"></i>
+                    Explore deck lists from the YGOProDeck community featuring ${archetypeName}. Find inspiration for your next build!
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <a href="${competitiveUrl}" target="_blank" rel="noopener noreferrer" 
+                       class="block p-6 rounded-lg shadow-lg text-center font-bold text-white transition-transform transform hover:scale-105 
+                              bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700">
+                        <h3 class="text-lg">
+                            <i class="fas fa-trophy mr-2"></i>
+                            View Competitive Decks
+                        </h3>
+                        <span class="block text-xs font-normal text-blue-100 mt-1">
+                            Tournament & Tiered Lists
+                        </span>
+                    </a>
+                    
+                    <a href="${casualUrl}" target="_blank" rel="noopener noreferrer" 
+                       class="block p-6 rounded-lg shadow-lg text-center font-bold text-white transition-transform transform hover:scale-105 
+                              bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800">
+                        <h3 class="text-lg">
+                            <i class="fas fa-users mr-2"></i>
+                            View All Decks
+                        </h3>
+                        <span class="block text-xs font-normal text-gray-200 mt-1">
+                            All User-Submitted Decks
+                        </span>
+                    </a>
+
+                </div>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+    }
+
+    /**
      * Clear the cache
      */
     function clearCache() {
@@ -1270,7 +1419,7 @@ const CardLoader = (function () {
         console.log('CardLoader configuration updated:', CONFIG);
     }
 
-    // Public API
+   // Public API
     console.log('[CardLoader] IIFE about to return public API');
     return {
         init,
@@ -1281,6 +1430,7 @@ const CardLoader = (function () {
         clearCache,
         configure,
         showPopup,
+        renderDeckSearchSection,
         cardDataCache,
         // Banlist methods
         fetchBanlistData,
@@ -1288,7 +1438,7 @@ const CardLoader = (function () {
         renderBanlistSection,
         fetchArchetypeCards,
         renderBanlistSectionByArchetype,
-        extractRelatedCardsFromCache,
+        extractRelatedCardsFromCache,        
     };
 })();
 
