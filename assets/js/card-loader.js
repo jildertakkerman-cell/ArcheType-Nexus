@@ -45,11 +45,12 @@ const CardLoader = (function () {
 
         popup = document.createElement('div');
         popup.id = 'card-popup';
-        popup.className = 'z-50 bg-gray-900 border-2 border-blue-500 text-white p-4 rounded-lg shadow-lg max-h-96 overflow-y-auto opacity-0 transition-opacity duration-200 pointer-events-none';
+        popup.className = 'z-50 bg-gray-900 border-2 border-blue-500 text-white p-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none';
         popup.style.position = 'fixed';
         popup.style.display = 'none';
-        popup.style.maxWidth = 'min(350px, calc(100vw - 40px))'; // Responsive max-width
+        popup.style.maxWidth = 'min(400px, calc(100vw - 40px))'; // Increased max-width for better readability
         popup.style.width = 'auto';
+        popup.style.maxHeight = 'min(500px, calc(100vh - 40px))'; // Fixed max-height for mobile compatibility
         document.body.appendChild(popup);
     }
 
@@ -57,7 +58,13 @@ const CardLoader = (function () {
      * Setup global click listener to close popup
      */
     function setupGlobalClickListener() {
-        document.addEventListener('click', hidePopup);
+        document.addEventListener('click', (event) => {
+            // Don't hide popup if clicking inside it
+            if (popup && popup.contains(event.target)) {
+                return;
+            }
+            hidePopup();
+        });
     }
 
     /**
@@ -430,30 +437,33 @@ const CardLoader = (function () {
             : `[${cardInfo.race} Card]`;
 
         popup.innerHTML = `
-            <div>
-                <h3 class="text-blue-400 font-bold text-lg mb-2">${cardInfo.name}</h3>
-                <p class="text-xs text-gray-300">${cardType}</p>
-                <div class="w-full h-px bg-blue-500 my-2"></div>
-                <p class="text-xs text-white">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
-                ${stats}
+            <div class="flex flex-col" style="max-height: 450px;">
+                <div class="flex-shrink-0">
+                    <h3 class="text-blue-400 font-bold text-lg mb-2">${cardInfo.name}</h3>
+                    <p class="text-xs text-gray-300">${cardType}</p>
+                    <div class="w-full h-px bg-blue-500 my-2"></div>
+                </div>
+                <div class="flex-1 overflow-y-auto" style="min-height: 0;">
+                    <p class="text-xs text-white">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                    ${stats}
+                </div>
             </div>
         `;
 
         movePopup(event);
         popup.style.display = 'block';
+        popup.style.pointerEvents = 'auto'; // Enable pointer events for scrolling
         setTimeout(() => { popup.style.opacity = 1; }, 10);
         activePopup = popup;
         lastShown = Date.now();
         currentCard = cardName;
     }
 
-    /**
-     * Hide the popup
-     */
     function hidePopup() {
         if (Date.now() - lastShown < 100) return;
         if (activePopup) {
             activePopup.style.opacity = 0;
+            activePopup.style.pointerEvents = 'none'; // Disable pointer events
             setTimeout(() => {
                 if (activePopup) activePopup.style.display = 'none';
             }, 200);
@@ -468,8 +478,8 @@ const CardLoader = (function () {
     function movePopup(event) {
         if (!popup) return;
 
-        const popupWidth = popup.offsetWidth || 300; // fallback width
-        const popupHeight = popup.offsetHeight || 400; // fallback height
+        const popupWidth = popup.offsetWidth || 400; // fallback width
+        const popupHeight = popup.offsetHeight || 500; // fallback height
         const cushion = 20;
         const isMobile = window.innerWidth <= 768;
 

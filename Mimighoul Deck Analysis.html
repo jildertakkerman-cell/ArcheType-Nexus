@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mimighoul Archetype Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      NOTE: The user's local 'assets/js/card-loader.js' is referenced here.
+      This script is assumed to contain the 'CardLoader' object with methods:
+      - loadCards(config)
+      - renderBanlistSection(elementId, cardList, options)
+      - renderDeckSearchSection(elementId, archetypeName, options)
+    -->
     <script src="assets/js/card-loader.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,9 +40,16 @@
             background-color: #3b3b24;
             border: 1px solid #5a5a3a;
         }
+        /* Container for combo steps */
         .card-image-container {
             width: 100%;
             max-width: 180px;
+            flex-shrink: 0;
+        }
+        /* New container for arsenal list */
+        .arsenal-image-container {
+            width: 100%;
+            max-width: 120px;
             flex-shrink: 0;
         }
         .card-image {
@@ -61,11 +75,14 @@
             line-height: 1rem;
             font-weight: bold;
             height: 100%;
-            min-height: 250px;
+            min-height: 175px; /* Adjusted min-height for arsenal */
             border-radius: 0.5rem;
             padding: 0.5rem;
             box-shadow: 0 0 10px #3b3b24;
             cursor: pointer;
+        }
+        .card-image-container .card-placeholder {
+            min-height: 250px; /* Original min-height for combos */
         }
         .pro-icon { color: #34d399; }
         .con-icon { color: #ef4444; }
@@ -208,6 +225,30 @@
         #card-popup .stats {
             color: #ef4444;
         }
+        .combo-nav-btn {
+            background-color: #3b3b24;
+            color: #f0f0e6;
+            border: 1px solid #5a5a3a;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .combo-nav-btn:hover {
+            background-color: #5a5a3a;
+            color: #ffcc00;
+        }
+        .combo-nav-btn.active {
+            background-color: #d4b106;
+            color: #1a1a0d;
+            border-color: #ffcc00;
+        }
+        .combo-content {
+            display: none;
+        }
+        .combo-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -231,100 +272,385 @@
             </div>
         </section>
 
+        <!-- UPDATED ARSENAL SECTION -->
         <section class="mb-10 md:mb-16">
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Mimighoul Arsenal</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="card p-6">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-dragon text-4xl text-yellow-300 mr-4"></i>
-                        <h3 class="text-xl font-bold text-white">Engine Core & Consistency</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Column 1: Engine Starters -->
+                <div class="card p-6 space-y-4">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-cogs text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Engine Starters</h3>
                     </div>
-                    <div class="space-y-4">
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Dragon</h4>
-                            <p class="text-sm text-yellow-100">The premier one-card starter, searching any "Mimighoul" Spell/Trap on summon.</p>
+
+                    <!-- Maker -->
+                    <div class="card combo-step-card p-4">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="arsenal-maker" class="arsenal-image-container flex-shrink-0 card-placeholder">Mimighoul Maker</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Maker</h4>
+                                <p class="text-sm text-yellow-100">The premier 1-card starter. Its activation is a pseudo-tutor that sets a "gift" and summons a monster from hand, enabling the full combo.</p>
+                            </div>
                         </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Maker</h4>
-                            <p class="text-sm text-yellow-100">The most powerful starter, setting up your board, generating hand advantage, and providing GY disruption.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Dungeon</h4>
-                            <p class="text-sm text-yellow-100">The Field Spell that enables the "Dungeon Lock" and serves as a searcher.</p>
-                        </div>
-                         <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Master</h4>
-                            <p class="text-sm text-yellow-100">The on-field commander, searching for monsters and triggering your gifted Mimighouls' Flip effects.</p>
+                    </div>
+                    
+                    <!-- Dragon -->
+                    <div class="card combo-step-card p-4">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="arsenal-dragon" class="arsenal-image-container flex-shrink-0 card-placeholder">Mimighoul Dragon</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Dragon</h4>
+                                <p class="text-sm text-yellow-100">The alternate 1-card starter. On summon, it searches any "Mimighoul" Spell/Trap, providing a direct path to <strong class="text-accent">Mimighoul Dungeon</strong> or <strong class="text-accent">Mimighoul Room</strong>.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card p-6">
-                    <div class="flex items-center mb-4">
+
+                <!-- Column 2: Gifts & Enablers -->
+                <div class="card p-6 space-y-4">
+                    <div class="flex items-center mb-2">
                         <i class="fas fa-gift text-4xl text-yellow-300 mr-4"></i>
-                        <h3 class="text-xl font-bold text-white">The Disruptive "Gifts"</h3>
+                        <h3 class="text-xl font-bold text-white">Gifts & Enablers</h3>
                     </div>
-                    <div class="space-y-4">
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Archfiend</h4>
-                            <p class="text-sm text-yellow-100">Provides hand disruption by forcing your opponent to draw then discard a card.</p>
+
+                    <!-- Archfiend -->
+                    <div class="card combo-step-card p-4">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="arsenal-archfiend" class="arsenal-image-container flex-shrink-0 card-placeholder">Mimighoul Archfiend</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Archfiend</h4>
+                                <p class="text-sm text-yellow-100">The primary hand-loop enabler. Its Flip effect creates a repeatable hand rip. Its on-summon effect manually triggers other "gifts".</p>
+                            </div>
                         </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Fairy</h4>
-                            <p class="text-sm text-yellow-100">A powerful floodgate that prevents the activation of monster effects summoned from the hand.</p>
+                    </div>
+                    
+                    <!-- Master -->
+                    <div class="card combo-step-card p-4">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="arsenal-master" class="arsenal-image-container flex-shrink-0 card-placeholder">Mimighoul Master</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Master</h4>
+                                <p class="text-sm text-yellow-100">The deck's "detonator." Searches a monster on summon and provides a Quick Effect to flip a "gift" during the opponent's turn.</p>
+                            </div>
                         </div>
-                         <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Slime & Cerberus</h4>
-                            <p class="text-sm text-yellow-100">Utility monsters for generating board presence and setting up alternative strategies.</p>
+                    </div>
+
+                    <!-- Slime -->
+                    <div class="card combo-step-card p-4">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="arsenal-slime" class="arsenal-image-container flex-shrink-0 card-placeholder">Mimighoul Slime</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Slime</h4>
+                                <p class="text-sm text-yellow-100">A critical combo extender. When flipped on the opponent's field, its effect summons a "Mimighoul" from your Deck to your field.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fairy -->
+                    <div class="card combo-step-card p-4">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="arsenal-fairy" class="arsenal-image-container flex-shrink-0 card-placeholder">Mimighoul Fairy</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Fairy</h4>
+                                <p class="text-sm text-yellow-1D00">A free Level 1 extender and a specific floodgate that stops on-field effects of monsters Special Summoned from the hand.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 3: The Lock & Payoffs -->
+                <div class="card p-6 space-y-4">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-chess-rook text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Lock & Payoffs</h3>
+                    </div>
+
+                    <!-- Dungeon -->
+                    <div class="card combo-step-card p-4">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="arsenal-dungeon" class="arsenal-image-container flex-shrink-0 card-placeholder">Mimighoul Dungeon</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Dungeon</h4>
+                                <p class="text-sm text-yellow-100">The lynchpin Field Spell. It provides the "Dungeon Lock," searches/recycles monsters, and boosts ATK to finish games.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Room -->
+                    <div class="card combo-step-card p-4">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="arsenal-room" class="arsenal-image-container flex-shrink-0 card-placeholder">Mimighoul Room</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Room</h4>
+                                <p class="text-sm text-yellow-100">A versatile Trap that "gifts" a monster, flips an opponent's monster down, and has a GY effect to loop resources.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Giant -->
+                    <div class="card combo-step-card p-4">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="arsenal-giant" class="arsenal-image-container flex-shrink-0 card-placeholder">Giant Mimighoul</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent mb-1">Giant Mimighoul</h4>
+                                <p class="text-sm text-yellow-100">The universal searcher, board-breaker, and finisher. Searches any "Mimighoul" card and destroys opponent's cards.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Throne -->
+                    <div class="card combo-step-card p-4">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="arsenal-throne" class="arsenal-image-container flex-shrink-0 card-placeholder">Mimighoul Throne</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-accent mb-1">Mimighoul Throne</h4>
+                                <p class="text-sm text-yellow-100">The core combo Xyz. Summons <strong class="text-accent">Mimighoul Master</strong> directly from the Deck and provides a Quick Effect bounce for interruption.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+        <!-- END UPDATED ARSENAL SECTION -->
         
+        <!-- NEW COMBO SECTION -->
         <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: One-Card Starter</h2>
-             <p class="text-yellow-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough shows how one card, <strong class="text-accent font-bold">Mimighoul Dragon</strong>, can establish the full lock.</p>
-            <div class="flex flex-col items-center gap-6">
-                <div class="card p-6 combo-step-card w-full max-w-lg">
-                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                        <div id="dragon-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Dragon</div>
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
-                                <h3 class="text-lg font-bold">Summon & Search</h3>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Primary Combo Lines</h2>
+            
+            <!-- Combo Navigation Buttons -->
+            <div id="combo-nav" class="flex flex-wrap justify-center gap-4 mb-8">
+                <button class="combo-nav-btn active" data-target="combo-maker">1-Card Maker Combo</button>
+                <button class="combo-nav-btn" data-target="combo-dragon">1-Card Dragon Combo</button>
+                <button class="combo-nav-btn" data-target="combo-2card">2-Card High-Ceiling</button>
+            </div>
+
+            <!-- Combo Content Area -->
+            <div class="max-w-3xl mx-auto">
+                <!-- Combo 1: 1-Card Maker -->
+                <div id="combo-maker" class="combo-content active">
+                    <p class="text-yellow-100 mb-8 text-center">This is the deck's most efficient and common opening play, starting with <strong class="text-accent font-bold">Mimighoul Maker</strong>.</p>
+                    <div class="flex flex-col items-center gap-6">
+                        
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="maker-combo-maker" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Maker</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Activate Maker</h3>
+                                    </div>
+                                    <p class="text-yellow-100">Activate <strong class="text-accent font-bold">Mimighoul Maker</strong>. Reveal <strong class="text-accent font-bold">Mimighoul Slime</strong> and <strong class="text-accent font-bold">Mimighoul Archfiend</strong> from Deck. (Assuming "High Roll" scenario: opponent picks Slime).</p>
+                                </div>
                             </div>
-                            <p class="text-yellow-100">Normal Summon <strong class="text-accent font-bold">Mimighoul Dragon</strong>. Activate its effect to search <strong class="text-accent font-bold">Mimighoul Dungeon</strong>.</p>
                         </div>
+
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="maker-combo-archfiend" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Archfiend</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">Summon & Flip</h3>
+                                    </div>
+                                    <p class="text-yellow-100"><strong class="text-accent font-bold">Slime</strong> is Set to opponent's field. <strong class="text-accent font-bold">Archfiend</strong> is added to your hand. <strong class="text-accent font-bold">Maker</strong>'s second effect Special Summons <strong class="text-accent font-bold">Archfiend</strong>. <strong class="text-accent font-bold">Archfiend</strong>'s on-summon effect flips <strong class="text-accent font-bold">Slime</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="maker-combo-dragon" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Dragon</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                        <h3 class="text-lg font-bold">Slime Triggers</h3>
+                                    </div>
+                                    <p class="text-yellow-100"><strong class="text-accent font-bold">Slime</strong>'s Flip effect triggers: Special Summon <strong class="text-accent font-bold">Mimighoul Dragon</strong> from Deck, then give control of <strong class="text-accent font-bold">Slime</strong> back to yourself. (Board: Archfiend, Slime, Dragon).</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="maker-combo-dungeon" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Dungeon</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                        <h3 class="text-lg font-bold">Establish Lock & Extend</h3>
+                                    </div>
+                                    <p class="text-yellow-100"><strong class="text-accent font-bold">Dragon</strong>'s on-summon effect adds <strong class="text-accent font-bold">Mimighoul Dungeon</strong>. Activate <strong class="text-accent font-bold">Dungeon</strong>. <strong class="text-accent font-bold">Dungeon</strong>'s effect adds <strong class="text-accent font-bold">Mimighoul Fairy</strong>. <strong class="text-accent font-bold">Fairy</strong> summons itself. (Board: 4 Level 1s).</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="maker-combo-throne" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Throne</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span>
+                                        <h3 class="text-lg font-bold">Xyz Summon 1: Throne</h3>
+                                    </div>
+                                    <p class="text-yellow-100">Overlay <strong class="text-accent font-bold">Archfiend</strong> and <strong class="text-accent font-bold">Slime</strong> to summon <strong class="text-accent font-bold">Mimighoul Throne</strong>. <strong class="text-accent font-bold">Throne</strong>'s effect detaches 1 to summon <strong class="text-accent font-bold">Mimighoul Master</strong> from Deck.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="maker-combo-giant" class="card-image-container flex-shrink-0 card-placeholder">Giant Mimighoul</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">6</span>
+                                        <h3 class="text-lg font-bold">Xyz Summon 2: Giant</h3>
+                                    </div>
+                                    <p class="text-yellow-100"><strong class="text-accent font-bold">Master</strong>'s on-summon adds a 2nd <strong class="text-accent font-bold">Archfiend</strong> (for follow-up). Overlay <strong class="text-accent font-bold">Dragon</strong> and <strong class="text-accent font-bold">Fairy</strong> to summon <strong class="text-accent font-bold">Giant Mimighoul</strong>. <strong class="text-accent font-bold">Giant</strong>'s effect adds <strong class="text-accent font-bold">Mimighoul Room</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="maker-combo-archfiend-2" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Archfiend</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">7</span>
+                                        <h3 class="text-lg font-bold">Final Board</h3>
+                                    </div>
+                                    <p class="text-yellow-100">Activate the 2nd <strong class="text-accent font-bold">Archfiend</strong> from hand, Special Summoning it to the opponent's field face-down (this enables the Dungeon Lock). Set <strong class="text-accent font-bold">Mimighoul Room</strong>. <strong class="text-accent font-bold">Maker</strong> is in GY, ready to flip the gifted Archfiend on opponent's turn.</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
-                <div class="card p-6 combo-step-card w-full max-w-lg">
-                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                        <div id="dungeon-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Dungeon</div>
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
-                                <h3 class="text-lg font-bold">Establish the Lock</h3>
+
+                <!-- Combo 2: 1-Card Dragon -->
+                <div id="combo-dragon" class="combo-content">
+                    <p class="text-yellow-100 mb-8 text-center">The alternate 1-card combo, starting with <strong class="text-accent font-bold">Mimighoul Dragon</strong>. Its goal is to find and resolve <strong class="text-accent font-bold">Mimighoul Maker</strong>.</p>
+                    <div class="flex flex-col items-center gap-6">
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="dragon-combo-dragon" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Dragon</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Summon & Search</h3>
+                                    </div>
+                                    <p class="text-yellow-100">Normal Summon <strong class="text-accent font-bold">Mimighoul Dragon</strong>. <strong class="text-accent font-bold">Dragon</strong>'s on-summon effect adds <strong class="text-accent font-bold">Mimighoul Dungeon</strong>.</p>
+                                </div>
                             </div>
-                            <p class="text-yellow-100">Activate <strong class="text-accent font-bold">Mimighoul Dungeon</strong>. Use its effect to search for <strong class="text-accent font-bold">Mimighoul Master</strong> or another key monster.</p>
                         </div>
+
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="dragon-combo-dungeon" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Dungeon</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">Activate & Extend</h3>
+                                    </div>
+                                    <p class="text-yellow-100">Activate <strong class="text-accent font-bold">Dungeon</strong>. <strong class="text-accent font-bold">Dungeon</strong>'s effect adds <strong class="text-accent font-bold">Mimighoul Fairy</strong>. <strong class="text-accent font-bold">Fairy</strong>'s effect Special Summons itself.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="dragon-combo-giant" class="card-image-container flex-shrink-0 card-placeholder">Giant Mimighoul</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                        <h3 class="text-lg font-bold">Xyz for Maker</h3>
+                                    </div>
+                                    <p class="text-yellow-100">Overlay <strong class="text-accent font-bold">Dragon</strong> and <strong class="text-accent font-bold">Fairy</strong> to Xyz Summon <strong class="text-accent font-bold">Giant Mimighoul</strong>. <strong class="text-accent font-bold">Giant</strong>'s on-summon effect adds <strong class="text-accent font-bold">Mimighoul Maker</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="dragon-combo-maker" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Maker</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                        <h3 class="text-lg font-bold">Resolve Maker</h3>
+                                    </div>
+                                    <p class="text-yellow-100">Activate <strong class="text-accent font-bold">Mimighoul Maker</strong>. From this point, you repeat Steps 2-7 of the 1-Card Maker Combo, ending on an identical board.</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-4xl arrow-color my-4"></i></div>
-                 <div class="card p-6 combo-step-card w-full max-w-lg">
-                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                        <div id="maker-img-container" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Maker</div>
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
-                                <h3 class="text-lg font-bold">Gift the Disruption</h3>
+
+                <!-- Combo 3: 2-Card Combos -->
+                <div id="combo-2card" class="combo-content">
+                    <p class="text-yellow-100 mb-8 text-center">These combos demonstrate how the deck's pieces are interchangeable and provide redundancy.</p>
+                    <div class="flex flex-col items-center gap-6">
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <h3 class="text-lg font-bold text-center mb-4">Combo A: Slime + Archfiend</h3>
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4 mb-4">
+                                <div id="2card-combo-slime" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Slime</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Gift Slime</h3>
+                                    </div>
+                                    <p class="text-yellow-100">Activate <strong class="text-accent font-bold">Mimighoul Slime</strong>'s effect to Special Summon it to the opponent's field face-down.</p>
+                                </div>
                             </div>
-                            <p class="text-yellow-100">Use <strong class="text-accent font-bold">Mimighoul Maker</strong> (searched or already in hand) to place a disruptive "Gift" like <strong class="text-accent font-bold">Mimighoul Archfiend</strong> face-down on the opponent's field, completing the lock.</p>
+                            
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="2card-combo-archfiend" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Archfiend</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#2b2b18] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">Summon & Flip</h3>
+                                    </div>
+                                    <p class="text-yellow-100">Normal Summon <strong class="text-accent font-bold">Mimighoul Archfiend</strong>. Activate its on-summon effect to flip the opponent's <strong class="text-accent font-bold">Slime</strong>. This resolves at the *exact same* game state as Step 4 of the 1-Card Maker Combo. Proceed from there.</p>
+                                </div>
+                            </div>
                         </div>
+
+                        <div class="card p-6 combo-step-card w-full">
+                            <h3 class="text-lg font-bold text-center mb-4">Combo B: Maker + Archfiend</h3>
+                             <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="2card-combo-maker" class="card-image-container flex-shrink-0 card-placeholder">Mimighoul Maker</div>
+                                <div>
+                                    <h3 class="text-lg font-bold mb-2">"Low-Roll" Insurance</h3>
+                                    <p class="text-yellow-100">This combo provides insurance. If you activate <strong class="text-accent font-bold">Mimighoul Maker</strong> (revealing Slime/Dragon) and the opponent gives you <strong class="text-accent font-bold">Slime</strong> (the "low-roll"), you can simply use <strong class="text-accent font-bold">Maker</strong>'s second effect to Special Summon the <strong class="text-accent font-bold">Mimighoul Archfiend</strong> already in your hand, allowing you to proceed with the full combo as normal.</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
         </section>
+        <!-- END NEW COMBO SECTION -->
+
 
         <section class="mb-10 md:mb-16">
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ideal End Board: "Dungeon Lock" Fortress</h2>
@@ -362,7 +688,7 @@
                          <div id="throne-endboard-img-container" class="w-full max-w-[160px] mb-3 card-placeholder" style="min-height: 230px;">Mimighoul Throne</div>
                         <div class="combo-step-card p-3 rounded-lg w-full">
                             <h4 class="font-bold text-accent">Component 4: The Follow-Up</h4>
-                            <p class="text-sm text-yellow-100 mt-1"><strong>Mimighoul Throne</strong> in the GY, ready to provide non-targeting removal on the next turn.</p>
+                            <p class="text-sm text-yellow-100 mt-1"><strong>Mimighoul Throne</strong> (or Maker) in the GY, ready to provide non-targeting removal or a flip on the next turn.</p>
                         </div>
                     </div>
                 </div>
@@ -419,6 +745,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // --- Render Banlist Section ---
+            // This function is from the user's local 'assets/js/card-loader.js'
             await CardLoader.renderBanlistSection('banlist-status', [
                 'Mimighoul Dragon',
                 'Mimighoul Maker',
@@ -447,7 +774,8 @@
             });
 
             // --- Render Deck Search Resources Section ---
-            await CardLoader.renderDeckSearchSection('deck-resources-container', 'Mimighoul', {})   
+            // This function is from the user's local 'assets/js/card-loader.js'
+            await CardLoader.renderDeckSearchSection('deck-resources-container', 'Mimighoul', {});
 
 
             const canvas = document.getElementById('chest-banner');
@@ -538,23 +866,83 @@
                 });
             }
 
+            // --- Combo Tab Switching Logic ---
+            const comboNav = document.getElementById('combo-nav');
+            const comboContents = document.querySelectorAll('.combo-content');
+            const comboButtons = document.querySelectorAll('.combo-nav-btn');
+
+            if (comboNav) {
+                comboNav.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        const targetId = e.target.getAttribute('data-target');
+                        
+                        // Update buttons
+                        comboButtons.forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        e.target.classList.add('active');
+
+                        // Update content
+                        comboContents.forEach(content => {
+                            content.classList.remove('active');
+                            if (content.id === targetId) {
+                                content.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // --- Load All Card Images ---
+            // This function is from the user's local 'assets/js/card-loader.js'
             CardLoader.loadCards({
-                'dragon-img-container': 'Mimighoul Dragon',
-                'dungeon-img-container': 'Mimighoul Dungeon',
-                'maker-img-container': 'Mimighoul Maker',
-                // New End Board Images
+                // --- NEW ARSENAL CARDS ---
+                'arsenal-maker': 'Mimighoul Maker',
+                'arsenal-dragon': 'Mimighoul Dragon',
+                'arsenal-archfiend': 'Mimighoul Archfiend',
+                'arsenal-master': 'Mimighoul Master',
+                'arsenal-slime': 'Mimighoul Slime',
+                'arsenal-fairy': 'Mimighoul Fairy',
+                'arsenal-dungeon': 'Mimighoul Dungeon',
+                'arsenal-room': 'Mimighoul Room',
+                'arsenal-giant': 'Giant Mimighoul',
+                'arsenal-throne': 'Mimighoul Throne',
+
+                // --- PRESERVED CARDS ---
+                // End Board Images (Preserved)
                 'dungeon-endboard-img-container': 'Mimighoul Dungeon',
                 'master-endboard-img-container': 'Mimighoul Master',
                 'archfiend-endboard-img-container': 'Mimighoul Archfiend',
-                'throne-endboard-img-container': 'Mimighoul Throne'
+                'throne-endboard-img-container': 'Mimighoul Throne',
+
+                // --- NEW CARDS FROM DOCX COMBOS ---
+                // 1-Card Maker Combo
+                'maker-combo-maker': 'Mimighoul Maker',
+                'maker-combo-slime': 'Mimighoul Slime',
+                'maker-combo-archfiend': 'Mimighoul Archfiend',
+                'maker-combo-dragon': 'Mimighoul Dragon',
+                'maker-combo-dungeon': 'Mimighoul Dungeon',
+                'maker-combo-fairy': 'Mimighoul Fairy',
+                'maker-combo-throne': 'Mimighoul Throne',
+                'maker-combo-master': 'Mimighoul Master',
+                'maker-combo-giant': 'Giant Mimighoul',
+                'maker-combo-room': 'Mimighoul Room',
+                'maker-combo-archfiend-2': 'Mimighoul Archfiend',
+                
+                // 1-Card Dragon Combo
+                'dragon-combo-dragon': 'Mimighoul Dragon',
+                'dragon-combo-dungeon': 'Mimighoul Dungeon',
+                'dragon-combo-fairy': 'Mimighoul Fairy',
+                'dragon-combo-giant': 'Giant Mimighoul',
+                'dragon-combo-maker': 'Mimighoul Maker',
+
+                // 2-Card Combos
+                '2card-combo-slime': 'Mimighoul Slime',
+                '2card-combo-archfiend': 'Mimighoul Archfiend',
+                '2card-combo-maker': 'Mimighoul Maker'
             });
         });
     </script>
     <div id="card-popup"></div>
 </body>
 </html>
-
-
-
-
-
