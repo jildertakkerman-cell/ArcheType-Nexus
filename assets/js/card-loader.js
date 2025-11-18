@@ -450,8 +450,8 @@ const CardLoader = (function () {
             </div>
         `;
 
-        movePopup(event);
         popup.style.display = 'block';
+        movePopup(event);
         popup.style.pointerEvents = 'auto'; // Enable pointer events for scrolling
         setTimeout(() => { popup.style.opacity = 1; }, 10);
         activePopup = popup;
@@ -486,14 +486,18 @@ const CardLoader = (function () {
         let x, y;
 
         if (isMobile) {
-            // On mobile, center the popup horizontally and position near top
+            // On mobile, center the popup both horizontally and vertically
             x = (window.innerWidth - popupWidth) / 2;
-            y = cushion;
+            y = (window.innerHeight - popupHeight) / 2;
             
             // Ensure it fits within screen bounds
             if (x < cushion) x = cushion;
+            if (y < cushion) y = cushion;
             if (x + popupWidth > window.innerWidth - cushion) {
                 x = window.innerWidth - popupWidth - cushion;
+            }
+            if (y + popupHeight > window.innerHeight - cushion) {
+                y = window.innerHeight - popupHeight - cushion;
             }
         } else {
             // Desktop: position near cursor
