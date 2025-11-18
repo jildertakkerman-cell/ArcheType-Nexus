@@ -398,6 +398,80 @@ const CardLoader = (function () {
     }
 
     /**
+     * Format card description with better readability for pendulum cards
+     */
+    function formatCardDescription(description) {
+        // Check if this is a pendulum card (has both Pendulum Effect and Monster Effect sections)
+        if (description.includes('[ Pendulum Effect ]') && description.includes('[ Monster Effect ]')) {
+            // Split the description into sections
+            const pendulumMatch = description.match(/\[ Pendulum Effect \](.*?)(?=\[ Monster Effect \]|\[ Link Monster Effect \]|\[ Ritual Monster Effect \]|\[ Fusion Monster Effect \]|\[ Synchro Monster Effect \]|\[ XYZ Monster Effect \]|$)/s);
+            const monsterMatch = description.match(/\[ Monster Effect \](.*)/s);
+            
+            if (pendulumMatch && monsterMatch) {
+                const pendulumText = pendulumMatch[1].trim();
+                const monsterText = monsterMatch[1].trim();
+                
+                return `
+                    <div class="mb-3">
+                        <div class="text-blue-300 font-bold text-sm mb-1">🌀 Pendulum Effect</div>
+                        <div class="text-white text-xs leading-relaxed pl-3 border-l-2 border-blue-500">${pendulumText.replace(/\r\n/g, '<br>')}</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-green-300 font-bold text-sm mb-1">⚔️ Monster Effect</div>
+                        <div class="text-white text-xs leading-relaxed pl-3 border-l-2 border-green-500">${monsterText.replace(/\r\n/g, '<br>')}</div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Check for other effect types (Link, Ritual, Fusion, Synchro, XYZ)
+        const effectTypes = [
+            { pattern: /\[ Link Monster Effect \]/, label: '🔗 Link Effect', color: 'purple' },
+            { pattern: /\[ Ritual Monster Effect \]/, label: '📿 Ritual Effect', color: 'orange' },
+            { pattern: /\[ Fusion Monster Effect \]/, label: '🔥 Fusion Effect', color: 'red' },
+            { pattern: /\[ Synchro Monster Effect \]/, label: '⚡ Synchro Effect', color: 'yellow' },
+            { pattern: /\[ XYZ Monster Effect \]/, label: '✨ XYZ Effect', color: 'pink' }
+        ];
+        
+        for (const effectType of effectTypes) {
+            if (effectType.pattern.test(description)) {
+                const match = description.match(new RegExp(`${effectType.pattern.source}(.*)`, 's'));
+                if (match) {
+                    const effectText = match[1].trim();
+                    return `
+                        <div class="mb-3">
+                            <div class="text-${effectType.color}-300 font-bold text-sm mb-1">${effectType.label}</div>
+                            <div class="text-white text-xs leading-relaxed pl-3 border-l-2 border-${effectType.color}-500">${effectText.replace(/\r\n/g, '<br>')}</div>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // For regular cards, just format with line breaks
+        return `<div class="text-white text-xs leading-relaxed">${description.replace(/\r\n/g, '<br>')}</div>`;
+    }
+
+    /**
+     * Get the appropriate icon for a card type
+     */
+    function getCardTypeIcon(race, type) {
+        const iconMap = {
+            // Spell Cards
+            'Field': '🏞️',
+            'Quick-Play': '⚡',
+            'Continuous': type.includes('Spell') ? '🔄' : '🔄', // Same icon for both spell and trap
+            'Equip': '⚔️',
+            'Ritual': '📿',
+            'Normal': '✨',
+            // Trap Cards
+            'Counter': '🛡️'
+        };
+        
+        return iconMap[race] || '✨'; // Default to sparkle if no specific icon
+    }
+
+    /**
      * Show popup with card details
      */
     function showPopup(event, cardName) {
@@ -426,15 +500,24 @@ const CardLoader = (function () {
         let stats = '';
         let atkDef = [];
         if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
-        if (cardInfo.def !== undefined) atkDef.push(`DEF/${cardInfo.def}`);
+        if (cardInfo.def !== undefined && !cardInfo.linkval) atkDef.push(`DEF/${cardInfo.def}`);
         if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
         if (atkDef.length > 0) {
             stats = `<p class="mt-2 text-yellow-400 font-bold">${atkDef.join(' ')}</p>`;
         }
 
-        const cardType = cardInfo.type.includes('Monster')
-            ? `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]`
-            : `[${cardInfo.race} Card]`;
+        let cardType;
+        if (cardInfo.type.includes('Monster')) {
+            cardType = `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]`;
+        } else if (cardInfo.type.includes('Spell')) {
+            const icon = getCardTypeIcon(cardInfo.race, cardInfo.type);
+            cardType = `${icon} [${cardInfo.race} Spell]`;
+        } else if (cardInfo.type.includes('Trap')) {
+            const icon = getCardTypeIcon(cardInfo.race, cardInfo.type);
+            cardType = `${icon} [${cardInfo.race} Trap]`;
+        } else {
+            cardType = `[${cardInfo.race} Card]`;
+        }
 
         popup.innerHTML = `
             <div class="flex flex-col" style="max-height: 450px;">
@@ -444,7 +527,7 @@ const CardLoader = (function () {
                     <div class="w-full h-px bg-blue-500 my-2"></div>
                 </div>
                 <div class="flex-1 overflow-y-auto" style="min-height: 0;">
-                    <p class="text-xs text-white">${cardInfo.desc.replace(/\r\n/g, '<br>')}</p>
+                    ${formatCardDescription(cardInfo.desc)}
                     ${stats}
                 </div>
             </div>
