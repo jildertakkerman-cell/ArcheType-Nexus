@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Junk Archetype Analysis</title>
+    <link href="../output.css" rel="stylesheet">
+    <script src="../assets/js/card-loader.js"></script>  
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23333333' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: rgba(40, 40, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.7);
+            border: 1px solid #555;
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: rgba(50, 50, 50, 0.85);
+            border: 1px solid #666;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            /* Added min-height to standardize placeholder size */
+            min-height: 262px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #282828;
+            color: #a0a0a0;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 2px dashed #444;
+            /* Ensure placeholder has a consistent aspect ratio/height */
+            width: 180px; 
+        }
+        .text-accent { color: #ff8c00; } /* Rusty Orange */
+        .lore-link {
+            color: #ff8c00;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ff8c00;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #ffa500;
+            text-shadow: 0 0 5px #ff8c00;
+        }
+        .title-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .banner-header {
+            position: relative;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(45deg, #2d2d2d, #1a1a1a);
+            border: 1px solid #555;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            overflow: hidden;
+            text-align: center;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,140,0,0.05) 10px, rgba(255,140,0,0.05) 20px),
+                repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,140,0,0.05) 10px, rgba(255,140,0,0.05) 20px);
+            z-index: 1;
+        }
+        .banner-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        #card-popup {
+            position: fixed;
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+            background-color: rgba(40, 40, 40, 0.9);
+            border: 2px solid #ff8c00;
+            border-radius: 10px;
+            box-shadow: 0 0 25px rgba(255, 140, 0, 0.7), 0 0 25px rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            animation: fadeIn 0.2s ease-out;
+            pointer-events: none;
+        }
+
+        #card-popup img {
+            width: 100%;
+            border-radius: 6px;
+        }
+        
+    </style>
+</head>
+<body class="p-4 md:p-8">
+<div id="card-popup"></div>
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header mb-10 md:mb-16">
+            <div class="banner-content">
+                <h1 class="text-3xl md:text-5xl font-bold text-white title-font mb-2">JUNK & SYNCHRON</h1>
+                <p class="text-lg md:text-xl text-gray-300">Revving the Engine: A High-Speed Analysis</p>
+            </div>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4 title-font">Executive Summary</h2>
+                <p class="text-gray-300">
+                    The "Junk" archetype, synonymous with Yusei Fudo from <em class="text-accent">Yu-Gi-Oh! 5D's</em>, functions as the critical ignition system for the broader "Synchron" strategy. It is a combo-intensive, "glass cannon" deck that dedicates its entire turn-one strategy to a long and intricate sequence of summons. The singular goal is to construct an oppressive endboard of multiple powerful Synchro monsters to negate the opponent's actions and secure victory. The strategy's consistency, power, and vulnerability can be traced back to a single, pivotal card: <strong class="text-accent font-bold">Junk Speeder</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Components Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">Anatomy of the Engine</h2>
+            <p class="text-gray-400 mb-8 text-center max-w-2xl mx-auto">
+                The Junk-Synchron deck is a complex machine. Each card serves a specific function, either starting the combo, extending it, or providing the consistency needed to execute the strategy reliably. Understanding these roles is fundamental to piloting the deck. Need to find the right parts? Check out this collection of <a href="https://www.ebay.com/b/Yugioh-Junk-Cards/183454/bn_7023409047" target="_blank" class="lore-link">assorted Junk cards</a> to get started.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Ignition -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bolt text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white title-font">The Ignition: Starters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Junk Synchron</h4>
+                            <p class="text-sm text-gray-300">The premier Normal Summon. Revives a Level 2 or lower monster from the GY, setting up the first Synchro Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Junk Converter</h4>
+                            <p class="text-sm text-gray-300">The most vital consistency tool. Discard itself and a Tuner to search any "Synchron" monster, and revives a Tuner when used as Synchro material.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Fuel -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-gas-pump text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white title-font">The Fuel: Extenders</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Doppelwarrior</h4>
+                            <p class="text-sm text-gray-300">Summons itself from hand when a monster is revived from the GY. Generates two "Doppel Tokens" when used as Synchro Material.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Assault Synchron</h4>
+                            <p class="text-sm text-gray-300">A "free" Special Summon from the hand by paying 700 LP, but locks you into Synchro Monsters from the Extra Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">The Overdrive Button: Junk Speeder</h2>
+            <p class="text-gray-400 mb-8 text-center max-w-2xl mx-auto">All starters and extenders serve one ultimate purpose: to summon <strong class="text-accent font-bold">Junk Speeder</strong>. This Level 5 Synchro Monster is the lynchpin of the entire strategy, the single card that enables the deck's explosive, board-building turns by summoning multiple "Synchron" Tuners directly from the deck.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="junk-converter-img" class="card-image-container card-placeholder flex-shrink-0">Junk Converter</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#282828] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Ignition</h3>
+                            </div>
+                            <p class="text-gray-300">Start with <strong class="text-accent font-bold">Junk Converter</strong> + any Tuner. Discard both to search <strong class="text-accent font-bold">Junk Synchron</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center text-accent my-2">
+                    <i class="fas fa-arrow-down text-2xl"></i>
+                </div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="junk-synchron-img" class="card-image-container card-placeholder flex-shrink-0">Junk Synchron</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#282828] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Revival</h3>
+                            </div>
+                            <p class="text-gray-300">Normal Summon <strong class="text-accent font-bold">Junk Synchron</strong> to revive <strong class="text-accent font-bold">Junk Converter</strong> from the Graveyard.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center text-accent my-2">
+                    <i class="fas fa-arrow-down text-2xl"></i>
+                </div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="junk-speeder-img" class="card-image-container card-placeholder flex-shrink-0">Junk Speeder</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#282828] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Explosion</h3>
+                            </div>
+                            <p class="text-gray-300">Synchro Summon <strong class="text-accent font-bold">Junk Speeder</strong> using both monsters. Its effect summons a swarm of Tuners from the deck, beginning the "Synchro Climb."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">The Fortress: Optimal Endboard</h2>
+             <p class="text-gray-400 mb-8 text-center max-w-2xl mx-auto">The culmination of the combo is a field of powerful Synchro monsters designed to prevent the opponent from playing. This endboard typically features multiple forms of negation and disruption.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <!-- Cosmic Blazar Dragon -->
+                <div class="card p-6 pro-con-card text-center">
+                    <h3 class="text-xl font-bold text-white mb-4 title-font">Cosmic Blazar Dragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="blazar-img" class="card-image-container card-placeholder">Cosmic Blazar Dragon</div>
+                    </div>
+                    <p class="text-gray-300">The ultimate boss monster. Banishes itself to provide an omni-negate for summons, attacks, or card effects.</p>
+                </div>
+                <!-- Crystal Wing Synchro Dragon -->
+                <div class="card p-6 pro-con-card text-center">
+                    <h3 class="text-xl font-bold text-white mb-4 title-font">Crystal Wing Synchro Dragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="crystal-wing-img" class="card-image-container card-placeholder">Crystal Wing Synchro Dragon</div>
+                    </div>
+                    <p class="text-gray-300">Specializes in monster negation, shutting down key opponent effects and gaining ATK in the process.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4 title-font"><i class="fas fa-check-circle mr-2"></i>Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-green-400">High Consistency:</strong> A high density of one and two-card starters makes initiating the main combo very reliable.</li>
+                        <li><strong class="text-green-400">High Ceiling:</strong> When uninterrupted, the deck can produce one of the most oppressive endboards in the game, full of negations.</li>
+                        <li><strong class="text-green-400">Resource Loop:</strong> Cards like T.G. Hyper Librarian allow the deck to draw many cards mid-combo, replenishing the hand.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4 title-font"><i class="fas fa-times-circle mr-2"></i>Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-red-400">Glass Cannon:</strong> The deck is immensely powerful but fragile. A single, well-timed hand trap on a choke point can end the turn.</li>
+                        <li><strong class="text-red-400">Linear Choke Points:</strong> The combo is very linear, making its key points (Junk Synchron, Junk Speeder) obvious targets for disruption.</li>
+                        <li><strong class="text-red-400">Graveyard Dependant:</strong> Relies heavily on the Graveyard for revivals and extensions, making it vulnerable to cards that banish.</li>
+                    </ul>
+                </div>
+                <!-- Synergies -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 title-font"><i class="fas fa-cogs mr-2"></i>Synergies & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong class="text-accent">Stardust Archetype:</strong> Explicitly designed to work with "Stardust" cards, often using them as the ultimate boss monsters.</li>
+                        <li><strong class="text-accent">Diabellstar Engine:</strong> Can summon Junk Speeder while making it unaffected by activated effects for the turn, ensuring the combo resolves.</li>
+                         <li><strong class="text-accent">Generic Synchro Support:</strong> Benefits greatly from generic staples like <strong class="text-accent">T.G. Hyper Librarian</strong> and revival spells.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 
+        ================================================================
+        NEW SECTION: STRATEGIC RECALIBRATION
+        This entire section replaces the old, incorrect "Junk Warrior Extreme"
+        analysis, incorporating all the new support from the DOCX file.
+        ================================================================
+        -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">Strategic Recalibration: New Support Impact</h2>
+            
+            <!-- Executive Assessment -->
+            <div class="card p-6 mb-8">
+                <h3 class="text-xl md:text-2xl font-bold text-white mb-4 title-font">Executive Assessment: A Strategic Bifurcation</h3>
+                <p class="text-gray-300">
+                    The new support package represents a fundamental inflection point. The deck is no longer a linear "glass cannon" funneled into <strong class="text-accent">Junk Speeder</strong>. The new cards bifurcate the strategy into two distinct vectors:
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-gray-300 mt-4">
+                    <li><strong class="text-green-400">Vector 1: The "Junk Speeder Turbo" (Reinforced)</strong><br>The traditional combo is massively reinforced with new consistency tools and, most critically, a revolutionary recovery play for a negated <strong class="text-accent">Junk Speeder</strong>.</li>
+                    <li><strong class="text-yellow-400">Vector 2: The "Junk Warrior OTK" (Divergent)</strong><br>A new, battle-focused win condition that operates independently of the "Synchro Climb" and is mechanically incompatible with it.</li>
+                </ul>
+            </div>
+
+            <!-- The New Ignition System -->
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-6 text-center title-font">The New Ignition System</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Fullspeed Warrior -->
+                <div class="card p-6 pro-con-card">
+                    <h4 class="text-xl font-bold text-white mb-4 title-font">Fullspeed Warrior</h4>
+                    <div class="flex justify-center mb-4">
+                        <div id="fullspeed-warrior-img" class="card-image-container card-placeholder">Fullspeed Warrior</div>
+                    </div>
+                    <p class="text-gray-300"><strong class="text-green-400">The New Premier Starter.</strong> On summon, searches <strong class="text-accent">Junk Synchron</strong> or a Spell/Trap that mentions <strong class="text-accent">Junk Warrior</strong>. Its flexibility enables new "1.5 card combos" that don't even need <strong class="text-accent">Junk Speeder</strong>.</p>
+                </div>
+                <!-- Synchro Fellowship -->
+                <div class="card p-6 pro-con-card">
+                    <h4 class="text-xl font-bold text-white mb-4 title-font">Synchro Fellowship</h4>
+                    <div class="flex justify-center mb-4">
+                        <div id="synchro-fellowship-img" class="card-image-container card-placeholder">Synchro Fellowship</div>
+                    </div>
+                    <p class="text-gray-300"><strong class="text-green-400">The Ultimate Combo Assembler.</strong> Adds <strong class="text-accent">Junk Synchron</strong> + another monster, then discards (which is a benefit for setup). Its GY effect is the real prize, providing a direct recovery from a negated <strong class="text-accent">Junk Speeder</strong>.</p>
+                </div>
+            </div>
+
+            <!-- Patching the Glass Cannon -->
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-6 text-center title-font">Patching the Glass Cannon</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Scrap Synchron -->
+                <div class="card p-6 pro-con-card">
+                    <h4 class="text-xl font-bold text-white mb-4 title-font">Scrap Synchron</h4>
+                    <div class="flex justify-center mb-4">
+                        <div id="scrap-synchron-img" class="card-image-container card-placeholder">Scrap Synchron</div>
+                    </div>
+                    <p class="text-gray-300"><strong class="text-yellow-400">The Resilience Package.</strong> Can be used as material from hand and banishes from GY for destruction protection. <strong class="text-green-400">Crucially:</strong> As it is both a "Scrap" and a "Synchron" monster, it <strong class="text-green-400">can</strong> be Special Summoned by <strong class="text-accent">Junk Speeder</strong>, making it a viable Level 1 target alongside Jet Synchron.</p>
+                </div>
+                <!-- Scrap Warrior -->
+                <div class="card p-6 pro-con-card">
+                    <h4 class="text-xl font-bold text-white mb-4 title-font">Scrap Warrior</h4>
+                    <div class="flex justify-center mb-4">
+                        <div id="scrap-warrior-img" class="card-image-container card-placeholder">Scrap Warrior</div>
+                    </div>
+                    <p class="text-gray-300"><strong class="text-yellow-400">The Combo Bridge.</strong> Provides negation protection, but <strong class="text-red-400">only</strong> for "Junk Warrior" monsters and "Warrior" Synchros (this does <strong class="text-red-400">not</strong> include <strong class="text-accent">Junk Speeder</strong>). It's the key piece for "No Speeder" combo lines.</p>
+                </div>
+            </div>
+
+            <!-- The Divergent Path -->
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-6 text-center title-font">The Divergent Path: "Junk Warrior" OTK</h3>
+            <div class="card p-6 mb-8">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6 bg-gray-900 bg-opacity-30 p-4 rounded-lg">
+                    <div id="junk-warrior-extreme-img" class="card-image-container card-placeholder flex-shrink-0">Junk Warrior Extreme</div>
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold text-white mb-4 title-font">Junk Warrior Extreme: The Niche OTK</h4>
+                        <p class="text-gray-300 mb-4">
+                            This card is the centerpiece of the new, battle-focused OTK strategy, supported by extenders like <strong class="text-accent">Anchorbolt Hedgehog</strong> and <strong class="text-accent">Crossroad Sonic Chick</strong>.
+                        </p>
+                        <p class="text-gray-300">
+                            Its effect revives multiple small monsters but then imposes a <strong class="text-red-400">"Fatal Lock": you can only Special Summon one more time this turn.</strong> This lock makes it <strong class="text-red-400">fundamentally incompatible</strong> with the "Junk Speeder" Synchro-Climb combo. It is not an extender; it is a boss monster for an entirely separate (and optional) win condition.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- New Combo Blueprints -->
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-6 text-center title-font">New Combo Blueprints</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Blueprint A -->
+                <div class="card p-6 combo-step-card">
+                    <h4 class="text-lg font-bold text-accent mb-2">Blueprint A: The "Junk Speeder" Recovery</h4>
+                    <p class="text-sm text-gray-300">This line uses <strong class="text-accent">Synchro Fellowship</strong> for setup. If the opponent negates <strong class="text-accent">Junk Speeder</strong>, you activate <strong class="text-accent">Fellowship's</strong> GY effect to gain an additional Normal Summon, allowing you to continue your turn and still build a respectable board.</p>
+                </div>
+                <!-- Blueprint B -->
+                <div class="card p-6 combo-step-card">
+                    <h4 class="text-lg font-bold text-accent mb-2">Blueprint B: The "No Speeder" Line</h4>
+                    <p class="text-sm text-gray-300">This new 1.5-card combo (e.g., <strong class="text-accent">Fullspeed Warrior</strong> + discard) completely bypasses the <strong class="text-accent">Junk Speeder</strong> choke point. It uses <strong class="text-accent">Scrap Warrior</strong> and <strong class="text-accent">Fellowship's</strong> GY effect to climb into <strong class="text-accent">Accel Synchron</strong> and end on <strong class="text-accent">Crystal Wing Synchro Dragon</strong>, all while having protection from <strong class="text-accent">Scrap Synchron</strong>.</p>
+                </div>
+            </div>
+
+            <!-- Final Verdict -->
+            <div class="card p-6">
+                <h3 class="text-xl md:text-2xl font-bold text-white mb-4 title-font">Final Impact Assessment</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-lg font-bold text-accent mb-2">Card-by-Card Viability</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-300">
+                            <li><strong class="text-green-400">Fullspeed Warrior:</strong> Archetype-Defining (3-of Staple).</li>
+                            <li><strong class="text-green-400">Synchro Fellowship:</strong> Archetype-Defining (3-of Staple). Solves the "glass cannon" problem.</li>
+                            <li><strong class="text-green-400">Scrap Synchron:</strong> Core (1-2 of). Essential for protection and "No Speeder" lines.</li>
+                            <li><strong class="text-green-400">Scrap Warrior:</strong> Core (1-of Extra Deck). The vital bridge for new combos.</li>
+                            <li><strong class="text-yellow-400">Junk Warrior Extreme:</strong> Viable Niche (1-of Extra Deck). For the dedicated OTK vector only.</li>
+                            <li><strong class="text-gray-400">One-Way Synchro:</strong> Unviable. Too slow for a go-first combo deck.</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-green-900 bg-opacity-30 rounded border-l-4 border-green-500">
+                        <h4 class="text-lg font-bold text-green-400 mb-2">Strategic Recommendation</h4>
+                        <p class="text-sm text-gray-300">
+                            The archetype has successfully evolved from a linear "glass cannon" into a complex, high-ceiling "toolbox". The "Junk Speeder" choke point is no longer a turn-ending catastrophe.
+                        </p>
+                        <p class="text-sm text-gray-300 mt-2">
+                            Success now demands pivoting between the "Junk Speeder" fortress, the resilient "No Speeder" line, and the "going-second" OTK. The deck's resilience and consistency are massively buffed, but so is its operational complexity.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- =================================================================
+        END OF NEW SECTION
+        ================================================================= -->
+
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center title-font">Current TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
+            </div>
+        </section>
+
+        <!-- Deck Search Section -->
+        <section>
+            <div id="deck-resources-container"></div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            
+            // --- Render Banlist Section ---
+            CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Junk', {
+                relatedCards: [
+                    'Baronne de Fleur',
+                    'Doppelwarrior',
+                    'Scrap Synchron',
+                    'Scrap Warrior',
+                    'Tuning',
+                    'Level Eater',
+                    'Jet Synchron',
+                    'Synchro Fusionist',
+                    'Halqifibrax',
+                    'Auroradon',
+                    'Reinforcement of the Army',
+                    'One for One'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Synchro-focused strategy using low-level Tuners and Warriors',
+                    supportReliance: 'Heavy reliance on generic Synchro monsters and Tuner support',
+                    adaptability: 'Flexible engine that works with various Synchron strategies',
+                    resilience: 'Decent recursion through Junk Synchron and Converter effects',
+                    keyLoss: 'Loss of powerful generic Synchro enablers like Halqifibrax heavily impacts combo potential',
+                    alternativeStrategy: 'Can pivot to simplified Synchro climbing focusing on Accel Synchron lines'
+                }
+            });
+
+            // Render deck search section
+            await CardLoader.renderDeckSearchSection('deck-resources-container', 'Junk', {});
+            
+            // Added all the new cards from the DOCX analysis to the loader
+            CardLoader.loadCards({
+                // Original Cards
+                'junk-converter-img': 'Junk Converter',
+                'junk-synchron-img': 'Junk Synchron',
+                'junk-speeder-img': 'Junk Speeder',
+                'blazar-img': 'Cosmic Blazar Dragon',
+                'crystal-wing-img': 'Crystal Wing Synchro Dragon',
+                
+                // New Cards from DOCX
+                'fullspeed-warrior-img': 'Fullspeed Warrior',
+                'synchro-fellowship-img': 'Synchro Fellowship',
+                'scrap-synchron-img': 'Scrap Synchron',
+                'scrap-warrior-img': 'Scrap Warrior',
+                'junk-warrior-extreme-img': 'Junk Warrior Extreme'
+            });
+
+
+        });
+    </script>
+</body>
+</html>
+

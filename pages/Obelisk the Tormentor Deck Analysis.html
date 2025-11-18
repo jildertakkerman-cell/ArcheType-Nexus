@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obelisk the Tormentor Deep Dive</title>
+    <!-- Tailwind CSS -->
+    <link href="../output.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <!-- Card Loader Script (assuming it's in the same directory or assets/js/) -->
+     <script src="../assets/js/card-loader.js" defer></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0f1f; /* Deep Navy Blue */
+            color: #dbeafe; /* Light Blue/White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        /* Theme: Deep Blue & Gold, inspired by Obelisk's art and Egyptian theme */
+        .card {
+            background-color: #1a2347; /* Dark Royal Blue */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a5a9b; /* Lighter blue border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #202c5c; /* Slightly lighter blue */
+            border: 1px solid #7086e0;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #202c5c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #202c5c;
+            border: 1px dashed #7086e0;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #facc15; } /* Gold */
+        .text-accent { color: #facc15; } /* Gold */
+        .arrow-color { color: #fde047; } /* Lighter Gold */
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px #facc15;
+        }
+
+        /* --- OBELISK ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background: linear-gradient(45deg, #0c0f1f, #1a2347);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a5a9b;
+        }
+
+        #divine-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(12, 15, 31, 0.4) 0%, rgba(12, 15, 31, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.7);
+        }
+        
+        .banner-header h1 {
+             font-family: 'Roboto Mono', sans-serif;
+             color: #fde047; /* Lighter Gold */
+        }
+        .banner-header p {
+            color: #e0e7ff; /* Light lavender white */
+        }
+
+        /* --- Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4);
+            border-color: #8b5cf6;
+        }
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- Card Popup Styles --- */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(12, 15, 31, 0.95); /* Dark Navy */
+            border: 1px solid #facc15; /* Gold Border */
+            border-radius: 0.75rem;
+            color: #dbeafe;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15; /* Gold */
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #facc15;
+        }
+
+        /* Banlist Status Indicator */
+        .status-forbidden { color: #ef4444; font-weight: bold; }
+        .status-limited { color: #f59e0b; font-weight: bold; }
+        .status-semi-limited { color: #fde047; font-weight: bold; }
+        .status-unlimited { color: #22c55e; font-weight: bold; }
+
+        /* --- NEW Combo Tab Styles --- */
+        .combo-tab {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #202c5c; /* Inactive bg */
+            color: #c7d2fe; /* Inactive text */
+            border: 2px solid #4a5a9b;
+        }
+        .combo-tab:hover {
+            background-color: #314083;
+            color: #fff;
+        }
+        .combo-tab.active {
+            background-color: #facc15; /* Gold */
+            color: #1a2347; /* Dark Blue */
+            border-color: #fde047;
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
+        }
+        .combo-content {
+            display: none; /* Hidden by default */
+        }
+        .combo-content.active {
+            display: block; /* Shown when active */
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+
+    <!-- Home Button -->
+    <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="divine-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-2">Obelisk the Tormentor</h1>
+            <p class="text-lg md:text-xl text-red-200">The Fist of Fate: A Strategic Deep Dive</p>
+        </header>
+
+        <!-- Executive Summary Section (UPDATED) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: A Package, Not an Archetype</h2>
+                <div class="space-y-4 text-blue-200">
+                    <p>
+                        An analysis of "Obelisk the Tormentor" decks must begin by dismantling a common misconception: there is no competitively viable "Obelisk" archetype. The standalone structure deck is suitable only for casual play.
+                    </p>
+                    <p>
+                        The true function of Obelisk in a contemporary setting is as a high-impact <strong class="text-accent">"boss monster package."</strong> This package consists of Obelisk, its powerful Spell/Trap support, and generic Divine-Beast cards. This entire package is then integrated into a more consistent, meta-relevant "engine" (like Horus, Lair of Darkness, or Floowandereeze) that compensates for the God Card's inherent flaws.
+                    </p>
+                    <p>
+                        The core philosophy is a <strong class="text-accent">"go-second" board-breaking strategy</strong> designed to achieve a One-Turn Kill (OTK). This is dictated by its most powerful support, <strong class="text-white">Soul Crossing</strong> (which uses the opponent's monsters for the Tribute Summon) and <strong class="text-white">Fist of Fate</strong> (which provides un-negatable field wipes). The goal is not to build a board, but to summon a 4000 ATK behemoth, wipe the field clean, and attack for game.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Anatomy of a God Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Anatomy of a God</h2>
+            <div class="card p-6">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div id="obelisk-img-container" class="card-image-container card-placeholder">Obelisk the Tormentor</div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-accent mb-4">Obelisk the Tormentor</h3>
+                        <div class="mb-3">
+                            <span class="inline-block bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold text-blue-200 mr-2 mb-2">Level 10</span>
+                            <span class="inline-block bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold text-blue-200 mr-2 mb-2">DIVINE</span>
+                            <span class="inline-block bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold text-blue-200 mr-2 mb-2">Divine-Beast / Effect</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-lg font-bold text-white">ATK/ 4000</span>
+                            <span class="text-lg font-bold text-white ml-4">DEF/ 4000</span>
+                        </div>
+                        <div class="space-y-3 text-blue-200">
+                            <p><strong class="text-white">Summoning & Protection:</strong> Requires 3 Tributes to Normal Summon. The Normal Summon cannot be negated. When Normal Summoned, cards and effects cannot be activated.</p>
+                            <p><strong class="text-white">Targeting Immunity:</strong> Neither player can target this card with card effects.</p>
+                            <p><strong class="text-white">God Hand Crusher:</strong> You can Tribute 2 monsters; destroy all monsters your opponent controls. Cannot attack the turn this effect is activated.</p>
+                            <p class="text-sm text-blue-300 italic"><strong class="text-red-400">Vulnerability:</strong> Immune only to <em class="text-accent">targeting</em> effects. Still vulnerable to non-targeting removal like <strong class="text-white">Raigeki</strong>, <strong class="text-white">Mirror Force</strong>, or <strong class="text-white">Kaiju</strong> monsters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Divine Arsenal Section (UPDATED) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Divine Arsenal</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                To address Obelisk's challenges, a small but potent suite of 
+                <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Obelisk%20the%20Tormentor&stype=1&ctype=1&sort=1&rp=100" target="_blank" class="lore-link">divine support cards</a>
+                was developed. Many of these cards feature the text: "This card's activation and effect cannot be negated."
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Support Card 1 -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bolt text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Offense & Searching</h3>
+                    </div>
+                    <div class="card combo-step-card p-4 flex-grow">
+                        <h4 class="text-lg font-bold text-accent mb-1">Soul Energy MAX!!! (Normal Trap)</h4>
+                        <p class="text-sm text-blue-200">Tribute 2 other monsters to destroy your opponent's monsters and inflict 4000 damage. Its GY effect is the deck's main searcher, adding Obelisk from Deck to hand and allowing an immediate Normal Summon.</p>
+                    </div>
+                </div>
+                <!-- Support Card 2 -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-alt text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Protection & Disruption</h3>
+                    </div>
+                    <div class="space-y-4 flex-grow flex flex-col">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Fist of Fate (Quick-Play Spell)</h4>
+                            <p class="text-sm text-blue-200">An un-negatable monster negate & destroy. If used in your Main Phase, it <em class="text-accent">also</em> destroys all opposing Spells/Traps. A full board wipe.</p>
+                        </div>
+                        <div class="card combo-step-card p-4 flex-grow">
+                            <h4 class="text-lg font-bold text-accent mb-1">The Breaking Ruin God (Quick-Play Spell)</h4>
+                            <p class="text-sm text-blue-200">An un-negatable Special Summon of Obelisk from hand/GY, making it <em class="text-accent">unaffected</em> by opponent's card effects for the turn. This patches its non-targeting vulnerability. Its GY effect banishes the opponent's GY.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Support Card 3 (NEW) -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-crosshairs text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Board Breaker</h3>
+                    </div>
+                    <div class="card combo-step-card p-4 flex-grow">
+                        <h4 class="text-lg font-bold text-accent mb-1">Soul Crossing (Quick-Play Spell)</h4>
+                        <p class="text-sm text-blue-200">The "true" solution to summoning Obelisk. This card allows you to Tribute Summon a Divine-Beast using your <strong class="text-white">opponent's monsters</strong> as Tributes. It turns Obelisk's 3-Tribute cost into a devastating, non-targeting board wipe.</p>
+                    </div>
+                </div>
+                <!-- Support Card 4 (NEW) -->
+                <div class="card p-6 flex flex-col">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-crown text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Divine Buff</h3>
+                    </div>
+                    <div class="card combo-step-card p-4 flex-grow">
+                        <h4 class="text-lg font-bold text-accent mb-1">Divine Evolution (Normal Spell)</h4>
+                        <p class="text-sm text-blue-200">An un-negatable buff that "chooses" (does not target) Obelisk. It gains 1000 ATK/DEF, its <em class="text-accent">activated effects</em> cannot be negated (protecting its board wipe), and it gains a new effect to send an opponent's monster to GY when it attacks.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- [NEW] Solving the 3-Tribute Problem Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Solving the 3-Tribute Problem</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                Obelisk's greatest challenge is its 3-Tribute cost. While <strong class="text-accent">Soul Crossing</strong> bypasses this by using the opponent's board, other engines are needed to generate your own fodder.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Slime Engine -->
+                <div class="card p-6 pro-con-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="reactor-slime-img" class="card-image-container flex-shrink-0 card-placeholder">Reactor Slime</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">The "Slime" Engine</h3>
+                            <p class="text-blue-200">
+                                <strong class="text-accent">Reactor Slime</strong>, on Normal Summon, Special Summons 2 "Slime Tokens." This card plus its two tokens instantly provides the 3 Tributes needed.
+                            </p>
+                            <p class="text-red-400 mt-2 text-sm italic">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                <strong class="font-bold">Restriction:</strong> This locks you into <em class="text-accent">only</em> summoning Divine-Beast monsters for the rest of the turn, preventing all Extra Deck plays.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Disciple Engine -->
+                <div class="card p-6 pro-con-card">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ras-disciple-img" class="card-image-container flex-shrink-0 card-placeholder">Ra's Disciple</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">The "Disciple" Engine</h3>
+                            <p class="text-blue-200">
+                                <strong class="text-accent">Ra's Disciple</strong>, when Summoned, lets you Special Summon up to 2 more copies from your hand or Deck. This is a one-card-to-three-monsters engine.
+                            </p>
+                            <p class="text-red-400 mt-2 text-sm italic">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                <strong class="font-bold">Restriction:</strong> Even more restrictive. You cannot Special Summon other monsters <em class="text-accent">at all</em>, except by its own effect.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- [UPDATED] Core Combo Walkthrough Section -->
+        <section id="combo-section" class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combos & Synergistic Engines</h2>
+            
+            <!-- Combo Tabs -->
+            <div role="tablist" class="flex flex-wrap justify-center gap-4 mb-8">
+                <button role="tab" aria-selected="true" class="combo-tab active" data-combo-target="#combo-foolish">Foolish Burial Goods Combo</button>
+                <button role="tab" aria-selected="false" class="combo-tab" data-combo-target="#combo-bgr">Breaking Ruin God Combo</button>
+                <button role="tab" aria-selected="false" class="combo-tab" data-combo-target="#combo-horus">Horus Engine</button>
+                <button role="tab" aria-selected="false" class="combo-tab" data-combo-target="#combo-lair">Lair of Darkness Engine</button>
+                <button role="tab" aria-selected="false" class="combo-tab" data-combo-target="#combo-flunder">Floowandereeze Engine</button>
+            </div>
+
+            <!-- Combo Content Panels -->
+            <div>
+                <!-- Combo 1: Foolish Burial Goods -->
+                <div id="combo-foolish" class="combo-content active animate-fadeIn">
+                    <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                        The deck's most common path to searching and summoning Obelisk when a Tribute engine is already available.
+                    </p>
+                    <div class="flex flex-col items-center gap-6">
+                        <!-- Step 1 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-foolish-1" class="card-image-container flex-shrink-0 card-placeholder">Foolish Burial Goods</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Activate Foolish Burial Goods</h3>
+                                    </div>
+                                    <p class="text-blue-200">Activate <strong class="text-accent">Foolish Burial Goods</strong>. This sends 1 <strong class="text-accent">Soul Energy MAX!!!</strong> from your Deck to the GY, setting up its secondary effect.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 2 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-foolish-2" class="card-image-container flex-shrink-0 card-placeholder">Reactor Slime</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">Establish 3 Tributes</h3>
+                                    </div>
+                                    <p class="text-blue-200">Through a separate engine (like <strong class="text-accent">Reactor Slime</strong> + 2 Tokens, or the <strong class="text-accent">Horus</strong> engine), place 3 monsters on your field.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 3 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-foolish-3" class="card-image-container flex-shrink-0 card-placeholder">Soul Energy MAX!!!</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                        <h3 class="text-lg font-bold">Activate GY Effect</h3>
+                                    </div>
+                                    <p class="text-blue-200">During your Main or Battle Phase, activate the effect of <strong class="text-accent">Soul Energy MAX!!!</strong> in your GY.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 4 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-foolish-4" class="card-image-container flex-shrink-0 card-placeholder">Obelisk the Tormentor</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                        <h3 class="text-lg font-bold">Search & Summon the God</h3>
+                                    </div>
+                                    <p class="text-blue-200">Banish <strong class="text-accent">Soul Energy MAX!!!</strong>. Its effect adds <strong class="text-accent">Obelisk the Tormentor</strong> from Deck to hand, then <em class="text-accent">immediately</em> allows you to Normal Summon it by Tributing your 3 monsters.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combo 2: Breaking Ruin God (UPDATED Text) -->
+                <div id="combo-bgr" class="combo-content">
+                    <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                        The deck's "go-second" power play, resulting in a fully protected monster that wipes both the field and GY.
+                    </p>
+                    <div class="flex flex-col items-center gap-6">
+                        <!-- Step 1 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-bgr-1" class="card-image-container flex-shrink-0 card-placeholder">The Breaking Ruin God</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Activate Un-Negatable Spell</h3>
+                                    </div>
+                                    <p class="text-blue-200">With Obelisk in hand or GY, activate the Quick-Play Spell <strong class="text-accent">The Breaking Ruin God</strong>. Its activation and effect <em class="text-accent">cannot</em> be negated.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 2 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-bgr-2" class="card-image-container flex-shrink-0 card-placeholder">Obelisk the Tormentor</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">Special Summon Obelisk</h3>
+                                    </div>
+                                    <p class="text-blue-200">Special Summon <strong class="text-accent">Obelisk the Tormentor</strong>. For the rest of this turn, it is <strong class="text-accent">unaffected by all opponent's card effects</strong>, patching its key weakness.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 3 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-bgr-3" class="card-image-container flex-shrink-0 card-placeholder">Imsety, Glory of Horus</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                        <h3 class="text-lg font-bold">Activate Obelisk's Effect</h3>
+                                    </div>
+                                    <p class="text-blue-200">Tribute 2 other monsters (e.g., from a <strong class="text-accent">Horus</strong> or <strong class="text-accent">Reactor Slime</strong> engine) to activate your <em class="text-accent">unaffected</em> Obelisk's effect, destroying all monsters your opponent controls.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 4 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-bgr-4" class="card-image-container flex-shrink-0 card-placeholder">The Breaking Ruin God</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                        <h3 class="text-lg font-bold">Trigger & Banish from GY</h3>
+                                    </div>
+                                    <p class="text-blue-200">Because you Tributed 2 monsters, <strong class="text-accent">The Breaking Ruin God's</strong> GY effect triggers. Banish it to <strong class="text-accent">banish all monsters in your opponent's GY</strong> and inflict burn damage. A total field and GY wipe.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combo 3: Horus Engine -->
+                <div id="combo-horus" class="combo-content">
+                    <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                        The most fluid hybrid, using the Horus engine to discard support cards as a cost and swarm the field for Tributes.
+                    </p>
+                    <div class="flex flex-col items-center gap-6">
+                        <!-- Step 1 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-horus-1" class="card-image-container flex-shrink-0 card-placeholder">Imsety, Glory of Horus</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Activate Imsety (Cost as Benefit)</h3>
+                                    </div>
+                                    <p class="text-blue-200">Activate <strong class="text-accent">Imsety, Glory of Horus</strong> from hand. Send itself and <strong class="text-accent">Soul Energy MAX!!!</strong> to the GY as cost. Imsety's effect searches <strong class="text-accent">King's Sarcophagus</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 2 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-horus-2" class="card-image-container flex-shrink-0 card-placeholder">King's Sarcophagus</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">Activate Sarcophagus</h3>
+                                    </div>
+                                    <p class="text-blue-200">Activate <strong class="text-accent">King's Sarcophagus</strong>. This allows your Horus monsters to Special Summon themselves from the GY.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 3 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-horus-3" class="card-image-container flex-shrink-0 card-placeholder">Qebehsenuef, Protection of Horus</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                        <h3 class="text-lg font-bold">Swarm the Field</h3>
+                                    </div>
+                                    <p class="text-blue-200"><strong class="text-accent">Imsety</strong> Special Summons itself. Use Sarcophagus to send/summon 2 more Horus monsters (like <strong class="text-accent">Qebehsenuef</strong> and <strong class="text-accent">Hapi</strong>). You now have 3 monsters on field for Tributes.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 4 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-horus-4" class="card-image-container flex-shrink-0 card-placeholder">Soul Energy MAX!!!</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                        <h3 class="text-lg font-bold">Activate GY Effect</h3>
+                                    </div>
+                                    <p class="text-blue-200">Activate the <strong class="text-accent">Soul Energy MAX!!!</strong> you discarded in Step 1. Banish it from the GY.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 5 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-horus-5" class="card-image-container flex-shrink-0 card-placeholder">Obelisk the Tormentor</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span>
+                                        <h3 class="text-lg font-bold">Summon the God</h3>
+                                    </div>
+                                    <p class="text-blue-200">The GY effect resolves: add <strong class="text-accent">Obelisk the Tormentor</strong> from Deck to hand, then <em class="text-accent not-italic font-semibold">immediately</em> allows you to Normal Summon it by Tributing your 3 Horus monsters.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combo 4: Lair of Darkness (NEW) -->
+                <div id="combo-lair" class="combo-content">
+                    <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                        This "go-second" variant uses the opponent's monsters as fuel for both summoning Obelisk and paying for its effects.
+                    </p>
+                    <div class="flex flex-col items-center gap-6">
+                        <!-- Step 1 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-lair-1" class="card-image-container flex-shrink-0 card-placeholder">Lair of Darkness</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Activate Lair of Darkness</h3>
+                                    </div>
+                                    <p class="text-blue-200">Activate the Field Spell <strong class="text-accent">Lair of Darkness</strong>. This turns all face-up monsters on the field (including your opponent's) into DARK attribute.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 2 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-lair-2" class="card-image-container flex-shrink-0 card-placeholder">Soul Crossing</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">Activate Soul Crossing</h3>
+                                    </div>
+                                    <p class="text-blue-200">Activate <strong class="text-accent">Soul Crossing</strong>. Tribute 3 of your <strong class="text-white">opponent's monsters</strong> to Normal Summon <strong class="text-accent">Obelisk the Tormentor</strong> from your hand.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 3 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-lair-3" class="card-image-container flex-shrink-0 card-placeholder">Obelisk the Tormentor</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                        <h3 class="text-lg font-bold">Activate Obelisk's Effect via Lair</h3>
+                                    </div>
+                                    <p class="text-blue-200"><strong class="text-accent">Lair of Darkness</strong> has a second effect: to pay for an effect cost, you can Tribute 1 DARK monster your <strong class="text-white">opponent controls</strong>. You can now activate Obelisk's board wipe by Tributing 1 monster you control and 1 of your opponent's remaining monsters.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combo 5: Floowandereeze (NEW) -->
+                <div id="combo-flunder" class="combo-content">
+                    <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                        This hybrid leverages a rare mechanical overlap: Floowandereeze locks you out of <em class="text-accent">Special Summons</em>, but Obelisk is <em class="text-accent">Normal Summoned</em>.
+                    </p>
+                    <div class="flex flex-col items-center gap-6">
+                        <!-- Step 1 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-flunder-1" class="card-image-container flex-shrink-0 card-placeholder">Floowandereeze & Robina</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Perform Floowandereeze Combo</h3>
+                                    </div>
+                                    <p class="text-blue-200">Perform the standard <strong class="text-accent">Floowandereeze</strong> combo (e.g., <strong class="text-white">Robina</strong> -> <strong class="text-white">Eglen</strong> -> <strong class="text-white">Stri</strong>). This combo chain naturally places 3 monsters on the field for Tributes, all while respecting the "no Special Summon" lock.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 2 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-flunder-2" class="card-image-container flex-shrink-0 card-placeholder">Obelisk the Tormentor</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">Summon Obelisk, Not Empen</h3>
+                                    </div>
+                                    <p class="text-blue-200">Instead of Tributing your 3 monsters for the archetype's boss monster, <strong class="text-white">Floowandereeze & Empen</strong>, you simply Normal Summon <strong class="text-accent">Obelisk the Tormentor</strong> instead. It fits seamlessly into the game plan.</p>
+                                </div>
+                            </div>
+                        </div>
+                         <!-- Arrow -->
+                        <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color"></i></div>
+                        <!-- Step 3 -->
+                        <div class="card p-6 combo-step-card w-full max-w-lg">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="combo-flunder-3" class="card-image-container flex-shrink-0 card-placeholder">Soul Crossing</div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-[#1a2347] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                        <h3 class="text-lg font-bold">Alternative: Search Soul Crossing</h3>
+                                    </div>
+                                    <p class="text-blue-200">The Floowandereeze engine is also used as a hyper-consistent delivery system to search for the <em class="text-accent">real</em> win condition: <strong class="text-accent">Soul Crossing</strong>, allowing you to use the opponent's board instead.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        <!-- [END NEW] Core Combo Walkthrough Section -->
+
+
+        <!-- Endboard Section (UPDATED) -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Board & Win Condition</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- OTK Path -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The OTK Path (Going Second)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="soul-crossing-img-container" class="card-image-container card-placeholder">Soul Crossing</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li>Activate <strong class="text-accent">Soul Crossing</strong> to Tribute 3 opposing monsters and summon Obelisk.</li>
+                        <li>Activate <strong class="text-accent">Fist of Fate</strong> during your Main Phase to negate/destroy a remaining monster and wipe all backrow.</li>
+                        <li>Alternatively, use <strong class="text-accent">The Breaking Ruin God</strong> to summon an <strong class="text-accent">unaffected</strong> Obelisk.</li>
+                        <li>Attack with your 4000 ATK Obelisk for game.</li>
+                    </ul>
+                </div>
+                <!-- Control Path -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">The "Stun" Path (Going First)</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="mound-img-container" class="card-image-container card-placeholder">Mound of the Bound Creator</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li>End on a Normal Summoned Obelisk.</li>
+                        <li>Activate the Field Spell <strong class="text-accent">Mound of the Bound Creator</strong>. This is the critical piece.</li>
+                        <li><strong class="text-white">Mound</strong> makes Obelisk <strong class="text-accent">immune to targeting AND destruction</strong> by card effects, patching its biggest weakness.</li>
+                        <li>Set <strong class="text-accent">Fist of Fate</strong> for an un-negatable monster negate.</li>
+                        <li>Set <strong class="text-accent">Soul Energy MAX!!!</strong> to wipe their board and inflict 4000 damage if they over-commit.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- [NEW] Strategic Vulnerabilities Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.9s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Strategic Vulnerabilities</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">
+                Despite its un-negatable support, the Obelisk package is a "rogue" strategy at best due to several fundamental flaws.
+            </p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Vulnerability 1: Non-Targeting Removal -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-times-circle con-icon mr-2"></i>The Targeting Fallacy</h3>
+                    <p class="text-blue-200 mb-4">Obelisk's built-in "cannot be targeted" protection is outdated and easily bypassed by modern staples.</p>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-white">"Kaiju" Monsters:</strong> Cards like <strong class="text-accent">Gameciel</strong> Tribute Obelisk as a <strong class="text-white">cost</strong>, which does not target and cannot be stopped.</li>
+                        <li><strong class="text-white">Link Summons:</strong> <strong class="text-accent">Underworld Goddess of the Closed World</strong> can use Obelisk as Link Material from your side of the field.</li>
+                        <li><strong class="text-white">Board Wipes:</strong> <strong class="text-white">Raigeki</strong> and <strong class="text-white">Dark Hole</strong> do not target and will destroy Obelisk (unless <strong class="text-accent">Mound of the Bound Creator</strong> is active).</li>
+                        <li><strong class="text-white">Negation:</strong> <strong class="text-white">Forbidden Droplet</strong> and <strong class="text-white">Skill Drain</strong> will negate Obelisk's effects.</li>
+                    </ul>
+                    <div class="flex justify-around mt-4 gap-2">
+                        <div id="kaiju-img" class="w-1/2 card-placeholder text-xs">Gameciel, the Sea Turtle Kaiju</div>
+                        <div id="goddess-img" class="w-1/2 card-placeholder text-xs">Underworld Goddess of the Closed World</div>
+                    </div>
+                </div>
+
+                <!-- Vulnerability 2: Chokepoints -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-plug con-icon mr-2"></i>Critical Chokepoints</h3>
+                    <p class="text-blue-200 mb-4">The deck is not a "funnel" combo but a "critical mass" deck. The best way to stop it is to deny the Tributes.</p>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><strong class="text-white">Handtraps:</strong> <strong class="text-accent">Ash Blossom</strong> is devastating. Use it to negate <strong class="text-accent">Ra's Disciple</strong> (to stop the summons from Deck) or <strong class="text-accent">Reactor Slime</strong> (to stop the Tokens).</li>
+                        <li><strong class="text-white">Engine Disruption:</strong> Destroying <strong class="text-accent">King's Sarcophagus</strong> or <strong class="text-accent">Lair of Darkness</strong> disables those engines entirely.</li>
+                        <li><strong class="text-white">Field Spell Removal:</strong> <strong class="text-white">Cosmic Cyclone</strong> is the best counter to <strong class="text-accent">Mound of the Bound Creator</strong>, as it <strong class="text-white">banishes</strong> it. (Destroying it would let the opponent search for Obelisk).</li>
+                    </ul>
+                    <div class="flex justify-around mt-4 gap-2">
+                         <div id="ash-img" class="w-1/2 card-placeholder text-xs">Ash Blossom & Joyous Spring</div>
+                         <div id="cosmic-img" class="w-1/2 card-placeholder text-xs">Cosmic Cyclone</div>
+                    </div>
+                </div>
+
+                <!-- Vulnerability 3: Resource Economy -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-balance-scale-right con-icon mr-2"></i>Catastrophic Economy</h3>
+                    <p class="text-blue-200 mb-4">This is the deck's unfixable, fundamental flaw. The card advantage trade is a disaster by modern standards.</p>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li>To Normal Summon Obelisk, you invest 3 monsters (a -3).</li>
+                        <li>To activate Obelisk's board wipe, you must Tribute 2 <em class="text-accent">more</em> monsters (a -2).</li>
+                        <li>This means you invest <strong class="text-accent">five monsters</strong> just to wipe the board and end on a single monster.</li>
+                        <li>A modern deck invests 5 monsters to build an endboard of 4+ interruptions. This is why the <strong class="text-white">only</strong> functional builds are those that outsource the cost to the opponent (via <strong class="text-accent">Soul Crossing</strong>) or use a free engine (like <strong class="text-accent">Horus</strong>).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
+            </div>
+        </section>
+
+        <section>
+            <div id="deck-resources-container">
+                <!-- Deck search section will be populated by CardLoader.renderDeckSearchSection -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Render Banlist Section ---
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Obelisk the Tormentor', {
+                relatedCards: [
+                    'Triple Tactics Talent',
+                    'Monster Reborn',
+                    'Called by the Grave'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Obelisk the Tormentor is a Divine-Beast tribute summon strategy focused on summoning the Egyptian God card and supporting it with protection and ATK manipulation.',
+                    supportReliance: 'The deck relies on tribute support cards, Divine-Beast support like Mound of the Bound Creator, and generic power spells.',
+                    adaptability: 'All Obelisk-specific cards and support remain unrestricted, allowing the strategy to operate at full power.',
+                    resilience: 'The archetype is completely untouched by banlist restrictions, maintaining maximum consistency for tribute summoning strategies.',
+                    keyLoss: 'No archetype-specific restrictions exist; generic staples like Monster Reborn and Called by the Grave being limited slightly affects consistency.',
+                    alternativeStrategy: 'Focus on Soul Energy MAX!!! for massive ATK boosts and use Mound of the Bound Creator to protect Obelisk from targeted effects.'
+                }
+            });
+
+            
+            // --- NEW Combo Tab Logic ---
+            const comboTabs = document.querySelectorAll('.combo-tab');
+            const comboContents = document.querySelectorAll('.combo-content');
+
+            comboTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Get the target content ID from data attribute
+                    const targetId = tab.getAttribute('data-combo-target');
+                    const targetContent = document.querySelector(targetId);
+
+                    // Deactivate all tabs
+                    comboTabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+
+                    // Deactivate all content panels
+                    comboContents.forEach(c => {
+                        c.classList.remove('active');
+                    });
+
+                    // Activate the clicked tab
+                    tab.classList.add('active');
+                    tab.setAttribute('aria-selected', 'true');
+
+                    // Activate the target content panel
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                        // Re-trigger animation
+                        targetContent.classList.remove('animate-fadeIn');
+                        void targetContent.offsetWidth; // Trigger reflow
+                        targetContent.classList.add('animate-fadeIn');
+                    }
+                });
+            });
+
+
+            // --- Obelisk Divine Banner Animation ---
+            const canvas = document.getElementById('divine-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 50;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + 10;
+                        this.speedY = (Math.random() * 3) + 1;
+                        this.size = (Math.random() * 2) + 1;
+                        this.color = `rgba(250, 204, 21, ${Math.random() * 0.5 + 0.3})`; // Gold color
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+            
+            await CardLoader.renderDeckSearchSection('deck-resources-container', 'Obelisk the Tormentor');
+
+            // --- Card Loader (UPDATED) ---
+            CardLoader.loadCards({
+                // Anatomy Section
+                'obelisk-img-container': 'Obelisk the Tormentor',
+                
+                // Tribute Engine Section
+                'reactor-slime-img': 'Reactor Slime',
+                'ras-disciple-img': 'Ra\'s Disciple',
+
+                // Combo Sections
+                'combo-foolish-1': 'Foolish Burial Goods',
+                'combo-foolish-2': 'Reactor Slime',
+                'combo-foolish-3': 'Soul Energy MAX!!!',
+                'combo-foolish-4': 'Obelisk the Tormentor',
+                'combo-bgr-1': 'The Breaking Ruin God',
+                'combo-bgr-2': 'Obelisk the Tormentor',
+                'combo-bgr-3': 'Imsety, Glory of Horus',
+                'combo-bgr-4': 'The Breaking Ruin God',
+                'combo-horus-1': 'Imsety, Glory of Horus',
+                'combo-horus-2': 'King\'s Sarcophagus',
+                'combo-horus-3': 'Qebehsenuef, Protection of Horus',
+                'combo-horus-4': 'Soul Energy MAX!!!',
+                'combo-horus-5': 'Obelisk the Tormentor',
+                'combo-lair-1': 'Lair of Darkness',
+                'combo-lair-2': 'Soul Crossing',
+                'combo-lair-3': 'Obelisk the Tormentor',
+                'combo-flunder-1': 'Floowandereeze & Robina',
+                'combo-flunder-2': 'Obelisk the Tormentor',
+                'combo-flunder-3': 'Soul Crossing',
+
+                // Endboard Section
+                'soul-crossing-img-container': 'Soul Crossing',
+                'mound-img-container': 'Mound of the Bound Creator',
+
+                // Vulnerabilities Section
+                'kaiju-img': 'Gameciel, the Sea Turtle Kaiju',
+                'goddess-img': 'Underworld Goddess of the Closed World',
+                'ash-img': 'Ash Blossom & Joyous Spring',
+                'cosmic-img': 'Cosmic Cyclone'
+            });
+                
+
+
+        });
+    </script>
+</body>
+</html>

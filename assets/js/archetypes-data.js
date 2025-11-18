@@ -8,7 +8,7 @@ const archetypes = [
     {
         name: 'D.D.',
         description: 'A thematic series of cards that pioneered banishing mechanics, featuring powerful hand traps like D.D. Crow and recurring monsters like D.D. Survivor that interact with the Different Dimension (banish zone).',
-        filepath: 'D.D. Deck Analysis.html',
+        filepath: 'pages/D.D. Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ddDotGrad" cx="50%" cy="50%" r="50%">
@@ -30,7 +30,7 @@ const archetypes = [
     {
         name: 'D/D',
         description: 'A complex archetype that utilizes all Extra Deck mechanics through contracts with different dimensions.',
-        filepath: 'D_D Deck Analysis.html',
+        filepath: 'pages/D_D Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ddGrad" cx="50%" cy="50%" r="50%">
@@ -50,7 +50,7 @@ const archetypes = [
     {
         name: 'Mythical beast',
         description: 'A Spellcaster archetype themed around magical beasts and spell counters, focusing on powerful effects and field control.',
-        filepath: 'Mythical beast Deck Analysis.html',
+        filepath: 'pages/Mythical beast Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="beastAura" cx="50%" cy="50%" r="60%">
@@ -110,7 +110,7 @@ const archetypes = [
     {
         name: 'Myutant',
         description: 'A Psychic archetype focused on banishing cards to trigger powerful effects and summon larger Myutant monsters.',
-        filepath: 'Myutant Deck Analysis.html',
+        filepath: 'pages/Myutant Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                 <defs>
                                     <radialGradient id="myutantAura" cx="50%" cy="50%" r="60%">
@@ -164,7 +164,7 @@ const archetypes = [
     {
         name: 'Naturia',
         description: 'An EARTH Plant/Beast archetype focused on natural synergy, negation, and swarming the field with small monsters.',
-        filepath: 'Naturia Deck Analysis.html',
+        filepath: 'pages/Naturia Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                     <defs>
                                         <radialGradient id="naturiaAura" cx="50%" cy="50%" r="60%">
@@ -212,7 +212,7 @@ const archetypes = [
     {
         name: 'Neo-Spacian',
         description: 'A unique archetype based around Neo-Spacian monsters and Contact Fusion with Elemental HERO Neos, enabling flexible strategies through multiple fusion forms and diverse card effects.',
-        filepath: 'Neo Spacian Deck Analysis.html',
+        filepath: 'pages/Neo Spacian Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <radialGradient id="neosAura" cx="50%" cy="40%" r="60%">
@@ -249,7 +249,7 @@ const archetypes = [
     {
         name: 'Nekroz',
         description: 'A WATER Ritual archetype focused on ritual summoning, searching, and versatile monster effects.',
-        filepath: 'Nekroz Deck Analysis.html',
+        filepath: 'pages/Nekroz Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nekrozAura" cx="50%" cy="50%" r="60%">
@@ -292,7 +292,7 @@ const archetypes = [
     {
         name: 'Dark Magician',
         description: 'The iconic Spellcaster archetype focusing on spell control and powerful fusion monsters.',
-        filepath: 'Dark Magician Deck Analysis.html',
+        filepath: 'pages/Dark Magician Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="dmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -315,7 +315,7 @@ const archetypes = [
     {
         name: 'Dark Scorpion',
         description: 'A Warrior-based archetype of thieves that specialize in direct attacks and unique battle effects.',
-        filepath: 'Dark Scorpion Deck Analysis.html',
+        filepath: 'pages/Dark Scorpion Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="scorpionGrad" cx="50%" cy="50%" r="50%">
@@ -338,7 +338,7 @@ const archetypes = [
     {
         name: 'Dark World',
         description: 'A DARK Fiend archetype that thrives on discarding cards to unleash powerful effects and swarm the field.',
-        filepath: 'Dark World Deck Analysis.html',
+        filepath: 'pages/Dark World Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 10 L80 40 L80 70 L50 90 L20 70 L20 40 Z" fill="#2a0944" stroke="#7209b7" stroke-width="2"/>
                         <path d="M35 45 L65 45 M40 55 L60 55" stroke="#7209b7" stroke-width="3"/>
@@ -352,7 +352,7 @@ const archetypes = [
     {
         name: 'Dark Lucius',
         description: 'An EARTH Fiend archetype built around the legacy LV mechanic, featuring level progression from LV4 to LV8, now used as a specialized package within modern Fiend engines.',
-        filepath: 'Dark Lucius Deck Analysis.html',
+        filepath: 'pages/Dark Lucius Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="darkLuciusGrad" cx="50%" cy="50%" r="50%">
@@ -375,7 +375,7 @@ const archetypes = [
     {
         name: 'Dark Blade',
         description: 'A DARK Warrior archetype that evolved from a fragile legacy strategy to the modern Memento engine, featuring Mementotlan Dark Blade as a Graveyard-centric combo piece with self-destruction loops.',
-        filepath: 'Dark Blade Deck Analysis.html',
+        filepath: 'pages/Dark Blade Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="darkBladeGrad" cx="50%" cy="50%" r="50%">
@@ -397,7 +397,7 @@ const archetypes = [
     {
         name: 'Duston',
         description: 'A series of tiny LIGHT Fiend monsters that focus on filling both players\' fields with 0 ATK/DEF monsters that cannot be Tributed.',
-        filepath: 'Duston Deck Analysis.html',
+        filepath: 'pages/Duston Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="50" cy="50" r="20" fill="#f4a261" stroke="#e76f51" stroke-width="2"/>
                         <path d="M40 40 L60 60 M60 40 L40 60" stroke="#e76f51" stroke-width="3"/>
@@ -411,7 +411,7 @@ const archetypes = [
     {
         name: 'Duel Dragon',
         description: 'The legendary Synchro Monsters from the Yu-Gi-Oh! 5D\'s manga that serve as narrative counterparts to the Signer Dragons, featuring powerful boss monsters like Stardust Spark Dragon and Hot Red Dragon Archfiend.',
-        filepath: 'Duel Dragon Deck Analysis.html',
+        filepath: 'pages/Duel Dragon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="duelDragonGrad" cx="50%" cy="50%" r="50%">
@@ -434,7 +434,7 @@ const archetypes = [
     {
         name: 'Earthbound',
         description: 'A Dark Synchro archetype based on the Nazca Lines, featuring powerful field-controlling immortals that can attack directly.',
-        filepath: 'Earthbound Deck Analysis.html',
+        filepath: 'pages/Earthbound Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M10 50 L50 10 L90 50 L50 90 Z" fill="#3c096c" stroke="#5a189a" stroke-width="2"/>
                         <path d="M30 50 L70 50" stroke="#5a189a" stroke-width="3"/>
@@ -449,7 +449,7 @@ const archetypes = [
     {
         name: 'Eldlich',
         description: 'A Zombie archetype centered around a golden lord and his powerful trap cards that can be activated from the graveyard.',
-        filepath: 'Eldlich Deck Analysis.html',
+        filepath: 'pages/Eldlich Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="eldlichGold" cx="0.3" cy="0.3">
@@ -568,7 +568,7 @@ const archetypes = [
     {
         name: 'Egyptian God',
         description: 'The divine Egyptian God cards (Slifer, Obelisk, Ra) and their complex support systems, featuring overwhelming power balanced by demanding tribute requirements and hybrid strategies.',
-        filepath: 'Egyptian God Deck Analysis.html',
+        filepath: 'pages/Egyptian God Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="egyptianGodGrad" cx="50%" cy="50%" r="50%">
@@ -592,7 +592,7 @@ const archetypes = [
     {
         name: 'Elemental HERO',
         description: 'A fusion-based HERO strategy that combines multiple HERO sub-archetypes into explosive combo plays, capable of both oppressive floodgate control and devastating OTK potential.',
-        filepath: 'Elemental Hero Deck Analysis.html',
+        filepath: 'pages/Elemental Hero Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="heroCore" cx="50%" cy="30%" r="70%">
@@ -720,7 +720,7 @@ const archetypes = [
     {
         name: 'Empowered Warrior',
         description: 'A Warrior-Pendulum archetype that gains power through field control and Pendulum Summoning.',
-        filepath: 'Empowered Warrior Deck Analysis.html',
+        filepath: 'pages/Empowered Warrior Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="warrior-core-grad" cx="0.3" cy="0.3">
@@ -947,7 +947,7 @@ const archetypes = [
     {
         name: 'Entity',
         description: 'A cosmic archetype that manipulates the Extra Deck through powerful Synchro and Xyz monsters, featuring entities that transcend dimensions and manipulate reality itself.',
-        filepath: 'Entity Deck Analysis.html',
+        filepath: 'pages/Entity Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="entityGrad" cx="50%" cy="50%" r="50%">
@@ -971,7 +971,7 @@ const archetypes = [
     {
         name: 'Engine Token',
         description: 'A Machine archetype that generates "Engine Tokens" through various effects, featuring Fiendish Engine Ω and Motor monsters that create resources when leaving the field.',
-        filepath: 'Engine Token Deck Analysis.html',
+        filepath: 'pages/Engine Token Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="engineTokenGrad" cx="50%" cy="50%" r="50%">
@@ -994,7 +994,7 @@ const archetypes = [
     {
         name: 'End of the World',
         description: 'The Demise and Ruin Ritual archetype featuring apocalyptic board-clearing effects and OTK potential through overwhelming offensive power.',
-        filepath: 'End of the World Deck Analysis.html',
+        filepath: 'pages/End of the World Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="endOfWorldGrad" cx="50%" cy="50%" r="50%">
@@ -1017,7 +1017,7 @@ const archetypes = [
     {
         name: 'Endymion',
         description: 'A Spell Counter-focused Pendulum archetype that builds massive boards through spell usage and features powerful negation effects.',
-        filepath: 'Endymoin Deck Analysis.html',
+        filepath: 'pages/Endymoin Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="endymionGrad" cx="50%" cy="50%" r="50%">
@@ -1042,7 +1042,7 @@ const archetypes = [
     {
         name: 'Evil HERO',
         description: 'A sinister fusion archetype that serves as a compact, high-impact engine in "Omni-HERO" strategies, specializing in explosive board-breaking and game-ending OTKs through Evil HERO Malicious Bane.',
-        filepath: 'Evil Hero Deck Analysis.html',
+        filepath: 'pages/Evil Hero Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="evilCore" cx="50%" cy="30%" r="70%">
@@ -1159,7 +1159,7 @@ const archetypes = [
     {
         name: 'Masked HERO',
         description: 'A dynamic Extra Deck toolbox accessed via "Transformation Summoning" with Quick-Play Change spells, specializing in aggressive control through powerful floodgates like Masked HERO Dark Law.',
-        filepath: 'Masked hero Deck Analysis.html',
+        filepath: 'pages/Masked hero Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="maskedCore" cx="50%" cy="30%" r="70%">
@@ -1295,7 +1295,7 @@ const archetypes = [
     {
         name: 'Evilswarm',
         description: 'A DARK anti-meta archetype focused on Rank 4 Xyz summoning to establish powerful floodgates, primarily using Evilswarm Ophion to shut down high-level Special Summoning.',
-        filepath: 'lswarm Deck Analysis.html',
+        filepath: 'pages/lswarm Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="corruptCore" cx="50%" cy="30%" r="70%">
@@ -1420,7 +1420,7 @@ const archetypes = [
     {
         name: 'Evil Eye',
         description: 'A DARK archetype focused on creating an unbreakable tower through Serziel equipped with Evil Eye Selene while controlling the graveyard.',
-        filepath: 'Evil Eye Deck Analysis.html',
+        filepath: 'pages/Evil Eye Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="50" cy="50" r="35" fill="#2a0845" stroke="#8b5cf6" stroke-width="3"/>
                         <circle cx="50" cy="50" r="20" fill="#4c1d95" stroke="#a78bfa" stroke-width="2"/>
@@ -1435,7 +1435,7 @@ const archetypes = [
     {
         name: 'Exodia',
         description: 'The ultimate win condition deck that focuses on drawing all five pieces of Exodia to achieve an instant victory.',
-        filepath: 'Exodia Deck Analysis.html',
+        filepath: 'pages/Exodia Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="exodiaGrad" cx="50%" cy="50%" r="50%">
@@ -1459,7 +1459,7 @@ const archetypes = [
     {
         name: 'Exosister',
         description: 'A LIGHT Spellcaster archetype that excels at banishing cards from the opponent\'s graveyard while maintaining strong board presence.',
-        filepath: 'Exosister Deck Analysis.html',
+        filepath: 'pages/Exosister Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 10 L70 30 L70 50 L50 70 L30 50 L30 30 Z" fill="#ffd166" stroke="#f77f00" stroke-width="2"/>
                         <circle cx="50" cy="40" r="12" fill="#f77f00"/>
@@ -1475,7 +1475,7 @@ const archetypes = [
     {
         name: 'F.A.',
         description: 'A WIND Machine archetype that gains effects based on speed counters, focusing on swift synchro summoning and board control.',
-        filepath: 'F.A. Deck Analysis.html',
+        filepath: 'pages/F.A. Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="faGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1499,7 +1499,7 @@ const archetypes = [
     {
         name: 'Fabled',
         description: 'A LIGHT Beast archetype that triggers powerful effects when discarded, creating explosive synchro combos.',
-        filepath: 'Fabled Deck Analysis.html',
+        filepath: 'pages/Fabled Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fabledGrad" cx="50%" cy="30%" r="70%">
@@ -1572,7 +1572,7 @@ const archetypes = [
     {
         name: 'Favorite',
         description: 'A unique archetype of LIGHT Spellcaster monsters that support both HERO and Yubel strategies, providing versatile fusion and contact fusion abilities.',
-        filepath: 'Favorite Deck Analysis.html',
+        filepath: 'pages/Favorite Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="favoriteGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1658,7 +1658,7 @@ const archetypes = [
     {
         name: 'Fiendschmidt',
         description: 'A DARK Fiend archetype that uses banishing and graveyard manipulation to control the field and summon powerful boss monsters.',
-        filepath: 'Fiendschmidt Deck Analysis.html',
+        filepath: 'pages/Fiendschmidt Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fiendschmidtGrad" cx="50%" cy="30%" r="70%">
@@ -1685,7 +1685,7 @@ const archetypes = [
     {
         name: 'Fire Fist',
         description: 'A FIRE Beast-Warrior archetype that builds advantage through Formation spells while establishing powerful Xyz monsters for board control.',
-        filepath: 'Fire Fist Deck Analysis.html',
+        filepath: 'pages/Fire Fist Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fireFistGrad" cx="50%" cy="30%" r="70%">
@@ -1711,7 +1711,7 @@ const archetypes = [
     {
         name: 'Gravekeeper\'s',
         description: 'A historic Spellcaster archetype centered around Necrovalley, mastering the stun playstyle through graveyard control and methodical resource denial.',
-        filepath: 'Gravekeepers Deck Analysis.html',
+        filepath: 'pages/Gravekeepers Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="gravekeeperGrad" cx="50%" cy="30%" r="70%">
@@ -1789,7 +1789,7 @@ const archetypes = [
     {
         name: 'Graydle',
         description: 'An AQUA/Water archetype of alien-like monsters that take control of opponent�s monsters when destroyed, featuring tentacles and toxic themes.',
-        filepath: 'Graydle Deck Analysis.html',
+        filepath: 'pages/Graydle Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="graydleGrad" cx="50%" cy="50%" r="60%">
@@ -1821,7 +1821,7 @@ const archetypes = [
     {
         name: 'Fire King',
         description: 'A FIRE Beast archetype that thrives on destruction, using self-destruction effects to trigger powerful revival and search abilities.',
-        filepath: 'Fire King Deck Analysis.html',
+        filepath: 'pages/Fire King Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fireKingGrad" cx="50%" cy="20%" r="80%">
@@ -1849,7 +1849,7 @@ const archetypes = [
     {
         name: 'Firewall',
         description: 'A cybernetic Link archetype centered around protective barrier effects and co-linking strategies for board control.',
-        filepath: 'Firewall Deck Analysis.html',
+        filepath: 'pages/Firewall Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="firewallGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1878,7 +1878,7 @@ const archetypes = [
     {
         name: 'Fishborg',
         description: 'A WATER Machine archetype that combines aquatic themes with mechanical synchro strategies for explosive combo potential.',
-        filepath: 'Fishborg Deck Analysis.html',
+        filepath: 'pages/Fishborg Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="fishborgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1907,7 +1907,7 @@ const archetypes = [
     {
         name: 'Flamvell',
         description: 'A FIRE archetype that focuses on Synchro summoning through tuner synergy and graveyard-based revival effects.',
-        filepath: 'Flamvell Deck Analysis.html',
+        filepath: 'pages/Flamvell Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="flamvellGrad" cx="50%" cy="70%" r="60%">
@@ -1944,7 +1944,7 @@ const archetypes = [
     {
         name: 'Fluffal',
         description: 'A LIGHT Fairy archetype that fuses with Edge Imp and Frightfur monsters to create powerful Fusion monsters through macabre toy themes.',
-        filepath: 'Fluffal Deck Analysis.html',
+        filepath: 'pages/Fluffal Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fluffalGrad" cx="50%" cy="30%" r="70%">
@@ -1997,7 +1997,7 @@ const archetypes = [
     {
         name: 'Floowandereeze',
         description: 'A WIND Winged Beast archetype that excels at tribute summoning without tributes, using map cards to navigate powerful boss monsters.',
-        filepath: 'Floowandereeze Deck Analysis.html',
+        filepath: 'pages/Floowandereeze Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="floowandereezeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -2037,7 +2037,7 @@ const archetypes = [
     {
         name: 'Flower Cardian',
         description: 'A DARK Warrior archetype based on traditional Japanese hanafuda cards that focuses on complex draw and synchro combos.',
-        filepath: 'Flower Cardian Deck Analysis.html',
+        filepath: 'pages/Flower Cardian Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="cardianGrad" cx="50%" cy="30%" r="70%">
@@ -2089,7 +2089,7 @@ const archetypes = [
     {
         name: 'Frog',
         description: 'An WATER Aqua archetype that focuses on swarm tactics, field manipulation, and powerful tribute summons through pond-dwelling amphibians.',
-        filepath: 'Frog Deck Analysis.html',
+        filepath: 'pages/Frog Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="frogGrad" cx="50%" cy="30%" r="70%">
@@ -2130,7 +2130,7 @@ const archetypes = [
     {
         name: 'Fusion',
         description: 'A generic archetype focused on Fusion Summoning mechanics, using various Polymerization effects and Fusion Material manipulation.',
-        filepath: 'Fusion Deck Analysis.html',
+        filepath: 'pages/Fusion Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="fusionCenterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -2221,7 +2221,7 @@ const archetypes = [
     {
         name: 'Fur Hire',
         description: 'A Beast archetype that focuses on special summoning and helping each other through mutual support effects.',
-        filepath: 'Fur Hire Deck Analysis.html',
+        filepath: 'pages/Fur Hire Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="furHireBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -2338,7 +2338,7 @@ const archetypes = [
     {
         name: 'Fortune Lady',
         description: 'A Spellcaster archetype that uses turn counters and time manipulation to build powerful board states over time.',
-        filepath: 'Fortune Lady Deck Analysis.html',
+        filepath: 'pages/Fortune Lady Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fortuneGrad" cx="50%" cy="30%" r="70%">
@@ -2391,7 +2391,7 @@ const archetypes = [
     {
         name: 'Fossil',
         description: 'A Rock archetype that fuses Level 1 monsters to create powerful higher Level Fossil monsters with unique effects.',
-        filepath: 'Fossil Deck Analysis.html',
+        filepath: 'pages/Fossil Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fossilGrad" cx="50%" cy="30%" r="70%">
@@ -2431,7 +2431,7 @@ const archetypes = [
     {
         name: 'Danger!',
         description: 'A cryptid-themed archetype that uses discard effects to generate advantage and swarm the field.',
-        filepath: 'Danger Deck Analysis.html',
+        filepath: 'pages/Danger Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M20 80 L50 20 L80 80 Z" fill="#bc4749" stroke="#f94144" stroke-width="2"/>
                         <text x="50" y="65" text-anchor="middle" font-size="40" fill="#ffffff" font-weight="bold">!</text>
@@ -2444,7 +2444,7 @@ const archetypes = [
     {
         name: 'Cyberdark',
         description: 'A ruthless Dragon-Machine hybrid strategy that equips and drains power from fallen dragons.',
-        filepath: 'Cyberdark Deck Analysis.html',
+        filepath: 'pages/Cyberdark Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="cyberdark-core-grad" cx="0.3" cy="0.3">
@@ -2673,7 +2673,7 @@ const archetypes = [
     {
         name: 'Abyss Actor',
         description: 'A Pendulum strategy using theatrical "Script" Spells to control the board.',
-        filepath: 'Abyss Actor Deck Analysis.html',
+        filepath: 'pages/Abyss Actor Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="tragedyMask" cx="0.3" cy="0.3">
@@ -2821,7 +2821,7 @@ const archetypes = [
     {
         name: 'Adamancipator',
         description: 'A Synchro-based strategy focused on the unique "excavation" mechanic.',
-        filepath: 'Adamancipator Archetype Breakdown.html',
+        filepath: 'pages/Adamancipator Archetype Breakdown.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="adamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -2844,7 +2844,7 @@ const archetypes = [
     {
         name: 'Alien',
         description: 'A Reptile-based, control-oriented strategy defined by its unique "A-Counter" mechanic.',
-        filepath: 'Alien Archetype Breakdown.html',
+        filepath: 'pages/Alien Archetype Breakdown.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="alienGrad" cx="50%" cy="50%" r="50%">
@@ -2867,7 +2867,7 @@ const archetypes = [
     {
         name: 'Allure Queen',
         description: 'A Spellcaster-based strategy that has evolved from a slow LV chain to a fast, combo-oriented engine.',
-        filepath: 'Allure Queen Archetype Breakdown.html',
+        filepath: 'pages/Allure Queen Archetype Breakdown.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="queenGrad" cx="50%" cy="30%" r="70%">
@@ -2891,7 +2891,7 @@ const archetypes = [
     {
         name: 'Ally of Justice',
         description: 'A paradoxical archetype of DARK Machine monsters designed to counter LIGHT monsters.',
-        filepath: 'Ally of Justice Archetype Breakdown.html',
+        filepath: 'pages/Ally of Justice Archetype Breakdown.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="justiceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -2913,7 +2913,7 @@ const archetypes = [
     {
         name: 'Altergeist',
         description: 'A resource-based control strategy that wins by meticulously outgrinding the opponent.',
-        filepath: 'Altergeist Deck Analysis.html',
+        filepath: 'pages/Altergeist Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M 50 15 Q 65 30, 50 45 Q 35 30, 50 15 Z" fill="#8b5cf6" stroke="#dbeafe" stroke-width="2" />
                         <path d="M 50 55 L 70 75 L 50 95 L 30 75 Z" fill="#8b5cf6" stroke="#dbeafe" stroke-width="2" />
@@ -2927,7 +2927,7 @@ const archetypes = [
     {
         name: 'Amazement',
         description: 'A control strategy centered on its dual-effect "Attraction" Trap cards.',
-        filepath: 'Amazement Deck Analysis.html',
+        filepath: 'pages/Amazement Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M 50 10 C 20 10, 20 50, 50 50 C 80 50, 80 10, 50 10 Z" fill="#ffc107"/>
                         <path d="M 50 50 C 20 50, 20 90, 50 90 C 80 90, 80 50, 50 50 Z" fill="#ff5722"/>
@@ -2941,7 +2941,7 @@ const archetypes = [
     {
         name: 'Amazoness',
         description: 'A Fusion-based control strategy that dominates the Battle Phase.',
-        filepath: 'Amazoness Deck Analysis.html',
+        filepath: 'pages/Amazoness Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="amazonessGrad" cx="50%" cy="30%" r="70%">
@@ -2989,7 +2989,7 @@ const archetypes = [
     {
         name: 'Amorphage',
         description: 'A Pendulum-based stun strategy that locks down the opponent with continuous floodgate effects.',
-        filepath: 'Amorphage Deck Analysis.html',
+        filepath: 'pages/Amorphage Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M 50 10 L 85 30 L 85 70 L 50 90 L 15 70 L 15 30 Z" fill="#4a0e5f" stroke="#abff4f" stroke-width="2" />
                         <path d="M 40 40 L 50 25 L 60 40 L 70 35 L 75 50 L 60 60 L 65 75 L 50 70 L 35 75 L 40 60 L 25 50 L 30 35 Z" fill="#abff4f" />
@@ -3001,7 +3001,7 @@ const archetypes = [
     {
         name: 'Ancient Gear',
         description: 'A battle-focused OTK strategy using powerful Machine Fusion monsters.',
-        filepath: 'Ancient Gear Deck Analysis.html',
+        filepath: 'pages/Ancient Gear Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="gearBronze" cx="0.3" cy="0.3">
@@ -3210,7 +3210,7 @@ const archetypes = [
     {
         name: 'Ancient Warriors',
         description: 'A mid-range control strategy that leverages the opponent\'s board to generate resources.',
-        filepath: 'Ancient Warriors Deck Analysis.html',
+        filepath: 'pages/Ancient Warriors Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="ancientGold" cx="50%" cy="30%" r="70%">
@@ -3263,7 +3263,7 @@ const archetypes = [
     {
         name: 'Appliancer',
         description: 'A Link-focused strategy that uses Link-1s to control the gamestate',
-        filepath: 'Appliancer Deck Analysis.html',
+        filepath: 'pages/Appliancer Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="50" cy="50" r="45" fill="#4338ca" stroke="#fff" stroke-width="2"/>
                                 <path d="M 30 30 L 70 70 M 70 30 L 30 70" stroke="#a5b4fc" stroke-width="5"/>
@@ -3276,7 +3276,7 @@ const archetypes = [
     {
         name: 'Aquaactress',
         description: 'An aggressive OTK strategy that uses Continuous Spells for massive ATK boosts.',
-        filepath: 'Aquaactress Deck Analysis.html',
+        filepath: 'pages/Aquaactress Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="aqua-stage-grad" cx="0.3" cy="0.2">
@@ -3434,7 +3434,7 @@ const archetypes = [
     {
         name: 'Arcana Force',
         description: 'A high-variance strategy centered on coin flips, transformed into a control deck with Light Barrier.',
-        filepath: 'Arcana Force Deck Analysis.html',
+        filepath: 'pages/Arcana Force Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="50" cy="50" r="45" fill="#1e293b" stroke="#fde047" stroke-width="3"/>
                                 <path d="M50 20 L60 40 L50 60 L40 40 Z" fill="#fde047"/>
@@ -3448,7 +3448,7 @@ const archetypes = [
     {
         name: 'Archfiend',
         description: 'A control-oriented strategy built around "Summoned Skull" and its retrained boss monsters, relying on hybrid engines for grind-game control.',
-        filepath: 'Archfiend Deck Analysis.html',
+        filepath: 'pages/Archfiend Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="archfiendGrad" cx="50%" cy="50%" r="70%">
@@ -3478,7 +3478,7 @@ const archetypes = [
     {
         name: 'Red Dragon Archfiend',
         description: 'A Synchro-focused combo deck centered on "Red Dragon Archfiend" and the "Resonator" engine.',
-        filepath: 'Red Dragon Archfiend Deck Analysis.html',
+        filepath: 'pages/Red Dragon Archfiend Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M50 10 C 40 40, 20 50, 50 90 C 80 50, 60 40, 50 10 Z" fill="#b91c1c" stroke="#fecaca" stroke-width="3" />
                                 <path d="M50 10 L 70 30 L 90 20 L 80 50 L 90 80 L 70 70 L 50 90 L 30 70 L 10 80 L 20 50 L 10 20 L 30 30 Z" fill="none" stroke="#ef4444" stroke-width="2"/>
@@ -3490,7 +3490,7 @@ const archetypes = [
     {
         name: 'Argostars',
         description: 'A control deck using Trap Monsters and a banishment-based resource loop.',
-        filepath: 'Argostars Deck Analysis.html',
+        filepath: 'pages/Argostars Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M50 10 L90 50 L50 90 L10 50 Z" fill="#2b6cb0" stroke="#90cdf4" stroke-width="3"/>
                     <path d="M50 25 L75 50 L50 75 L25 50 Z" fill="#4299e1"/>
@@ -3503,7 +3503,7 @@ const archetypes = [
     {
         name: 'Armed Dragon',
         description: 'A combo-centric deck that uses its "LV" monsters to fuel powerful Rank 7 Xyz and Link plays.',
-        filepath: 'Armed Dragon Deck Analysis.html',
+        filepath: 'pages/Armed Dragon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="armedDragonGrad" cx="40%" cy="30%" r="70%">
@@ -3556,7 +3556,7 @@ const archetypes = [
     {
         name: 'Armored Xyz',
         description: 'A contemporary and competitively relevant series that converts any generic Rank 3 or Rank 4 Xyz Monster into a formidable piece of interaction.',
-        filepath: 'Armored xyz Deck Analysis.html',
+        filepath: 'pages/Armored xyz Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="armoredXyzGrad" cx="50%" cy="50%" r="60%">
@@ -3596,7 +3596,7 @@ const archetypes = [
     {
         name: 'Aroma',
         description: 'A Plant-based control strategy that uses LP gain to trigger powerful effects.',
-        filepath: 'Aroma Deck Analysis.html',
+        filepath: 'pages/Aroma Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="aromaGrad" cx="50%" cy="50%" r="60%">
@@ -3620,7 +3620,7 @@ const archetypes = [
     {
         name: 'Artifact',
         description: 'A control engine that Special Summons its monsters from the S/T Zone to disrupt opponents.',
-        filepath: 'Artifact Deck Analysis.html',
+        filepath: 'pages/Artifact Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="artifactGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -3645,7 +3645,7 @@ const archetypes = [
     {
         name: 'Artmage',
         description: 'A Fusion-based strategy that relies on monster Type diversity to unlock powerful effects.',
-        filepath: 'Artmage Deck Analysis.html',
+        filepath: 'pages/Artmage Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="artmageGrad" cx="50%" cy="50%" r="60%">
@@ -3670,7 +3670,7 @@ const archetypes = [
     {
         name: 'Ashened',
         description: 'A cyclical destruction strategy that summons its boss monster to the opponent\'s field.',
-        filepath: 'Ashened Deck Analysis.html',
+        filepath: 'pages/Ashened Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ashenedFlameGrad" cx="50%" cy="70%" r="80%">
@@ -3742,7 +3742,7 @@ const archetypes = [
     {
         name: 'Assault Mode',
         description: 'A high-risk, high-reward Synchro strategy focused on powerful boss monsters.',
-        filepath: 'Assault Mode Archetype Breakdown.html',
+        filepath: 'pages/Assault Mode Archetype Breakdown.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <polygon points="50,10 90,50 50,90 10,50" fill="#ef4444" stroke="#fff" stroke-width="2"/>
                 <path d="M50 30 L50 70 M30 50 L70 50" stroke="#111827" stroke-width="4" stroke-linecap="round"/>
@@ -3755,7 +3755,7 @@ const archetypes = [
     {
         name: 'Atlantean',
         description: 'A high-velocity combo deck that discards its own monsters to trigger powerful effects.',
-        filepath: 'Atlantean Deck Analysis.html',
+        filepath: 'pages/Atlantean Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="ocean-depths-grad" cx="0.3" cy="0.2">
@@ -3982,7 +3982,7 @@ const archetypes = [
     {
         name: 'Azamina',
         description: 'A highly efficient Fusion toolkit designed to supplement primary strategies like "Sinful Spoils" and "Snake-Eye."',
-        filepath: 'Azamina Deck Analysis.html',
+        filepath: 'pages/Azamina Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="azamina-core-grad" cx="0.3" cy="0.3">
@@ -4127,7 +4127,7 @@ const archetypes = [
     {
         name: 'B.E.S.',
         description: 'A Machine control strategy that uses the Zelos/Boss Rush engine for perpetual field presence.',
-        filepath: 'B.E.S. Deck Analysis.html',
+        filepath: 'pages/B.E.S. Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="satellite-body-grad" cx="0.3" cy="0.2">
@@ -4298,7 +4298,7 @@ const archetypes = [
     {
         name: 'Bamboo Sword',
         description: 'A highly efficient Spell Engine used for explosive draw cycling or total turn denial (Bamboolock).',
-        filepath: 'Bamboo Sword Deck Analysis.html',
+        filepath: 'pages/Bamboo Sword Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M 20 80 L 80 20" stroke="#a7f3d0" stroke-width="6" stroke-linecap="round"/>
                     <path d="M 20 20 L 80 80" stroke="#a7f3d0" stroke-width="6" stroke-linecap="round"/>
@@ -4312,7 +4312,7 @@ const archetypes = [
     {
         name: 'Barbaros',
         description: 'A Level 8 EARTH Beast-Warrior engine focused on repeatable destruction and Rank 8 Xyz access.',
-        filepath: 'Barbaros Deck Analysis.html',
+        filepath: 'pages/Barbaros Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M 20 30 L 50 15 L 80 30 L 85 70 L 50 85 L 15 70 Z" fill="#b45309" stroke="#fde68a" stroke-width="2"/>
                     <path d="M 30 40 L 50 30 L 70 40" stroke="#2a201a" stroke-width="3" stroke-linecap="round"/>
@@ -4326,7 +4326,7 @@ const archetypes = [
     {
         name: 'Batteryman',
         description: 'An aggressive Thunder OTK strategy relying on non-once-per-turn Special Summon effects to swarm the field.',
-        filepath: 'Batteryman Deck Analysis.html',
+        filepath: 'pages/Batteryman Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <rect x="25" y="10" width="50" height="80" rx="10" fill="#fcd34d" stroke="#101728" stroke-width="3"/>
         <path d="M 50 10 L 50 90" stroke="#101728" stroke-width="2" stroke-dasharray="10 5" />
@@ -4342,7 +4342,7 @@ const archetypes = [
     {
         name: 'Battleguard',
         description: 'A Warrior Link strategy focused on using Battleguard Cadet to access Rank 5 Xyz monsters.',
-        filepath: 'Battleguard Deck Analysis.html',
+        filepath: 'pages/Battleguard Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <path d="M50 10 L 85 40 L 85 60 L 50 90 L 15 60 L 15 40 Z" fill="#991b1b" stroke="#ef4444" stroke-width="3"/>
         <path d="M50 30 L 70 50 L 50 70 L 30 50 Z" fill="#b91c1c" stroke="#f3f4f6" stroke-width="1.5"/>
@@ -4356,7 +4356,7 @@ const archetypes = [
     {
         name: 'Battlewasp',
         description: 'A WIND Insect Synchro engine that converts swarm tactics into powerful Beetrooper Link disruption.',
-        filepath: 'Battlewasp Deck Analysis.html',
+        filepath: 'pages/Battlewasp Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="battlewaspGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -4381,7 +4381,7 @@ const archetypes = [
     {
         name: "Battlin' Boxer",
         description: 'A resilient Rank 4 Xyz engine using the Glassjaw/Switchhitter loop for continuous resource recursion.',
-        filepath: 'Battlin\' Boxer Deck Analysis.html',
+        filepath: 'pages/Battlin\' Boxer Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="boxingRingGrad" cx="50%" cy="50%" r="50%">
@@ -4435,7 +4435,7 @@ const archetypes = [
     {
         name: 'Beetrooper',
         description: 'An Insect Link Swarm strategy that rapidly deploys units to build overwhelming board presence.',
-        filepath: 'Beetrooper Deck Analysis.html',
+        filepath: 'pages/Beetrooper Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="beetrooperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -4460,7 +4460,7 @@ const archetypes = [
     {
         name: 'Black Luster Soldier',
         description: 'A Chaos Ritual OTK strategy centered on a powerful, protected Link boss monster.',
-        filepath: 'Black Luster Soldier Deck Analysis.html',
+        filepath: 'pages/Black Luster Soldier Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <path d="M 50 10 L 80 30 L 70 90 L 50 100 L 30 90 L 20 30 Z" fill="#2c2c3e" stroke="#d4af37" stroke-width="3"/>
                 <path d="M 50 10 L 50 100" stroke="#d4af37" stroke-width="2"/>
@@ -4473,7 +4473,7 @@ const archetypes = [
     {
         name: 'Blackwing',
         description: 'A high-velocity Synchro Swarm strategy that uses its "Whirlwind" spells for recursive advantage.',
-        filepath: 'Blackwing Deck Analysis.html',
+        filepath: 'pages/Blackwing Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="blackwingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -4496,7 +4496,7 @@ const archetypes = [
     {
         name: 'Blue-Eyes',
         description: 'An iconic Dragon archetype that leverages its Level 8 monsters for powerful Synchro and Ritual plays.',
-        filepath: 'Blue-Eyes Deck Analysis.html',
+        filepath: 'pages/Blue-Eyes Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="dragonSilver" cx="0.3" cy="0.2">
@@ -4634,7 +4634,7 @@ const archetypes = [
     {
         name: 'Bounzer',
         description: 'A Rank 6 Xyz toolbox strategy that uses external engines like Hieratics to summon its boss monsters.',
-        filepath: 'Bounzer Deck Analysis.html',
+        filepath: 'pages/Bounzer Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 10 L85 25 L85 75 L50 90 L15 75 L15 25 Z" fill="#f97316" stroke="#fff" stroke-width="2"/>
                 <path d="M50 35 L50 65 M30 50 L70 50" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round"/>
@@ -4646,7 +4646,7 @@ const archetypes = [
     {
         name: 'Bujin',
         description: 'An Xyz/Link combo engine that evolved from a slow stun strategy, using one-card starters to build powerful boards.',
-        filepath: 'Bujin Deck Analysis.html',
+        filepath: 'pages/Bujin Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 10 L90 50 L50 90 L10 50 Z" fill="#d4af37" stroke="#fff" stroke-width="2"/>
                 <path d="M50 20 L80 50 L50 80 L20 50 Z" fill="none" stroke="#1a1a1a" stroke-width="3"/>
@@ -4659,7 +4659,7 @@ const archetypes = [
     {
         name: 'Burning Abyss',
         description: 'A self-consuming engine of Level 3 Fiends that triggers powerful effects when sent to the Graveyard, fueling a resilient resource loop.',
-        filepath: 'Burning Abyss Deck Analysis.html',
+        filepath: 'pages/Burning Abyss Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="burningAbyssGrad" cx="50%" cy="70%" r="60%">
@@ -4683,7 +4683,7 @@ const archetypes = [
     {
         name: 'Buster Blader',
         description: 'A Synchro/Fusion control strategy focused on establishing the "Buster Lock" to shut down Dragon-based and Extra Deck-reliant opponents.',
-        filepath: 'Buster Blader Deck Analysis.html',
+        filepath: 'pages/Buster Blader Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="busterBladerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -4726,7 +4726,7 @@ const archetypes = [
     {
         name: 'Bystial',
         description: 'A powerful engine of DARK Dragon monsters that are Special Summoned by banishing LIGHT/DARK monsters from either Graveyard, acting as potent hand-trap disruptions.',
-        filepath: 'Bystial Deck Analysis.html',
+        filepath: 'pages/Bystial Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="bystial-calm-grad" cx="0.4" cy="0.3">
@@ -4846,7 +4846,7 @@ const archetypes = [
     {
         name: 'Butterspy',
         description: 'A compact group of Level 4 monsters repurposed as an efficient engine for summoning generic Rank 4 Xyz monsters, often powered by Warrior support.',
-        filepath: 'Butterspy Deck Analysis.html',
+        filepath: 'pages/Butterspy Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="butterspyWing" cx="0.3" cy="0.3">
@@ -4995,7 +4995,7 @@ const archetypes = [
     {
         name: 'Celtic Guard',
         description: 'A classic Warrior engine that uses its main starter to swarm Level 4 monsters for powerful Link and Xyz plays.',
-        filepath: 'Celtic Guard Deck Analysis.html',
+        filepath: 'pages/Celtic Guard Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M 50 10 L 90 35 L 75 90 L 25 90 L 10 35 Z" fill="#047857" stroke="#fff" stroke-width="2"/>
                     <path d="M 50 15 L 50 85" stroke="#a7f3d0" stroke-width="3"/>
@@ -5008,7 +5008,7 @@ const archetypes = [
     {
         name: 'Centur-Ion',
         description: 'A unique Synchro strategy that places its monsters in the S/T Zone to set up powerful Level 12 Synchro Summons on the opponent\'s turn.',
-        filepath: 'Centur-Ion Deck Analysis.html',
+        filepath: 'pages/Centur-Ion Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M50 10 L90 25 L90 75 L50 90 L10 75 L10 25 Z" fill="#374151" stroke="#fff" stroke-width="2"/>
                     <path d="M50 20 L80 35 L80 65 L50 80 L20 65 L20 35 Z" fill="#dc2626" />
@@ -5021,7 +5021,7 @@ const archetypes = [
     {
         name: 'Chaos',
         description: 'A classic engine that summons powerful boss monsters by banishing LIGHT and DARK monsters from the Graveyard, treating it as a resource pool.',
-        filepath: 'Chaos Deck Analysis.html',
+        filepath: 'pages/Chaos Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="50" cy="50" r="45" fill="#262626" stroke="#fff" stroke-width="2"/>
                 <path d="M50 10 A 40 40 0 0 1 50 90" fill="#eab308" />
@@ -5034,7 +5034,7 @@ const archetypes = [
     {
         name: 'Charmer',
         description: 'A versatile Spellcaster control strategy that uses attribute manipulation and powerful spells to out-resource the opponent.',
-        filepath: 'Charmer Deck Analysis.html',
+        filepath: 'pages/Charmer Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="fire-element-grad" cx="0.3" cy="0.3">
@@ -5264,7 +5264,7 @@ const archetypes = [
     {
         name: 'Chemicritter',
         description: 'A unique Xyz strategy that modernizes the Gemini mechanic, using powerful spells to summon its Rank 8 boss monster.',
-        filepath: 'Chemicritter Deck Analysis.html',
+        filepath: 'pages/Chemicritter Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M50 10 L90 35 L90 65 L50 90 L10 65 L10 35 Z" fill="#4a5568" stroke="#fff" stroke-width="2"/>
                     <circle cx="50" cy="50" r="10" fill="#63b3ed" />
@@ -5277,7 +5277,7 @@ const archetypes = [
     {
         name: 'Chronomaly',
         description: 'An Xyz-based strategy that uses level modulation and "rank-up" plays to summon powerful, high-rank boss monsters.',
-        filepath: 'Chronomaly Deck Analysis.html',
+        filepath: 'pages/Chronomaly Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="chronomalyGrad" cx="50%" cy="30%" r="60%">
@@ -5323,7 +5323,7 @@ const archetypes = [
     {
         name: 'Cloudian',
         description: 'A swarm strategy that uses "Fog Counters" to summon multiple low-level monsters for powerful, generic Link and Xyz plays.',
-        filepath: 'Cloudian Deck Analysis.html',
+        filepath: 'pages/Cloudian Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="cloud-core-grad" cx="0.3" cy="0.3">
@@ -5543,7 +5543,7 @@ const archetypes = [
     {
         name: 'Codebreaker',
         description: 'A compact engine that converts two Effect Monsters into a massive number of Link Materials for aggressive plays.',
-        filepath: 'Code Breaker Deck Analysis.html',
+        filepath: 'pages/Code Breaker Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 20 H 80 V 80 H 20 Z" fill="none" stroke="#00ff80" stroke-width="5"/>
                     <path d="M40 20 V 50" stroke="#00ff80" stroke-width="5" />
@@ -5558,7 +5558,7 @@ const archetypes = [
     {
         name: 'Code Talker',
         description: 'A combo-intensive Cyberse strategy focused on Link Climbing and Co-Linking to build powerful boards.',
-        filepath: 'Code Talker Deck Analysis.html',
+        filepath: 'pages/Code Talker Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <polygon points="50,10 90,35 90,65 50,90 10,65 10,35" fill="#1a1a3a" stroke="#82aaff" stroke-width="3"/>
                     <path d="M50 35 L 50 65 M 35 50 L 65 50" stroke="#c0c0ff" stroke-width="4" stroke-linecap="round"/>
@@ -5571,7 +5571,7 @@ const archetypes = [
     {
         name: 'Constellar',
         description: 'An Xyz-focused strategy of LIGHT monsters that manipulates Levels to summon powerful Rank 4, 5, and 6 monsters.',
-        filepath: 'Constellar Deck Analysis.html',
+        filepath: 'pages/Constellar Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="stellar-core-grad" cx="0.3" cy="0.3">
@@ -5753,7 +5753,7 @@ const archetypes = [
     {
         name: 'Crusadia',
         description: 'A go-second OTK strategy that uses a linear Link climb to summon a boss monster with game-ending ATK.',
-        filepath: 'Crusadia Deck Analysis.html',
+        filepath: 'pages/Crusadia Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M50 10 L90 50 L50 90 L10 50 Z" fill="#1e3a8a" stroke="#3b82f6" stroke-width="3"/>
                     <path d="M50 30 L70 50 L50 70 L30 50 Z" fill="#f59e0b"/>
@@ -5766,7 +5766,7 @@ const archetypes = [
     {
         name: 'Crystal Beast',
         description: 'A unique archetype that turns its monsters into Spells upon destruction, fueling a resilient midrange strategy.',
-        filepath: 'Crystal Beast Deck Analysis.html',
+        filepath: 'pages/Crystal Beast Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="crystal-core-grad" cx="0.3" cy="0.2">
@@ -5941,7 +5941,7 @@ const archetypes = [
     {
         name: 'Crystron',
         description: 'An intricate WATER Machine strategy that uses self-destruction to perform Synchro Summons on the opponent\'s turn.',
-        filepath: 'Crystron Deck Analysis.html',
+        filepath: 'pages/Crystron Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M50 10 L85 35 L85 65 L50 90 L15 65 L15 35 Z" fill="none" stroke="#38bdf8" stroke-width="4"/>
                     <path d="M50 10 L50 90 M15 35 L85 65 M15 65 L85 35" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 4"/>
@@ -5954,7 +5954,7 @@ const archetypes = [
     {
         name: 'Cubic',
         description: 'A high-variance, aggressive OTK strategy that dedicates all resources to summoning its powerful boss monster.',
-        filepath: 'Cubic Deck Analysis.html',
+        filepath: 'pages/Cubic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 30 L50 15 L80 30 L80 70 L50 85 L20 70 Z" fill="#1a0a2a" stroke="#d058c0" stroke-width="3"/>
                     <path d="M20 30 L50 45 L80 30" stroke="#d058c0" stroke-width="2"/>
@@ -5968,7 +5968,7 @@ const archetypes = [
     {
         name: 'Cyclone',
         description: 'An evolutionary family of powerful Spell & Trap removal tools originating from Mystical Space Typhoon, including Cosmic Cyclone and Twin Twisters for modern backrow control.',
-        filepath: 'Cyclone deck Analysis.html',
+        filepath: 'pages/Cyclone deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="cycloneGrad" cx="50%" cy="50%" r="50%">
@@ -5989,7 +5989,7 @@ const archetypes = [
     {
         name: 'Cyber Girl',
         description: 'A versatile LIGHT Warrior strategy that combines athletic agility with cybernetic enhancement for consistent damage output.',
-        filepath: 'Cyber Girl Deck Analysis.html',
+        filepath: 'pages/Cyber Girl Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path d="M50 10 L80 30 L80 70 L50 90 L20 70 L20 30 Z" fill="#0ea5e9" stroke="#fff" stroke-width="2"/>
                     <circle cx="50" cy="40" r="10" fill="#fff"/>
@@ -6004,7 +6004,7 @@ const archetypes = [
     {
         name: 'Cyber Angel',
         description: 'A hyper-consistent Ritual engine that turns tributing its monsters into a powerful, generic search loop.',
-        filepath: 'Cyber Angel Deck Analysis.html',
+        filepath: 'pages/Cyber Angel Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="divine-light-grad" cx="0.3" cy="0.2">
@@ -6234,7 +6234,7 @@ const archetypes = [
     {
         name: 'Curse of Dragon',
         description: 'A legendary DARK Dragon engine featuring Joey\'s iconic monster, supporting Dragon and Warrior fusion strategies with powerful field control and recursion.',
-        filepath: 'Curse of Dragon Deck Analysis.html',
+        filepath: 'pages/Curse of Dragon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="curse-dragon-grad" cx="0.3" cy="0.3">
@@ -6301,7 +6301,7 @@ const archetypes = [
     {
         name: 'Cyber Dragon',
         description: 'An aggressive OTK strategy that swarms Level 5 Machines for powerful Xyz and Fusion summons.',
-        filepath: 'Cyber Dragon Deck Analysis.html',
+        filepath: 'pages/Cyber Dragon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="cyber-core-grad" cx="0.3" cy="0.3">
@@ -6517,7 +6517,7 @@ const archetypes = [
     {
         name: 'Dracotail',
         description: 'A counter-intuitive Fusion strategy with a conservative, resource-efficient methodology.',
-        filepath: 'Dracotail Archetype Breakdown.html',
+        filepath: 'pages/Dracotail Archetype Breakdown.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="draco-body-grad" cx="0.3" cy="0.3">
@@ -6640,7 +6640,7 @@ const archetypes = [
     {
         name: 'Deskbot',
         description: 'A Machine archetype focused on ATK manipulation and swarming, using Pendulum mechanics to set up devastating OTKs.',
-        filepath: 'Deskbot Deck Analysis.html',
+        filepath: 'pages/Deskbot Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <rect x="20" y="20" width="60" height="60" fill="#64748b" stroke="#fff" stroke-width="2"/>
                         <circle cx="50" cy="40" r="8" fill="#22d3ee"/>
@@ -6654,7 +6654,7 @@ const archetypes = [
     {
         name: 'Designator',
         description: 'A design philosophy rather than a traditional archetype, featuring powerful unrelated cards united by precise card name declaration mechanics for proactive and reactive control.',
-        filepath: 'Designator Deck Analysis.html',
+        filepath: 'pages/Designator Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="designatorGrad" cx="50%" cy="50%" r="50%">
@@ -6675,7 +6675,7 @@ const archetypes = [
     {
         name: 'Destiny HERO',
         description: 'A DARK Warrior archetype of anti-heroes centered around fate and time manipulation, serving as the core engine for modern "Omni-HERO" strategies with powerful fusion boss monsters.',
-        filepath: 'Destiny Hero Deck Analysis.html',
+        filepath: 'pages/Destiny Hero Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="destinyCore" cx="50%" cy="30%" r="70%">
@@ -6797,7 +6797,7 @@ const archetypes = [
     {
         name: 'Deep Sea',
         description: 'A WATER attribute engine that synergizes with Mermail and Atlantean strategies, providing hand knowledge, disruption, and explosive combo extension through discard mechanics.',
-        filepath: 'Deep Sea Deck Analysis.html',
+        filepath: 'pages/Deep Sea Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="deepSeaGrad" cx="50%" cy="50%" r="50%">
@@ -6820,7 +6820,7 @@ const archetypes = [
     {
         name: 'Despia',
         description: 'A theatrical LIGHT/DARK Fairy archetype that uses Fusion Summoning and field presence manipulation for devastating combos.',
-        filepath: 'Despia Deck Analysis.html',
+        filepath: 'pages/Despia Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 10 L80 30 L80 70 L50 90 L20 70 L20 30 Z" fill="#4c1d95" stroke="#fff" stroke-width="2"/>
                         <path d="M35 40 Q50 30 65 40 Q50 50 35 40" fill="#fff"/>
@@ -6834,7 +6834,7 @@ const archetypes = [
     {
         name: 'Diabellstar',
         description: 'A constellation-themed archetype that uses Xyz Summoning and strategic detachment to disrupt the opponent while maintaining field presence.',
-        filepath: 'Diabellstar Deck Analysis.html',
+        filepath: 'pages/Diabellstar Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 10 L90 50 L50 90 L10 50 Z" fill="#1e1b4b" stroke="#fff" stroke-width="2"/>
                         <circle cx="50" cy="50" r="15" fill="#818cf8"/>
@@ -6848,7 +6848,7 @@ const archetypes = [
     {
         name: 'Dinomist',
         description: 'A Machine-type Pendulum archetype combining mechanical dinosaurs with water-based powers for consistent field control.',
-        filepath: 'Dinomist Deck Analysis.html',
+        filepath: 'pages/Dinomist Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="dinomist-core-grad" cx="0.3" cy="0.3">
@@ -7072,7 +7072,7 @@ const archetypes = [
     {
         name: 'Dinomorphia',
         description: 'A high-risk control deck that weaponizes Life Points as a resource, using powerful Fusion monsters and Trap cards to establish oppressive board states.',
-        filepath: 'Dinomorphia Deck Analysis.html',
+        filepath: 'pages/Dinomorphia Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="dinomorphiaChamber" cx="0.5" cy="0.5">
@@ -7223,7 +7223,7 @@ const archetypes = [
     {
         name: 'Dinowrestler',
         description: 'A battle-focused Dinosaur archetype that combines professional wrestling moves with prehistoric power for a unique control strategy.',
-        filepath: 'Dinowrestler Deck Analysis.html',
+        filepath: 'pages/Dinowrestler Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M20 30 L50 10 L80 30 L80 70 L50 90 L20 70 Z" fill="#b91c1c" stroke="#fff" stroke-width="2"/>
                         <circle cx="50" cy="40" r="10" fill="#fecaca"/>
@@ -7238,7 +7238,7 @@ const archetypes = [
     {
         name: 'Djinn',
         description: 'A versatile Ritual support engine that grants powerful protection effects to Ritual Monsters when used as tributes.',
-        filepath: 'Djinn Deck Analysis.html',
+        filepath: 'pages/Djinn Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="djinn-essence-grad" cx="0.3" cy="0.3">
@@ -7461,7 +7461,7 @@ const archetypes = [
     {
         name: 'Dododo',
         description: 'A Warrior-based Xyz engine that manipulates monster Levels to access powerful Rank 4 and 6 plays.',
-        filepath: 'Dododo Deck Analysis.html',
+        filepath: 'pages/Dododo Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="dododoBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -7539,7 +7539,7 @@ const archetypes = [
     {
         name: 'Doodle Beast',
         description: 'A whimsical Beast archetype that combines childlike artwork with powerful draw effects and creative Normal Monster support.',
-        filepath: 'Doodle Beast Deck Analysis.html',
+        filepath: 'pages/Doodle Beast Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 10 L80 30 L80 70 L50 90 L20 70 L20 30 Z" fill="#fef9c3" stroke="#eab308" stroke-width="2"/>
                         <path d="M35 35 L45 45 L35 55" stroke="#eab308" stroke-width="3" fill="none"/>  <!-- Sketch line 1 -->
@@ -7555,7 +7555,7 @@ const archetypes = [
     {
         name: 'Dogmatika',
         description: 'A control archetype that punishes Extra Deck reliance by sending opponent\'s cards to the GY while using their own Extra Deck as fuel for powerful effects.',
-        filepath: 'Dogmatika Deck Analysis.html',
+        filepath: 'pages/Dogmatika Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="dogmatikaBaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -7651,7 +7651,7 @@ const archetypes = [
     {
         name: 'Doll Monster',
         description: 'A unique archetype focused on manipulating ATK values and battle positions through their living doll aesthetic.',
-        filepath: 'Doll monster deck analysis.html',
+        filepath: 'pages/Doll monster deck analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="doll-face-grad" cx="0.3" cy="0.2">
@@ -7875,7 +7875,7 @@ const archetypes = [
     {
         name: 'Dominus',
         description: 'A strategic control archetype that manipulates Summoning conditions and card positions to establish powerful field lockdowns.',
-        filepath: 'Dominus Deck Analysis.html',
+        filepath: 'pages/Dominus Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 10 L80 30 L80 70 L50 90 L20 70 L20 30 Z" fill="#1e1b4b" stroke="#fff" stroke-width="2"/>
                         <path d="M35 40 L65 40 L50 60 Z" fill="#818cf8"/>  <!-- Triangle -->
@@ -7890,7 +7890,7 @@ const archetypes = [
     {
         name: 'DoomZ',
         description: 'A combo-oriented Xyz strategy focused on intentional self-destruction.',
-        filepath: 'Doom-Z Archetype Deep Dive.html',
+        filepath: 'pages/Doom-Z Archetype Deep Dive.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M 50 5 L 95 95 L 50 75 L 5 95 Z" fill="#e53e3e" stroke="#fff" stroke-width="2" />
                         <circle cx="50" cy="50" r="15" fill="#fff" />
@@ -7903,7 +7903,7 @@ const archetypes = [
     {
         name: 'YUMMY',
         description: 'A highly-synergistic, combo-centric strategy centered on LIGHT Beast monsters.',
-        filepath: 'Yummy Archetype Deep Dive.html',
+        filepath: 'pages/Yummy Archetype Deep Dive.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="yummyBodyGrad" cx="50%" cy="30%" r="70%">
@@ -7978,7 +7978,7 @@ const archetypes = [
     {
         name: 'Darklord',
         description: 'A resource-heavy Fairy strategy that uses Life Points to copy powerful Spell/Trap effects from the Graveyard.',
-        filepath: 'Darklord Deck Analysis.html',
+        filepath: 'pages/Darklord Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 10 L80 40 L80 70 L50 90 L20 70 L20 40 Z" fill="#1e1b4b" stroke="#fff" stroke-width="2"/>
                         <path d="M50 30 L65 45 L50 60 L35 45 Z" fill="#fff"/>
@@ -7991,7 +7991,7 @@ const archetypes = [
     {
         name: 'Dracoslayer',
         description: 'A versatile archetype that utilizes all Extra Deck mechanics, focusing on different monster types that combine into powerful Dragon-type warriors.',
-        filepath: 'Dracoslayer Deck Analysis.html',
+        filepath: 'pages/Dracoslayer Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="warrior-armor-grad" cx="0.3" cy="0.2">
@@ -8151,7 +8151,7 @@ const archetypes = [
     {
         name: 'Dragon Ruler',
         description: 'A legendary archetype of powerful Level 7 Dragons representing the elements, known for overwhelming resource generation and field presence.',
-        filepath: 'Dragon Ruler Deck Analysis.html',
+        filepath: 'pages/Dragon Ruler Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 10 L80 30 L80 70 L50 90 L20 70 L20 30 Z" fill="#991b1b" stroke="#fff" stroke-width="2"/>
                         <circle cx="35" cy="40" r="8" fill="#60a5fa"/>  <!-- Water -->
@@ -8167,7 +8167,7 @@ const archetypes = [
     {
         name: 'Dragonmaid',
         description: 'A unique Dragon archetype featuring maids that transform into their dragon forms during battle, creating a dynamic control strategy.',
-        filepath: 'Dragonmaid Deck Analysis.html',
+        filepath: 'pages/Dragonmaid Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="maid-dress-grad" cx="0.3" cy="0.2">
@@ -8305,7 +8305,7 @@ const archetypes = [
     {
         name: 'Dream Mirror',
         description: 'A Field Spell-focused strategy that alternates between Light and Dark monsters to represent shifting between dreams and nightmares.',
-        filepath: 'Dream Mirror Deck Analysis.html',
+        filepath: 'pages/Dream Mirror Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M20 30 L50 10 L80 30 L80 70 L50 90 L20 70 Z" fill="#312e81" stroke="#fff" stroke-width="2"/>
                         <path d="M50 30 L65 40 L65 60 L50 70 L35 60 L35 40 Z" fill="#818cf8"/>
@@ -8320,7 +8320,7 @@ const archetypes = [
     {
         name: 'Drytron',
         description: 'A powerful Machine archetype that uses ATK values as Levels, specializing in Ritual Summoning through unique constellation-based mechanics.',
-        filepath: 'Drytron Deck Analysis.html',
+        filepath: 'pages/Drytron Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 10 L85 30 L85 70 L50 90 L15 70 L15 30 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
                         <circle cx="50" cy="50" r="15" fill="#38bdf8"/>
@@ -8338,7 +8338,7 @@ const archetypes = [
     {
         name: 'Dragunity',
         description: 'A powerful Dragon/Winged Beast archetype that equips smaller monsters to larger ones, specializing in Synchro climbing and OTK strategies.',
-        filepath: 'Dragunity Deck Analysis.html',
+        filepath: 'pages/Dragunity Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="dragonScale" cx="0.3" cy="0.3">
@@ -8510,7 +8510,7 @@ const archetypes = [
     {
         name: 'Dual Avatar',
         description: 'A martial arts-themed archetype that focuses on summoning pairs of LIGHT and DARK warriors to perform powerful Fusion combinations.',
-        filepath: 'Dual Avatar Deck Analysis.html',
+        filepath: 'pages/Dual Avatar Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 10 L80 30 L80 70 L50 90 L20 70 L20 30 Z" fill="#0f172a" stroke="#fff" stroke-width="2"/>
                         <circle cx="35" cy="40" r="12" fill="#f7f7f7"/>  <!-- Light side -->
@@ -8526,7 +8526,7 @@ const archetypes = [
     {
         name: 'G Golem',
         description: 'An Earth Rock archetype that uses Link Summoning to build powerful board states through strategic monster placement.',
-        filepath: 'G Golem Deck Analysis.html',
+        filepath: 'pages/G Golem Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gGolemBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -8609,7 +8609,7 @@ const archetypes = [
     {
         name: 'Gadget',
         description: 'A Machine archetype focused on consistent searching and swarming through the classic Red, Yellow, and Green Gadget trio.',
-        filepath: 'Gadget Deck Analysis.html',
+        filepath: 'pages/Gadget Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gadgetRedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -8736,7 +8736,7 @@ const archetypes = [
     {
         name: 'Gaia',
         description: 'A knight archetype that transforms a simple warrior into a potent One-Turn Kill engine, aiming to dismantle opponents in a single decisive Battle Phase.',
-        filepath: 'Gaia Deck Analysis.html',
+        filepath: 'pages/Gaia Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="gaiaGrad" cx="50%" cy="50%" r="60%">
@@ -8782,7 +8782,7 @@ const archetypes = [
     {
         name: 'Gagaga',
         description: 'A Spellcaster archetype focused on Level manipulation and Xyz summoning through dynamic Level changes.',
-        filepath: 'Gagaga Deck Analysis.html',
+        filepath: 'pages/Gagaga Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gagagaBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -8917,7 +8917,7 @@ const archetypes = [
     {
         name: 'Gandora',
         description: 'A DARK Dragon archetype centered around the apocalyptic Gandora monsters that can devastate the field through mass destruction effects.',
-        filepath: 'Gandora Deck Analysis.html',
+        filepath: 'pages/Gandora Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gandoraBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -9052,7 +9052,7 @@ const archetypes = [
     {
         name: 'Gate Guardian',
         description: 'A classic control archetype that evolved from its nostalgic origins into a sophisticated deck, manipulating its three guardian pieces to summon powerful fusion monsters.',
-        filepath: 'Gate Guardian Deck Analysis.html',
+        filepath: 'pages/Gate Guardian Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="gateGuardianGrad" cx="50%" cy="50%" r="60%">
@@ -9114,7 +9114,7 @@ const archetypes = [
     {
         name: 'Geargia',
         description: 'A Machine archetype that focuses on flip effects and gear-based mechanics to control the field and generate advantage.',
-        filepath: 'Geargia Deck Analysis.html',
+        filepath: 'pages/Geargia Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="geargiaMetalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -9285,7 +9285,7 @@ const archetypes = [
     {
         name: 'Gearfried',
         description: 'A unique case study representing an evolving warrior concept that manipulates Equip Spells as a vital and recyclable resource for summoning, removal, and negation.',
-        filepath: 'Gearfried Deck Analysis.html',
+        filepath: 'pages/Gearfried Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="gearfriedGrad" cx="50%" cy="50%" r="60%">
@@ -9334,7 +9334,7 @@ const archetypes = [
     {
         name: 'Genex',
         description: 'A machine archetype centered around synchro summoning with modular attribute-based strategies and searcher effects.',
-        filepath: 'Genex Deck Analysis.html',
+        filepath: 'pages/Genex Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="genexCoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -9438,7 +9438,7 @@ const archetypes = [
     {
         name: 'Gem-Knight',
         description: 'A fusion-based rock archetype that specializes in gemstone-themed fusion summoning and resource management through gem manipulation.',
-        filepath: 'Gem-Knight Deck Analysis.html',
+        filepath: 'pages/Gem-Knight Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gemCrystalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -9556,7 +9556,7 @@ const archetypes = [
     {
         name: 'Generaider',
         description: 'A boss monster archetype that focuses on summoning powerful monsters from the deck and generating tokens through stage-based effects.',
-        filepath: 'Generaider Deck Analysis.html',
+        filepath: 'pages/Generaider Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="generaiderThroneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -9699,7 +9699,7 @@ const archetypes = [
     {
         name: 'Ghoti',
         description: 'A synchro-based fish archetype that banishes cards to special summon monsters and manipulate the banished zone for powerful effects.',
-        filepath: 'Ghoti Deck Analysis.html',
+        filepath: 'pages/Ghoti Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="ghotiFishGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -9822,7 +9822,7 @@ const archetypes = [
     {
         name: 'Ghostrick',
         description: 'A spooky xyz archetype that focuses on flip effects, field control, and xyz summoning through mansion-themed strategies and horror movie references.',
-        filepath: 'Ghostrick Deck Analysis.html',
+        filepath: 'pages/Ghostrick Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="ghostrickSpiritGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -9980,7 +9980,7 @@ const archetypes = [
     {
         name: 'Gigo',
         description: 'The Gigo lineage serves as a vital supporting engine within Charmer and Familiar-Possessed strategies, featuring a celebrated reptilian warrior character with extensive lore.',
-        filepath: 'Gigo Deck Analysis.html',
+        filepath: 'pages/Gigo Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="gigoGrad" cx="50%" cy="50%" r="60%">
@@ -10034,7 +10034,7 @@ const archetypes = [
     {
         name: 'Gimmick Puppet',
         description: 'A dark xyz archetype that uses puppet-themed monsters and rank-up magic to summon devastating Number xyz monsters with burn effects.',
-        filepath: 'Gimmick Puppet Deck Analysis.html',
+        filepath: 'pages/Gimmick Puppet Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="puppetBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -10167,7 +10167,7 @@ const archetypes = [
     {
         name: 'Gishki',
         description: 'A ritual-focused water archetype that uses ritual summoning and divination effects to control the field and search for key ritual components.',
-        filepath: 'Gishki Deck Analysis.html',
+        filepath: 'pages/Gishki Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="gishkiWaterGrad" cx="50%" cy="50%" r="50%">
@@ -10289,7 +10289,7 @@ const archetypes = [
     {
         name: 'Galaxy-Photon',
         description: 'A LIGHT archetype that combines Galaxy and Photon monsters to create powerful Xyz summons and overwhelming light-based attacks.',
-        filepath: 'Galaxy-photon Deck Analysis.html',
+        filepath: 'pages/Galaxy-photon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="galaxyCoreGrad" cx="50%" cy="50%" r="50%">
@@ -10419,7 +10419,7 @@ const archetypes = [
     {
         name: 'Gladiator Beast',
         description: 'A tactical beast archetype that focuses on contact fusion and battlefield manipulation through tag-out effects and formation strategies.',
-        filepath: 'Gladiator Beast Deck Analysis.html',
+        filepath: 'pages/Gladiator Beast Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gladiatorArmorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -10566,7 +10566,7 @@ const archetypes = [
     {
         name: 'Glacial Beast',
         description: 'A small, cohesive package of WATER monsters that function as a Level 7 Synchro engine, best utilized as stepping stones to access the broader WATER Synchro toolbox.',
-        filepath: 'Glacial Beast Deck Analysis.html',
+        filepath: 'pages/Glacial Beast Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="glacialGrad" cx="50%" cy="50%" r="60%">
@@ -10630,7 +10630,7 @@ const archetypes = [
     {
         name: 'Golden Castle of Stromberg',
         description: 'A small, self-contained engine centered around its titular Field Spell. Its design is one of extreme dependency; the entire deck is built to facilitate, protect, and exploit this single, high-risk, high-reward card.',
-        filepath: 'Golden Castle of Stromberg Deck Analysis.html',
+        filepath: 'pages/Golden Castle of Stromberg Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="castleGrad" cx="50%" cy="50%" r="60%">
@@ -10694,7 +10694,7 @@ const archetypes = [
     {
         name: 'Goblin',
         description: 'A mischievous archetype focused on swarming tactics, resource disruption, and explosive combo plays through goblin tribal synergies.',
-        filepath: 'Goblin Deck Analysis.html',
+        filepath: 'pages/Goblin Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="goblinSkinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -10855,7 +10855,7 @@ const archetypes = [
     {
         name: 'Gogogo',
         description: 'An earth rock archetype focused on xyz summoning through level manipulation and aggressive beatdown strategies with defensive support.',
-        filepath: 'Gogogo Deck Analysis.html',
+        filepath: 'pages/Gogogo Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gogogoRockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -11008,7 +11008,7 @@ const archetypes = [
     {
         name: 'Gold Pride',
         description: 'A beast-warrior archetype focused on fusion summoning and field position manipulation with mining and treasure-themed strategies.',
-        filepath: 'Gold Pride Deck Analysis.html',
+        filepath: 'pages/Gold Pride Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="goldPrideGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -11175,7 +11175,7 @@ const archetypes = [
     {
         name: 'Gouki',
         description: 'A link-focused warrior archetype that emphasizes co-linking strategies and powerful link summoning combos with wrestling-themed monsters.',
-        filepath: 'Gouki Deck Analysis.html',
+        filepath: 'pages/Gouki Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="goukiMuscleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -11335,7 +11335,7 @@ const archetypes = [
     {
         name: 'Gunkan',
         description: 'A flavorful FIRE Aqua archetype built like a meal, using Shari as rice and various toppings to create powerful Xyz monsters that reward thematic consistency.',
-        filepath: 'Gunkan Deck Analysis.html',
+        filepath: 'pages/Gunkan Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="gunkanBaseGrad" cx="50%" cy="50%" r="50%">
@@ -11435,7 +11435,7 @@ const archetypes = [
     {
         name: 'Gusto',
         description: 'A WIND Synchro archetype of Psychic and Winged Beast monsters, evolved from defensive loops to aggressive combos, featuring floating effects and powerful Synchro plays.',
-        filepath: 'Gusto Deck Analysis.html',
+        filepath: 'pages/Gusto Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="gustoWindGrad" cx="50%" cy="50%" r="60%">
@@ -11550,7 +11550,7 @@ const archetypes = [
     {
         name: 'Harpie',
         description: 'One of the oldest WIND Winged Beast archetypes, focusing on Level 4 swarming, backrow removal, and powerful control through Harpie\'s Feather Storm.',
-        filepath: 'Harpie Deck Analysis.html',
+        filepath: 'pages/Harpie Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="harpieBodyGrad" cx="50%" cy="30%" r="70%">
@@ -11661,7 +11661,7 @@ const archetypes = [
     {
         name: 'Hazy Flame',
         description: 'A FIRE Beast archetype focused on Level 6 monsters with targeting immunity, enabling explosive Rank 6 Xyz plays through Hazy Flame Peryton and culminating in the mighty Hazy Flame Basiltrice.',
-        filepath: 'Hazy flame Deck Analysis.html',
+        filepath: 'pages/Hazy flame Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="hazyFlameCore" cx="50%" cy="30%" r="60%">
@@ -11765,7 +11765,7 @@ const archetypes = [
     {
         name: 'Heraldic Beast',
         description: 'A Rank 4 Xyz archetype that treats the Graveyard as a second hand, using resource loops and graveyard manipulation to swarm Level 4 monsters and generate advantage through search effects.',
-        filepath: 'Heraldic Beasts Deck Analysis.html',
+        filepath: 'pages/Heraldic Beasts Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="heraldShield" cx="50%" cy="30%" r="70%">
@@ -11878,7 +11878,7 @@ const archetypes = [
     {
         name: 'Heroic',
         description: 'An aggressive EARTH Warrior archetype specializing in OTK strategies through battle-centric gameplay, utilizing the unique "500 LP" payment mechanic to access powerful effects.',
-        filepath: 'Heroic Deck Analysis.html',
+        filepath: 'pages/Heroic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="heroicGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -11993,7 +11993,7 @@ const archetypes = [
     {
         name: 'Hieratic',
         description: 'A LIGHT Dragon archetype specializing in explosive tribute-focused gameplay, using chain reactions to swarm the field and enable rapid Xyz, Synchro, and Link Summons.',
-        filepath: 'Hieratic Deck Analysis.html',
+        filepath: 'pages/Hieratic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="hieraticSun" cx="50%" cy="30%" r="70%">
@@ -12129,7 +12129,7 @@ const archetypes = [
     {
         name: 'Horus',
         description: 'A modern Graveyard-centric FIRE Dragon engine centered on the King\'s Sarcophagus, using the four sons of Horus to rapidly deploy Level 8 monsters for diverse Extra Deck strategies.',
-        filepath: 'Horus Deck Analysis.html',
+        filepath: 'pages/Horus Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="horusFlame" cx="50%" cy="30%" r="70%">
@@ -12285,7 +12285,7 @@ const archetypes = [
     {
         name: 'Ice Barrier',
         description: 'A revitalized WATER archetype that transformed from a failed lockdown strategy into a dynamic Synchro-based combo deck, featuring Lancea, Ancestral Dragon of the Ice Mountain.',
-        filepath: 'Ice Barrier Deck Analysis.html',
+        filepath: 'pages/Ice Barrier Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="iceCore" cx="50%" cy="30%" r="70%">
@@ -12426,7 +12426,7 @@ const archetypes = [
     {
         name: 'Icejade',
         description: 'A WATER Aqua control archetype that emulates a glacier\'s slow advance, using resource recursion and floodgate effects to establish the devastating "Curse Lock".',
-        filepath: 'Icejade Deck Analysis.html',
+        filepath: 'pages/Icejade Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="icejadeCore" cx="50%" cy="30%" r="70%">
@@ -12584,7 +12584,7 @@ const archetypes = [
     {
         name: 'Igknight',
         description: 'A unique FIRE Warrior Pendulum archetype defined by engineered redundancy, using identical Normal Pendulum monsters as a hyper-consistent engine for FIRE Warrior strategies.',
-        filepath: 'Igknight Deck Analysis.html',
+        filepath: 'pages/Igknight Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="igknightFlame" cx="50%" cy="30%" r="70%">
@@ -12747,7 +12747,7 @@ const archetypes = [
     {
         name: 'Impcantation',
         description: 'A synergistic engine of LIGHT and DARK monsters designed to solve Ritual Summoning consistency problems through elegant symmetrical pairs that search and recover Ritual components.',
-        filepath: 'Impcantation Deck Analysis.html',
+        filepath: 'pages/Impcantation Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ritualCore" cx="50%" cy="30%" r="70%">
@@ -12914,7 +12914,7 @@ const archetypes = [
     {
         name: 'Invoked',
         description: 'A versatile fusion archetype that manipulates elemental attributes to summon powerful fusion monsters with varied effects and disruption.',
-        filepath: 'Invoked Deck Analysis.html',
+        filepath: 'pages/Invoked Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="invokedCore" cx="50%" cy="50%" r="50%">
@@ -12995,7 +12995,7 @@ const archetypes = [
     {
         name: 'Infernity',
         description: 'A paradoxical archetype that achieves victory through deliberate destitution, transforming an empty hand into overwhelming advantage through the most powerful handless effects in the game.',
-        filepath: 'Infernity Deck Analysis.html',
+        filepath: 'pages/Infernity Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="voidCore" cx="50%" cy="50%" r="60%">
@@ -13163,7 +13163,7 @@ const archetypes = [
     {
         name: 'Infinittrack',
         description: 'A machine/earth archetype that combines excavation mechanics with powerful Link summoning to build overwhelming field presence and card advantage through their construction theme.',
-        filepath: 'Infinittrack Deck Analysis.html',
+        filepath: 'pages/Infinittrack Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="trackGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -13290,7 +13290,7 @@ const archetypes = [
     {
         name: 'Infernoid',
         description: 'A devastating chaos archetype that banishes from hand and deck to summon massive high-level monsters with destructive effects and powerful disruption capabilities.',
-        filepath: 'Infernoid Deck Analysis.html',
+        filepath: 'pages/Infernoid Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="chaosCore" cx="50%" cy="50%" r="60%">
@@ -13415,7 +13415,7 @@ const archetypes = [
     {
         name: 'Inzektor',
         description: 'A swarm-based insect archetype that uses equip mechanics and destruction chains to generate overwhelming advantage through recursive loops and explosive combo potential.',
-        filepath: 'Inzektor Deck Analysis.html',
+        filepath: 'pages/Inzektor Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="insectCore" cx="50%" cy="50%" r="60%">
@@ -13558,7 +13558,7 @@ const archetypes = [
     {
         name: 'Iron Chain',
         description: 'A control-oriented warrior archetype that specializes in mill strategies and battlefield control through chain-based effects and graveyard manipulation tactics.',
-        filepath: 'Iron Chain Deck Analysis.html',
+        filepath: 'pages/Iron Chain Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="ironGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -13718,7 +13718,7 @@ const archetypes = [
     {
         name: 'Jinzo',
         description: 'A machine-based anti-trap archetype that dominates through trap negation and psychic interference, creating a controlled environment where traps cannot function.',
-        filepath: 'Jinzo Deck Analysis.html',
+        filepath: 'pages/Jinzo Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="psychicCore" cx="50%" cy="50%" r="60%">
@@ -13893,7 +13893,7 @@ const archetypes = [
     {
         name: 'Junk',
         description: 'A synchro-focused warrior archetype that transforms discarded cards and low-level monsters into powerful synchro summons through resourceful tuning and recycling effects.',
-        filepath: 'Junk Deck Analyis.html',
+        filepath: 'pages/Junk Deck Analyis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="junkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -14055,7 +14055,7 @@ const archetypes = [
     {
         name: 'Jurrac',
         description: 'A fire/dinosaur synchro archetype that combines prehistoric power with volcanic fury, utilizing tuner dinosaurs and destruction effects to summon powerful synchro monsters.',
-        filepath: 'Jurrac Deck Analysis.html',
+        filepath: 'pages/Jurrac Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fireCore" cx="50%" cy="50%" r="60%">
@@ -14261,7 +14261,7 @@ const archetypes = [
     {
         name: 'K9',
         description: 'A loyal beast-warrior archetype that showcases the bond between trainer and canine companion, utilizing pack tactics and protective instincts for battlefield control.',
-        filepath: 'K9 Deck Analysis.html',
+        filepath: 'pages/K9 Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="loyaltyCore" cx="50%" cy="50%" r="60%">
@@ -14444,7 +14444,7 @@ const archetypes = [
     {
         name: 'Kaiju',
         description: 'A massive monster archetype that dominates the field through tribute summoning and removal effects, clearing opposing boards with colossal creatures and devastating control.',
-        filepath: 'Kaiju Deck Analysis.html',
+        filepath: 'pages/Kaiju Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="kaijuCore" cx="50%" cy="50%" r="60%">
@@ -14662,7 +14662,7 @@ const archetypes = [
     {
         name: 'Karakuri',
         description: 'A machine synchro archetype that emphasizes precision positioning and mechanical synergy, utilizing forced position changes and synchro summoning for overwhelming field control.',
-        filepath: 'Karakuri Deck Analysis.html',
+        filepath: 'pages/Karakuri Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="mechanicalCore" cx="50%" cy="50%" r="60%">
@@ -14898,7 +14898,7 @@ const archetypes = [
     {
         name: 'Kashtira',
         description: 'A banishment-focused archetype that exiles cards face-down to fuel powerful effects, creating overwhelming advantage through systematic resource denial and explosive plays.',
-        filepath: 'Kashtira Deck Analysis.html',
+        filepath: 'pages/Kashtira Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="voidCore" cx="50%" cy="50%" r="60%">
@@ -15099,7 +15099,7 @@ const archetypes = [
     {
         name: 'Knightmare',
         description: 'A Link-based fiend archetype that excels at disruption and board breaking, using co-linked zones to generate advantage while providing powerful removal effects.',
-        filepath: 'Knightmare Deck Analysis.html',
+        filepath: 'pages/Knightmare Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nightmareCore" cx="50%" cy="50%" r="60%">
@@ -15327,7 +15327,7 @@ const archetypes = [
     {
         name: 'Koaki Meiru',
         description: 'A unique archetype focused on restriction-based gameplay, requiring players to maintain specific cards in hand to prevent their monsters from self-destructing while providing powerful elemental effects.',
-        filepath: 'Koaki Meiru Deck Analysis.html',
+        filepath: 'pages/Koaki Meiru Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="koakiCore" cx="50%" cy="40%" r="60%">
@@ -15449,7 +15449,7 @@ const archetypes = [
     {
         name: 'Koala',
         description: 'A charming Beast archetype centered around the adorable Koala monster, focusing on peaceful defensive strategies and hand advantage while providing cute and effective board control.',
-        filepath: 'Koala Deck Analysis.html',
+        filepath: 'pages/Koala Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="koalaFur" cx="40%" cy="30%" r="70%">
@@ -15593,7 +15593,7 @@ const archetypes = [
     {
         name: 'Kozmo',
         description: 'A psychic archetype inspired by science fiction themes, combining spaceships and pilots with banishing mechanics and powerful floating effects for explosive offensive strategies.',
-        filepath: 'Kozmo Deck Analysis.html',
+        filepath: 'pages/Kozmo Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="spaceCore" cx="50%" cy="30%" r="60%">
@@ -15761,7 +15761,7 @@ const archetypes = [
     {
         name: 'Krawler',
         description: 'A Link-focused insect archetype that excels at swarm tactics and board control, using face-down positioning and flip effects to generate advantage and establish powerful Link monsters.',
-        filepath: 'Krawler Deck Analysis.html',
+        filepath: 'pages/Krawler Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="insectBody" cx="50%" cy="40%" r="60%">
@@ -15949,7 +15949,7 @@ const archetypes = [
     {
         name: 'Kuriboh',
         description: 'An iconic archetype of adorable fiend monsters that specialize in defensive strategies, damage prevention, and surprising utility effects while maintaining their cute and beloved appearance.',
-        filepath: 'Kuriboh Deck Analysis.html',
+        filepath: 'pages/Kuriboh Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="kuribohBody" cx="50%" cy="40%" r="60%">
@@ -16135,7 +16135,7 @@ const archetypes = [
     {
         name: 'Labrynth',
         description: 'A trap-heavy control archetype that excels at resource management and board control, using maze-like trap networks and Fiend monsters to create overwhelming advantage while disrupting opponent strategies.',
-        filepath: 'Labrynth Deck Analysis.html',
+        filepath: 'pages/Labrynth Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="labyrinthCore" cx="50%" cy="50%" r="60%">
@@ -16297,7 +16297,7 @@ const archetypes = [
     {
         name: 'Libromancer',
         description: 'A FIRE Spellcaster archetype centered around Ritual summoning and spell manipulation, combining library themes with powerful magical rituals and graveyard-based strategies.',
-        filepath: 'Libromancer Deck Analysis.html',
+        filepath: 'pages/Libromancer Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="bookCore" cx="50%" cy="30%" r="70%">
@@ -16410,7 +16410,7 @@ const archetypes = [
     {
         name: 'Laval',
         description: 'A Pyro archetype focused on aggressive offensive strategies and graveyard manipulation, using volcanic and molten rock themes with powerful synergy between fire-based monsters and spell cards.',
-        filepath: 'Laval Deck Analysis.html',
+        filepath: 'pages/Laval Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="lavaCore" cx="50%" cy="40%" r="60%">
@@ -16578,7 +16578,7 @@ const archetypes = [
     {
         name: 'Legendary Dragon',
         description: 'A powerful LIGHT Dragon archetype featuring the legendary dragons of antiquity, focusing on high-level synergy, powerful fusion mechanics, and ancient draconic might with mythical powers.',
-        filepath: 'Legendary Dragon Deck Analysis.html',
+        filepath: 'pages/Legendary Dragon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="dragonCore" cx="50%" cy="40%" r="60%">
@@ -16689,7 +16689,7 @@ const archetypes = [
     {
         name: 'Legacy of Greed',
         description: 'A series of cards themed around avarice and wealth, featuring powerful draw engines and resource generation mechanics that reward greedy playstyles with overwhelming card advantage.',
-        filepath: 'Legacy of Greed Deck Analysis.html',
+        filepath: 'pages/Legacy of Greed Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="greedGrad" cx="50%" cy="50%" r="50%">
@@ -16712,7 +16712,7 @@ const archetypes = [
     {
         name: 'Lightsworn',
         description: 'A Light-based archetype focused on aggressive milling strategies and powerful Synchro summoning, combining high-risk, high-reward gameplay with explosive offensive potential.',
-        filepath: 'Lightsworn Deck Analysis.html',
+        filepath: 'pages/Lightsworn Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="lightCore" cx="50%" cy="30%" r="70%">
@@ -16827,7 +16827,7 @@ const archetypes = [
     {
         name: 'Live★Twin',
         description: 'A LIGHT Cyberse archetype focused on Link summoning and cyber-idol themes, utilizing twin monster pairs and streaming-based effects for consistent field presence and disruption.',
-        filepath: 'Live Twin Deck Analysis.html',
+        filepath: 'pages/Live Twin Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="neonCore" cx="50%" cy="30%" r="70%">
@@ -16942,7 +16942,7 @@ const archetypes = [
     {
         name: 'Lunalight',
         description: 'A DARK Beast-Warrior archetype focused on Fusion summoning and aggressive OTK strategies, utilizing moonlight themes and powerful beast transformations.',
-        filepath: 'Lunalight Deck Analysis.html',
+        filepath: 'pages/Lunalight Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="moonCore" cx="50%" cy="30%" r="70%">
@@ -17082,7 +17082,7 @@ const archetypes = [
     {
         name: 'lswarm',
         description: 'A corrupted DARK archetype focused on Rank 4 Xyz summoning to establish anti-meta floodgates, with Evilswarm Ophion as its primary boss monster that prevents high-level Special Summons.',
-        filepath: 'lswarm Deck Analysis.html',
+        filepath: 'pages/lswarm Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="corruptCore" cx="50%" cy="50%" r="70%">
@@ -17237,7 +17237,7 @@ const archetypes = [
     {
         name: 'Vision HERO',
         description: 'The central engine for modern competitive HERO builds, acting as a highly efficient system for summoning powerful boss monsters from other HERO archetypes through unique "vision" mechanics.',
-        filepath: 'Vision hero Deck Analysis.html',
+        filepath: 'pages/Vision hero Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="visionCore" cx="50%" cy="30%" r="70%">
@@ -17376,7 +17376,7 @@ const archetypes = [
     {
         name: 'Xtra HERO',
         description: 'The Link Monster framework that unifies all HERO sub-archetypes into explosive combo strategies, serving as critical connective tissue for modern competitive HERO builds.',
-        filepath: 'Xtra Hero Deck Analysis.html',
+        filepath: 'pages/Xtra Hero Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="xtraCore" cx="50%" cy="30%" r="70%">
@@ -17525,7 +17525,7 @@ const archetypes = [
     {
         name: 'Voiceless Voice',
         description: 'A resilient LIGHT Ritual archetype centered around Skull Guardian, focusing on control through graveyard protection and resource management.',
-        filepath: 'Voiceless Voice Deck Analysis.html',
+        filepath: 'pages/Voiceless Voice Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="voicelessGrad" cx="50%" cy="30%" r="70%">
@@ -17641,7 +17641,7 @@ const archetypes = [
     {
         name: 'Lyrilusc',
         description: 'A Winged Beast archetype that focuses on Xyz summoning and overlaying multiple monsters for powerful effects.',
-        filepath: 'Lyrilusc Deck Analysis.html',
+        filepath: 'pages/Lyrilusc Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="lyriluscCore" cx="50%" cy="40%" r="60%">
@@ -17705,7 +17705,7 @@ const archetypes = [
     {
         name: 'Machina',
         description: 'A Machine archetype focused on destruction effects, graveyard recursion, and powerful Earth-based strategies.',
-        filepath: 'Machina Deck Analysis.html',
+        filepath: 'pages/Machina Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="machinaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -17785,7 +17785,7 @@ const archetypes = [
     {
         name: 'Madolche',
         description: 'A sweet EARTH archetype focused on resource recycling, royal court synergy, and explosive OTK potential through dessert-themed monsters.',
-        filepath: 'Madolche Deck Analysis.html',
+        filepath: 'pages/Madolche Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="madolcheCore" cx="50%" cy="40%" r="60%">
@@ -17879,7 +17879,7 @@ const archetypes = [
     {
         name: 'Magical Muskets',
         description: 'A LIGHT Fiend control archetype that activates Spells and Traps directly from hand using column-based positioning and Wild West gunslinger themes.',
-        filepath: 'Magical Muskets Deck Analysis.html',
+        filepath: 'pages/Magical Muskets Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="gunGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -18005,7 +18005,7 @@ const archetypes = [
     {
         name: 'Magician Girl',
         description: 'A cute DARK Spellcaster archetype featuring magical girls that support each other with protection effects and special summoning.',
-        filepath: 'Magician Girl Deck Analysis.html',
+        filepath: 'pages/Magician Girl Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="magicGirlGrad" cx="50%" cy="50%" r="50%">
@@ -18106,7 +18106,7 @@ const archetypes = [
     {
         name: 'Magikey',
         description: 'A multi-dimensional DARK archetype that unlocks powerful summoning mechanisms through Normal Monsters and graveyard attribute diversity.',
-        filepath: 'Magikey Deck Analysis.html',
+        filepath: 'pages/Magikey Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="magikeyGrad" cx="50%" cy="50%" r="50%">
@@ -18255,7 +18255,7 @@ const archetypes = [
     {
         name: 'Magnet Warrior',
         description: 'A resource-driven EARTH Rock archetype focused on magnetic assembly tactics to summon powerful Electromagna boss monsters through consistent searching and graveyard setup.',
-        filepath: 'Magnet Warrior Deck Analysis.html',
+        filepath: 'pages/Magnet Warrior Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="magnetGrad" cx="50%" cy="50%" r="50%">
@@ -18390,7 +18390,7 @@ const archetypes = [
     {
         name: 'Majestic',
         description: 'A celestial Synchro archetype focused on evolving Stardust Dragon into powerful boss monsters like Shooting Majestic Star Dragon through strategic climbing and resource management.',
-        filepath: 'Majestic Deck Analysis.html',
+        filepath: 'pages/Majestic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="stellarCore" cx="50%" cy="50%" r="50%">
@@ -18549,7 +18549,7 @@ const archetypes = [
     {
         name: 'Majespecter',
         description: 'A resilient WIND Spellcaster Pendulum archetype that leverages untargetable protection and search effects to establish consistent control boards through value-based gameplay.',
-        filepath: 'Majespecter Deck Analysis.html',
+        filepath: 'pages/Majespecter Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="windCore" cx="50%" cy="50%" r="50%">
@@ -18737,7 +18737,7 @@ const archetypes = [
     {
         name: 'Malefic',
         description: 'A Field Spell-dependent archetype that summons corrupted versions of iconic monsters while controlling the field through Malefic World and powerful boss monsters.',
-        filepath: 'Malefic Deck Analysis.html',
+        filepath: 'pages/Malefic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="maleficCore" cx="50%" cy="50%" r="50%">
@@ -18926,7 +18926,7 @@ const archetypes = [
     {
         name: 'Maliss',
         description: 'A DARK Cyberse Link archetype that uses the banished zone as a resource pool, recursively summoning monsters through explosive banish-and-revive loops for rapid Link climbing.',
-        filepath: 'Maliss Deck Analysis.html',
+        filepath: 'pages/Maliss Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="cyberCore" cx="50%" cy="50%" r="50%">
@@ -19108,7 +19108,7 @@ const archetypes = [
     {
         name: 'Malicevorous',
         description: 'A compact DARK Fiend archetype of Level 2 monsters themed around cutlery that thrives as an engine piece, notably in Spright hybrid strategies for Level 2 swarming and resource generation.',
-        filepath: 'Malicevorous Deck Analysis.html',
+        filepath: 'pages/Malicevorous Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fiendishCore" cx="50%" cy="50%" r="60%">
@@ -19195,7 +19195,7 @@ const archetypes = [
     {
         name: 'Mannadium',
         description: 'A synergistic LIGHT Synchro archetype that uses controlled self-destruction as a catalyst for resource generation and powerful Synchro climbing through strategic loops.',
-        filepath: 'Mannadium Deck Analysis.html',
+        filepath: 'pages/Mannadium Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="starCore" cx="50%" cy="50%" r="50%">
@@ -19386,7 +19386,7 @@ const archetypes = [
     {
         name: 'Marinces',
         description: 'A WATER Cyberse archetype that floods the field with waves of Link monsters through continuous swarm tactics and recursive special summoning.',
-        filepath: 'Marinces Deck Analysis.html',
+        filepath: 'pages/Marinces Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="marincesCore" cx="50%" cy="50%" r="50%">
@@ -19526,7 +19526,7 @@ const archetypes = [
     {
         name: 'Mekk-knight',
         description: 'A LIGHT Psychic archetype that manipulates field positioning through column-based mechanics to enable powerful Extra Deck plays and field control.',
-        filepath: 'Mekk-knight Deck Analysis.html',
+        filepath: 'pages/Mekk-knight Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="mekkCore" cx="50%" cy="50%" r="50%">
@@ -19668,7 +19668,7 @@ const archetypes = [
     {
         name: 'Melodious',
         description: 'A LIGHT Fairy Fusion archetype focused on harmonious field control, powerful fusion monsters, and protection effects that lock down the opponent�s board.',
-        filepath: 'Melodious Deck Analysis.html',
+        filepath: 'pages/Melodious Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="melodiousCore" cx="50%" cy="50%" r="50%">
@@ -19725,7 +19725,7 @@ const archetypes = [
     {
         name: 'Melffy',
         description: 'An adorable EARTH Beast archetype focused on bouncing, swarming, and disrupting the opponent with hand traps and field control effects.',
-        filepath: 'Melffy Deck Analysis.html',
+        filepath: 'pages/Melffy Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="melffyCore" cx="50%" cy="50%" r="50%">
@@ -19766,7 +19766,7 @@ const archetypes = [
     {
         name: 'Meklord',
         description: 'A DARK Machine archetype specializing in absorbing Synchro monsters and assembling powerful Meklord Emperors for field domination.',
-        filepath: 'Meklord Deck Analysis.html',
+        filepath: 'pages/Meklord Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="meklordCore" cx="50%" cy="50%" r="50%">
@@ -19807,7 +19807,7 @@ const archetypes = [
     {
         name: 'Memento',
         description: 'A DARK Rock archetype themed around ancient relics and graveyard recursion, enabling powerful resource loops and field presence through monument-based effects.',
-        filepath: 'Memento Deck Analysis.html',
+        filepath: 'pages/Memento Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="mementoCore" cx="50%" cy="50%" r="50%">
@@ -19847,7 +19847,7 @@ const archetypes = [
     {
         name: 'Metalfoes',
         description: 'A FIRE Psychic Pendulum archetype focused on self-destruction to set powerful Spells/Traps, toolbox fusion summoning, and recursive resource loops.',
-        filepath: 'Metalfoes Deck Analysis.html',
+        filepath: 'pages/Metalfoes Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="metalfoesCore" cx="50%" cy="50%" r="50%">
@@ -19887,7 +19887,7 @@ const archetypes = [
     {
         name: 'Metalmorph',
         description: 'A modern Machine archetype that evolved from classic Trap Card origins into a sophisticated interruption-based control strategy, tributing monsters to summon heavily protected boss monsters during the opponent\'s turn.',
-        filepath: 'Metalmorph Deck Analysis.html',
+        filepath: 'pages/Metalmorph Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="metalmorphCore" cx="50%" cy="50%" r="50%">
@@ -19942,7 +19942,7 @@ const archetypes = [
     {
         name: 'Metaphys',
         description: 'A LIGHT Wyrm archetype focused on banishing, delayed effects, and recursive field control through ethereal monsters and spells.',
-        filepath: 'Metaphys Deck Analysis.html',
+        filepath: 'pages/Metaphys Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="metaphysCore" cx="50%" cy="50%" r="50%">
@@ -19982,7 +19982,7 @@ const archetypes = [
     {
         name: 'Magistus',
         description: 'A tactical Spellcaster archetype that combines monster equipping mechanics with diverse Extra Deck summons to create layered control boards through targeted disruption.',
-        filepath: 'Magistus Deck Analysis.html',
+        filepath: 'pages/Magistus Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="magistusCore" cx="50%" cy="50%" r="50%">
@@ -20159,7 +20159,7 @@ const archetypes = [
     {
         name: 'Pendulum Magician',
         description: 'A combo-control Spellcaster archetype that masters the "Destruction Economy" through deliberate self-destruction to generate overwhelming card advantage and powerful board states.',
-        filepath: 'Pendulum Magician Deck Analysis.html',
+        filepath: 'pages/Pendulum Magician Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="pendulumGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -20289,7 +20289,7 @@ const archetypes = [
     {
         name: '@Ignister',
         description: 'A combo-centric Cyberse strategy that embraces nearly all summoning mechanics.',
-        filepath: 'Ignister Archetype Breakdown.html',
+        filepath: 'pages/Ignister Archetype Breakdown.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="50" cy="50" r="45" stroke="#fff" stroke-width="5" fill="none" />
                         <path d="M 50 5 L 60 20 L 50 25 L 40 20 L 50 5 Z" fill="#fff" />
@@ -20304,7 +20304,7 @@ const archetypes = [
     {
         name: 'Mermail',
         description: 'A WATER-based combo archetype that leverages discards for explosive plays, often paired with Atlantean and Deep Sea engines.',
-        filepath: 'Mermail Deck Analysis.html',
+        filepath: 'pages/Mermail Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="mermailGrad" cx="50%" cy="50%" r="50%">
@@ -20324,7 +20324,7 @@ const archetypes = [
     {
         name: 'Mikanko',
         description: 'A Ritual/Equip archetype focused on non-destruction removal, battle tricks, and powerful equip spell recursion.',
-        filepath: 'Mikanko Deck Analysis.html',
+        filepath: 'pages/Mikanko Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="mikankoCore" cx="50%" cy="50%" r="50%">
@@ -20380,7 +20380,7 @@ const archetypes = [
     {
         name: 'Mimighoul',
         description: 'A quirky DARK Fiend archetype themed around mimicry, graveyard recursion, and disruptive hand traps.',
-        filepath: 'Mimighoul Deck Analysis.html',
+        filepath: 'pages/Mimighoul Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="mimighoulChest" cx="50%" cy="50%" r="50%">
@@ -20457,7 +20457,7 @@ const archetypes = [
     {
         name: 'Mist Valley',
         description: 'A WIND-based archetype focused on bouncing cards, chainable effects, and Synchro plays for control and disruption.',
-        filepath: 'Mist Valley Deck Analysis.html',
+        filepath: 'pages/Mist Valley Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="mistvalleyGrad" cx="50%" cy="50%" r="50%">
@@ -20477,7 +20477,7 @@ const archetypes = [
     {
         name: 'Mitsurugi',
         description: 'A samurai-themed archetype focused on quick attacks, chainable negation, and field control through sword techniques.',
-        filepath: 'Mitsurugi Deck Analysis.html',
+        filepath: 'pages/Mitsurugi Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="mitsurugiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -20497,7 +20497,7 @@ const archetypes = [
     {
         name: 'Mokey Mokey',
         description: 'A whimsical Fairy archetype focused on swarming, chain reactions, and surprise OTKs with Mokey Mokey King.',
-        filepath: 'Mokey Mokey Deck Analysis.html',
+        filepath: 'pages/Mokey Mokey Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="mokeyGrad" cx="50%" cy="50%" r="50%">
@@ -20517,7 +20517,7 @@ const archetypes = [
     {
         name: 'Mathmech',
         description: 'A Cyberse archetype focused on OTKs, Synchro/Xyz combos, and precise resource calculation for explosive plays.',
-        filepath: 'Mathmech Deck Analyis.html',
+        filepath: 'pages/Mathmech Deck Analyis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="mathmechGrad" cx="50%" cy="50%" r="50%">
@@ -20536,7 +20536,7 @@ const archetypes = [
     {
         name: 'Mayakashi',
         description: 'A Zombie Synchro archetype focused on climbing the Synchro ladder, graveyard recursion, and looping effects.',
-        filepath: 'Mayakashi Deck Analysis.html',
+        filepath: 'pages/Mayakashi Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="mayakashiGrad" cx="50%" cy="50%" r="50%">
@@ -20555,7 +20555,7 @@ const archetypes = [
     {
         name: 'Morphtronic',
         description: 'A Machine archetype focused on switching battle positions for different effects, combo loops, and Synchro summoning.',
-        filepath: 'Morphtronic Deck Analysis.html',
+        filepath: 'pages/Morphtronic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <radialGradient id="morphtronic-core-grad" cx="0.5" cy="0.5" r="0.5">
@@ -20638,7 +20638,7 @@ const archetypes = [
     {
         name: 'Megalith',
         description: 'A Ritual archetype focused on in-hand Ritual Summoning, flexible combos, and recursive resource loops.',
-        filepath: 'Megalith Deck Analysis.html',
+        filepath: 'pages/Megalith Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="megalithGrad" cx="50%" cy="50%" r="50%">
@@ -20658,7 +20658,7 @@ const archetypes = [
     {
         name: 'Materiactor',
         description: 'A Rank 3 Xyz archetype focused on flexible material manipulation, resource cycling, and creative combo lines.',
-        filepath: 'Materiactor Deck Analysis.html',
+        filepath: 'pages/Materiactor Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="materiactorGrad" cx="50%" cy="50%" r="50%">
@@ -20678,7 +20678,7 @@ const archetypes = [
     {
         name: 'Mystical Beasts of the Forest',
         description: 'A Beast archetype focused on continuous effects, field control, and synergy with other Beast monsters.',
-        filepath: 'Mystical Beasts of the Forest Deck Analysis.html',
+        filepath: 'pages/Mystical Beasts of the Forest Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="forestAura" cx="50%" cy="50%" r="60%">
@@ -20721,7 +20721,7 @@ const archetypes = [
     {
         name: 'Nephthys',
         description: 'A Winged Beast archetype themed around phoenixes, focusing on destruction, rebirth, and recursive effects.',
-        filepath: 'Nepthys Deck Analysis.html',
+        filepath: 'pages/Nepthys Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nepthysAura" cx="50%" cy="50%" r="60%">
@@ -20765,7 +20765,7 @@ const archetypes = [
     {
         name: 'Nimble',
         description: 'A WATER Beast archetype focused on swarming, graveyard recursion, and field presence through self-replicating effects.',
-        filepath: 'Nimble Deck Analysis.html',
+        filepath: 'pages/Nimble Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nimbleAura" cx="50%" cy="50%" r="60%">
@@ -20808,7 +20808,7 @@ const archetypes = [
     {
         name: 'Nemleria',
         description: 'A Repp archetype focused on summoning and controlling Repp tokens for swarming and disruption.',
-        filepath: 'Nemleria Deck Analysis.html',
+        filepath: 'pages/Nemleria Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nemleriaAura" cx="50%" cy="50%" r="60%">
@@ -20851,7 +20851,7 @@ const archetypes = [
     {
         name: 'Ninja',
         description: 'A Warrior archetype focused on stealth, disruption, and quick strikes through ninja techniques and traps.',
-        filepath: 'Ninja Deck Analysis.html',
+        filepath: 'pages/Ninja Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ninjaAura" cx="50%" cy="50%" r="60%">
@@ -20894,7 +20894,7 @@ const archetypes = [
     {
         name: 'Noble Knight',
         description: 'A Warrior archetype centered around noble knights, focusing on equipping armor and enhancing knight monsters for powerful attacks.',
-        filepath: 'Noble Knight Deck Analysis.html',
+        filepath: 'pages/Noble Knight Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nobleAura" cx="50%" cy="50%" r="60%">
@@ -20937,7 +20937,7 @@ const archetypes = [
     {
         name: 'Nitro',
         description: 'A Machine archetype focused on high-speed Synchro Summons and explosive attacks through nitro-powered vehicles.',
-        filepath: 'Nitro Deck Analysis.html',
+        filepath: 'pages/Nitro Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nitroAura" cx="50%" cy="50%" r="60%">
@@ -20980,7 +20980,7 @@ const archetypes = [
     {
         name: 'Nordic',
         description: 'A Warrior archetype inspired by Norse mythology, focusing on Aesir gods and powerful Synchro Summons.',
-        filepath: 'Nordic Deck Analysis.html',
+        filepath: 'pages/Nordic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nordicAura" cx="50%" cy="50%" r="60%">
@@ -21023,7 +21023,7 @@ const archetypes = [
     {
         name: 'Nouvelles',
         description: 'A Spellcaster archetype themed around newspapers, focusing on banishing and recycling cards for control and comeback plays.',
-        filepath: 'Nouvelles Deck Analysis.html',
+        filepath: 'pages/Nouvelles Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nouvellesAura" cx="50%" cy="50%" r="60%">
@@ -21066,7 +21066,7 @@ const archetypes = [
     {
         name: 'Number',
         description: 'An Xyz archetype featuring powerful Number monsters summoned through Rank-Up Magic and overlay units.',
-        filepath: 'Number Deck Analysis.html',
+        filepath: 'pages/Number Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="numberAura" cx="50%" cy="50%" r="60%">
@@ -21109,7 +21109,7 @@ const archetypes = [
     {
         name: 'Odd-Eyes',
         description: 'A Dragon archetype featuring pendulum and synchro summoning, centered around the Odd-Eyes Dragon and its evolutions.',
-        filepath: 'Odd-Eyes Deck Analysis.html',
+        filepath: 'pages/Odd-Eyes Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="oddeyesAura" cx="50%" cy="50%" r="60%">
@@ -21152,7 +21152,7 @@ const archetypes = [
     {
         name: 'Of the Swamp',
         description: 'A series of cards that focus on amphibian and reptilian monsters, featuring powerful Synchro and Xyz monsters that thrive in marshy environments and manipulate water-based effects.',
-        filepath: 'of the Swamp Deck Analysis.html',
+        filepath: 'pages/of the Swamp Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="swampGrad" cx="50%" cy="50%" r="50%">
@@ -21175,7 +21175,7 @@ const archetypes = [
     {
         name: 'Ogdoadic',
         description: 'A Reptile archetype themed around ancient Egyptian chaos, focusing on summoning and controlling Ogdoadic monsters.',
-        filepath: 'Ogdoadic Deck Analysis.html',
+        filepath: 'pages/Ogdoadic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ogdoadicAura" cx="50%" cy="50%" r="60%">
@@ -21218,7 +21218,7 @@ const archetypes = [
     {
         name: 'Ojama',
         description: 'A Beast archetype known for its annoying and disruptive effects, focusing on swarming and locking down the opponent.',
-        filepath: 'Ojama Deck Analysis.html',
+        filepath: 'pages/Ojama Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ojamaAura" cx="50%" cy="50%" r="60%">
@@ -21261,7 +21261,7 @@ const archetypes = [
     {
         name: 'Orcust',
         description: 'A Machine archetype focused on banishing and recycling cards from the graveyard for Link and Synchro Summons.',
-        filepath: 'Orcust Deck Analysis.html',
+        filepath: 'pages/Orcust Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="orcustAura" cx="50%" cy="50%" r="60%">
@@ -21304,7 +21304,7 @@ const archetypes = [
     {
         name: 'Morganite',
         description: 'A Spellcaster archetype themed around morganite gems, focusing on fusion summoning and gem-related effects.',
-        filepath: 'Morganite Deck Analysis.html',
+        filepath: 'pages/Morganite Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="morganiteAura" cx="50%" cy="50%" r="60%">
@@ -21347,7 +21347,7 @@ const archetypes = [
     {
         name: 'Numeron',
         description: 'A Machine archetype focused on mathematical calculations and summoning powerful Numeron monsters through specific conditions.',
-        filepath: 'Numeron Deck Analysis.html',
+        filepath: 'pages/Numeron Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="numeronAura" cx="50%" cy="50%" r="60%">
@@ -21390,7 +21390,7 @@ const archetypes = [
     {
         name: 'Nemesis',
         description: 'A Warrior archetype themed around flags and patriotism, focusing on swarming and controlling the field with flag-waving effects.',
-        filepath: 'Nemesis Deck analysis.html',
+        filepath: 'pages/Nemesis Deck analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nemesisAura" cx="50%" cy="50%" r="60%">
@@ -21433,7 +21433,7 @@ const archetypes = [
     {
         name: 'Paleozoic',
         description: 'An Aqua archetype themed around ancient aquatic life, focusing on trap monsters and graveyard recursion.',
-        filepath: 'Paleozoic Deck Analysis.html',
+        filepath: 'pages/Paleozoic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="paleozoicAura" cx="50%" cy="50%" r="60%">
@@ -21476,7 +21476,7 @@ const archetypes = [
     {
         name: 'Paladin of Dragon',
         description: 'A Dragon archetype featuring knightly warriors who wield dragon powers, focusing on Synchro and Xyz summoning with powerful dragon-themed monsters and paladin support.',
-        filepath: 'Paladin of Dragon Deck Analysis.html',
+        filepath: 'pages/Paladin of Dragon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="paladinGrad" cx="50%" cy="50%" r="50%">
@@ -21498,7 +21498,7 @@ const archetypes = [
     {
         name: 'P.U.N.K.',
         description: 'A Psychic archetype focused on Link summoning and field control through punk-themed monsters.',
-        filepath: 'P.U.N.K. Deck Analysis.html',
+        filepath: 'pages/P.U.N.K. Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="punkAura" cx="50%" cy="50%" r="60%">
@@ -21541,7 +21541,7 @@ const archetypes = [
     {
         name: 'Parshath',
         description: 'A Fairy archetype focused on summoning and protecting Parshath monsters through divine effects.',
-        filepath: 'Parshath Deck Analysis.html',
+        filepath: 'pages/Parshath Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="parshathAura" cx="50%" cy="50%" r="60%">
@@ -21584,7 +21584,7 @@ const archetypes = [
     {
         name: 'Pendulum Pile',
         description: 'A Pendulum archetype focused on stacking Pendulum Scales and summoning powerful monsters through Pendulum Summoning.',
-        filepath: 'Pendulum Pile Deck Analysis.html',
+        filepath: 'pages/Pendulum Pile Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="pendulumAura" cx="50%" cy="50%" r="60%">
@@ -21627,7 +21627,7 @@ const archetypes = [
     {
         name: 'Penguin',
         description: 'A Winged Beast archetype focused on swarming and disrupting with penguin monsters.',
-        filepath: 'Penguin Deck Analysis.html',
+        filepath: 'pages/Penguin Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="penguinAura" cx="50%" cy="50%" r="60%">
@@ -21670,7 +21670,7 @@ const archetypes = [
     {
         name: 'Phantasm Spiral',
         description: 'A Dragon archetype focused on banishing and recycling cards through spiral effects.',
-        filepath: 'Phantasm Spiral Deck Analysis.html',
+        filepath: 'pages/Phantasm Spiral Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="phantasmAura" cx="50%" cy="50%" r="60%">
@@ -21713,7 +21713,7 @@ const archetypes = [
     {
         name: 'Performage',
         description: 'A Spellcaster archetype focused on performance and damage calculation through theatrical effects.',
-        filepath: 'Performage Deck Analysis.html',
+        filepath: 'pages/Performage Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="performageAura" cx="50%" cy="50%" r="60%">
@@ -21756,7 +21756,7 @@ const archetypes = [
     {
         name: 'Mega Phantom Beast',
         description: 'A Machine archetype focused on summoning and equipping phantom beasts for powerful attacks.',
-        filepath: 'Mega Phantom Beast Deck Analysis.html',
+        filepath: 'pages/Mega Phantom Beast Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="megaAura" cx="50%" cy="50%" r="60%">
@@ -21799,7 +21799,7 @@ const archetypes = [
     {
         name: 'Phantom Knights',
         description: 'A DARK Warrior archetype specializing in graveyard recursion and rapid swarming, the Phantom Knights enable powerful Rank 3 Xyz plays while providing unique Trap cards that turn into monsters. Their resource loop and disruption tools make them a staple for combo and control strategies alike.',
-        filepath: 'Phantom knights Deck Analysis.html',
+        filepath: 'pages/Phantom knights Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <radialGradient id="pkCloak" cx="55%" cy="40%" r="60%">
@@ -21857,7 +21857,7 @@ const archetypes = [
     {
         name: 'Pot of',
         description: 'A series of iconic Spell Cards that revolutionized Yu-Gi-Oh by providing powerful draw and search effects, featuring legendary cards like Pot of Greed, Pot of Desires, and Pot of Prosperity.',
-        filepath: 'Pot of Deck Analyis.html',
+        filepath: 'pages/Pot of Deck Analyis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="potGrad" cx="50%" cy="50%" r="50%">
@@ -21879,7 +21879,7 @@ const archetypes = [
     {
         name: 'Potan',
         description: 'A Plant archetype focused on swarming and disrupting with potato-themed monsters.',
-        filepath: 'Potan Deck Analysis.html',
+        filepath: 'pages/Potan Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="potanAura" cx="50%" cy="50%" r="60%">
@@ -21922,7 +21922,7 @@ const archetypes = [
     {
         name: 'Plunder Patrol',
         description: 'A Fiend archetype themed around pirates, focusing on swarming and disrupting with plunder effects.',
-        filepath: 'Plunder patrol deck analysis.html',
+        filepath: 'pages/Plunder patrol deck analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="plunderAura" cx="50%" cy="50%" r="60%">
@@ -21965,7 +21965,7 @@ const archetypes = [
     {
         name: 'Power Tool',
         description: 'A Synchro archetype centered on Equip Spells, utilizing powerful Synchro monsters like Power Tool Braver Dragon for explosive combos and disruption.',
-        filepath: 'Power Tool Deck Analysis.html',
+        filepath: 'pages/Power Tool Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="powerAura" cx="50%" cy="50%" r="60%">
@@ -22008,7 +22008,7 @@ const archetypes = [
     {
         name: 'Prank Kids',
         description: 'A Thunder archetype centered on Link Summoning, using prank-themed monsters to swarm the field and disrupt opponents with explosive effects.',
-        filepath: 'Prank_kids Deck Analysis.html',
+        filepath: 'pages/Prank_kids Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="prankAura" cx="50%" cy="50%" r="60%">
@@ -22051,7 +22051,7 @@ const archetypes = [
     {
         name: 'Predaplant',
         description: 'A Plant archetype that places Predator Counters on monsters to control the field and Fusion Summon powerful DARK monsters.',
-        filepath: 'Predaplant Deck Analysis.html',
+        filepath: 'pages/Predaplant Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="predaAura" cx="50%" cy="50%" r="60%">
@@ -22094,7 +22094,7 @@ const archetypes = [
     {
         name: 'Prediction Princess',
         description: 'A Spellcaster archetype that combines Ritual Summoning with Flip effects to create powerful control boards.',
-        filepath: 'Predicition Princess Deck Analysis.html',
+        filepath: 'pages/Predicition Princess Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="predictAura" cx="50%" cy="50%" r="60%">
@@ -22137,7 +22137,7 @@ const archetypes = [
     {
         name: 'Primite',
         description: 'A Dragon archetype that transforms Normal Monsters into powerful engines for control and disruption.',
-        filepath: 'Primite Deck Analysis.html',
+        filepath: 'pages/Primite Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="primiteAura" cx="50%" cy="50%" r="60%">
@@ -22180,7 +22180,7 @@ const archetypes = [
     {
         name: 'Prophecy',
         description: 'A Spellcaster archetype that harnesses prophetic powers for drawing and control through mystical spells.',
-        filepath: 'Prophecy Deck Analysis.html',
+        filepath: 'pages/Prophecy Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="prophecyAura" cx="50%" cy="50%" r="60%">
@@ -22223,7 +22223,7 @@ const archetypes = [
     {
         name: 'Pseudo Trap Monster',
         description: 'A unique archetype featuring monsters that appear as Trap Cards but function as monsters on the field, creating deceptive and strategic gameplay through fossil-like creatures.',
-        filepath: 'Pseudo Trap Monster Deck Analysis.html',
+        filepath: 'pages/Pseudo Trap Monster Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="pseudoGrad" cx="50%" cy="50%" r="50%">
@@ -22245,7 +22245,7 @@ const archetypes = [
     {
         name: 'Psychic',
         description: 'The Psychic monster type represents one of the most dynamic and evolving design philosophies in Yu-Gi-Oh!, featuring versatile engines capable of enabling vast strategies through psionic minds and powerful archetypes like P.U.N.K., Kozmo, and Virtual World.',
-        filepath: 'Psychic Deck Analysis.html',
+        filepath: 'pages/Psychic Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="psychicGrad" cx="50%" cy="50%" r="60%">
@@ -22267,7 +22267,7 @@ const archetypes = [
     {
         name: 'Psy-Frame',
         description: 'A Psychic archetype that manipulates minds and controls the board through psychic powers and frame synchronization.',
-        filepath: 'Psy_Frame Deck Analysis.html',
+        filepath: 'pages/Psy_Frame Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="psyFrameAura" cx="50%" cy="50%" r="60%">
@@ -22310,7 +22310,7 @@ const archetypes = [
     {
         name: 'Purrely',
         description: 'A Fairy archetype featuring adorable cat monsters that purify the field and control through cute synergy.',
-        filepath: 'Purrely Deck Analysis.html',
+        filepath: 'pages/Purrely Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="purrelyAura" cx="50%" cy="50%" r="60%">
@@ -22353,7 +22353,7 @@ const archetypes = [
     {
         name: 'Qliphort',
         description: 'A Machine archetype inspired by the Qliphoth, utilizing pendulum summoning for powerful control and disruption.',
-        filepath: 'Qliphort Deck Analysis.html',
+        filepath: 'pages/Qliphort Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="qliphortAura" cx="50%" cy="50%" r="60%">
@@ -22396,7 +22396,7 @@ const archetypes = [
     {
         name: 'Ragnaraika',
         description: 'A Plant archetype that summons insect-like monsters to swarm the field and control through nature\'s fury.',
-        filepath: 'Ragnaraika Deck Analysis.html',
+        filepath: 'pages/Ragnaraika Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ragnaraikaAura" cx="50%" cy="50%" r="60%">
@@ -22439,7 +22439,7 @@ const archetypes = [
     {
         name: 'Rebel Bots',
         description: 'A Machine archetype featuring rebellious robots that disrupt and control through mechanical synergy.',
-        filepath: 'Rebel Bots Deck Analysis.html',
+        filepath: 'pages/Rebel Bots Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="rebelBotsAura" cx="50%" cy="50%" r="60%">
@@ -22482,7 +22482,7 @@ const archetypes = [
     {
         name: 'Radiant Typhoon',
         description: 'A Dragon archetype that unleashes stormy winds and lightning for devastating control and removal.',
-        filepath: 'Radiant Typhoon Deck Analysis.html',
+        filepath: 'pages/Radiant Typhoon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="radianTyphoonAura" cx="50%" cy="50%" r="60%">
@@ -22525,7 +22525,7 @@ const archetypes = [
     {
         name: 'Raidraptor',
         description: 'A Winged Beast archetype that swoops in with fierce birds for aggressive control and disruption.',
-        filepath: 'Raidraptor Deck Analysis.html',
+        filepath: 'pages/Raidraptor Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="raidraptorAura" cx="50%" cy="50%" r="60%">
@@ -22568,7 +22568,7 @@ const archetypes = [
     {
         name: 'Reactor',
         description: 'A Machine archetype that harnesses reactor power for explosive summons and field control.',
-        filepath: 'Reactor Deck Analysis.html',
+        filepath: 'pages/Reactor Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="reactorAura" cx="50%" cy="50%" r="60%">
@@ -22611,7 +22611,7 @@ const archetypes = [
     {
         name: 'Regenesis',
         description: 'A Dragon archetype that regenerates and revives monsters for relentless comeback plays.',
-        filepath: 'Regenesis Deck Analysis.html',
+        filepath: 'pages/Regenesis Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="regenesisAura" cx="50%" cy="50%" r="60%">
@@ -22654,7 +22654,7 @@ const archetypes = [
     {
         name: 'Rescue',
         description: 'A series of Spell Cards that Special Summon Level 4 or lower monsters from the Deck, featuring powerful swarming and resource generation through rescue operations.',
-        filepath: 'Rescue Deck Analysis.html',
+        filepath: 'pages/Rescue Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="rescueGrad" cx="50%" cy="50%" r="50%">
@@ -22676,7 +22676,7 @@ const archetypes = [
     {
         name: 'Relinquished',
         description: 'A Spellcaster archetype that relinquishes control to seize opponents\' monsters with eye-based magic.',
-        filepath: 'Relinquished Deck Analysis.html',
+        filepath: 'pages/Relinquished Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="relinquishedAura" cx="50%" cy="50%" r="60%">
@@ -22719,7 +22719,7 @@ const archetypes = [
     {
         name: 'Reptiliane',
         description: 'A Reptile archetype that slithers with venomous snakes for stealthy control and disruption.',
-        filepath: 'Reptiliane Deck Analysis.html',
+        filepath: 'pages/Reptiliane Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="reptilianeAura" cx="50%" cy="50%" r="60%">
@@ -22762,7 +22762,7 @@ const archetypes = [
     {
         name: 'Rescue ACE',
         description: 'A Machine archetype that rescues and transforms Normal Monsters into powerful allies for heroic plays.',
-        filepath: 'Rescue ACE Deck Analysis.html',
+        filepath: 'pages/Rescue ACE Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="rescueAceAura" cx="50%" cy="50%" r="60%">
@@ -22805,7 +22805,7 @@ const archetypes = [
     {
         name: 'Rikka',
         description: 'A Plant archetype that blooms with lily-powered summons for graceful control and disruption.',
-        filepath: 'Rikka Deck Analysis.html',
+        filepath: 'pages/Rikka Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="rikkaAura" cx="50%" cy="50%" r="60%">
@@ -22848,7 +22848,7 @@ const archetypes = [
     {
         name: 'Ritual Art',
         description: 'Generic Ritual support cards that use the Main Deck as a resource, featuring Advanced Ritual Art, High Ritual Art, and Urgent Ritual Art for powerful Normal Monster-based strategies.',
-        filepath: 'Ritual Art Deck Analysis.html',
+        filepath: 'pages/Ritual Art Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ritualArtAura" cx="50%" cy="50%" r="60%">
@@ -22892,7 +22892,7 @@ const archetypes = [
     {
         name: 'Ritual Beast',
         description: 'A Beast-Warrior archetype that performs rituals to unleash powerful fusions for dominant control.',
-        filepath: 'Ritual Beast Deck Analysis.html',
+        filepath: 'pages/Ritual Beast Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ritualBeastAura" cx="50%" cy="50%" r="60%">
@@ -22935,7 +22935,7 @@ const archetypes = [
     {
         name: 'Risebell',
         description: 'A cosmic archetype that rises through the stars with bell-ringing summons, featuring powerful Synchro and Xyz monsters that manipulate the field with celestial energy.',
-        filepath: 'Risebell Deck Analysis.html',
+        filepath: 'pages/Risebell Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="risebellGrad" cx="50%" cy="50%" r="50%">
@@ -22957,7 +22957,7 @@ const archetypes = [
     {
         name: 'Roid',
         description: 'A Machine archetype that revs up with vehicle-powered summons for high-speed control and disruption.',
-        filepath: 'Roid deck Analysis.html',
+        filepath: 'pages/Roid deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="roidAura" cx="50%" cy="50%" r="60%">
@@ -23000,7 +23000,7 @@ const archetypes = [
     {
         name: 'Rokket',
         description: 'A Dragon archetype that launches rocket-powered assaults for explosive control and disruption.',
-        filepath: 'Rokket Deck Analysis.html',
+        filepath: 'pages/Rokket Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="rokketAura" cx="50%" cy="50%" r="60%">
@@ -23043,7 +23043,7 @@ const archetypes = [
     {
         name: 'Runick',
         description: 'A Fairy archetype that inscribes runes for spell-based control and mystical disruption.',
-        filepath: 'Runick Deck Analysis.html',
+        filepath: 'pages/Runick Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="runickAura" cx="50%" cy="50%" r="60%">
@@ -23086,7 +23086,7 @@ const archetypes = [
     {
         name: 'Royal',
         description: 'A series of face-up Spell/Trap Cards that manipulate the field with royal authority, featuring powerful control effects and strategic positioning through king, queen, and jack mechanics.',
-        filepath: 'Royal Deck Analysis.html',
+        filepath: 'pages/Royal Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="royalGrad" cx="50%" cy="50%" r="50%">
@@ -23108,7 +23108,7 @@ const archetypes = [
     {
         name: 'Rose Dragon',
         description: 'A Dragon archetype that blooms with rose-powered summons for thorny control and disruption.',
-        filepath: 'Rose Dragon Deck Analysis.html',
+        filepath: 'pages/Rose Dragon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="roseDragonAura" cx="50%" cy="50%" r="60%">
@@ -23151,7 +23151,7 @@ const archetypes = [
     {
         name: 'Ryu-Ge',
         description: 'A Dragon archetype that channels ancient ryu powers for mystical control and disruption.',
-        filepath: 'Ryuge Deck Analysis.html',
+        filepath: 'pages/Ryuge Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ryugeAura" cx="50%" cy="50%" r="60%">
@@ -23194,7 +23194,7 @@ const archetypes = [
     {
         name: 'Ryzeal',
         description: 'A Dragon archetype that harnesses celestial ryzeal energies for divine control and disruption.',
-        filepath: 'Ryzeal Deck Analysis.html',
+        filepath: 'pages/Ryzeal Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ryzealAura" cx="50%" cy="50%" r="60%">
@@ -23237,7 +23237,7 @@ const archetypes = [
     {
         name: 'Red-Eyes',
         description: 'A Dragon archetype that unleashes fiery red-eyed fury for aggressive control and disruption.',
-        filepath: 'Red-Eyes Deck Analysis.html',
+        filepath: 'pages/Red-Eyes Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="redEyesAura" cx="50%" cy="50%" r="60%">
@@ -23280,7 +23280,7 @@ const archetypes = [
     {
         name: 'S-Force',
         description: 'A Machine archetype that deploys security forces for tactical control and disruption.',
-        filepath: 'S-Force Deck Analysis.html',
+        filepath: 'pages/S-Force Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sForceAura" cx="50%" cy="50%" r="60%">
@@ -23323,7 +23323,7 @@ const archetypes = [
     {
         name: 'Sasuke',
         description: 'A samurai archetype featuring the legendary ninja Sasuke with powerful Synchro and Xyz monsters, focusing on stealthy tactics and precise strikes in battle.',
-        filepath: 'Sasuke Deck Analysis.html',
+        filepath: 'pages/Sasuke Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sasukeGrad" cx="50%" cy="50%" r="50%">
@@ -23345,7 +23345,7 @@ const archetypes = [
     {
         name: 'Scareclaw',
         description: 'A Beast-Warrior archetype that frightens opponents with scarecrow tactics for defensive control.',
-        filepath: 'Scareclaw Deck Analysis.html',
+        filepath: 'pages/Scareclaw Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="scareclawAura" cx="50%" cy="50%" r="60%">
@@ -23388,7 +23388,7 @@ const archetypes = [
     {
         name: 'X-saber',
         description: 'A Warrior archetype that wields sabers for swift strikes and tactical control.',
-        filepath: 'X-saber Deck Analysis.html',
+        filepath: 'pages/X-saber Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="xSaberAura" cx="50%" cy="50%" r="60%">
@@ -23431,7 +23431,7 @@ const archetypes = [
     {
         name: 'Shark',
         description: 'A Fish archetype that dominates the waters with shark-like ferocity for aggressive control.',
-        filepath: 'Shark Deck Analysis.html',
+        filepath: 'pages/Shark Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sharkAura" cx="50%" cy="50%" r="60%">
@@ -23474,7 +23474,7 @@ const archetypes = [
     {
         name: 'Shining Sarcophagus',
         description: 'An ancient Egyptian archetype featuring sarcophagi that contain powerful monsters, focusing on excavation and revival mechanics with golden treasures and pharaoh-like summons.',
-        filepath: 'Shining Sarcophagus Deck Analysis.html',
+        filepath: 'pages/Shining Sarcophagus Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sarcophagusGrad" cx="50%" cy="50%" r="50%">
@@ -23495,7 +23495,7 @@ const archetypes = [
     {
         name: 'Shinobird',
         description: 'A WIND Spirit-Ritual archetype that combines going-first combo potential with powerful board-breaking abilities, featuring Winged-Beast Ritual monsters that return to the hand.',
-        filepath: 'Shinobird Deck Analysis.html',
+        filepath: 'pages/Shinobird Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="shinobird-spirit-grad" cx="0.3" cy="0.3">
@@ -23579,7 +23579,7 @@ const archetypes = [
     {
         name: 'Shiranui',
         description: 'A Zombie archetype that haunts the field with shiranui spirits for undead control and revival.',
-        filepath: 'Shiranui Deck Analysis.html',
+        filepath: 'pages/Shiranui Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="shiranuiAura" cx="50%" cy="50%" r="60%">
@@ -23622,7 +23622,7 @@ const archetypes = [
     {
         name: 'Simorgh',
         description: 'A Winged Beast archetype that soars with simorgh majesty for legendary control and disruption.',
-        filepath: 'Simorgh Deck Analysis.html',
+        filepath: 'pages/Simorgh Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="simorghAura" cx="50%" cy="50%" r="60%">
@@ -23665,7 +23665,7 @@ const archetypes = [
     {
         name: 'Signer Dragon',
         description: 'A Dragon archetype featuring the legendary Signer Dragons that protect the world from darkness, focusing on powerful Synchro and Xyz summoning with cosmic energy and crimson markings.',
-        filepath: 'Signer Dragon Deck Analysis.html',
+        filepath: 'pages/Signer Dragon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="signerGrad" cx="50%" cy="50%" r="50%">
@@ -23687,7 +23687,7 @@ const archetypes = [
     {
         name: 'Six Samurai',
         description: 'A Warrior archetype that unites the six samurai for honorable combat and strategic control.',
-        filepath: 'Six Samurai Deck Analysis.html',
+        filepath: 'pages/Six Samurai Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sixSamuraiAura" cx="50%" cy="50%" r="60%">
@@ -23730,7 +23730,7 @@ const archetypes = [
     {
         name: 'Skyblaster',
         description: 'A Machine archetype that blasts from the skies with aerial assaults for explosive control.',
-        filepath: 'Skyblaster Deck Analysis.html',
+        filepath: 'pages/Skyblaster Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="skyblasterAura" cx="50%" cy="50%" r="60%">
@@ -23774,7 +23774,7 @@ const archetypes = [
     {
         name: 'Sky Striker',
         description: 'A Machine archetype that strikes from the skies with aerial precision for tactical control.',
-        filepath: 'Sky Striker Deck Analysis.html',
+        filepath: 'pages/Sky Striker Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="skyStrikerGradient" cx="50%" cy="50%" r="50%">
@@ -23810,7 +23810,7 @@ const archetypes = [
     {
         name: 'Snake-Eyes',
         description: 'A FIRE archetype featuring explosive monsters and traps for high-risk, high-reward plays.',
-        filepath: 'Snake-Eyes Deck Analysis.html',
+        filepath: 'pages/Snake-Eyes Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="snakeEyesGradient" cx="50%" cy="50%" r="50%">
@@ -23849,7 +23849,7 @@ const archetypes = [
     {
         name: 'Skilled Magician',
         description: 'A Spellcaster archetype featuring skilled magicians who manipulate spell counters and perform complex magical rituals, focusing on precise timing and powerful spell-based effects.',
-        filepath: 'Skilled Magician Deck Analysis.html',
+        filepath: 'pages/Skilled Magician Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="magicianGrad" cx="50%" cy="50%" r="50%">
@@ -23871,7 +23871,7 @@ const archetypes = [
     {
         name: 'Skull Servant',
         description: 'A Zombie archetype that specializes in milling cards to the Graveyard to swarm the field with low-level Zombie monsters, featuring powerful boss monsters like King of the Skull Servants.',
-        filepath: 'Skull Servant Deck Analysis.html',
+        filepath: 'pages/Skull Servant Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                 <radialGradient id="skullGrad" cx="50%" cy="50%" r="50%">
@@ -23894,7 +23894,7 @@ const archetypes = [
     {
         name: 'Sky Scourge',
         description: 'A LIGHT archetype that focuses on milling cards to the Graveyard to enable powerful effects and combos, featuring monsters that gain power when sent to the Graveyard.',
-        filepath: 'Sky Scourge Deck Analysis.html',
+        filepath: 'pages/Sky Scourge Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="skyScourgeGrad" cx="50%" cy="50%" r="50%">
@@ -23918,7 +23918,7 @@ const archetypes = [
     {
         name: 'Skyscraper',
         description: 'An archetype focused on building tall structures and overwhelming opponents with height-based strategies.',
-        filepath: 'Skyscraper Deck Analysis.html',
+        filepath: 'pages/Skyscraper Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="skyscraperGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -23960,7 +23960,7 @@ const archetypes = [
     {
         name: 'Sphinx',
         description: 'An ancient archetype invoking mystical powers and riddles for strategic control.',
-        filepath: 'Sphinx Deck Analysis.html',
+        filepath: 'pages/Sphinx Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sphinxGradient" cx="50%" cy="50%" r="50%">
@@ -23997,7 +23997,7 @@ const archetypes = [
     {
         name: 'Scrap',
         description: 'A Machine archetype that recycles and repurposes monsters for explosive comebacks.',
-        filepath: 'Scrap Deck Analysis.html',
+        filepath: 'pages/Scrap Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="scrapGradient" cx="50%" cy="50%" r="50%">
@@ -24035,7 +24035,7 @@ const archetypes = [
     {
         name: 'Spider',
         description: 'An Insect archetype featuring venomous spiders that weave webs of control and disruption, focusing on swarming tactics and poisonous effects that debilitate opponents.',
-        filepath: 'Spider Deck Analysis.html',
+        filepath: 'pages/Spider Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="spiderGrad" cx="50%" cy="50%" r="50%">
@@ -24059,7 +24059,7 @@ const archetypes = [
     {
         name: 'Spirit message',
         description: 'A mystical archetype that communicates with spirits for ethereal strategies and returns.',
-        filepath: 'Spirit message Deck Analysis.html',
+        filepath: 'pages/Spirit message Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="spiritMessageGradient" cx="50%" cy="50%" r="50%">
@@ -24099,7 +24099,7 @@ const archetypes = [
     {
         name: 'Spirit monster',
         description: 'A mystical archetype featuring ethereal spirit monsters that return to the hand during the End Phase, focusing on timing-based strategies and spiritual summoning mechanics.',
-        filepath: 'Spirit monster Deck Analysis.html',
+        filepath: 'pages/Spirit monster Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="spiritGrad" cx="50%" cy="50%" r="50%">
@@ -24123,7 +24123,7 @@ const archetypes = [
     {
         name: 'Solfachord',
         description: 'A musical archetype that harmonizes melodies and chords for symphony-like strategies.',
-        filepath: 'Solfachord Deck Analysis.html',
+        filepath: 'pages/Solfachord Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="solfachordGradient" cx="50%" cy="50%" r="50%">
@@ -24163,7 +24163,7 @@ const archetypes = [
     {
         name: 'Spright',
         description: 'A fairy-like archetype that sprouts and swarms with Level 2 monsters for agile strategies.',
-        filepath: 'Spright Deck Analysis.html',
+        filepath: 'pages/Spright Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sprightGradient" cx="50%" cy="50%" r="50%">
@@ -24204,7 +24204,7 @@ const archetypes = [
     {
         name: 'Springans',
         description: 'A spring-loaded archetype that bounces back with mechanical precision and explosive traps.',
-        filepath: 'Springans Deck Analysis.html',
+        filepath: 'pages/Springans Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="springansGradient" cx="50%" cy="50%" r="50%">
@@ -24241,7 +24241,7 @@ const archetypes = [
     {
         name: 'SPYRAL',
         description: 'A covert archetype of agents and gadgets that infiltrates and disrupts with stealthy tactics.',
-        filepath: 'SPYRAL Deck Analysis.html',
+        filepath: 'pages/SPYRAL Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="spyralGradient" cx="50%" cy="50%" r="50%">
@@ -24282,7 +24282,7 @@ const archetypes = [
     {
         name: 'Star Seraph',
         description: 'A celestial LIGHT Fairy archetype that shines with angelic power and divine interventions.',
-        filepath: 'Star Seraph Deck Analysis.html',
+        filepath: 'pages/Star Seraph Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="starSeraphGradient" cx="50%" cy="50%" r="50%">
@@ -24318,7 +24318,7 @@ const archetypes = [
     {
         name: 'Star Warrior',
         description: 'A cosmic Warrior archetype featuring star-powered warriors that harness celestial energy, focusing on Synchro and Xyz summoning with stellar combat strategies.',
-        filepath: 'Star Warrior Deck Analysis.html',
+        filepath: 'pages/Star Warrior Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="starWarriorGrad" cx="50%" cy="50%" r="50%">
@@ -24341,7 +24341,7 @@ const archetypes = [
     {
         name: 'Stardust',
         description: 'A cosmic Dragon archetype that evolves through Synchro summoning for stellar control.',
-        filepath: 'Stardust Deck Analysis.html',
+        filepath: 'pages/Stardust Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="stardustGradient" cx="50%" cy="50%" r="50%">
@@ -24378,7 +24378,7 @@ const archetypes = [
     {
         name: "Slifer the Sky Dragon",
         description: "A divine Egyptian God archetype featuring the legendary Slifer the Sky Dragon, focusing on high ATK stats and divine effects that scale with the number of cards in hand for overwhelming power.",
-        filepath: "Slifer the Sky Dragon Deck Analysis.html",
+        filepath: "pages/Slifer the Sky Dragon Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sliferGradient" cx="50%" cy="50%" r="50%">
@@ -24404,7 +24404,7 @@ const archetypes = [
     {
         name: 'Sunavalon',
         description: 'A radiant Plant archetype that blooms with solar energy for flourishing strategies.',
-        filepath: 'Sunavalon Deck Analysis.html',
+        filepath: 'pages/Sunavalon Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sunavalonGradient" cx="50%" cy="50%" r="50%">
@@ -24441,7 +24441,7 @@ const archetypes = [
     {
         name: 'Super Defence Robot',
         description: 'A fortified Machine archetype that defends with robotic resilience and strategic barriers.',
-        filepath: 'Super Defence Robot Deck Analysis.html',
+        filepath: 'pages/Super Defence Robot Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="superDefenceRobotGradient" cx="50%" cy="50%" r="50%">
@@ -24480,7 +24480,7 @@ const archetypes = [
     {
         name: 'Subterror',
         description: 'An subterranean EARTH archetype that ambushes from below with Flip effects and traps.',
-        filepath: 'Subterror Deck Analysis.html',
+        filepath: 'pages/Subterror Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="subterrorGradient" cx="50%" cy="50%" r="50%">
@@ -24517,7 +24517,7 @@ const archetypes = [
     {
         name: 'Super Quant',
         description: 'A quantum Machine archetype that manipulates probabilities for unpredictable strategies.',
-        filepath: 'Super Quant Deck analysis.html',
+        filepath: 'pages/Super Quant Deck analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="superQuantGradient" cx="50%" cy="50%" r="50%">
@@ -24557,7 +24557,7 @@ const archetypes = [
     {
         name: 'Swordsoul',
         description: 'A mystical Wyrm archetype that wields swords infused with spiritual energy for synergistic plays.',
-        filepath: 'Swordsoul Deck Analysis.html',
+        filepath: 'pages/Swordsoul Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="swordsoulGradient" cx="50%" cy="50%" r="50%">
@@ -24594,7 +24594,7 @@ const archetypes = [
     {
         name: 'Superheavy Samurai',
         description: 'A armored Machine archetype that charges with heavy weaponry for defensive offensives.',
-        filepath: 'Superheavy Samurai Deck Analysis.html',
+        filepath: 'pages/Superheavy Samurai Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="superheavySamuraiGradient" cx="50%" cy="50%" r="50%">
@@ -24634,7 +24634,7 @@ const archetypes = [
     {
         name: 'Sylvan',
         description: 'A woodland Plant archetype that excavates and grows with excavating strategies.',
-        filepath: 'Sylvan Deck Analyis.html',
+        filepath: 'pages/Sylvan Deck Analyis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sylvanGradient" cx="50%" cy="50%" r="50%">
@@ -24671,7 +24671,7 @@ const archetypes = [
     {
         name: 'Synchron',
         description: 'A pioneering Machine archetype that synchronizes Tuner and non-Tuner monsters for Synchro summons.',
-        filepath: 'Synchron Deck Analysis.html',
+        filepath: 'pages/Synchron Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="synchronGradient" cx="50%" cy="50%" r="50%">
@@ -24710,7 +24710,7 @@ const archetypes = [
     {
         name: 'T.G.',
         description: 'A futuristic Machine archetype that accelerates Synchro summoning with high-speed tech gadgets.',
-        filepath: 'T.G. Deck Analysis.html',
+        filepath: 'pages/T.G. Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="tgGradient" cx="50%" cy="50%" r="50%">
@@ -24750,7 +24750,7 @@ const archetypes = [
     {
         name: 'Tearlaments',
         description: 'A sorrowful Aqua archetype that mills and fuses for emotional comebacks.',
-        filepath: 'Tearlaments Deck Analysis.html',
+        filepath: 'pages/Tearlaments Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="tearlamentsGradient" cx="50%" cy="50%" r="50%">
@@ -24787,7 +24787,7 @@ const archetypes = [
     {
         name: 'Tenyi',
         description: 'A spiritual Wyrm archetype that summons dragons through non-Effect Monster strategies.',
-        filepath: 'Tenyi Deck Analysis.html',
+        filepath: 'pages/Tenyi Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="tenyiGradient" cx="50%" cy="50%" r="50%">
@@ -24823,7 +24823,7 @@ const archetypes = [
     {
         name: 'The Weather',
         description: 'A meteorological Aqua archetype that controls the battlefield with weather-altering effects.',
-        filepath: 'The Weather Deck Analysis.html',
+        filepath: 'pages/The Weather Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="theWeatherGradient" cx="50%" cy="50%" r="50%">
@@ -24862,7 +24862,7 @@ const archetypes = [
     {
         name: 'The Agents',
         description: 'A covert LIGHT archetype that infiltrates and disrupts with agent-like precision.',
-        filepath: 'The Agents Deck Analysis.html',
+        filepath: 'pages/The Agents Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="theAgentsGradient" cx="50%" cy="50%" r="50%">
@@ -24901,7 +24901,7 @@ const archetypes = [
     {
         name: 'Three Musketeers',
         description: 'A legendary archetype featuring three powerful musketeers that unite their strength, utilizing fusion and equip mechanics to create devastating combinations and overwhelming battlefield presence.',
-        filepath: 'Three Musketeers Deck Analysis.html',
+        filepath: 'pages/Three Musketeers Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="threeMusketeersGrad" cx="50%" cy="50%" r="50%">
@@ -24925,7 +24925,7 @@ const archetypes = [
     {
         name: 'Temple of the Kings',
         description: 'An ancient Egyptian archetype centered around the mystical Temple of the Kings, utilizing trap cards and revival mechanics to build powerful combos and control the battlefield.',
-        filepath: 'Temple of the Kings Deck Analysis.html',
+        filepath: 'pages/Temple of the Kings Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="templeKingsGrad" cx="50%" cy="50%" r="50%">
@@ -24949,7 +24949,7 @@ const archetypes = [
     {
         name: 'Stygian',
         description: 'A dark underworld archetype featuring Stygian monsters that dwell in the depths, focusing on banishment mechanics and hellish summoning strategies.',
-        filepath: 'Stygian Deck Analysis.html',
+        filepath: 'pages/Stygian Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="stygianGrad" cx="50%" cy="50%" r="50%">
@@ -24973,7 +24973,7 @@ const archetypes = [
     {
         name: 'Supreme King',
         description: 'A regal and powerful archetype featuring Supreme King monsters that command dominion over the battlefield, utilizing banishment and revival mechanics for strategic supremacy.',
-        filepath: 'Supreme King Deck Analysis.html',
+        filepath: 'pages/Supreme King Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="supremeKingGrad" cx="50%" cy="50%" r="50%">
@@ -24997,7 +24997,7 @@ const archetypes = [
     {
         name: 'Starry Knight',
         description: 'A celestial LIGHT archetype that knights the stars for divine summons.',
-        filepath: 'Starry Knight Deck Analysis.html',
+        filepath: 'pages/Starry Knight Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="starryKnightGradient" cx="50%" cy="50%" r="50%">
@@ -25034,7 +25034,7 @@ const archetypes = [
     {
         name: 'Stealth Kragen',
         description: 'A stealthy archetype that ambushes with kragen-like creatures.',
-        filepath: 'Stealth Kragen Deck Analysis.html',
+        filepath: 'pages/Stealth Kragen Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="stealthKragenGradient" cx="50%" cy="50%" r="50%">
@@ -25073,7 +25073,7 @@ const archetypes = [
     {
         name: 'Symphonic Warrior',
         description: 'A harmonious archetype that orchestrates warriors in symphonic battles.',
-        filepath: 'Symphonic Warrior Deck Analysis.html',
+        filepath: 'pages/Symphonic Warrior Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="symphonicWarriorGradient" cx="50%" cy="50%" r="50%">
@@ -25112,7 +25112,7 @@ const archetypes = [
     {
         name: 'Tenpai Dragon',
         description: 'A dragon archetype that tenpais the field with powerful dragon summons.',
-        filepath: 'Tenpai Dragon Deck Analysis.html',
+        filepath: 'pages/Tenpai Dragon Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="tenpaiDragonGradient" cx="50%" cy="50%" r="50%">
@@ -25151,7 +25151,7 @@ const archetypes = [
     {
         name: 'Therion',
         description: 'A therion archetype that evolves through fusion for monstrous power.',
-        filepath: 'Therion Deck Analysis.html',
+        filepath: 'pages/Therion Deck Analysis.html',
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="therionGradient" cx="50%" cy="50%" r="50%">
@@ -25189,7 +25189,7 @@ const archetypes = [
     {
         name: "Thunder Dragon",
         description: "A deck centered around Thunder Dragon monsters that can swarm the field with powerful dragons through their effects and fusion summoning.",
-        filepath: "Thunder Dragon Deck Analysis.html",
+        filepath: "pages/Thunder Dragon Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="thunderGradient" cx="50%" cy="50%" r="50%">
@@ -25219,7 +25219,7 @@ const archetypes = [
     {
         name: "Time Thief",
         description: "A deck that manipulates time through Pendulum summoning and effects that steal turns or accelerate plays, featuring thief-like monsters with time-themed abilities.",
-        filepath: "Time Thief Deck Analysis.html",
+        filepath: "pages/Time Thief Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="timeGradient" cx="50%" cy="50%" r="50%">
@@ -25251,7 +25251,7 @@ const archetypes = [
     {
         name: "Timelord",
         description: "A deck featuring immortal Timelord monsters that cannot be destroyed by battle or card effects, with powerful effects that activate over time.",
-        filepath: "Timelord Deck Analysis.html",
+        filepath: "pages/Timelord Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="timelordGradient" cx="50%" cy="50%" r="50%">
@@ -25278,7 +25278,7 @@ const archetypes = [
     {
         name: "Tistina",
         description: "A deck featuring mermaid-like monsters that can manipulate the field with their water-based effects and special summoning capabilities.",
-        filepath: "Tistina Deck Analysis.html",
+        filepath: "pages/Tistina Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="tistinaGradient" cx="50%" cy="50%" r="50%">
@@ -25306,7 +25306,7 @@ const archetypes = [
     {
         name: "Traptrix",
         description: "A deck featuring insect-like monsters that excel at setting traps and using Hole Normal Traps to control the field and disrupt opponents.",
-        filepath: "Traptrix Deck Analysis.html",
+        filepath: "pages/Traptrix Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="traptrixGradient" cx="50%" cy="50%" r="50%">
@@ -25334,7 +25334,7 @@ const archetypes = [
     {
         name: "Toon",
         description: "A deck featuring cartoon-like monsters that require Toon World to be active, offering powerful effects and protection through their whimsical theme.",
-        filepath: "Toon Deck Analysis.html",
+        filepath: "pages/Toon Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="toonGradient" cx="50%" cy="50%" r="50%">
@@ -25362,7 +25362,7 @@ const archetypes = [
     {
         name: "Trickstar",
         description: "A deck featuring fairy-like monsters that excel at Link summoning and dealing burn damage through their magical effects and trickster abilities.",
-        filepath: "Trickstar Deck Analysis.html",
+        filepath: "pages/Trickstar Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="trickstarGradient" cx="50%" cy="50%" r="50%">
@@ -25390,7 +25390,7 @@ const archetypes = [
     {
         name: "Toy",
         description: "A deck featuring toy-like monsters that fuse with Edge Imp and Frightfur to create powerful Fusion monsters through their macabre toy themes.",
-        filepath: "Toy Deck Analysis.html",
+        filepath: "pages/Toy Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="toyGradient" cx="50%" cy="50%" r="50%">
@@ -25419,7 +25419,7 @@ const archetypes = [
     {
         name: "Tri-Brigade",
         description: "A deck featuring Beast, Beast-Warrior, and Winged Beast monsters that excel at Link summoning and banishing cards through their tribal synergy.",
-        filepath: "Tri-Brigade Deck Analysis.html",
+        filepath: "pages/Tri-Brigade Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="triBrigadeGradient" cx="50%" cy="50%" r="50%">
@@ -25449,7 +25449,7 @@ const archetypes = [
     {
         name: "Triamid",
         description: "A deck that utilizes powerful Field Spells to control the board, featuring pyramid and sphere monsters with ancient Egyptian themes.",
-        filepath: "Triamid Deck Analysis.html",
+        filepath: "pages/Triamid Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="triamidGradient" cx="50%" cy="50%" r="50%">
@@ -25476,7 +25476,7 @@ const archetypes = [
     {
         name: "True Draco",
         description: "A deck featuring dragon monsters that banish themselves to summon powerful True King monsters, combining draconic might with royal authority.",
-        filepath: "True King True Draco Deck Analysis.html",
+        filepath: "pages/True King True Draco Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="trueDracoGradient" cx="50%" cy="50%" r="50%">
@@ -25503,7 +25503,7 @@ const archetypes = [
     {
         name: "U.A.",
         description: "A deck featuring athletic Ultimate Athlete monsters that focus on high ATK stats and sports-themed effects for powerful beatdown strategies.",
-        filepath: "U.A. Deck Analysis.html",
+        filepath: "pages/U.A. Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="uaGradient" cx="50%" cy="50%" r="50%">
@@ -25529,7 +25529,7 @@ const archetypes = [
     {
         name: "Ultimate Insect",
         description: "A swarm-based archetype featuring powerful insect monsters that focus on metamorphosis and overwhelming numbers, utilizing special summoning mechanics to create formidable insect armies.",
-        filepath: "Ultimate Insect Deck Analysis.html",
+        filepath: "pages/Ultimate Insect Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ultimateInsectGrad" cx="50%" cy="50%" r="50%">
@@ -25554,7 +25554,7 @@ const archetypes = [
     {
         name: "Umi",
         description: "A control archetype centered around the Umi field spell, featuring WATER monsters that gain power from the field and utilize floodgates and disruption mechanics for strategic control.",
-        filepath: "Umi Deck Analysis.html",
+        filepath: "pages/Umi Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="umiGrad" cx="50%" cy="50%" r="50%">
@@ -25579,7 +25579,7 @@ const archetypes = [
     {
         name: "Ursartic",
         description: "A deck featuring powerful bear monsters that can transform and evolve, offering high ATK stats and synergistic effects for beatdown strategies.",
-        filepath: "Ursartic Deck Analysis.html",
+        filepath: "pages/Ursartic Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ursarticGradient" cx="50%" cy="50%" r="50%">
@@ -25608,7 +25608,7 @@ const archetypes = [
     {
         name: "Unchained",
         description: "A deck featuring fiend monsters that banish themselves to summon powerful Abominable Unchained souls, focusing on disruption and high-level summons.",
-        filepath: "Unchained Deck Analysis.html",
+        filepath: "pages/Unchained Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="unchainedGradient" cx="50%" cy="50%" r="50%">
@@ -25638,7 +25638,7 @@ const archetypes = [
     {
         name: "Utopia",
         description: "A deck featuring Number monsters that excel at Xyz summoning, using overlay units to unleash powerful effects and control the field.",
-        filepath: "Utopia Deck Analysis.html",
+        filepath: "pages/Utopia Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="utopiaGradient" cx="50%" cy="50%" r="50%">
@@ -25665,7 +25665,7 @@ const archetypes = [
     {
         name: "Valkyrie",
         description: "A deck featuring Nordic warrior monsters that focus on summoning powerful Valkyrie monsters and disrupting opponents with their effects.",
-        filepath: "Valkyrie Deck Analysis.html",
+        filepath: "pages/Valkyrie Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="valkyrieGradient" cx="50%" cy="50%" r="50%">
@@ -25692,7 +25692,7 @@ const archetypes = [
     {
         name: "Vampire",
         description: "A deck featuring vampire monsters that gain life points and control the field through their undead effects and special summoning capabilities.",
-        filepath: "Vampire Deck Analysis.html",
+        filepath: "pages/Vampire Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="vampireGradient" cx="50%" cy="50%" r="50%">
@@ -25720,7 +25720,7 @@ const archetypes = [
     {
         name: "Vaalmonica",
         description: "A deck featuring spellcaster monsters that utilize scales and pendulum effects to control the field and disrupt opponents with their musical abilities.",
-        filepath: "Vaalmonica Deck Analysis.html",
+        filepath: "pages/Vaalmonica Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="vaalmonicaGradient" cx="50%" cy="50%" r="50%">
@@ -25747,7 +25747,7 @@ const archetypes = [
     {
         name: "Veda",
         description: "A deck featuring ancient dragon monsters that excel at Pendulum summoning and field control through their wise and powerful effects.",
-        filepath: "Veda Deck Analysis.html",
+        filepath: "pages/Veda Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="vedaGradient" cx="50%" cy="50%" r="50%">
@@ -25774,7 +25774,7 @@ const archetypes = [
     {
         name: "Vanquish Soul",
         description: "A deck featuring warrior monsters that banish cards to special summon powerful Vanquish Soul monsters and control the duel with their heroic effects.",
-        filepath: "Vanquish Soul Deck Analysis.html",
+        filepath: "pages/Vanquish Soul Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="vanquishGradient" cx="50%" cy="50%" r="50%">
@@ -25801,7 +25801,7 @@ const archetypes = [
     {
         name: "Vaylantz",
         description: "A deck featuring World Legacy monsters that excel at Pendulum summoning and controlling the field through their ancient architectural effects.",
-        filepath: "Vaylantz Deck Analysis.html",
+        filepath: "pages/Vaylantz Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="vaylantzGradient" cx="50%" cy="50%" r="50%">
@@ -25828,7 +25828,7 @@ const archetypes = [
     {
         name: "Vendread",
         description: "A deck featuring zombie monsters that excel at Ritual summoning and controlling the field through their undead vampire-like effects.",
-        filepath: "Vendread Deck Analysis.html",
+        filepath: "pages/Vendread Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="vendreadGradient" cx="50%" cy="50%" r="50%">
@@ -25857,7 +25857,7 @@ const archetypes = [
     {
         name: "Venom",
         description: "A Reptile archetype from Yu-Gi-Oh! GX that uses Venom Counters to weaken and control opponents, featuring Vennominaga the Deity of Poisonous Snakes as an alternate win condition boss monster.",
-        filepath: "Venom Deck Analysis.html",
+        filepath: "pages/Venom Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="venomGradient" cx="50%" cy="50%" r="50%">
@@ -25890,7 +25890,7 @@ const archetypes = [
     {
         name: "Virtual World",
         description: "A deck featuring cyber monsters that excel at Pendulum summoning and controlling the field through their virtual reality effects and digital abilities.",
-        filepath: "Virtual World Deck Analysis.html",
+        filepath: "pages/Virtual World Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="virtualGradient" cx="50%" cy="50%" r="50%">
@@ -25917,7 +25917,7 @@ const archetypes = [
     {
         name: "Volcanic",
         description: "A deck featuring pyro monsters that excel at dealing burn damage and destroying cards through their explosive volcanic effects.",
-        filepath: "Volcanic Deck Analysis.html",
+        filepath: "pages/Volcanic Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="volcanicGradient" cx="50%" cy="50%" r="50%">
@@ -25944,7 +25944,7 @@ const archetypes = [
     {
         name: "Visas",
         description: "A deck featuring star monsters that excel at Pendulum summoning and controlling the field through their cosmic stellar effects.",
-        filepath: "Visas Deck Analysis.html",
+        filepath: "pages/Visas Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="visasGradient" cx="50%" cy="50%" r="50%">
@@ -25972,7 +25972,7 @@ const archetypes = [
     {
         name: "Vylon",
         description: "A deck featuring light monsters that excel at equipping powerful equipment cards and controlling the field through their holy light effects.",
-        filepath: "Vylon Deck Analysis.html",
+        filepath: "pages/Vylon Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="vylonGradient" cx="50%" cy="50%" r="50%">
@@ -25999,7 +25999,7 @@ const archetypes = [
     {
         name: "War Rock",
         description: "A deck featuring earth monsters that excel at Synchro summoning and controlling the field through their sturdy rock-based effects.",
-        filepath: "War Rock Deck Analysis.html",
+        filepath: "pages/War Rock Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="warRockGradient" cx="50%" cy="50%" r="50%">
@@ -26026,7 +26026,7 @@ const archetypes = [
     {
         name: "Watt",
         description: "A deck featuring light monsters that excel at dealing burn damage and controlling the field through their electric thunder effects.",
-        filepath: "Watt Deck Analysis.html",
+        filepath: "pages/Watt Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="wattGradient" cx="50%" cy="50%" r="50%">
@@ -26056,7 +26056,7 @@ const archetypes = [
     {
         name: "Water Dragon",
         description: "A WATER Dragon archetype featuring powerful dragon monsters that utilize floodgates and control mechanics, combining draconic power with strategic water-based disruption.",
-        filepath: "Water Dragon Deck Analysis.html",
+        filepath: "pages/Water Dragon Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="waterDragonGrad" cx="50%" cy="50%" r="50%">
@@ -26081,7 +26081,7 @@ const archetypes = [
     {
         name: "Warrior",
         description: "A high-synergy combo engine leveraging the most powerful generic support cards available to the Warrior type, focusing on Isolde and Noble Knights for immense card advantage.",
-        filepath: "Warrior Deck Analysis.html",
+        filepath: "pages/Warrior Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="warriorGradient" cx="50%" cy="50%" r="50%">
@@ -26115,7 +26115,7 @@ const archetypes = [
     {
         name: "Warrior Lady",
         description: "A warrior archetype featuring female warriors that utilize battle position manipulation, ATK boosting effects, and strategic combat mechanics to dominate the battlefield.",
-        filepath: "Warrior Lady Deck Analysis.html",
+        filepath: "pages/Warrior Lady Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="warriorLadyGrad" cx="50%" cy="50%" r="50%">
@@ -26140,7 +26140,7 @@ const archetypes = [
     {
         name: "Windwitch",
         description: "A wind-attribute archetype featuring witches that excel at spell/trap control, field manipulation, and summoning through their mystical effects.",
-        filepath: "Windwitch Deck analysis.html",
+        filepath: "pages/Windwitch Deck analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="windwitchGradient" cx="50%" cy="50%" r="50%">
@@ -26173,7 +26173,7 @@ const archetypes = [
     {
         name: "Wind-up",
         description: "A mechanical archetype featuring wind-up toys that excel at swarming the field with low-level monsters and performing Synchro climbs for powerful bosses.",
-        filepath: "Wind-up Deck Analysis.html",
+        filepath: "pages/Wind-up Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="windupGradient" cx="50%" cy="50%" r="50%">
@@ -26208,7 +26208,7 @@ const archetypes = [
     {
         name: "Winged Dragon of Ra",
         description: "A divine Egyptian God archetype featuring the legendary Winged Dragon of Ra, focusing on ATK manipulation and divine effects that scale with tributes for god-like power and resurrection.",
-        filepath: "Winged Dragon of Ra Deck Analysis.html",
+        filepath: "pages/Winged Dragon of Ra Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="raGradient" cx="50%" cy="50%" r="50%">
@@ -26235,7 +26235,7 @@ const archetypes = [
     {
         name: "Witchcrafter",
         description: "A spellcaster archetype featuring witches that craft powerful spells and monsters through mystical rituals, focusing on spell/trap synergy and boss summoning.",
-        filepath: "Witchcrafter Deck Analysis.html",
+        filepath: "pages/Witchcrafter Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="witchcrafterGradient" cx="50%" cy="50%" r="50%">
@@ -26273,7 +26273,7 @@ const archetypes = [
     {
         name: "Wicked Gods",
         description: "A dark archetype featuring powerful god-like monsters that require tribute mechanics and utilize banishing effects, commanding immense power through sacrificial rituals and divine authority.",
-        filepath: "Wicked Gods Deck Analysis.html",
+        filepath: "pages/Wicked Gods Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="wickedGodsGrad" cx="50%" cy="50%" r="50%">
@@ -26298,7 +26298,7 @@ const archetypes = [
     {
         name: "World Chalice",
         description: "A world-themed archetype featuring chalices that manipulate the field, banish cards, and summon powerful monsters through their mystical world-altering effects.",
-        filepath: "World Chalice Deck Analysis.html",
+        filepath: "pages/World Chalice Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="worldchaliceGradient" cx="50%" cy="50%" r="50%">
@@ -26337,7 +26337,7 @@ const archetypes = [
     {
         name: "Worm",
         description: "An earth-attribute archetype featuring worms that excel at swarming the field, recursion from the graveyard, and Synchro climbing through their tunneling effects.",
-        filepath: "Worm Deck Analysis.html",
+        filepath: "pages/Worm Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="wormGradient" cx="50%" cy="50%" r="50%">
@@ -26371,7 +26371,7 @@ const archetypes = [
     {
         name: "Yosenju",
         description: "A wind-attribute archetype featuring spirit foxes that excel at bouncing cards back to hand, swarming the field, and performing Synchro climbs.",
-        filepath: "Yosenju Deck Analysis.html",
+        filepath: "pages/Yosenju Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="yosenjuGradient" cx="50%" cy="50%" r="50%">
@@ -26409,7 +26409,7 @@ const archetypes = [
     {
         name: "Yokai Girl",
         description: "A supernatural archetype featuring Yokai Girl monsters that utilize hand trap mechanics, disruption effects, and mystical abilities to control the duel through strategic interference and banishing tactics.",
-        filepath: "Yokai Girl Deck Analysis.html",
+        filepath: "pages/Yokai Girl Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="yokaiGirlGrad" cx="50%" cy="50%" r="50%">
@@ -26434,7 +26434,7 @@ const archetypes = [
     {
         name: "Yang Zing",
         description: "A dragon archetype featuring Yang Zing monsters that excel at Synchro summoning, recycling tuners from the graveyard, and building powerful boards through their mystical effects.",
-        filepath: "Yang Zing Deck Analysis.html",
+        filepath: "pages/Yang Zing Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="yangzingGradient" cx="50%" cy="50%" r="50%">
@@ -26468,7 +26468,7 @@ const archetypes = [
     {
         name: "Zoodiac",
         description: "A beast archetype featuring Zoodiac monsters that excel at Xyz summoning, swarming with level 4 beasts, and building high-rank Xyz monsters through their zodiac-themed effects.",
-        filepath: "Zoodiac Deck analysis.html",
+        filepath: "pages/Zoodiac Deck analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="zoodiacGradient" cx="50%" cy="50%" r="50%">
@@ -26508,7 +26508,7 @@ const archetypes = [
     {
         name: "Yubel",
         description: "A fiend archetype featuring Yubel that excels at damage reflection, destruction immunity, and summoning powerful parasitic bosses through its dark effects.",
-        filepath: "Yubel Deck Analysis.html",
+        filepath: "pages/Yubel Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="yubelGradient" cx="50%" cy="50%" r="50%">
@@ -26548,7 +26548,7 @@ const archetypes = [
     {
         name: "Zefra",
         description: "A pendulum archetype featuring Zefra monsters that excel at pendulum summoning, banishing cards to fuel their effects, and building divine boards through their mystical rituals.",
-        filepath: "Zefra Deck Analysis.html",
+        filepath: "pages/Zefra Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="zefraGradient" cx="50%" cy="50%" r="50%">
@@ -26587,7 +26587,7 @@ const archetypes = [
     {
         name: "White Forest",
         description: "A plant archetype featuring White Forest monsters that excel at Synchro summoning, field control through level 8 Synchro monsters, and swarming with their snowy effects.",
-        filepath: "White Forest Deck Analysis.html",
+        filepath: "pages/White Forest Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="whiteforestGradient" cx="50%" cy="50%" r="50%">
@@ -26625,7 +26625,7 @@ const archetypes = [
     {
         name: "White Aura",
         description: "A mystical archetype featuring aura monsters that manipulate LIGHT and DARK attributes, utilizing powerful fusion mechanics and attribute-based effects for strategic control and disruption.",
-        filepath: "White Aura Deck Analysis.html",
+        filepath: "pages/White Aura Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="whiteAuraGrad" cx="50%" cy="50%" r="50%">
@@ -26650,7 +26650,7 @@ const archetypes = [
     {
         name: "Zubaba",
         description: "A warrior archetype featuring Zubaba monsters that excel at Xyz summoning, equipping powerful weapons, and building high-rank Xyz boards through their knightly effects.",
-        filepath: "Zubaba Deck Analysis.html",
+        filepath: "pages/Zubaba Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="zubabaGradient" cx="50%" cy="50%" r="50%">
@@ -26684,7 +26684,7 @@ const archetypes = [
     {
         name: "Obelisk the Tormentor",
         description: "A divine Egyptian God archetype featuring the legendary Obelisk the Tormentor, focusing on overwhelming ATK stats and divine effects that destroy all enemy monsters for absolute dominance.",
-        filepath: "Obelisk the Tormentor Deck Analysis.html",
+        filepath: "pages/Obelisk the Tormentor Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="obeliskGradient" cx="50%" cy="50%" r="50%">
@@ -26709,7 +26709,7 @@ const archetypes = [
     {
         name: "Onomat",
         description: "A beast archetype featuring Onomat monsters that excel at swarming the field, destroying cards, and Synchro summoning through their onomatopoeic sound effects.",
-        filepath: "Onomat Deck Analysis.html",
+        filepath: "pages/Onomat Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="onomatGradient" cx="50%" cy="50%" r="50%">
@@ -26751,7 +26751,7 @@ const archetypes = [
     {
         name: "Chimera",
         description: "A beast archetype featuring Chimera monsters that excel at fusion summoning, combining different monster types, and building powerful mythical fusion boards.",
-        filepath: "Chimera Deck Analysis.html",
+        filepath: "pages/Chimera Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="chimeraGradient" cx="50%" cy="50%" r="50%">
@@ -26793,7 +26793,7 @@ const archetypes = [
     {
         name: "Black Dinosaur",
         description: "A dinosaur archetype featuring black dinosaurs that excel at destruction, negation, and building powerful boards through their prehistoric effects.",
-        filepath: "Black Dinosaur Deck Analysis.html",
+        filepath: "pages/Black Dinosaur Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="blackdinoGradient" cx="50%" cy="50%" r="50%">
@@ -26838,7 +26838,7 @@ const archetypes = [
     {
         name: "Barrier Statue",
         description: "A series of cards that lock the opponent out of special summoning all but one Atrribute.",
-        filepath: "Barrier statue deck analysis.html",
+        filepath: "pages/Barrier statue deck analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="barrierGradient" cx="50%" cy="50%" r="50%">
@@ -26879,7 +26879,7 @@ const archetypes = [
     {
         name: "Coach",
         description: "A warrior archetype featuring coaches that excel at tutoring monsters, boosting stats, and supporting Synchro or Xyz plays.",
-        filepath: "Coach Deck Analysis.html",
+        filepath: "pages/Coach Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="coachGradient" cx="50%" cy="50%" r="50%">
@@ -26919,7 +26919,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Cosmic Dragon",
         description: "A dragon archetype featuring cosmic dragons that excel at Synchro summoning, banishing cards, and controlling the field with their cosmic effects.",
-        filepath: "Cosmic Dragon Deck Analysis.html",
+        filepath: "pages/Cosmic Dragon Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="cosmicGradient" cx="50%" cy="50%" r="50%">
@@ -26965,7 +26965,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Book",
         description: "A spellcaster archetype featuring books that excel at spell/trap control, searching, and building spell-heavy boards.",
-        filepath: "Book Deck Analysis.html",
+        filepath: "pages/Book Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="bookGradient" cx="50%" cy="50%" r="50%">
@@ -27003,7 +27003,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Chtonian Infernal",
         description: "A fiend archetype featuring infernal creatures that excel at destruction, burn damage, and controlling the field with their dark effects.",
-        filepath: "Chtonian Infernal Deck Analysis.html",
+        filepath: "pages/Chtonian Infernal Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="chthonianGradient" cx="50%" cy="50%" r="50%">
@@ -27050,7 +27050,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Adventure",
         description: "A warrior archetype featuring adventurers that excel at searching, swarming, and building boards through their exploratory effects.",
-        filepath: "Adventure Deck Analysis.html",
+        filepath: "pages/Adventure Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="adventureGradient" cx="50%" cy="50%" r="50%">
@@ -27090,7 +27090,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Charity",
         description: "A fairy archetype featuring charity creatures that excel at healing, protection, and supporting allies through their benevolent effects.",
-        filepath: "Charity Deck Analysis.html",
+        filepath: "pages/Charity Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="charityGradient" cx="50%" cy="50%" r="50%">
@@ -27133,7 +27133,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Ancient Fairy Dragon",
         description: "A dragon archetype featuring ancient fairy dragons that excel at field control, negation, and Synchro summoning through their mystical effects.",
-        filepath: "Ancient Fairy Dragon Deck Analysis.html",
+        filepath: "pages/Ancient Fairy Dragon Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ancientfairyGradient" cx="50%" cy="50%" r="50%">
@@ -27179,7 +27179,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Clear World",
         description: "A fiend archetype featuring clear world entities that excel at field control, negation, and manipulating the field through their world-altering effects.",
-        filepath: "Clear World Deck Analysis.html",
+        filepath: "pages/Clear World Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="clearworldGradient" cx="50%" cy="50%" r="50%">
@@ -27227,7 +27227,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Crashbug",
         description: "A machine archetype featuring crashbug monsters that excel at swarming the field, destroying cards, and Synchro summoning through their bug-like effects.",
-        filepath: "Crashbug Deck Analysis.html",
+        filepath: "pages/Crashbug Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="crashbugGradient" cx="50%" cy="50%" r="50%">
@@ -27275,7 +27275,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Cocoon of Evolution",
         description: "An archetype focused on insect evolution and summoning powerful monsters through cocoon stages.",
-        filepath: "Cocoon of Evolution Deck Analysis.html",
+        filepath: "pages/Cocoon of Evolution Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="cocoonGrad" cx="50%" cy="50%" r="50%">
@@ -27317,7 +27317,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "C Series",
         description: "An archetype centered around 'C' monsters, focusing on summoning and control strategies.",
-        filepath: "C Series Deck Analysis.html",
+        filepath: "pages/C Series Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="cGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -27361,7 +27361,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "P series",
         description: "An archetype featuring 'P' monsters, emphasizing photon and light-based strategies.",
-        filepath: "P series Deck Analysis.html",
+        filepath: "pages/P series Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="pGrad" cx="50%" cy="50%" r="50%">
@@ -27409,7 +27409,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Cyberse",
         description: "A digital archetype focused on cyber monsters and link summoning strategies.",
-        filepath: "Cyberse Deck Analysis.html",
+        filepath: "pages/Cyberse Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -27461,7 +27461,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "A-to-Z",
         description: "A dragon-focused archetype that builds from A to Z through fusion summoning.",
-        filepath: "A-to-Z Deck Analysis.html",
+        filepath: "pages/A-to-Z Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="azGrad" cx="50%" cy="50%" r="50%">
@@ -27514,7 +27514,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Cupid",
         description: "A fairy archetype centered on love and support effects with cupid-themed monsters.",
-        filepath: "Cupid Deck Analysis.html",
+        filepath: "pages/Cupid Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="cupidGrad" cx="50%" cy="50%" r="50%">
@@ -27563,7 +27563,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Anotherverse",
         description: "An archetype that explores alternate dimensions and summoning from other verses.",
-        filepath: "Anotherverse Deck Analysis.html",
+        filepath: "pages/Anotherverse Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="anotherGrad" cx="50%" cy="50%" r="50%">
@@ -27605,7 +27605,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Backup",
         description: "A small series of Cyberse support that focused on backup and reinforcement strategies.",
-        filepath: "Backup Deck Analysis.html",
+        filepath: "pages/Backup Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="backupGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -27644,7 +27644,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Cataclysmic",
         description: "An archetype embodying cataclysmic events and destructive forces.",
-        filepath: "Cataclysmic Deck Analysis.html",
+        filepath: "pages/Cataclysmic Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="catacGrad" cx="50%" cy="50%" r="50%">
@@ -27687,7 +27687,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Cicada",
         description: "An insect-based archetype featuring cicada monsters and swarm tactics.",
-        filepath: "Cicada Deck Analysis.html",
+        filepath: "pages/Cicada Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="cicadaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -27738,7 +27738,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Counter Fairy",
         description: "A fairy archetype specializing in counter traps and defensive plays.",
-        filepath: "Counter Fairy Deck Analysis.html",
+        filepath: "pages/Counter Fairy Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="counterGrad" cx="50%" cy="50%" r="50%">
@@ -27789,7 +27789,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Evol",
         description: "An archetype focused on evolution mechanics and summoning powerful evolved monsters through strategic card management and resource acceleration.",
-        filepath: "Evol Deck Analysis.html",
+        filepath: "pages/Evol Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="evolGrad" cx="50%" cy="50%" r="50%">
@@ -27825,7 +27825,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Exchange of the Spirit",
         description: "A deck centered around the powerful Exchange of the Spirit card, utilizing graveyard manipulation and deck thinning strategies for explosive plays.",
-        filepath: "Exchange of the Spirit Deck Analysis.html",
+        filepath: "pages/Exchange of the Spirit Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="exchangeGrad" cx="50%" cy="50%" r="50%">
@@ -27866,7 +27866,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Fallen of Albaz",
         description: "A fusion-based archetype centered around the Fallen of Albaz monster, focusing on fusion summoning and banishing mechanics for powerful board control and disruption.",
-        filepath: "Fallen of Albaz Deck Analysis.html",
+        filepath: "pages/Fallen of Albaz Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fallenGrad" cx="50%" cy="50%" r="50%">
@@ -27910,7 +27910,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Feral Imp",
         description: "A DARK Fiend archetype featuring powerful beatstick monsters and hand trap disruption, focusing on aggressive plays and graveyard recursion for consistent pressure.",
-        filepath: "Feral Imp Deck Analysis.html",
+        filepath: "pages/Feral Imp Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="feralGrad" cx="50%" cy="50%" r="50%">
@@ -27955,7 +27955,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Fleur",
         description: "A Plant archetype featuring powerful Synchro and Xyz monsters with banishing effects, focusing on resource management and explosive board presence through strategic summoning.",
-        filepath: "Fleur Deck Analysis.html",
+        filepath: "pages/Fleur Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fleurGrad" cx="50%" cy="50%" r="50%">
@@ -27999,7 +27999,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Flame Swordsman",
         description: "A FIRE Warrior archetype centered around the iconic Flame Swordsman monster, focusing on fusion summoning and burn damage strategies for aggressive control and field dominance.",
-        filepath: "Flame Swordsman Deck Analysis.html",
+        filepath: "pages/Flame Swordsman Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="flameGrad" cx="50%" cy="50%" r="50%">
@@ -28046,7 +28046,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Fairy Tale",
         description: "A LIGHT Fairy archetype featuring storybook-themed monsters and spell cards, focusing on field control and swarming strategies through narrative-based effects and fairy tale mechanics.",
-        filepath: "Fairy Tale Deck Analysis.html",
+        filepath: "pages/Fairy Tale Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fairyGrad" cx="50%" cy="50%" r="50%">
@@ -28101,7 +28101,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Felgrand",
         description: "A LIGHT Dragon archetype featuring powerful Dragon monsters with revival mechanics, focusing on graveyard recursion and high-level summoning strategies for explosive comebacks and field dominance.",
-        filepath: "Felgrand Deck Analysis.html",
+        filepath: "pages/Felgrand Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="felgrandGrad" cx="50%" cy="50%" r="50%">
@@ -28155,7 +28155,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "From the Underworld",
         description: "A DARK Fiend archetype featuring powerful monsters that banish themselves to the underworld for strategic advantage, focusing on graveyard setup and explosive summoning plays through underworld mechanics.",
-        filepath: "From the Underworld Deck Analysis.html",
+        filepath: "pages/From the Underworld Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="underworldGrad" cx="50%" cy="50%" r="50%">
@@ -28207,7 +28207,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Sacred Beast",
         description: "A DARK archetype featuring three legendary beasts—Uria, Hamon, and Raviel—that evolved from anime icons to a consistent control deck with modern support enabling efficient deployment and devastating OTK potential.",
-        filepath: "Sacred Beast Deck Analysis.html",
+        filepath: "pages/Sacred Beast Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="sacredBeastGrad" cx="50%" cy="50%" r="50%">
@@ -28238,7 +28238,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Salamangreat",
         description: "A deck analysis for the Salamangreat archetype.",
-        filepath: "Salamangreat Deck Analysis.html",
+        filepath: "pages/Salamangreat Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                         <radialGradient id="salamangreatGrad" cx="50%" cy="50%" r="50%">
@@ -28256,7 +28256,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Shaddol",
         description: "A deck analysis for the Shaddol archetype.",
-        filepath: "Shaddol Deck Analysis.html",
+        filepath: "pages/Shaddol Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                         <radialGradient id="shaddolGrad" cx="50%" cy="50%" r="50%">
@@ -28274,7 +28274,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Gorgonic",
         description: "A parasitic archetype focused on summoning Gorgonic Guardian for powerful control and disruption effects through petrification mechanics.",
-        filepath: "Gorgonic Deck Analysis.html",
+        filepath: "pages/Gorgonic Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                         <radialGradient id="gorgonicGrad" cx="50%" cy="50%" r="50%">
@@ -28292,7 +28292,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Gizmek",
         description: "A machine archetype centered around Gizmek Uro, focusing on high-level summons and control through mechanical synergies and token generation.",
-        filepath: "Gizmek Deck Analysis.html",
+        filepath: "pages/Gizmek Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                         <defs>
                                         <radialGradient id="gizmekGrad" cx="50%" cy="50%" r="50%">
@@ -28312,7 +28312,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Guardragon",
         description: "A dragon archetype that utilizes guard and dragon synergies to summon powerful monsters and control the field through strategic positioning and effects.",
-        filepath: "Guardragon Deck Analysis.html",
+        filepath: "pages/Guardragon Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="guardragonGrad" cx="50%" cy="50%" r="50%">
@@ -28330,7 +28330,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Grepher",
         description: "A small archetype centered around Grepher, utilizing fusion mechanics and graveyard effects for control and disruption through banishing and special summoning.",
-        filepath: "Grepher Deck Analysis.html",
+        filepath: "pages/Grepher Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="grepherGrad" cx="50%" cy="50%" r="50%">
@@ -28348,7 +28348,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Goyo",
         description: "A Synchro-focused archetype centered around Goyo Guardian, utilizing Level 6 Synchro mechanics for powerful field control and disruption through monster taking effects.",
-        filepath: "Goyo Deck Analysis.html",
+        filepath: "pages/Goyo Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="goyoGrad" cx="50%" cy="50%" r="50%">
@@ -28366,7 +28366,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Hand",
         description: "A small archetype featuring Hand monsters that support various strategies through hand manipulation and trap card synergies for control and disruption.",
-        filepath: "Hand Deck Analysis.html",
+        filepath: "pages/Hand Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="handGrad" cx="50%" cy="50%" r="50%">
@@ -28384,7 +28384,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Herald",
         description: "A Fairy archetype centered around Herald of Perfection, utilizing Spell and Trap card manipulation for powerful negation and control effects through heraldic summons.",
-        filepath: "Herald Deck Analysis.html",
+        filepath: "pages/Herald Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="heraldGrad" cx="50%" cy="50%" r="50%">
@@ -28402,7 +28402,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Helios",
         description: "A LIGHT archetype centered around Helios - The Primordial Sun, utilizing level manipulation and LIGHT monster synergies for powerful Synchro and Xyz summons through solar mechanics.",
-        filepath: "Helios Deck analysis.html",
+        filepath: "pages/Helios Deck analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="heliosGrad" cx="50%" cy="50%" r="50%">
@@ -28420,7 +28420,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Hex Sealed Fusion",
         description: "An archetype centered around Hex Sealed Fusion, utilizing fusion mechanics and hex-sealed monsters for powerful fusion summons and strategic control through sealed effects.",
-        filepath: "Hex Sealed Fusion Deck Analysis.html",
+        filepath: "pages/Hex Sealed Fusion Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="hexGrad" cx="50%" cy="50%" r="50%">
@@ -28439,7 +28439,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Hunder",
         description: "A Thunder archetype centered around Hunder, utilizing level 4 Thunder monsters for beatdown strategies and Synchro support through electrical synergies.",
-        filepath: "hunder Deck analysis.html",
+        filepath: "pages/hunder Deck analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="hunderGrad" cx="50%" cy="50%" r="50%">
@@ -28457,7 +28457,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Infernal Flame",
         description: "A Pyro-focused series that provides generic support and consistency for Pyro monster strategies, centered around the powerful Infernal Flame Banshee that enables access to key Pyro starters.",
-        filepath: "Infernal Deck Analysis.html",
+        filepath: "pages/Infernal Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="infernalGrad" cx="50%" cy="50%" r="50%">
@@ -28479,7 +28479,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Lair of Darkness",
         description: "A synergistic engine centered around the Lair of Darkness Field Spell, enabling control strategies by tributing opponent's monsters to fuel disruptive effects and resource denial for DARK attribute decks.",
-        filepath: "Lair of Darkness Deck Analysis.html",
+        filepath: "pages/Lair of Darkness Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="lairGrad" cx="50%" cy="50%" r="50%">
@@ -28501,7 +28501,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Branded",
         description: "A Fusion-centric archetype revolving around Fallen of Albaz and Branded Fusion, enabling powerful Fusion summons and control strategies through synergistic support cards and graveyard manipulation.",
-        filepath: "Branded Deck Analysis.html",
+        filepath: "pages/Branded Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="brandedGrad" cx="50%" cy="50%" r="50%">
@@ -28522,7 +28522,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Ecclesia",
         description: "A versatile engine centered around Ecclesia monsters, providing powerful support and synergy across multiple strategies including Branded, Despia, and Swordsoul through resource generation, revival effects, and enabling unaffected boss monsters.",
-        filepath: "Ecclesia Deck Analysis.html",
+        filepath: "pages/Ecclesia Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="ecclesiaGrad" cx="50%" cy="50%" r="50%">
@@ -28543,7 +28543,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Inca",
         description: "A thematic Synchro series centered around Sun Dragon Inti and Moon Dragon Quilla, featuring a recursive loop between the two boss monsters for resilient, self-sustaining gameplay and celestial-themed strategies.",
-        filepath: "Inca Deck Analysis.html",
+        filepath: "pages/Inca Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="incaGrad" cx="50%" cy="50%" r="50%">
@@ -28564,7 +28564,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Imperial traps",
         description: "A series of powerful Trap Cards including Imperial Order, Imperial Iron Wall, Imperial Custom, and Imperial Tombs of Necrovalley, providing versatile control and disruption effects for various strategies.",
-        filepath: "Imperial traps Deck Analysis.html",
+        filepath: "pages/Imperial traps Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="imperialGrad" cx="50%" cy="50%" r="50%">
@@ -28586,7 +28586,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Inpachi",
         description: "A thematic collection of Normal Monsters including Inpachi, Blazing Inpachi, Charcoal Inpachi, and Woodborg Inpachi, providing versatile support for generic engines through their EARTH/Machine and FIRE/Pyro attributes.",
-        filepath: "Inpachi Deck Analysis.html",
+        filepath: "pages/Inpachi Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="inpachiGrad" cx="50%" cy="50%" r="50%">
@@ -28607,7 +28607,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Jar",
         description: "A thematic series of monsters with powerful Flip effects, centered around the infamous 'Empty Jar' deck-out strategy featuring Morphing Jar, Cyber Jar, and other jar-themed cards for explosive turn plays.",
-        filepath: "Jar Deck Analysis.html",
+        filepath: "pages/Jar Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="jarGrad" cx="50%" cy="50%" r="50%">
@@ -28628,7 +28628,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Lightray",
         description: "A series of powerful LIGHT attribute boss monsters that require specific resource thresholds in the Graveyard or banished zone to summon, enabling control strategies when paired with engines like Lightsworn or Thunder Dragon.",
-        filepath: "Lightray Deck Analysis.html",
+        filepath: "pages/Lightray Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="lightrayGrad" cx="50%" cy="50%" r="50%">
@@ -28649,7 +28649,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Horn of Heaven",
         description: "A series of Counter Trap Cards focused on summon negation, including Horn of Heaven, Black Horn of Heaven, and Grand Horn of Heaven, providing reactive disruption against various summoning methods.",
-        filepath: "Horn of Heaven Deck Analysis.html",
+        filepath: "pages/Horn of Heaven Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="hornGrad" cx="50%" cy="50%" r="50%">
@@ -28671,7 +28671,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Light and Darkness Dragon",
         description: "A Chaos Dragon archetype centered around Light and Darkness Dragon and its Fusion evolution Dragonlord, featuring powerful negation effects, revival mechanics, and LIGHT/DARK Dragon support for strategic control.",
-        filepath: "Light and Darkness Dragon Deck Analysis.html",
+        filepath: "pages/Light and Darkness Dragon Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="dualityGrad" cx="50%" cy="50%" r="50%">
@@ -28697,7 +28697,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Majestic Mech",
         description: "A GX-era series of three powerful Main Deck monsters (Ohka, Goryu, Senku) that function as standalone Synchro tools rather than a cohesive archetype, featuring mechanical themes and high-level mechanics.",
-        filepath: "Majestic Mech Deck Analysis.html",
+        filepath: "pages/Majestic Mech Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="mechGrad" cx="50%" cy="50%" r="50%">
@@ -28722,7 +28722,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Madoor",
         description: "A series of thematically linked aquatic monsters (Aqua Madoor, Neo Aqua Madoor, Lightray Madoor, Glacier Aqua Madoor) spanning two decades, representing the evolution of Yu-Gi-Oh! card design from individual monsters to modern archetypes.",
-        filepath: "Madoor Deck Analysis.html",
+        filepath: "pages/Madoor Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="iceGrad" cx="50%" cy="50%" r="50%">
@@ -28746,7 +28746,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Maju",
         description: "A series of Fiend monsters focused on achieving overwhelming ATK values through banished card accumulation (Gren Maju Da Eiza) or tribute mechanics (Garzett variants), enabling OTK and beatdown strategies.",
-        filepath: "Maju Deck Analysis.html",
+        filepath: "pages/Maju Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="fireGrad" cx="50%" cy="50%" r="50%">
@@ -28770,7 +28770,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Mystic Swordsman",
         description: "An LV series of EARTH Warrior monsters (LV2, LV4, LV6) that excel at destroying face-down monsters but suffer from a design contradiction that hinders their progression mechanics.",
-        filepath: "Mystic Swordsman Deck Analysis.html",
+        filepath: "pages/Mystic Swordsman Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="swordGrad" cx="50%" cy="50%" r="50%">
@@ -28792,7 +28792,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Mirror Force",
         description: "A series of Trap Cards that destroy, bounce, or remove Attack Position monsters, evolving from the iconic Mirror Force to various specialized variants for different strategic purposes.",
-        filepath: "Mirror Force Deck Analysis.html",
+        filepath: "pages/Mirror Force Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="mirrorGrad" cx="50%" cy="50%" r="50%">
@@ -28817,7 +28817,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Mystical Elf",
         description: "A sophisticated Normal Monster control strategy centered around Mystical Elf - White Lightning, featuring powerful interaction effects and revival mechanics for strategic LIGHT Spellcaster support in a modern Yu-Gi-Oh! context.",
-        filepath: "Mystical Elf Deck Analysis.html",
+        filepath: "pages/Mystical Elf Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="mysticalGrad" cx="50%" cy="50%" r="50%">
@@ -28839,7 +28839,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Monarch",
         description: "A control-oriented strategy built upon Tribute Summoning mechanics, featuring powerful monarch monsters and support cards that transform tributing into advantage generation while invalidating opponents' Extra Deck access.",
-        filepath: "Monarch Deck Analysis.html",
+        filepath: "pages/Monarch Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="monarchGrad" cx="50%" cy="50%" r="50%">
@@ -28858,7 +28858,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Legendary Planet",
         description: "A thematic series of ten formidable monsters representing celestial bodies from our solar system, functioning as individual boss monsters rather than a mechanically cohesive archetype, each requiring specialized external support engines to unlock their potential.",
-        filepath: "Legendary Planet Deck Analysis.html",
+        filepath: "pages/Legendary Planet Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="cosmicGrad" cx="50%" cy="50%" r="50%">
@@ -28886,7 +28886,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Lost World",
         description: "A Dinosaur archetype centered around the powerful Lost World Field Spell that creates tokens, provides targeting protection, and enables devastating combo chains through strategic destruction and revival mechanics.",
-        filepath: "Lost World Deck Analysis.html",
+        filepath: "pages/Lost World Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="jungleGrad" cx="50%" cy="50%" r="50%">
@@ -28911,7 +28911,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Mudragon",
         description: "A versatile series of three monsters that serve as strategic enablers bridging different summoning mechanics, featuring a Tuner, Synchro conduit, and powerful Fusion boss monster with Attribute manipulation effects.",
-        filepath: "Mudragon Deck Analysis.html",
+        filepath: "pages/Mudragon Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="swampGrad" cx="50%" cy="50%" r="50%">
@@ -28937,7 +28937,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Kaiser Glider",
         description: "A series of retrained monsters featuring the powerful Kaiser Glider - Golden Burst, a high-skill disruption tool that can remove protected monsters by tributing them as cost, bypassing targeting and destruction immunities.",
-        filepath: "Kaiser Glider Deck Analysis.html",
+        filepath: "pages/Kaiser Glider Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="imperialGrad" cx="50%" cy="50%" r="50%">
@@ -28964,7 +28964,7 @@ latestReleaseDate: '2013-08-09',
     {
         name: "Die Roll",
         description: "A unique strategy centered around dice-rolling mechanics, featuring cards like Dice Dungeon and Dimension Dice that create explosive, unpredictable game states through calculated probability and risk management.",
-        filepath: "Die Roll Deck Analysis.html",
+        filepath: "pages/Die Roll Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="casinoGrad" cx="50%" cy="50%" r="50%">
@@ -28996,7 +28996,7 @@ latestReleaseDate: '2024-09-02'
     {
         name: "Digital Bug",
         description: "A LIGHT Insect-Type archetype that manipulates battle positions to generate advantage and swarm the field for Xyz Summons, featuring a xenophobic system where monsters can only be used for Insect-Type Xyz Summons.",
-        filepath: "Digital Bug Deck Analysis.html",
+        filepath: "pages/Digital Bug Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="digitalGrad" cx="50%" cy="50%" r="50%">
@@ -29023,7 +29023,7 @@ latestReleaseDate: '2024-09-02'
     {
         name: "Doriado",
         description: "An elemental-themed archetype centered around Ritual Summoning and attribute manipulation, featuring powerful cards like Elemental Mistress Doriado that count as all four main attributes to enable devastating trap effects.",
-        filepath: "Doriado Deck Analysis.html",
+        filepath: "pages/Doriado Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="elementalGrad" cx="50%" cy="50%" r="50%">
@@ -29050,7 +29050,7 @@ latestReleaseDate: '2024-09-02'
     {
         name: "Diabolos",
         description: "A DARK monster archetype centered around tributing mechanics and the Lair of Darkness field spell, featuring powerful disruption and hand control through strategic monster tributes and token generation.",
-        filepath: "Diabolos Deck Analysis.html",
+        filepath: "pages/Diabolos Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="demonicGrad" cx="50%" cy="50%" r="50%">
@@ -29080,7 +29080,7 @@ latestReleaseDate: "2018-04-20"
     {
         name: "Transcendosaurus",
         description: "A prehistoric archetype featuring transcendent dinosaurs that evolve beyond their ancient origins, utilizing fusion and special summoning mechanics to unleash powerful dinosaur-based strategies.",
-        filepath: "Transcendosaurus Deck Analysis.html",
+        filepath: "pages/Transcendosaurus Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="transcendosaurusGrad" cx="50%" cy="50%" r="50%">
@@ -29101,7 +29101,7 @@ latestReleaseDate: "2018-04-20"
     {
         name: "Trains",
         description: "A mechanical archetype featuring powerful train monsters that focus on level manipulation and special summoning mechanics, utilizing railway-themed effects for strategic deployment and overwhelming momentum.",
-        filepath: "Trains Deck Analysis.html",
+        filepath: "pages/Trains Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="trainsGradient" cx="50%" cy="50%" r="50%">
@@ -29128,7 +29128,7 @@ latestReleaseDate: "2018-04-20"
     {
         name: "Zombie World",
         description: "An undead archetype featuring zombie monsters that utilize field control and graveyard mechanics, creating resilient strategies through attrition and the symbiotic relationship between Zombie World and powerful boss monsters.",
-        filepath: "Zombie World Deck Analysis.html",
+        filepath: "pages/Zombie World Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="zombieWorldGradient" cx="50%" cy="50%" r="50%">
@@ -29153,7 +29153,7 @@ latestReleaseDate: "2018-04-20"
     {
         name: "Zera",
         description: "A celestial archetype featuring powerful angel-like monsters that focus on summoning mechanics and divine effects, utilizing heavenly powers for strategic control and overwhelming presence.",
-        filepath: "Zera Deck Analysis.html",
+        filepath: "pages/Zera Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="zeraGradient" cx="50%" cy="50%" r="50%">

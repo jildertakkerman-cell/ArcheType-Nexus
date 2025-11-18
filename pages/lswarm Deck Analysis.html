@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title updated to reflect the new banlist -->
+    <title>lswarm Archetype Analysis (Nov 2025 Update)</title>
+    <link href="../output.css" rel="stylesheet">
+    <!-- Assuming card-loader.js is in this path, if not, it won't load images -->
+    <script src="../assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a112a; /* Dark Purple */
+            color: #e0d8f0; /* Light Lavender */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #2e2245; /* Darker Purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.1);
+            border: 1px solid #581c87; /* Purple Border */
+        }
+        .combo-step-card, .pro-con-card {
+            background-color: #3b2d52;
+            border: 1px solid #7e22ce;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .card-placeholder {
+            background-color: #3b2d52;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #c084fc; } /* Lighter Purple Accent */
+        .arrow-color { color: #a855f7; }
+        .heading-underline {
+            border-bottom: 2px solid #a855f7;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+        .lore-link {
+            color: #c084fc;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #c084fc;
+            transition: color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+        }
+
+        /* --- Animated Banner Styles --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #1a112a;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        #lswarm-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(26, 17, 42, 0.5) 0%, rgba(26, 17, 42, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 10px rgba(233, 213, 255, 0.5), 0 0 15px rgba(168, 85, 247, 0.4);
+        }
+                    
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+
+        .ygo-home-button i {
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="lswarm-banner"></canvas>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">Lswarm Archetype Analysis</h1>
+            <p class="text-lg md:text-xl text-purple-200">The Corrupted Anti-Meta Control Strategy</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-purple-100">
+                    The <strong class="text-accent font-bold">"lswarm"</strong> archetype is a DARK-Attribute strategy focused on Rank 4 Xyz Summoning to establish powerful anti-meta floodgates. Primarily composed of corrupted versions of other monsters, the archetype's main goal is to summon <strong class="text-accent font-bold">Evilswarm Ophion</strong>, a potent boss monster that completely shuts down the Special Summoning of Level 5 or higher monsters. With its straightforward control-oriented playstyle and powerful support cards, the archetype aims to simplify the game state and prevent opponents from accessing their most powerful extra deck monsters.
+                    <!-- Updated text based on the analysis document -->
+                    <strong class="text-yellow-300 block mt-3">Following the November 2025 ban of Evilswarm Ouroboros, the deck has pivoted from its classic, brittle builds. It now adopts new engines like "Fiendsmith" and a more flexible, superior 2-material Rank 4 toolbox to maintain its competitive edge.</strong>
+                    The 
+                    <a href="https://yugipedia.com/wiki/Lswarm" target="_blank" class="lore-link">full extent of their corrupting influence</a>
+                     is a testament to their anti-meta design.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section updated to include new info -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Swarm's Vanguard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-biohazard text-4xl text-purple-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Core Monsters</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Evilswarm Castor</h4>
+                            <p class="text-sm text-purple-100">The primary starter. Grants an additional Normal Summon for a "lswarm" monster, enabling an instant Rank 4 Xyz Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Evilswarm Kerykeion</h4>
+                            <p class="text-sm text-purple-100">The main extender and recovery tool. It can banish a "lswarm" from the GY to add another to hand, and grants an extra Normal Summon.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Evilswarm Mandragora</h4>
+                            <p class="text-sm text-purple-100">A free Special Summon from the hand if the opponent controls more monsters than you, providing easy material for an Xyz Summon.</p>
+                        </div>
+                         <div class="card combo-step-card p-4 border-yellow-500">
+                            <h4 class="text-lg font-bold text-yellow-400 mb-1">Rescue Rabbit <span class="text-sm font-normal text-gray-400">(Obsolete)</span></h4>
+                            <p class="text-sm text-purple-100">Classic 1-card starter with 3x Evilswarm Heliotrope. Now considered obsolete due to high variance ("bricking" on Heliotrope) and superior modern engines.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-skull-crossbones text-4xl text-purple-400 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Extra Deck Toolbox</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Evilswarm Ophion</h4>
+                            <p class="text-sm text-purple-100">The deck's signature boss monster. While it has Xyz Material, Level 5 or higher monsters cannot be Special Summoned. It also searches for "Infestation" Spell/Trap cards.</p>
+                        </div>
+                         <div class="card combo-step-card p-4 border-red-500">
+                            <h4 class="text-lg font-bold text-red-400 mb-1">Evilswarm Ouroboros <span class="text-sm font-normal">(FORBIDDEN)</span></h4>
+                            <p class="text-sm text-purple-100">The classic 3-material boss. Banned in Nov 2025 not for 'lswarm' use, but for "hand loop" abuse in other decks. Its loss is a net positive.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Infestation Pandemic</h4>
+                            <p class="text-sm text-purple-100">The primary protection card. This Quick-Play Spell makes all face-up "lswarm" monsters you control unaffected by other Spell/Trap effects for the turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW SECTION based on the analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.15s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Mandatory Modernization: The 'Fiendsmith' Engine</h2>
+            <div class="card p-6">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="fiendsmith-img" class="card-image-container flex-shrink-0 card-placeholder">The Fiendsmith</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-3">Solving 'lswarm's' Core Weakness</h3>
+                        <p class="text-purple-100 mb-4">
+                            The classic 'lswarm' deck was critically over-reliant on its Normal Summon (e.g., "Castor"). If that one summon was negated, the turn would end. The <strong class="text-accent">"Fiendsmith"</strong> engine is a mandatory upgrade that solves this problem.
+                        </p>
+                        <ul class="list-disc list-inside space-y-2 text-purple-100">
+                            <li><strong class="text-green-400">Provides 1-Card Starters:</strong> "Fiendsmith's Tractus" starts plays without using the Normal Summon.</li>
+                            <li><strong class="text-green-400">Resilience:</strong> Provides extenders ("The Fiendsmith") and a parallel line of play to bait disruption *before* committing to the 'lswarm' Normal Summon.</li>
+                            <li><strong class="text-green-400">Consistency:</strong> Replaces the high-variance "Rescue Rabbit" engine, as its pieces have utility even when drawn individually.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: Summoning the Ophion Lock</h2>
+            <p class="text-center text-purple-200 mb-6 max-w-2xl mx-auto">This remains the deck's primary goal against meta decks reliant on high-level monsters, like <strong class="text-accent">Branded</strong> or <strong class="text-accent">Memento</strong>.</p>
+            <div class="flex flex-col items-center gap-6">
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="castor-img" class="card-image-container flex-shrink-0 card-placeholder">Evilswarm Castor</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e2245] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Swarm</h3>
+                            </div>
+                            <p class="text-purple-100">Normal Summon <strong class="text-accent">Evilswarm Castor</strong>. Activate its effect to gain an additional Normal Summon.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="ophion-img" class="card-image-container flex-shrink-0 card-placeholder">Evilswarm Ophion</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e2245] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Establish the Lock</h3>
+                            </div>
+                            <p class="text-purple-100">Normal Summon another Level 4 "lswarm" monster. Overlay both monsters to Xyz Summon <strong class="text-accent">Evilswarm Ophion</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="w-full flex justify-center"><i class="fas fa-arrow-down text-3xl arrow-color my-4"></i></div>
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="pandemic-img" class="card-image-container flex-shrink-0 card-placeholder">Infestation Pandemic</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#2e2245] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Secure and Protect</h3>
+                            </div>
+                            <p class="text-purple-100">Activate <strong class="text-accent">Ophion's</strong> effect by detaching one material to search for <strong class="text-accent">Infestation Pandemic</strong> from your deck. Set it for protection on the opponent's turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW SECTION based on the analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.25s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Addition by Subtraction: The New Toolbox</h2>
+             <p class="text-center text-purple-200 mb-6 max-w-2xl mx-auto">The Ouroboros ban forces the deck to use a <strong class="text-green-400">superior, cheaper (2-material), and more flexible</strong> set of generic Rank 4 Xyz monsters. This is the deck's new "Pivot" strategy against low-level decks like <strong class="text-accent">Yummy Mitsurugi</strong>, or as secondary floodgates.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Bagooska -->
+                <div class="card p-6 pro-con-card text-center">
+                    <h3 class="text-xl font-bold text-white mb-4">Board Stun</h3>
+                    <div class="flex flex-col items-center">
+                        <div id="bagooska-img" class="card-image-container card-placeholder mb-2">Number 41: Bagooska</div>
+                        <p class="font-bold text-accent">Number 41: Bagooska</p>
+                    </div>
+                    <p class="mt-4 text-purple-100">The new default "going-first" play against unknown or Xyz/Link decks. Its stun effect buys critical time where Ophion's floodgate would be useless.</p>
+                </div>
+                <!-- Redoer -->
+                <div class="card p-6 pro-con-card text-center">
+                    <h3 class="text-xl font-bold text-white mb-4">Superior Removal</h3>
+                    <div class="flex flex-col items-center">
+                        <div id="redoer-img" class="card-image-container card-placeholder mb-2">Time Thief Redoer</div>
+                        <p class="font-bold text-accent">Time Thief Redoer</p>
+                    </div>
+                    <p class="mt-4 text-purple-100">Directly replaces Ouroboros's bounce. It's a <strong class="text-accent">Quick Effect</strong> (faster), costs 2 materials (cheaper), and <strong class="text-accent">spins to deck</strong> (stronger).</p>
+                </div>
+                <!-- Dweller -->
+                <div class="card p-6 pro-con-card text-center">
+                    <h3 class="text-xl font-bold text-white mb-4">Superior GY Hate</h3>
+                    <div class="flex flex-col items-center">
+                        <div id="dweller-img" class="card-image-container card-placeholder mb-2">Abyss Dweller</div>
+                        <p class="font-bold text-accent">Abyss Dweller</p>
+                    </div>
+                    <p class="mt-4 text-purple-100">Directly replaces Ouroboros's banish. It's an <strong class="text-accent">infinitely more powerful floodgate</strong> that stops *all* GY effects for a turn. Critical vs. Branded/Memento.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Typical Endboard</h2>
+            <div class="card p-6 pro-con-card text-center">
+                <h3 class="text-xl font-bold text-white mb-4">The "Protect the Castle" Pivot</h3>
+                <p class="text-purple-100 max-w-3xl mx-auto mb-4">The optimal endboard now <strong class="text-accent">depends on the matchup</strong>. The "Ophion" lock is for high-level decks, while the "Origin / Bagooska" lock is for low-level decks.</p>
+                <div class="flex flex-col md:flex-row justify-center items-center gap-6">
+                    <!-- Pivot A -->
+                    <div class="flex flex-col items-center p-4 rounded-lg bg-[#2e2245]">
+                        <p class="font-bold text-accent mb-2">Pivot A (vs. Branded)</p>
+                        <div class="flex items-center gap-4">
+                            <div id="endboard-ophion-img" class="card-image-container card-placeholder" style="min-height: 150px; max-width: 100px;">Evilswarm Ophion</div>
+                            <div class="text-xl text-purple-400">+</div>
+                            <div id="endboard-pandemic-img" class="card-image-container card-placeholder" style="min-height: 150px; max-width: 100px;">Set Infestation Pandemic</div>
+                        </div>
+                    </div>
+                    <!-- Pivot B -->
+                    <div class="flex flex-col items-center p-4 rounded-lg bg-[#2e2245]">
+                        <p class="font-bold text-accent mb-2">Pivot B (vs. Yummy)</p>
+                        <div class="flex items-center gap-4">
+                            <div id="endboard-bagooska-img" class="card-image-container card-placeholder" style="min-height: 150px; max-width: 100px;">Number 41: Bagooska</div>
+                            <div class="text-xl text-purple-400">or</div>
+                            <div id="endboard-origin-img" class="card-image-container card-placeholder" style="min-height: 150px; max-width: 100px;">Steelswarm Origin</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section updated -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-100">
+                        <li><span class="pro-icon"><i class="fas fa-lock"></i></span> <strong class="text-green-400">Powerful Floodgate:</strong> Ophion's effect is devastating against meta decks reliant on high-level monsters (Branded, Memento).</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400">Excellent Protection:</strong> Infestation Pandemic provides crucial protection against common board-breaking Spells and Traps.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Resilient (Modernized):</strong> With the "Fiendsmith" engine, the deck is no longer reliant on a single Normal Summon and can play through disruption.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-100">
+                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400">Binary Matchups:</strong> Highly matchup dependent. Has auto-win matchups (Branded) and auto-loss matchups (Yummy Mitsurugi) in Game 1.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Vulnerable to Negation:</strong> The *classic* 'lswarm' combo is still vulnerable, though "Fiendsmith" builds significantly mitigate this weakness.</li>
+                        <li><span class="con-icon"><i class="fas fa-undo"></i></span> <strong class="text-red-400">Limited Recovery:</strong> Can struggle to rebuild its board once the primary lock is broken, though Kerykeion helps.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Tech Choices & Hybrids</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-100">
+                        <li><span class="neutral-icon"><i class="fas fa-plus-circle"></i></span> <strong class="text-accent">"Fiendsmith" Engine:</strong> A mandatory modernization for resilience and 1-card starters.</li>
+                         <li><span class="neutral-icon"><i class="fas fa-puzzle-piece"></i></span> <strong class="text-accent">Modern Rank 4 Toolbox:</strong> Bagooska, Time Thief Redoer, and Abyss Dweller are now core.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent">Steelswarm Origin:</strong> A key pivot, provides a different lock vs. Xyz/Link decks that Ophion cannot stop.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-ban"></i></span> <strong class="text-accent">Floodgate Traps:</strong> Cards like "There Can Be Only One" or "Gozen Match" are critical for siding against bad matchups.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>        
+
+        <!-- TCG Banlist Impact Section -->
+        <section>
+            <div id="banlist-status">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
+            </div>
+        </section>
+        <section>
+            <div id="deck-resources-container">
+                <!-- Deck search section will be populated by CardLoader.renderDeckSearchSection -->
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const canvas = document.getElementById('lswarm-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 100;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = Math.random() * 1 - 0.5;
+                        this.speedY = Math.random() * 1 - 0.5;
+                        this.color = `rgba(192, 132, 252, ${Math.random() * 0.5 + 0.2})`;
+                    }
+
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.size > 0.1) this.size -= 0.02;
+                    }
+
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function handleParticles() {
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+                        if (particles[i].size <= 0.1) {
+                            particles.splice(i, 1);
+                            i--;
+                        }
+                    }
+                }
+                
+                function createParticles(e) {
+                     const rect = canvas.getBoundingClientRect();
+                     const x = e.clientX ? e.clientX - rect.left : canvas.width / 2;
+                     const y = e.clientY ? e.clientY - rect.top : canvas.height / 2;
+                    
+                    for (let i = 0; i < 5; i++) {
+                        particles.push(new Particle(x, y));
+                    }
+                }
+
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    handleParticles();
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                animate();
+
+                // Create initial burst
+                setTimeout(() => createParticles({ clientX: canvas.width / 1.5, clientY: canvas.height / 1.5 }), 100);
+                setTimeout(() => createParticles({ clientX: canvas.width / 3, clientY: canvas.height / 3 }), 500);
+
+
+                canvas.addEventListener('mousemove', createParticles);
+                window.addEventListener('resize', setCanvasSize);
+            }
+
+            
+            // Check if CardLoader is defined before using it
+            if (typeof CardLoader !== 'undefined') {
+                // Updated card list to include all new cards
+                CardLoader.loadCards({
+                    'castor-img': 'Evilswarm Castor',
+                    'ophion-img': 'Evilswarm Ophion',
+                    'pandemic-img': 'Infestation Pandemic',
+                    'endboard-ophion-img': 'Evilswarm Ophion',
+                    'endboard-pandemic-img': 'Infestation Pandemic',
+                    'fiendsmith-img': 'The Fiendsmith',
+                    'bagooska-img': 'Number 41: Bagooska the Terribly Tired Tapir',
+                    'redoer-img': 'Time Thief Redoer',
+                    'dweller-img': 'Abyss Dweller',
+                    'endboard-bagooska-img': 'Number 41: Bagooska the Terribly Tired Tapir',
+                    'endboard-origin-img': 'Steelswarm Origin'
+                });
+            } else {
+                console.error("CardLoader script not found. Card images will not be loaded.");
+            }
+
+
+            // Render banlist section
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'lswarm', {
+                relatedCards: []
+            });
+            
+            // Render deck search section
+            await CardLoader.renderDeckSearchSection('deck-resources-container', 'lswarm', {});});
+    </script>
+</body>
+</html>

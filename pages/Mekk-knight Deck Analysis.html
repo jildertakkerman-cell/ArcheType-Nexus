@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mekk-Knight Archetype Analysis</title>
+    <link href="../output.css" rel="stylesheet">
+    <script src="../assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f2b;
+            color: #e0e7ff;
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .card {
+            background-color: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            border: 1px solid #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3), 0 0 30px rgba(59, 130, 246, 0.2) inset;
+        }
+        .combo-step-card {
+            background-color: rgba(30, 41, 59, 0.7);
+            border-color: #60a5fa;
+            box-shadow: 0 0 10px rgba(96, 165, 250, 0.2);
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #1e293b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #3b82f6;
+            cursor: pointer;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent-blue { color: #60a5fa; }
+        .text-accent-purple { color: #c084fc; }
+        .text-accent-indigo { color: #818cf8; }
+        .text-accent-red { color: #f87171; }
+        
+        .lore-link {
+            color: #93c5fd;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #93c5fd;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #60a5fa;
+        }
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0b0f2b;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+        #column-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(11, 15, 43, 0.4) 0%, rgba(11, 15, 43, 0.8) 100%);
+            z-index: 2;
+        }
+        .banner-header h1, .banner-header p {
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(59, 130, 246, 0.7);
+        }
+
+        .ygo-home-button {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white; border: 2px solid #6366f1; border-radius: 12px;
+            width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease; cursor: pointer; text-decoration: none; overflow: hidden;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+                .ygo-home-button i { font-size: 22px; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+
+        /* Popup styles */
+        .card-popup {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #6366f1;
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            word-wrap: break-word;
+        }
+
+        .card-popup.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .card-popup img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .card-popup h3 {
+            color: #6366f1;
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .card-popup p {
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+
+        .card-popup .card-type {
+            color: #666;
+            font-style: italic;
+        }
+
+        .card-popup .card-description {
+            color: #333;
+            margin-top: 8px;
+        }
+
+        .card-popup .card-stats {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
+    </style>
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="banner-header text-center">
+            <canvas id="column-banner"></canvas>
+            <h1 class="font-orbitron text-3xl md:text-5xl font-extrabold text-white mb-2">Mekk-Knight</h1>
+            <p class="text-lg md:text-xl text-blue-200">Mastering the Columns of Light</p>
+        </header>
+
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="font-orbitron text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-blue-100 leading-relaxed">
+                    The Mekk-Knight archetype offers a unique, reactive playstyle centered on column-based gameplay. As key figures in the "World Legacy" lore, they manifest on the field by capitalizing on the opponent's board presence, making them a premier "go-second" strategy designed to break established fields. Their strength lies in turning the game board itself into a puzzle, forcing opponents to reconsider every card placement lest they create the very 
+                    <a href="https://yugipedia.com/wiki/Mekk-Knight" target="_blank" class="lore-link">columns of light</a>
+                     from which these powerful knights emerge to generate overwhelming advantage.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="font-orbitron text-3xl font-bold text-white mb-8 text-center">The Main Deck Knights</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.1s;">
+                    <div id="blue-sky-img" class="card-image-container mx-auto mb-4 card-placeholder">Mekk-Knight Blue Sky</div>
+                    <h3 class="font-orbitron text-xl font-bold text-accent-blue mb-2">Blue Sky</h3>
+                    <p class="text-sm text-blue-200">The primary advantage engine. When summoned, it searches for "Mekk-Knight" monsters equal to the number of opponent's cards in its column, making it devastating against an established board.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <div id="purple-nightfall-img" class="card-image-container mx-auto mb-4 card-placeholder">Mekk-Knight Purple Nightfall</div>
+                    <h3 class="font-orbitron text-xl font-bold text-accent-purple mb-2">Purple Nightfall</h3>
+                    <p class="text-sm text-blue-200">The most versatile knight. Its Quick Effect banishes a Mekk-Knight (usually itself) to search another, dodging effects and ensuring a constant flow of resources.</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.3s;">
+                    <div id="indigo-eclipse-img" class="card-image-container mx-auto mb-4 card-placeholder">Mekk-Knight Indigo Eclipse</div>
+                    <h3 class="font-orbitron text-xl font-bold text-accent-indigo mb-2">Indigo Eclipse</h3>
+                    <p class="text-sm text-blue-200">The core of the control strategy. Its Quick Effect moves a Mekk-Knight to another column, enabling mobile negation when paired with "World Legacy's Secret".</p>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.4s;">
+                    <div id="girsu-img" class="card-image-container mx-auto mb-4 card-placeholder">Girsu, the Orcust Mekk-Knight</div>
+                    <h3 class="font-orbitron text-xl font-bold text-accent-red mb-2">Girsu, the Orcust</h3>
+                    <p class="text-sm text-blue-200">The deck's go-first enabler. It creates a column by summoning tokens and sends a "World Legacy" card to the GY, setting up powerful Extra Deck plays.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="font-orbitron text-3xl font-bold text-white mb-8 text-center">Core Combo: The Girsu Lockdown</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">When forced to go first, Mekk-Knights rely on Girsu to establish a formidable control board from a single card.</p>
+            <div class="space-y-4">
+                <div class="card combo-step-card p-4 flex items-center gap-4 animate-fadeIn">
+                    <span class="bg-blue-900 text-white rounded-full h-10 w-10 flex items-center justify-center font-bold text-xl flex-shrink-0">1</span>
+                    <p class="text-blue-100">Normal Summon <b class="text-accent-red">Girsu, the Orcust Mekk-Knight</b>. Use its effect to send a "World Legacy" card to the GY and then summon tokens to both fields, creating a column.</p>
+                </div>
+                <div class="card combo-step-card p-4 flex items-center gap-4 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <span class="bg-blue-900 text-white rounded-full h-10 w-10 flex items-center justify-center font-bold text-xl flex-shrink-0">2</span>
+                    <p class="text-blue-100">Link Summon <b class="text-accent-blue">Lib the World Key Blademaster</b> using Girsu and your token. Lib's effect activates, setting <b class="text-accent-purple">World Legacy's Secret</b> directly from your Deck.</p>
+                </div>
+                <div class="card combo-step-card p-4 flex items-center gap-4 animate-fadeIn" style="animation-delay: 0.4s;">
+                    <span class="bg-blue-900 text-white rounded-full h-10 w-10 flex items-center justify-center font-bold text-xl flex-shrink-0">3</span>
+                    <p class="text-blue-100">Special Summon <b class="text-accent-purple">Mekk-Knight Purple Nightfall</b> to the column with the opponent's token, then use its effect to search for <b class="text-accent-indigo">Mekk-Knight Indigo Eclipse</b>.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="font-orbitron text-3xl font-bold text-white mb-8 text-center">The Established End Board</h2>
+            <p class="text-blue-200 mb-8 text-center max-w-2xl mx-auto">This setup provides a powerful, movable monster effect negation that can control the entire flow of the opponent's turn.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div class="flex flex-col items-center animate-fadeIn" style="animation-delay: 0.1s;">
+                    <div id="lib-img" class="card-image-container card-placeholder">Lib the World Key Blademaster</div>
+                    <p class="mt-2 text-center font-semibold">Lib the World Key Blademaster</p>
+                </div>
+                <div class="flex flex-col items-center animate-fadeIn" style="animation-delay: 0.2s;">
+                    <div id="indigo-endboard-img" class="card-image-container card-placeholder">Mekk-Knight Indigo Eclipse</div>
+                    <p class="mt-2 text-center font-semibold">Mekk-Knight Indigo Eclipse</p>
+                </div>
+                <div class="flex flex-col items-center animate-fadeIn" style="animation-delay: 0.3s;">
+                    <div id="secret-img" class="card-image-container card-placeholder">World Legacy's Secret</div>
+                    <p class="mt-2 text-center font-semibold">World Legacy's Secret (Set)</p>
+                </div>
+            </div>
+             <div class="card p-4 mt-8 animate-fadeIn" style="animation-delay: 0.5s;">
+                <p class="text-center text-blue-100"><strong class="text-accent-indigo">Indigo Eclipse</strong> can move into the column of an opponent's monster effect to negate it with <strong class="text-accent-purple">World Legacy's Secret</strong>, providing a versatile and recurring disruption.</p>
+             </div>
+        </section>
+
+        <section class="mb-10 md:mb-16">
+            <h2 class="font-orbitron text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6 animate-fadeIn">
+                    <h3 class="font-orbitron text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Exceptional board-breaking</strong> power when going second.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400">Potent resource loop</strong> between Blue Sky and Purple Nightfall.</li>
+                        <li><span class="pro-icon"><i class="fas fa-chess-knight"></i></span> <strong class="text-green-400">High skill ceiling</strong> that rewards strategic card placement.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.2s;">
+                    <h3 class="font-orbitron text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="con-icon"><i class="fas fa-arrow-down"></i></span> <strong class="text-red-400">Go-first inconsistency</strong> without access to Girsu.</li>
+                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-400">Vulnerable to backrow removal</strong> like Harpie's Feather Duster.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Relies on opponent's board</strong>, can struggle against empty fields.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 animate-fadeIn" style="animation-delay: 0.4s;">
+                    <h3 class="font-orbitron text-xl font-bold text-white mb-4">Key Support</h3>
+                    <ul class="list-disc list-inside space-y-2 text-blue-200">
+                        <li><span class="neutral-icon"><i class="fas fa-star"></i></span> <strong class="text-accent-blue">Lib the World Key Blademaster</strong> for consistent access to control cards.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-accent-blue">Mekk-Knight Crusadia Avramax</strong> as an indestructible boss monster.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent-blue">Invoked & Orcust engines</strong> synergize well with the deck's attributes and types.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center font-mono">Live TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6">
+                <!-- Banlist content will be dynamically generated here -->
+            </div>
+        </section>
+
+        <!-- Deck Resources Section -->
+        <section class="mb-10 md:mb-16">
+            <div id="deck-resources-container">
+                <!-- Deck search content will be dynamically generated here -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Render Banlist Section ---
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Mekk-Knight Blue Sky',
+                'Mekk-Knight Purple Nightfall',
+                'Mekk-Knight Indigo Eclipse',
+                'Girsu, the Orcust Mekk-Knight',
+                'Mekk-Knight Red Moon',
+                'Mekk-Knight Yellow Star',
+                'Mekk-Knight Orange Sunset',
+                'World Legacy\'s Secret',
+                'World Legacy\'s Memory',
+                'Mekk-Knight Spectrum Supreme'
+            ], {
+                archetypeName: 'Mekk-Knight',
+                relatedCards: [
+                    'Lib the World Key Blademaster',
+                    'Mekk-Knight Crusadia Avramax',
+                    'Knightmare Gryphon',
+                    'Invoked Mechaba',
+                    'Galatea, the Orcust Automaton'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Mekk-Knights are a column-based archetype that Special Summons itself by exploiting opponent card placement, designed as a premier go-second board-breaking strategy.',
+                    supportReliance: 'The deck benefits from World Legacy support cards, Orcust engine synergy, and generic Link monsters that complement the column mechanic.',
+                    adaptability: 'Mekk-Knights can integrate with Invoked, Orcust, or Crusadia engines to enhance versatility and power, functioning in hybrid builds.',
+                    resilience: 'At full power with all cards unrestricted, the deck maintains excellent consistency and resource loops through Blue Sky and Purple Nightfall.',
+                    keyLoss: 'No archetype-specific restrictions exist; all Mekk-Knight cards are available at 3 copies, allowing maximum consistency.',
+                    alternativeStrategy: 'Focus on pure column manipulation and World Legacy control when hybrid engines are unavailable, utilizing Indigo Eclipse + World Legacy\'s Secret for recurring negation.'
+                }
+            });
+
+            // --- Render Deck Search Section ---
+            await CardLoader.renderDeckSearchSection('deck-resources-container', 'Mekk-Knight', {});
+
+            const canvas = document.getElementById('column-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let columns = [];
+                const colors = ['#0ea5e9', '#a855f7', '#818cf8', '#ef4444', '#eab308', '#22c55e', '#f97316'];
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Column {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.width = Math.random() * 5 + 2;
+                        this.speed = Math.random() * 0.5 + 0.1;
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                        this.y = -canvas.height;
+                    }
+                    update() {
+                        this.y += this.speed;
+                        if (this.y > canvas.height) {
+                           this.y = -canvas.height * (Math.random() * 2 + 1);
+                           this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.globalAlpha = this.opacity;
+                        ctx.fillStyle = this.color;
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = this.color;
+                        ctx.fillRect(this.x, this.y, this.width, canvas.height);
+                        ctx.globalAlpha = 1;
+                        ctx.shadowBlur = 0;
+                    }
+                }
+
+                function init() {
+                    columns = [];
+                    const columnCount = Math.floor(canvas.width / 15);
+                    for (let i = 0; i < columnCount; i++) {
+                        columns.push(new Column());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    columns.forEach(col => {
+                        col.update();
+                        col.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                init();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+            }
+
+            
+            CardLoader.loadCards({
+                'blue-sky-img': 'Mekk-Knight Blue Sky',
+                'purple-nightfall-img': 'Mekk-Knight Purple Nightfall',
+                'indigo-eclipse-img': 'Mekk-Knight Indigo Eclipse',
+                'girsu-img': 'Girsu, the Orcust Mekk-Knight',
+                'lib-img': 'Lib the World Key Blademaster',
+                'indigo-endboard-img': 'Mekk-Knight Indigo Eclipse',
+                'secret-img': "World Legacy's Secret"
+            });
+        });
+    </script>
+    <div id="card-popup" class="card-popup"></div>
+</body>
+</html>
+
+

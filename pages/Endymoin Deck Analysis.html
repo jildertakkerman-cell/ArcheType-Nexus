@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endymion Archetype</title>
+    <link href="../output.css" rel="stylesheet">
+    <!-- The user's original script path is preserved as requested -->
+    <script src="../assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0a1d; /* Deep Midnight Blue */
+            color: #e0e7ff; /* Lavender White */
+        }
+        .container {
+            max-width: 1024px;
+        }
+        .card {
+            background-color: #1c1a3a; /* Dark Slate Purple */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a457d; /* Muted Purple Border */
+        }
+        .combo-step-card {
+            background-color: #2a2752;
+            border: 1px solid #5d589e;
+        }
+        .pro-con-card {
+            background-color: #2a2752;
+            border: 1px solid #5d589e;
+        }
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+        }
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .card-placeholder {
+            background-color: #2a2752;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px; 
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 0 10px #2a2752;
+        }
+        .pro-icon { color: #34d399; }
+        .con-icon { color: #ef4444; }
+        .neutral-icon { color: #60a5fa; }
+        .text-accent { color: #facc15; } /* Gold */
+        .lore-link {
+            color: #facc15;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #facc15;
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .lore-link:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+        .heading-underline {
+            border-bottom: 2px solid #facc15;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        /* --- NEW ANIMATED BANNER STYLES --- */
+        .banner-header {
+            position: relative;
+            min-height: 160px;
+            background-color: #0b0a1d;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #4a457d;
+        }
+
+        #magic-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(11, 10, 29, 0.3) 0%, rgba(11, 10, 29, 0.8) 70%);
+            z-index: 2;
+        }
+
+        .banner-header h1, .banner-header p {
+            font-family: 'Cormorant Garamond', serif;
+            position: relative;
+            z-index: 3;
+            text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.9);
+        }
+
+        @media (min-width: 768px) {
+            .banner-header {
+                margin-bottom: 4rem;
+            }
+        }
+        /* --- END OF BANNER STYLES --- */
+                    /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+        
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+        
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes ygoIconGlow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+<div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center">
+            <canvas id="magic-banner"></canvas>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-2">Endymion</h1>
+            <p class="text-xl md:text-2xl text-yellow-200">A Treatise on the Magical Pendulum Archetype</p>
+        </header>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                <p class="text-indigo-200">
+                    The <strong class="text-accent font-bold">Endymion</strong> archetype is a highly complex and powerful Pendulum strategy centered on the generation and manipulation of Spell Counters. Its playstyle revolves around building an overwhelming board of spellcaster monsters that can place multiple negates and interruptions, creating a nearly unbreakable field. The deck is renowned for its high skill ceiling and its ability to convert simple spell activations into immense board presence, culminating in the summon of its formidable boss monster, <strong class="text-accent font-bold">Endymion, the Mighty Master of Magic</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Core Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.1s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Font of Power: Spell Counters</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                The entire Endymion strategy is fueled by Spell Counters. Every Spell Card activated becomes a resource, placing a counter on each face-up card that can hold one. These counters are then spent to activate the powerful effects of the Endymion monsters and to Special Summon them from the Pendulum Zone. Mastering the deck means mastering the flow of these counters, ensuring that every spell played contributes to <a href="https://yugipedia.com/wiki/Magical_Citadel_of_Endymion" target="_blank" class="lore-link">the source of all magic</a> and the eventual lockdown of the opponent.
+            </p>
+        </section>
+
+        <!-- Key Cards Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Magical Citadel's Roster</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-graduate text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Masters of Magic</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Endymion, the Mighty Master of Magic</h4>
+                            <p class="text-sm text-indigo-200">The ultimate boss monster. Provides a powerful Spell/Trap negate and is immune to targeting and destruction while it has a Spell Counter.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Servant of Endymion</h4>
+                            <p class="text-sm text-indigo-200">A key combo enabler. Its Pendulum Effect can Special Summon itself and another monster from the deck, starting the main combo sequence.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Reflection of Endymion</h4>
+                            <p class="text-sm text-indigo-200">A crucial extender and disruption piece. Can bounce cards on summon and is revived by Selene on the opponent's turn for interruption.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Magister of Endymion</h4>
+                            <p class="text-sm text-indigo-200">An extender that can Special Summon a monster from the Extra Deck or Pendulum Zone, enabling access to powerful generic monsters.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book-sparkles text-4xl text-yellow-300 mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">The Arcane Tomes</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Spell Power Mastery</h4>
+                            <p class="text-sm text-indigo-200">The deck's primary one-card starter. Searches for an Endymion monster and places a Spell Counter, beginning the resource loop.</p>
+                        </div>
+                         <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Magical Citadel of Endymion</h4>
+                             <p class="text-sm text-indigo-200">The Field Spell that acts as a bank for Spell Counters, protecting them from removal and enabling explosive turns.</p>
+                        </div>
+                        <div class="card combo-step-card p-4">
+                            <h4 class="text-lg font-bold text-accent mb-1">Mythical Institution</h4>
+                             <p class="text-sm text-indigo-200">A continuous spell that searches for key "Mythical Beast" engine pieces and provides additional spell counter generation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Combo: The Path to Mastery</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">This walkthrough demonstrates how one card, <strong class="text-accent font-bold">Spell Power Mastery</strong>, can establish a board with multiple negates.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="mastery-img-container" class="card-image-container flex-shrink-0 card-placeholder">Spell Power Mastery</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1a3a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Initiate the Ritual</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate <strong class="text-accent font-bold">Spell Power Mastery</strong> to search <strong class="text-accent font-bold">Servant of Endymion</strong>. Place Servant in the Pendulum Zone.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-chevron-down text-3xl text-yellow-400 my-2"></i></div>
+                <!-- Step 2 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="servant-img-container" class="card-image-container flex-shrink-0 card-placeholder">Servant of Endymion</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1a3a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon the Servant</h3>
+                            </div>
+                            <p class="text-indigo-200">Activate another spell (like <strong class="text-accent font-bold">Upstart Goblin</strong> or another searcher) to place 3 Spell Counters on Servant. Use her effect to summon herself and <strong class="text-accent font-bold">Magister of Endymion</strong> from the deck.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center"><i class="fas fa-chevron-down text-3xl text-yellow-400 my-2"></i></div>
+                <!-- Step 3 -->
+                <div class="card p-6 combo-step-card w-full max-w-lg">
+                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="selene-img-container-combo" class="card-image-container flex-shrink-0 card-placeholder">Selene, Queen of the Master Magicians</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1c1a3a] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Establish the Board</h3>
+                            </div>
+                            <p class="text-indigo-200">Use your summoned monsters to Link Summon <strong class="text-accent font-bold">Heavymetalfoes Electrumite</strong> and then <strong class="text-accent font-bold">Selene, Queen of the Master Magicians</strong>. Use Selene's effect to revive a spellcaster (like <strong class="text-accent">Reflection</strong>), then Pendulum Summon <strong class="text-accent font-bold">Endymion, the Mighty Master of Magic</strong> from the Extra Deck.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Unbreakable Board</h2>
+            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">A typical, strong Endymion end board aims to layer multiple forms of interaction and negation.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-5xl">
+                <!-- Mighty Master -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Endymion, the Mighty Master</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="mighty-master-img-container" class="card-image-container card-placeholder">Endymion, the Mighty Master of Magic</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Spell/Trap Negate:</strong> A "soft" once-per-turn negate that can be reused if Endymion leaves and returns to the field.</li>
+                        <li><strong class="text-accent">Protection:</strong> Cannot be targeted or destroyed by card effects while it has a Spell Counter.</li>
+                    </ul>
+                </div>
+                <!-- Selene -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Selene, Queen of the Master Magicians</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="selene-img-container" class="card-image-container card-placeholder">Selene, Queen of the Master Magicians</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Quick-Effect Disruption:</strong> During the opponent's turn, can remove 3 counters to revive <strong class="text-accent">Reflection of Endymion</strong>, bouncing an opponent's card.</li>
+                        <li><strong class="text-accent">Combo Extender:</strong> The primary Link-3 monster used to climb into bigger boards and set up GY resources.</li>
+                    </ul>
+                </div>
+                <!-- Jackal King -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Mythical Beast Jackal King</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="jackal-king-img-container" class="card-image-container card-placeholder">Mythical Beast Jackal King</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Monster Negate:</strong> A "soft" once-per-turn monster effect negate by removing 2 Spell Counters from anywhere on your field.</li>
+                        <li><strong class="text-accent">Key Part of Engine:</strong> A primary target to summon from the deck via <strong class="text-accent">Servant of Endymion</strong>.</li>
+                    </ul>
+                </div>
+                <!-- Vortex Dragon -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4 text-center">Odd-Eyes Vortex Dragon</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="vortex-img-container" class="card-image-container card-placeholder">Odd-Eyes Vortex Dragon</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><strong class="text-accent">Omni-Negate:</strong> Can negate a Spell, Trap, or monster effect by shuffling a Pendulum monster from the Extra Deck into the Deck.</li>
+                        <li><strong class="text-accent">Easy to Summon:</strong> Typically brought out by overlaying two Level 7 monsters (like <strong class="text-accent">Mighty Master</strong>) into <strong class="text-accent">Odd-Eyes Absolute Dragon</strong>, then linking Absolute away.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros and Cons Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="pro-icon"><i class="fas fa-chess-king"></i></span> <strong class="text-green-400">High Power Ceiling:</strong> Can create some of the most oppressive end boards in the game.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400">Resilience:</strong> Can play through some hand traps due to multiple extenders and searchers.</li>
+                        <li><span class="pro-icon"><i class="fas fa-infinity"></i></span> <strong class="text-green-400">Non-Once Per Turn Effects:</strong> Several key cards lack a "once per turn" clause, allowing for explosive, non-linear combos.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="con-icon"><i class="fas fa-brain"></i></span> <strong class="text-red-400">High Complexity:</strong> Difficult to pilot optimally, punishing small mistakes heavily.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Floodgate Vulnerability:</strong> Extremely weak to anti-spell cards like <strong class="text-accent">Anti-Spell Fragrance</strong> and monster floodgates like <strong class="text-accent">There Can Be Only One</strong>.</li>
+                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Key Choke Points:</strong> A well-timed negate on <strong class="text-accent">Servant of Endymion</strong>'s Pendulum effect can often end the turn.</li>
+                    </ul>
+                </div>
+                <!-- Engines -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">External Engines</h3>
+                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                        <li><span class="neutral-icon"><i class="fas fa-paw"></i></span> <strong class="text-accent">Mythical Beasts:</strong> A small engine (<strong class="text-accent">Master Cerberus</strong>, <strong class="text-accent">Jackal King</strong>) that generates and uses Spell Counters, providing synergy and more combo routes.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong class="text-accent">Heavymetalfoes Electrumite:</strong> The deck's *actual* go-to Link-2. It is essential for generating resources, fixing scales, and triggering Pendulum effects.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-moon"></i></span> <strong class="text-accent">Selene, Queen of the Master Magicians:</strong> The primary Link-3 extender that bridges plays and enables Quick-Effect disruption.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW SECTION: Common Traps -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Common Traps: The "Magistus" Confusion</h2>
+            <div class="card p-6 pro-con-card">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div class="flex-shrink-0">
+                        <h3 class="text-xl font-bold text-red-400 mb-4 text-center">Card to AVOID</h3>
+                        <div id="crescent-magistus-img-container" class="card-image-container card-placeholder mx-auto">Endymion, the Crescent Magistus</div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">A Note on "Endymion, the Crescent Magistus"</h3>
+                        <p class="text-indigo-200 mb-4">
+                            Players new to the archetype often see <strong class="text-accent">"Endymion, the Crescent Magistus"</strong> and assume it belongs in the deck. This is incorrect.
+                        </p>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                            <li><strong class="text-red-400">Lore vs. Mechanics:</strong> This card shares the "Endymion" name for <strong class="text-accent">lore reasons</strong> (as a younger version of the character), but it is mechanically a <strong class="text-accent">"Magistus"</strong> archetype card.</li>
+                            <li><strong class="text-red-400">No Synergy:</strong> Its effects revolve around equipping "Magistus" monsters and recycling Equip Spells. It has <strong class="text-accent">zero interaction</strong> with Spell Counters, which are the entire focus of this deck.</li>
+                            <li><strong class="text-red-400">Resource Negative:</strong> Summoning this card is a waste of two monsters. Those resources are critical for summoning the *actual* essential Link-2, <strong class="text-accent">Heavymetalfoes Electrumite</strong>, which generates advantage.</li>
+                        </ul>
+                        <p class="text-indigo-200 mt-4">
+                            <strong classs="text-white">Verdict:</strong> Do not play this card in an Endymion Pendulum deck. It is a "brick" that actively hinders your strategy.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.7s;">
+            <div id="banlist-status">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
+            </div>
+        </section>
+
+        <!-- Deck Resources Section -->
+        <section class="animate-fadeIn" style="animation-delay: 0.8s;">
+            <div id="deck-resources-container"></div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- MAGICAL BANNER ANIMATION ---
+            const canvas = document.getElementById('magic-banner');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 100;
+                        this.speedY = Math.random() * 2 + 1;
+                        this.size = Math.random() * 2.5 + 1;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                        this.color = `rgba(250, 204, 21, ${this.opacity})`; // Gold color
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        if (this.y < -10) {
+                            this.y = canvas.height + 10;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    const particleCount = (canvas.width * canvas.height) / 8000;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+                
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING ---
+            // Added new card IDs to the load call
+            CardLoader.loadCards({
+                'mastery-img-container': 'Spell Power Mastery',
+                'servant-img-container': 'Servant of Endymion',
+                'selene-img-container-combo': 'Selene, Queen of the Master Magicians',
+                'mighty-master-img-container': 'Endymion, the Mighty Master of Magic',
+                'vortex-img-container': 'Odd-Eyes Vortex Dragon',
+                'selene-img-container': 'Selene, Queen of the Master Magicians',
+                'jackal-king-img-container': 'Mythical Beast Jackal King',
+                'crescent-magistus-img-container': 'Endymion, the Crescent Magistus'
+            });
+
+            // --- RENDER BANLIST SECTION ---
+            // Added new card names to the relatedCards array
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Endymion', {
+                relatedCards: [
+                    'Endymion, the Mighty Master of Magic',
+                    'Servant of Endymion',
+                    'Magister of Endymion',
+                    'Reflection of Endymion',
+                    'Spell Power Mastery',
+                    'Magical Citadel of Endymion',
+                    'Mythical Institution',
+                    'Apollousa, Bow of the Goddess',
+                    'Odd-Eyes Vortex Dragon',
+                    'Odd-Eyes Absolute Dragon',
+                    'Selene, Queen of the Master Magicians',
+                    'Heavymetalfoes Electrumite',
+                    'Mythical Beast Master Cerberus',
+                    'Mythical Beast Jackal King',
+                    'Endymion, the Crescent Magistus',
+                    'Beyond the Pendulum',
+                    'Upstart Goblin',
+                    'Chicken Game',
+                    'Ash Blossom & Joyous Spring',
+                    'Nibiru, the Primal Being',
+                    'Infinite Impermanence',
+                    'Anti-Spell Fragrance',
+                    'There Can Be Only One'
+                ],
+                archetypeTraits: {
+                    coreMechanic: 'Endymion is a Pendulum-based Spellcaster archetype centered on generating and manipulating Spell Counters. The deck converts spell activations into resources by placing Spell Counters on face-up cards, which are then used to Special Summon monsters from the Pendulum Zone and activate powerful effects. The strategy revolves around building overwhelming boards with multiple negates through Endymion, the Mighty Master of Magic and generic Spellcaster support.',
+                    supportReliance: 'High support reliance on key cards like Spell Power Mastery as the primary one-card starter, Servant of Endymion for combo enabling, and Magical Citadel of Endymion for Spell Counter banking. The deck requires precise sequencing of spell activations to generate enough counters for its plays.',
+                    adaptability: 'Moderate adaptability with the Mythical Beast engine providing alternative combo routes and the ability to use generic Spellcaster Link monsters like Selene and Heavymetalfoes Electrumite for board extension. The deck can pivot between aggressive Pendulum Summon strategies and control-oriented plays depending on the situation.',
+                    resilience: 'High resilience when established due to Endymion, the Mighty Master of Magic\'s protection from targeting and destruction while holding Spell Counters, combined with its omni-negate effect. The deck can play through some hand traps thanks to multiple searchers and extenders, though it has key choke points like Servant of Endymion and Heavymetalfoes Electrumite.',
+                    keyLoss: 'The loss of Apollousa, Bow of the Goddess (currently Forbidden) reduced the deck\'s ability to establish multiple monster effect negates on turn 1. The limitation of Heavymetalfoes Electrumite (Limited) is a major consistency hit. Restrictions on draw spells like Upstart Goblin or Chicken Game would hurt consistency and Spell Counter generation. Any limitation on Servant of Endymion or Spell Power Mastery would severely damage the deck\'s core combo lines.',
+                    alternativeStrategy: 'Focus on alternative boss monsters like Accesscode Talker or Knightmare Unicorn to replace Apollousa. Maximize the Mythical Beast engine ratio for more flexible combo routes. Include anti-spell protection like Secret Village of the Spellcasters to prevent opponent disruption while building boards.'
+                }
+            });
+
+            // Render deck search section
+            await CardLoader.renderDeckSearchSection('deck-resources-container', 'Endymion', {});
+        });
+    </script>
+</body>
+</html>
