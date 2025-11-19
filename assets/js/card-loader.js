@@ -7,7 +7,7 @@
  */
 const CardLoader = (function () {
     console.log('[CardLoader] IIFE started');
-    
+
     // Configuration
     const CONFIG = {
         IMAGE_BASE_URL: 'https://storage.googleapis.com/yugioh-card-images-archetype-nexus/cards',
@@ -24,6 +24,8 @@ const CardLoader = (function () {
     let activePopup = null;
     let lastShown = 0;
     let currentCard = null;
+    // Debug toggle for development — when true, material extraction steps are logged
+    let debugMaterials = false;
 
     /**
      * Initialize the card loader system
@@ -137,13 +139,13 @@ const CardLoader = (function () {
         try {
             console.log('[CardLoader] Fetching banlist from API...');
             const response = await fetch(CONFIG.BANLIST_API_URL);
-            
+
             if (!response.ok) {
                 throw new Error(`Banlist API returned status ${response.status}`);
             }
 
             const data = await response.json();
-            
+
             if (!data.data || !Array.isArray(data.data)) {
                 throw new Error('Invalid banlist API response format');
             }
@@ -398,32 +400,208 @@ const CardLoader = (function () {
     }
 
     /**
+     * Extract summoning materials from Extra Deck monster descriptions
+     */
+    function extractSummoningMaterials(description, cardType) {
+        // Only process Extra Deck monsters (Fusion, Synchro, XYZ)
+        if (!cardType || (!cardType.includes('Fusion') && !cardType.includes('Synchro') && !cardType.includes('XYZ') && !cardType.includes('Link'))) {
+            return null;
+        }
+
+        // Common patterns for summoning materials
+        const patterns = [
+            // Specific pattern for materials with "except" clause (Must be first to avoid partial matches)
+            /^(\d+(?:\s*\+\s*\d+)?\s*[\w\s"]+monsters?,\s*except\s*[^\r\n]*)/i,
+
+            // Specific Fusion patterns (Moved to top to avoid being shadowed by generic Link pattern)
+            /^(\d+\s*[\w\s"]+\s*\+\s*\d+\s*[\w\s"]+(?:\s*\+\s*\d+\s*[\w\s"]+)?)/i,
+            /^(\d+\s*[\w\s]+monsters?(?:\s*\+\s*(?:\d+\s*)?[\w\s"]+)*)/i,
+
+            // Link patterns - more inclusive for complex specifications
+            // Capture line breaks and subordinate clauses until the next sentence (capitalized) or end
+            /^(\d+(?:\s*\+\s*)?\s*(?:[\w\s\-]+)?monsters?(?:\r?\n(?![A-Z]).*)*)/im,
+            // Synchro patterns - more inclusive for attributes and 1+ notation
+            /^(\d+\s+(?:[\w"]+\s+)?Tuner\s*\+\s*\d+(?:\s*\+\s*)?(?:\s+or\s+more|\+)?\s+non-Tuner(?:\s+(?!monsters).*?)?\s*monsters?)/i,
+            /^(\d+\s+(?:[\w"]+\s+)?Tuner\s+Synchro\s+Monster\s*\+\s*\d+(?:\s*\+\s*)?(?:\s+or\s+more|\+)?\s+non-Tuner(?:\s+(?!monsters).*?)?\s*monsters?)/i,
+            // XYZ patterns
+            /^(\d+(?:\s*\+\s*)?\s*Level\s+\d+(?:\s+or\s+higher|\s+or\s+lower)?(?:.*?)monsters?(?:\r?\n(?![A-Z]).*)*)/im,
+            /^(\d+(?:\s*\+\s*)?\s*[\w\s"]+monsters?\s*\([^)]*\))/i,
+            // Fusion patterns - specific card names first
+            // Capture situations like: 1 DARK monster + "Fallen of Albaz" (quoted card name after a +)
+            /^([^\r\n]*?"[^"]+"(?:\s*\+\s*"[^"]+")*(?:\s*\+\s*[^A-Z][^.]*)?)/im,
+
+
+            /^("[^"]*"(?:\s*\+\s*"[^"]*")+(?:\s*\+\s*"[^"]*")*)/,
+            /^(\d+(?:\s*\+\s*\d+)?\s*[\w\s"]+monsters?)/i,
+            // Generic catch-all for materials ending with "monsters" - include the following clause until next capitalized sentence
+            /^([^\r\n]*?monsters?(?:\r?\n(?![A-Z]).*)*)/im
+        ];
+
+        for (const pattern of patterns) {
+            const match = description.match(pattern);
+            if (match && match[1]) {
+                let materials = match[1].trim();
+                // Skip obvious non-material lines such as name override lines
+                // (eg. This card's name becomes "Summoned Skull")
+                if (/this card's name\b|name becomes\b|this card is named\b/i.test(materials)) {
+                    continue;
+                }
+                // Trim inline effect starts even if the material match is long (e.g. 'If a ...')
+                // More robust: find the earliest effect-start marker and cut off everything after it.
+                const effectMarker = materials.search(/\s+(?:You|If|When|Once|During|For|Unless|While|Then|In the|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains)\b/i);
+                if (effectMarker !== -1) {
+                    materials = materials.substring(0, effectMarker).trim();
+                }
+
+                // Make sure it's not too long (probably not materials if > 100 chars)
+                if (materials.length < 100) {
+                    // If the materials accidentally included the start of effect text
+                    // (e.g., "If a Battlin' Boxer monster ..."), drop that clause.
+                    const inlineEffectStart = materials.match(/\s+(?:You|If|When|Once|During|For|Unless|While|Then|In the|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains)\b/i);
+                    if (inlineEffectStart && inlineEffectStart.index > 0) {
+                        // Trim off the effect start and continue with the shortened materials
+                        materials = materials.slice(0, inlineEffectStart.index).trim();
+                    }
+                    // If the materials only captured something like "1 DARK monster" but the next line
+                    // contains a + "Quoted Card" (e.g., + "Fallen of Albaz"), include it too.
+                    const lookaheadStart = description.indexOf(match[1]) + match[1].length;
+                    const lookahead = description.slice(lookaheadStart);
+                    // If what's after the materials looks like the start of a sentence
+                    // (You/If/When/Once/During/etc), do not include it as part of the materials
+                    // — these are generally effect text and not part of materials list.
+                    if (/^\s*(?:You|If|When|Once|During|For|Unless|While|Then|In the|When your|If that|If this|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains)\b/i.test(lookahead)) {
+                        return materials;
+                    }
+                    const plusQuoted = lookahead.match(/^\s*\+\s*"[^"]+"(?:\s*\+\s*"[^"]+")*/m);
+                    if (plusQuoted && plusQuoted[0]) {
+                        // Return the exact substring from the original description so it can be
+                        // removed exactly (including newline/plus sign) when formatting the description.
+                        const combined = match[1] + plusQuoted[0];
+                        if (combined.length < 200) return combined; // longer but still acceptable
+                    }
+
+                    // Also capture continuation lines that begin with a comma or common conjunctions
+                    // For example: "2 monsters, including a Fiend monster"
+                    const commaCont = lookahead.match(/^\s*(?:,|\u2013|\u2014|\*|\u2022|•|-)?\s*(?:including|including a|such as|or|and|excluding|except|with|without|but|among|specifically)\b[^\r\n]*/im);
+                    if (commaCont && commaCont[0]) {
+                        const combined = match[1] + commaCont[0];
+                        if (combined.length < 200) return combined;
+                    }
+
+                    // Capture trailing noun types like "Pendulum Monster", "Tuner", or other descriptive
+                    // words that directly follow a quoted name (e.g., 1 "Abyss Actor" Pendulum Monster)
+                    // Ensure we don't cross a newline to find this.
+                    // Also ensure we don't capture a full sentence like "A Fusion Summon of this card..."
+                    const trailingMonster = lookahead.match(/^[ \t]*([ \t\w"'\-]+?Monster(?:s)?)/i);
+                    if (trailingMonster && trailingMonster[0]) {
+                        // Only accept if it's a short noun phrase, not a long sentence
+                        if (trailingMonster[0].length < 50 && !/^(?:A|The)\s/i.test(trailingMonster[1])) {
+                            const combined = match[1] + trailingMonster[0];
+                            if (combined.length < 200) return combined;
+                        }
+                    }
+
+                    return materials;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Format card description with better readability for pendulum cards
      */
-    function formatCardDescription(description) {
+    function formatCardDescription(description, cardType) {
         // Check if this is a pendulum card (has both Pendulum Effect and Monster Effect sections)
         if (description.includes('[ Pendulum Effect ]') && description.includes('[ Monster Effect ]')) {
             // Split the description into sections
             const pendulumMatch = description.match(/\[ Pendulum Effect \](.*?)(?=\[ Monster Effect \]|\[ Link Monster Effect \]|\[ Ritual Monster Effect \]|\[ Fusion Monster Effect \]|\[ Synchro Monster Effect \]|\[ XYZ Monster Effect \]|$)/s);
             const monsterMatch = description.match(/\[ Monster Effect \](.*)/s);
-            
+
             if (pendulumMatch && monsterMatch) {
                 const pendulumText = pendulumMatch[1].trim();
                 const monsterText = monsterMatch[1].trim();
-                
+
                 return `
                     <div class="mb-3">
-                        <div class="text-blue-300 font-bold text-sm mb-1">🌀 Pendulum Effect</div>
-                        <div class="text-white text-xs leading-relaxed pl-3 border-l-2 border-blue-500">${pendulumText.replace(/\r\n/g, '<br>')}</div>
+                        <div class="text-blue-300 font-bold text-sm mb-1">⚖️ Pendulum Effect</div>
+                        <div class="text-current text-xs leading-relaxed pl-3 border-l-2 border-blue-500">${pendulumText.replace(/\r\n/g, '<br>')}</div>
                     </div>
                     <div class="mb-3">
                         <div class="text-green-300 font-bold text-sm mb-1">⚔️ Monster Effect</div>
-                        <div class="text-white text-xs leading-relaxed pl-3 border-l-2 border-green-500">${monsterText.replace(/\r\n/g, '<br>')}</div>
+                        <div class="text-current text-xs leading-relaxed pl-3 border-l-2 border-green-500">${monsterText.replace(/\r\n/g, '<br>')}</div>
                     </div>
                 `;
             }
         }
-        
+
+        // Check for summoning materials in Extra Deck monsters
+        const summoningMaterials = extractSummoningMaterials(description, cardType);
+        if (summoningMaterials && debugMaterials) {
+            console.groupCollapsed('[CardLoader] materials debug:', summoningMaterials);
+            console.log('Original description:', description);
+            console.log('summoningMaterials:', summoningMaterials);
+            console.groupEnd();
+        }
+        // For even deeper debugging, show the intermediate materialsText and remainingDescription
+        if (debugMaterials) {
+            const debugMaterials = linkifyMaterials(summoningMaterials || '');
+            console.log('[CardLoader] debug materialsText (post-linkify):', debugMaterials);
+        }
+        if (summoningMaterials) {
+            // Remove materials from description and format specially
+            let materialsText = linkifyMaterials(summoningMaterials);
+            // If effect text was accidentally included inline after materials (e.g., "... monsters If a ..."),
+            // trim it here. This is an extra safety net for APIs that flatten newlines.
+            materialsText = materialsText.replace(/\s+(?:You|If|When|Once|During|For|Unless|While|Then|In the|If a|If an|If any|When a|When an|When you|While your)\b[\s\S]*$/i, '').trim();
+            // Preserve line break display in the materials block
+            materialsText = materialsText.replace(/\r?\n/g, ' ');
+            // Remove the materials substring from the description, but be conservative:
+            // only remove if it appears at the start of the description or on its own line
+            // (prevents accidental removal of the same word used later in effect text).
+            const remainingDescription = removeMaterialsFromDescription(description, summoningMaterials);
+            // Final fuzzy safety: if the removed fails but the first sentence begins with
+            // the same words (ignoring curly quotes/whitespace), remove that leading
+            // instance. This prevents duplication when the captured materials are
+            // present verbatim but differ only in quotes or spacing.
+            const fuzzyMaterials = normalizeForCompare(summoningMaterials);
+            const fuzzyRemainingStart = normalizeForCompare(remainingDescription).slice(0, fuzzyMaterials.length + 5);
+            if (fuzzyMaterials && fuzzyRemainingStart.startsWith(fuzzyMaterials)) {
+                // Build tolerant pattern anchored at start to remove the leading materials
+                const anchored = new RegExp('^\\s*' + escapeRegExp(summoningMaterials).replace(/\r?\n/g, '\\s*').replace(/"/g, '["“”]?').replace(/\s+/g, '\\s+'), 'mi');
+                if (anchored.test(remainingDescription)) {
+                    if (debugMaterials) console.log('[CardLoader] Fuzzy removal of materials from beginning of remaining description');
+                    const newDesc = remainingDescription.replace(anchored, '').trim();
+                    return newDesc;
+                }
+            }
+            if (debugMaterials && remainingDescription && summoningMaterials && remainingDescription.includes(summoningMaterials)) {
+                console.warn('[CardLoader] duplication: materials found in remainingDescription after removal');
+                console.log('summoningMaterials:', summoningMaterials);
+                console.log('remainingDescription (start):', remainingDescription.slice(0, 200));
+            }
+
+            // Determine icon based on card type
+            let materialIcon = '🧬';
+            if (cardType) {
+                if (cardType.includes('Fusion')) materialIcon = '🌀';
+                else if (cardType.includes('Synchro')) materialIcon = '🌟';
+                else if (cardType.includes('XYZ')) materialIcon = '🌌';
+                else if (cardType.includes('Link')) materialIcon = '🔗';
+            }
+
+            return `
+                <div class="mb-3">
+                            <div class="text-purple-300 font-bold text-sm mb-1">${materialIcon} Materials</div>
+                            <div class="text-gray-300 text-xs leading-relaxed pl-3 border-l-2 border-purple-500">${materialsText}</div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-current text-xs leading-relaxed">${remainingDescription.replace(/\r\n/g, '<br>')}</div>
+                </div>
+            `;
+        }
+
         // Check for other effect types (Link, Ritual, Fusion, Synchro, XYZ)
         const effectTypes = [
             { pattern: /\[ Link Monster Effect \]/, label: '🔗 Link Effect', color: 'purple' },
@@ -432,7 +610,7 @@ const CardLoader = (function () {
             { pattern: /\[ Synchro Monster Effect \]/, label: '⚡ Synchro Effect', color: 'yellow' },
             { pattern: /\[ XYZ Monster Effect \]/, label: '✨ XYZ Effect', color: 'pink' }
         ];
-        
+
         for (const effectType of effectTypes) {
             if (effectType.pattern.test(description)) {
                 const match = description.match(new RegExp(`${effectType.pattern.source}(.*)`, 's'));
@@ -441,15 +619,86 @@ const CardLoader = (function () {
                     return `
                         <div class="mb-3">
                             <div class="text-${effectType.color}-300 font-bold text-sm mb-1">${effectType.label}</div>
-                            <div class="text-white text-xs leading-relaxed pl-3 border-l-2 border-${effectType.color}-500">${effectText.replace(/\r\n/g, '<br>')}</div>
+                            <div class="text-current text-xs leading-relaxed pl-3 border-l-2 border-${effectType.color}-500">${effectText.replace(/\r\n/g, '<br>')}</div>
                         </div>
                     `;
                 }
             }
         }
-        
+
         // For regular cards, just format with line breaks
-        return `<div class="text-white text-xs leading-relaxed">${description.replace(/\r\n/g, '<br>')}</div>`;
+        return `<div class="text-current text-xs leading-relaxed">${description.replace(/\r\n/g, '<br>')}</div>`;
+    }
+
+    // Small helper to highlight quoted card names in materials strings
+    function linkifyMaterials(materials) {
+        if (!materials) return materials;
+        // Match straight double quotes "..." and curly quotes “...” or ”..."; avoid matching single quotes as those are common in card names
+        // Keep materials in the same color as the Summoning Materials block by removing
+        // the special accent color. Keep bold for emphasis.
+        return materials.replace(/["“”]([^"“”]+)["“”]/g, (m, name) => {
+            return `<strong class="font-bold">${name}</strong>`;
+        });
+    }
+
+    // Escape string for use in a regular expression
+    function escapeRegExp(string) {
+        return String(string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // Remove the given materials string from the description, but only if it appears
+    // at the start of the string or on its own line; this prevents accidental removal
+    // of similarly-named phrases that occur later in effect text.
+    function removeMaterialsFromDescription(description, materials) {
+        if (!materials) return description.trim();
+        // Build a conservative pattern that matches the materials when it's alone
+        // at the start of the string or immediately after a line break.
+        // Replace actual newlines inside the captured materials with a permissive pattern
+        // so we can match them even if the description uses different newline styles.
+        const escaped = escapeRegExp(materials).replace(/\r?\n/g, '[\\r\\n\\s]+');
+        // Allow the materials to appear after a line-start OR after list bullets/markers
+        // such as '-', '•', '*' (sometimes API or pages include bullets). This keeps
+        // the removal conservative while catching common formatting.
+        const safePattern = new RegExp('(^|\\r?\\n)\\s*(?:[-•\*•\\u2022]\\s*)?' + escaped + '(?=\\s|$|\\r?\\n)', 'm');
+        // Only perform the replacement when we can find it in the described safe location
+        if (safePattern.test(description)) {
+            return description.replace(safePattern, '$1').trim();
+        }
+
+        // Fallback: if the conservative match failed, try a more tolerant regex that
+        // accepts optional quotes and flexible whitespace. This should remove the
+        // materials line at the start of the description even if the API uses
+        // curly quotes or slightly different spacing.
+        const tolerant = escapeRegExp(materials)
+            .replace(/\\"/g, '"')
+            .replace(/"/g, '["“”]?')
+            .replace(/\s+/g, '\\s+');
+        const tolerantPattern = new RegExp('^\\s*' + tolerant + '(?=\\s|$|\\r?\\n)', 'mi');
+        if (tolerantPattern.test(description)) {
+            if (window && window.__CARDLOADER_DEBUG_MATERIALS__) {
+                console.groupCollapsed('[CardLoader] Materials tolerant fallback');
+                console.log('materials:', materials);
+                console.log('description:', description);
+                console.log('tolerantPattern:', tolerantPattern);
+                console.groupEnd();
+            }
+            return description.replace(tolerantPattern, '').trim();
+        }
+        // Fallback: don't remove anything if it might only match effect text
+        return description.trim();
+    }
+
+    // Normalize string to simplify comparisons (convert curly quotes to straight,
+    // remove NBSPs, collapse whitespace, lowercase) — used for fuzzy matching.
+    function normalizeForCompare(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/[“”]/g, '"')
+            .replace(/[’‘]/g, "'")
+            .replace(/\u00A0/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLowerCase();
     }
 
     /**
@@ -467,7 +716,7 @@ const CardLoader = (function () {
             // Trap Cards
             'Counter': '🛡️'
         };
-        
+
         return iconMap[race] || '✨'; // Default to sparkle if no specific icon
     }
 
@@ -477,7 +726,7 @@ const CardLoader = (function () {
     function showPopup(event, cardName) {
         // Stop event propagation to prevent immediate hide
         event.stopPropagation();
-        
+
         // If clicking the same card, toggle popup off
         if (currentCard === cardName && activePopup) {
             hidePopup();
@@ -491,7 +740,7 @@ const CardLoader = (function () {
             activePopup = null;
             currentCard = null;
         }
-        
+
         if (!popup) return;
 
         const cardInfo = cardDataCache[cardName];
@@ -527,7 +776,7 @@ const CardLoader = (function () {
                     <div class="w-full h-px bg-blue-500 my-2"></div>
                 </div>
                 <div class="flex-1 overflow-y-auto" style="min-height: 0;">
-                    ${formatCardDescription(cardInfo.desc)}
+                    ${formatCardDescription(cardInfo.desc, cardInfo.type)}
                     ${stats}
                 </div>
             </div>
@@ -572,7 +821,7 @@ const CardLoader = (function () {
             // On mobile, center the popup both horizontally and vertically
             x = (window.innerWidth - popupWidth) / 2;
             y = (window.innerHeight - popupHeight) / 2;
-            
+
             // Ensure it fits within screen bounds
             if (x < cushion) x = cushion;
             if (y < cushion) y = cushion;
@@ -678,7 +927,7 @@ const CardLoader = (function () {
 
         const config = { ...defaults, ...options };
         const allCardsToCheck = [...cardNames];
-        
+
         if (config.includeRelated && config.relatedCards.length > 0) {
             allCardsToCheck.push(...config.relatedCards);
         }
@@ -695,7 +944,7 @@ const CardLoader = (function () {
 
         allCardsToCheck.forEach(cardName => {
             const status = banlist[cardName];
-            
+
             if (status === 'Forbidden') {
                 result.forbidden.push(cardName);
                 result.hasRestrictions = true;
@@ -720,148 +969,148 @@ const CardLoader = (function () {
      * @param {Object} options - Configuration options
      */
     async function renderBanlistSection(containerId, cards, options) {
-                const container = document.getElementById(containerId);
-                
-                if (!container) {
-                    console.error(`[CardLoader] Container with ID "${containerId}" not found`);
-                    return;
+        const container = document.getElementById(containerId);
+
+        if (!container) {
+            console.error(`[CardLoader] Container with ID "${containerId}" not found`);
+            return;
+        }
+
+        // Detect page color scheme from existing headers or accent classes
+        const detectPageColors = () => {
+            // Look for existing h2/h3 elements to detect text color
+            const headers = document.querySelectorAll('h2, h3');
+            let headerColor = 'text-white'; // default
+
+            for (const header of headers) {
+                const classes = Array.from(header.classList);
+                const textColorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
+                if (textColorClass) {
+                    headerColor = textColorClass;
+                    break;
                 }
-                
-                // Detect page color scheme from existing headers or accent classes
-                const detectPageColors = () => {
-                    // Look for existing h2/h3 elements to detect text color
-                    const headers = document.querySelectorAll('h2, h3');
-                    let headerColor = 'text-white'; // default
-                    
-                    for (const header of headers) {
-                        const classes = Array.from(header.classList);
-                        const textColorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
-                        if (textColorClass) {
-                            headerColor = textColorClass;
-                            break;
-                        }
-                    }
-                    
-                    // Look for body/paragraph text color
-                    const paragraphs = document.querySelectorAll('p, li, .card p');
-                    let bodyTextColor = 'text-white'; // default
-                    
-                    for (const p of paragraphs) {
-                        const classes = Array.from(p.classList);
-                        const textColorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
-                        if (textColorClass) {
-                            bodyTextColor = textColorClass;
-                            break;
-                        }
-                    }
-                    
-                    // Look for accent color (often in strong/bold elements or specific class)
-                    const accentElements = document.querySelectorAll('.text-accent, strong[class*="text-"]');
-                    let accentColor = 'text-yellow-400'; // default
-                    
-                    for (const element of accentElements) {
-                        const classes = Array.from(element.classList);
-                        const colorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
-                        if (colorClass) {
-                            accentColor = colorClass;
-                            break;
-                        }
-                    }
-                    
-                    return { headerColor, bodyTextColor, accentColor };
-                };
-                
-                const pageColors = detectPageColors();
-                console.log('[CardLoader] Detected page colors:', pageColors);
-                
-                // Check if container has a parent section and if it needs a header
-                const parentSection = container.closest('section');
-                if (parentSection) {
-                    // Add proper spacing classes to the section
-                    if (!parentSection.classList.contains('mt-10')) {
-                        parentSection.classList.add('mt-10', 'md:mt-16', 'mb-10', 'md:mb-16');
-                    }
-                    
-                    // Inject the header if it doesn't exist
-                    if (!parentSection.querySelector('h2')) {
-                        const header = document.createElement('h2');
-                        header.className = `text-xl md:text-3xl font-bold ${pageColors.headerColor} mb-6 text-center`;
-                        header.innerHTML = '<i class="fas fa-gavel mr-2"></i>TCG Banlist Impact';
-                        if (parentSection === container) {
-                            container.insertBefore(header, container.firstChild);
-                        } else {
-                            parentSection.insertBefore(header, container);
-                        }
-                    }
+            }
+
+            // Look for body/paragraph text color
+            const paragraphs = document.querySelectorAll('p, li, .card p');
+            let bodyTextColor = 'text-white'; // default
+
+            for (const p of paragraphs) {
+                const classes = Array.from(p.classList);
+                const textColorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
+                if (textColorClass) {
+                    bodyTextColor = textColorClass;
+                    break;
                 }
-                
-                // Show loading state
-                container.innerHTML = '<div class="card p-6"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading banlist data...</p></div>';
-                
-                // Auto-extract related cards from cache and merge with manual ones
-                let relatedCards = options.relatedCards || [];
-                
-                // Wait a bit for loadCards to populate the cache
-                await new Promise(resolve => setTimeout(resolve, 100));
-                const autoExtracted = extractRelatedCardsFromCache(cards);
-                
-                // Merge manual and auto-extracted cards (avoid duplicates)
-                const manualSet = new Set(relatedCards.map(c => c.toLowerCase()));
-                const merged = [...relatedCards];
-                
-                for (const card of autoExtracted) {
-                    if (!manualSet.has(card.toLowerCase())) {
-                        merged.push(card);
-                    }
+            }
+
+            // Look for accent color (often in strong/bold elements or specific class)
+            const accentElements = document.querySelectorAll('.text-accent, strong[class*="text-"]');
+            let accentColor = 'text-yellow-400'; // default
+
+            for (const element of accentElements) {
+                const classes = Array.from(element.classList);
+                const colorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
+                if (colorClass) {
+                    accentColor = colorClass;
+                    break;
                 }
-                
-                console.log(`[CardLoader] Final related cards: ${relatedCards.length} manual + ${merged.length - relatedCards.length} auto-extracted = ${merged.length} total`);
-                
-                // Fetch real banlist data from API
-                const banlist = await fetchBanlistData();
-                
-                // Helper function for case-insensitive banlist lookup
-                function getBanlistStatus(cardName, banlistMap) {
-                    // First try exact match
-                    if (banlistMap[cardName]) {
-                        return banlistMap[cardName];
-                    }
-                    // Then try case-insensitive match
-                    const lowerName = cardName.toLowerCase();
-                    for (const [key, status] of Object.entries(banlistMap)) {
-                        if (key.toLowerCase() === lowerName) {
-                            return status;
-                        }
-                    }
-                    return null;
+            }
+
+            return { headerColor, bodyTextColor, accentColor };
+        };
+
+        const pageColors = detectPageColors();
+        console.log('[CardLoader] Detected page colors:', pageColors);
+
+        // Check if container has a parent section and if it needs a header
+        const parentSection = container.closest('section');
+        if (parentSection) {
+            // Add proper spacing classes to the section
+            if (!parentSection.classList.contains('mt-10')) {
+                parentSection.classList.add('mt-10', 'md:mt-16', 'mb-10', 'md:mb-16');
+            }
+
+            // Inject the header if it doesn't exist
+            if (!parentSection.querySelector('h2')) {
+                const header = document.createElement('h2');
+                header.className = `text-xl md:text-3xl font-bold ${pageColors.headerColor} mb-6 text-center`;
+                header.innerHTML = '<i class="fas fa-gavel mr-2"></i>TCG Banlist Impact';
+                if (parentSection === container) {
+                    container.insertBefore(header, container.firstChild);
+                } else {
+                    parentSection.insertBefore(header, container);
                 }
-                
-                // Check which cards are banned
-                const forbidden = cards.filter(c => getBanlistStatus(c, banlist) === 'Forbidden');
-                const limited = cards.filter(c => getBanlistStatus(c, banlist) === 'Limited');
-                const semiLimited = cards.filter(c => getBanlistStatus(c, banlist) === 'Semi-Limited');
-                const relatedForbidden = merged.filter(c => getBanlistStatus(c, banlist) === 'Forbidden');
-                const relatedLimited = merged.filter(c => getBanlistStatus(c, banlist) === 'Limited');
-                const relatedSemiLimited = merged.filter(c => getBanlistStatus(c, banlist) === 'Semi-Limited');
-                
-                const hasRestrictions = forbidden.length > 0 || limited.length > 0 || semiLimited.length > 0;
-                const hasRelatedRestrictions = relatedForbidden.length > 0 || relatedLimited.length > 0 || relatedSemiLimited.length > 0;
-                
-                // Extract archetype traits for dynamic messaging
-                const traits = options.archetypeTraits || {};
-                
-                let html = '';
-                
-                if (!hasRestrictions && !hasRelatedRestrictions) {
-                    // Auto-generated unrestricted message with optional traits
-                    let unrestrictedMsg = '';
-                    if (traits.coreMechanic) {
-                        unrestrictedMsg = `The ${options.archetypeName} archetype, with its ${traits.coreMechanic}, operates at full power with no restrictions on the current TCG banlist.`;
-                    } else {
-                        unrestrictedMsg = `As of the current TCG format, the ${options.archetypeName} archetype is entirely unrestricted, allowing it to operate at full capacity.`;
-                    }
-                    
-                    html = `
+            }
+        }
+
+        // Show loading state
+        container.innerHTML = '<div class="card p-6"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading banlist data...</p></div>';
+
+        // Auto-extract related cards from cache and merge with manual ones
+        let relatedCards = options.relatedCards || [];
+
+        // Wait a bit for loadCards to populate the cache
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const autoExtracted = extractRelatedCardsFromCache(cards);
+
+        // Merge manual and auto-extracted cards (avoid duplicates)
+        const manualSet = new Set(relatedCards.map(c => c.toLowerCase()));
+        const merged = [...relatedCards];
+
+        for (const card of autoExtracted) {
+            if (!manualSet.has(card.toLowerCase())) {
+                merged.push(card);
+            }
+        }
+
+        console.log(`[CardLoader] Final related cards: ${relatedCards.length} manual + ${merged.length - relatedCards.length} auto-extracted = ${merged.length} total`);
+
+        // Fetch real banlist data from API
+        const banlist = await fetchBanlistData();
+
+        // Helper function for case-insensitive banlist lookup
+        function getBanlistStatus(cardName, banlistMap) {
+            // First try exact match
+            if (banlistMap[cardName]) {
+                return banlistMap[cardName];
+            }
+            // Then try case-insensitive match
+            const lowerName = cardName.toLowerCase();
+            for (const [key, status] of Object.entries(banlistMap)) {
+                if (key.toLowerCase() === lowerName) {
+                    return status;
+                }
+            }
+            return null;
+        }
+
+        // Check which cards are banned
+        const forbidden = cards.filter(c => getBanlistStatus(c, banlist) === 'Forbidden');
+        const limited = cards.filter(c => getBanlistStatus(c, banlist) === 'Limited');
+        const semiLimited = cards.filter(c => getBanlistStatus(c, banlist) === 'Semi-Limited');
+        const relatedForbidden = merged.filter(c => getBanlistStatus(c, banlist) === 'Forbidden');
+        const relatedLimited = merged.filter(c => getBanlistStatus(c, banlist) === 'Limited');
+        const relatedSemiLimited = merged.filter(c => getBanlistStatus(c, banlist) === 'Semi-Limited');
+
+        const hasRestrictions = forbidden.length > 0 || limited.length > 0 || semiLimited.length > 0;
+        const hasRelatedRestrictions = relatedForbidden.length > 0 || relatedLimited.length > 0 || relatedSemiLimited.length > 0;
+
+        // Extract archetype traits for dynamic messaging
+        const traits = options.archetypeTraits || {};
+
+        let html = '';
+
+        if (!hasRestrictions && !hasRelatedRestrictions) {
+            // Auto-generated unrestricted message with optional traits
+            let unrestrictedMsg = '';
+            if (traits.coreMechanic) {
+                unrestrictedMsg = `The ${options.archetypeName} archetype, with its ${traits.coreMechanic}, operates at full power with no restrictions on the current TCG banlist.`;
+            } else {
+                unrestrictedMsg = `As of the current TCG format, the ${options.archetypeName} archetype is entirely unrestricted, allowing it to operate at full capacity.`;
+            }
+
+            html = `
                         <div class="card p-8 mb-10 md:mb-16">
                             <!-- Status Badge -->
                             <div class="flex justify-center mb-6">
@@ -926,29 +1175,29 @@ const CardLoader = (function () {
                             </div>
                         </div>
                     `;
-                } else if (!hasRestrictions && hasRelatedRestrictions) {
-                    // Archetype is fine, but related cards are hit
-                    let relatedImpactMsg = '';
-                    if (traits.supportReliance) {
-                        relatedImpactMsg = `While the ${options.archetypeName} core remains untouched, the archetype's ${traits.supportReliance} means restrictions on generic support cards do have an impact.`;
-                    } else {
-                        relatedImpactMsg = `The ${options.archetypeName} archetype itself is largely untouched by the TCG banlist, but key synergistic cards it relies on are affected.`;
-                    }
-                    
-                    const totalRelatedRestricted = relatedForbidden.length + relatedLimited.length + relatedSemiLimited.length;
-                    
-                    html = `
+        } else if (!hasRestrictions && hasRelatedRestrictions) {
+            // Archetype is fine, but related cards are hit
+            let relatedImpactMsg = '';
+            if (traits.supportReliance) {
+                relatedImpactMsg = `While the ${options.archetypeName} core remains untouched, the archetype's ${traits.supportReliance} means restrictions on generic support cards do have an impact.`;
+            } else {
+                relatedImpactMsg = `The ${options.archetypeName} archetype itself is largely untouched by the TCG banlist, but key synergistic cards it relies on are affected.`;
+            }
+
+            const totalRelatedRestricted = relatedForbidden.length + relatedLimited.length + relatedSemiLimited.length;
+
+            html = `
                         <div class="card p-6 mb-10 md:mb-16">
                             <p class="${pageColors.bodyTextColor} mb-4 text-center">
                                 ${relatedImpactMsg}
                             </p>
                     `;
-                    
-                    // Show only related cards section
-                    html += `<div><h3 class="text-lg font-semibold ${pageColors.headerColor} mb-3 text-center"><i class="fas fa-link mr-2"></i>Affected Synergistic Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
-                    
-                    if (relatedForbidden.length > 0) {
-                        html += `
+
+            // Show only related cards section
+            html += `<div><h3 class="text-lg font-semibold ${pageColors.headerColor} mb-3 text-center"><i class="fas fa-link mr-2"></i>Affected Synergistic Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+
+            if (relatedForbidden.length > 0) {
+                html += `
                             <div class="combo-step-card p-4 border-l-4 border-red-500">
                                 <h4 class="text-md font-bold text-red-400 mb-2">Forbidden</h4>
                                 <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
@@ -956,10 +1205,10 @@ const CardLoader = (function () {
                                 </ul>
                             </div>
                         `;
-                    }
-                    
-                    if (relatedLimited.length > 0) {
-                        html += `
+            }
+
+            if (relatedLimited.length > 0) {
+                html += `
                             <div class="combo-step-card p-4 border-l-4 border-yellow-500">
                                 <h4 class="text-md font-bold text-yellow-400 mb-2">Limited</h4>
                                 <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
@@ -967,10 +1216,10 @@ const CardLoader = (function () {
                                 </ul>
                             </div>
                         `;
-                    }
-                    
-                    if (relatedSemiLimited.length > 0) {
-                        html += `
+            }
+
+            if (relatedSemiLimited.length > 0) {
+                html += `
                             <div class="combo-step-card p-4 border-l-4 border-orange-500">
                                 <h4 class="text-md font-bold text-orange-400 mb-2">Semi-Limited</h4>
                                 <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
@@ -978,31 +1227,31 @@ const CardLoader = (function () {
                                 </ul>
                             </div>
                         `;
-                    }
-                    
-                    html += `</div></div>`;
-                    
-                    // Auto-generated meta implications for related cards
-                    if (options.customMessages?.metaImplications) {
-                        html += `
+            }
+
+            html += `</div></div>`;
+
+            // Auto-generated meta implications for related cards
+            if (options.customMessages?.metaImplications) {
+                html += `
                             <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
                                 <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> ${options.customMessages.metaImplications}
                                 </p>
                             </div>
                         `;
-                    } else if (traits.adaptability) {
-                        html += `
+            } else if (traits.adaptability) {
+                html += `
                             <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
                                 <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> Despite restrictions on support cards, ${options.archetypeName}'s ${traits.adaptability} allows the deck to remain viable with alternative tech choices.
                                 </p>
                             </div>
                         `;
-                    }
-                    
-                    // Stats Box
-                    html += `
+            }
+
+            // Stats Box
+            html += `
                         <div class="mt-8 bg-gray-900 bg-opacity-60 rounded border border-gray-700 p-3">
                             <div class="flex items-start">
                                 <i class="fas fa-info-circle text-gray-400 text-xs mr-2 mt-0.5"></i>
@@ -1024,43 +1273,43 @@ const CardLoader = (function () {
                             </div>
                         </div>
                     `;
-                    
-                    html += `</div>`;
-                } else {
-                    // Auto-generated restricted message
-                    const impactLevel = forbidden.length > 1 ? 'HIGH IMPACT' : 
-                                       forbidden.length === 1 ? 'SIGNIFICANT IMPACT' :
-                                       limited.length > 1 ? 'MODERATE IMPACT' : 'LOW IMPACT';
-                    
-                    const impactColor = forbidden.length > 0 ? 'red' : 'yellow';
-                    
-                    // Enhanced intro with traits
-                    let autoIntro = '';
-                    if (options.customMessages?.intro) {
-                        autoIntro = options.customMessages.intro;
-                    } else if (traits.keyLoss && forbidden.length > 0) {
-                        autoIntro = `The loss of ${forbidden[0]}${forbidden.length > 1 ? ` and ${forbidden.length - 1} other card${forbidden.length > 2 ? 's' : ''}` : ''} directly impacts the archetype's ${traits.keyLoss}.`;
-                    } else if (forbidden.length > 1) {
-                        autoIntro = `The ${options.archetypeName} archetype has been significantly impacted by the TCG banlist, with ${forbidden.length} cards forbidden.`;
-                    } else if (forbidden.length === 1) {
-                        autoIntro = `The ${options.archetypeName} archetype has been impacted by the TCG banlist, with one card forbidden.`;
-                    } else {
-                        autoIntro = `The ${options.archetypeName} archetype has been moderately restricted by the TCG banlist, with ${limited.length} card${limited.length > 1 ? 's' : ''} limited.`;
-                    }
-                    
-                    html = `
+
+            html += `</div>`;
+        } else {
+            // Auto-generated restricted message
+            const impactLevel = forbidden.length > 1 ? 'HIGH IMPACT' :
+                forbidden.length === 1 ? 'SIGNIFICANT IMPACT' :
+                    limited.length > 1 ? 'MODERATE IMPACT' : 'LOW IMPACT';
+
+            const impactColor = forbidden.length > 0 ? 'red' : 'yellow';
+
+            // Enhanced intro with traits
+            let autoIntro = '';
+            if (options.customMessages?.intro) {
+                autoIntro = options.customMessages.intro;
+            } else if (traits.keyLoss && forbidden.length > 0) {
+                autoIntro = `The loss of ${forbidden[0]}${forbidden.length > 1 ? ` and ${forbidden.length - 1} other card${forbidden.length > 2 ? 's' : ''}` : ''} directly impacts the archetype's ${traits.keyLoss}.`;
+            } else if (forbidden.length > 1) {
+                autoIntro = `The ${options.archetypeName} archetype has been significantly impacted by the TCG banlist, with ${forbidden.length} cards forbidden.`;
+            } else if (forbidden.length === 1) {
+                autoIntro = `The ${options.archetypeName} archetype has been impacted by the TCG banlist, with one card forbidden.`;
+            } else {
+                autoIntro = `The ${options.archetypeName} archetype has been moderately restricted by the TCG banlist, with ${limited.length} card${limited.length > 1 ? 's' : ''} limited.`;
+            }
+
+            html = `
                         <div class="card p-6 mb-10 md:mb-16">
                             <p class="${pageColors.bodyTextColor} mb-4 text-center">
                                 <strong class="text-${impactColor}-400 font-bold">${impactLevel}:</strong> ${autoIntro}
                             </p>
                     `;
-                    
-                    // Archetype restrictions
-                    if (forbidden.length > 0 || limited.length > 0 || semiLimited.length > 0) {
-                        html += `<div class="mb-4"><h3 class="text-lg font-semibold ${pageColors.headerColor} mb-3"><i class="fas fa-layer-group mr-2"></i>Archetype Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
-                        
-                        if (forbidden.length > 0) {
-                            html += `
+
+            // Archetype restrictions
+            if (forbidden.length > 0 || limited.length > 0 || semiLimited.length > 0) {
+                html += `<div class="mb-4"><h3 class="text-lg font-semibold ${pageColors.headerColor} mb-3"><i class="fas fa-layer-group mr-2"></i>Archetype Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+
+                if (forbidden.length > 0) {
+                    html += `
                                 <div class="combo-step-card p-4 border-l-4 border-red-500">
                                     <h4 class="text-lg font-bold text-red-400 mb-2 text-left">
                                         <i class="fas fa-ban mr-2"></i>Forbidden
@@ -1070,10 +1319,10 @@ const CardLoader = (function () {
                                     </ul>
                                 </div>
                             `;
-                        }
-                        
-                        if (limited.length > 0) {
-                            html += `
+                }
+
+                if (limited.length > 0) {
+                    html += `
                                 <div class="combo-step-card p-4 border-l-4 border-yellow-500">
                                     <h4 class="text-lg font-bold text-yellow-400 mb-2 text-left">
                                         <i class="fas fa-exclamation-triangle mr-2"></i>Limited
@@ -1083,10 +1332,10 @@ const CardLoader = (function () {
                                     </ul>
                                 </div>
                             `;
-                        }
-                        
-                        if (semiLimited.length > 0) {
-                            html += `
+                }
+
+                if (semiLimited.length > 0) {
+                    html += `
                                 <div class="combo-step-card p-4 border-l-4 border-orange-500">
                                     <h4 class="text-lg font-bold text-orange-400 mb-2 text-left">
                                         <i class="fas fa-exclamation-circle mr-2"></i>Semi-Limited
@@ -1096,17 +1345,17 @@ const CardLoader = (function () {
                                     </ul>
                                 </div>
                             `;
-                        }
-                        
-                        html += `</div></div>`;
-                    }
-                    
-                    // Related cards
-                    if (relatedForbidden.length > 0 || relatedLimited.length > 0 || relatedSemiLimited.length > 0) {
-                        html += `<div class="mt-4"><h3 class="text-lg font-semibold ${pageColors.headerColor} mb-3"><i class="fas fa-link mr-2"></i>Synergistic Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
-                        
-                        if (relatedForbidden.length > 0) {
-                            html += `
+                }
+
+                html += `</div></div>`;
+            }
+
+            // Related cards
+            if (relatedForbidden.length > 0 || relatedLimited.length > 0 || relatedSemiLimited.length > 0) {
+                html += `<div class="mt-4"><h3 class="text-lg font-semibold ${pageColors.headerColor} mb-3"><i class="fas fa-link mr-2"></i>Synergistic Cards</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+
+                if (relatedForbidden.length > 0) {
+                    html += `
                                 <div class="combo-step-card p-4 border-l-4 border-red-500">
                                     <h4 class="text-md font-bold text-red-400 mb-2 text-left">Forbidden</h4>
                                     <ul class="list-none space-y-1 text-xs ${pageColors.bodyTextColor} text-left">
@@ -1114,10 +1363,10 @@ const CardLoader = (function () {
                                     </ul>
                                 </div>
                             `;
-                        }
-                        
-                        if (relatedLimited.length > 0) {
-                            html += `
+                }
+
+                if (relatedLimited.length > 0) {
+                    html += `
                                 <div class="combo-step-card p-4 border-l-4 border-yellow-500">
                                     <h4 class="text-md font-bold text-yellow-400 mb-2 text-left">Limited</h4>
                                     <ul class="list-none space-y-1 text-xs ${pageColors.bodyTextColor} text-left">
@@ -1125,10 +1374,10 @@ const CardLoader = (function () {
                                     </ul>
                                 </div>
                             `;
-                        }
-                        
-                        if (relatedSemiLimited.length > 0) {
-                            html += `
+                }
+
+                if (relatedSemiLimited.length > 0) {
+                    html += `
                                 <div class="combo-step-card p-4 border-l-4 border-orange-500">
                                     <h4 class="text-md font-bold text-orange-400 mb-2 text-left">Semi-Limited</h4>
                                     <ul class="list-none space-y-1 text-xs ${pageColors.bodyTextColor} text-left">
@@ -1136,55 +1385,55 @@ const CardLoader = (function () {
                                     </ul>
                                 </div>
                             `;
-                        }
-                        
-                        html += `</div></div>`;
-                    }
-                    
-                    // Auto-generated meta implications with traits
-                    if (options.customMessages?.metaImplications) {
-                        html += `
+                }
+
+                html += `</div></div>`;
+            }
+
+            // Auto-generated meta implications with traits
+            if (options.customMessages?.metaImplications) {
+                html += `
                             <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
                                 <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> ${options.customMessages.metaImplications}
                                 </p>
                             </div>
                         `;
-                    } else if (traits.resilience && forbidden.length === 0) {
-                        // Limited cards only - can highlight resilience
-                        html += `
+            } else if (traits.resilience && forbidden.length === 0) {
+                // Limited cards only - can highlight resilience
+                html += `
                             <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border-l-4 border-blue-500">
                                 <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> Thanks to its ${traits.resilience}, ${options.archetypeName} remains playable despite the limitation${limited.length > 1 ? 's' : ''}.
                                 </p>
                             </div>
                         `;
-                    } else if (traits.alternativeStrategy && forbidden.length > 0) {
-                        // Forbidden cards - can suggest alternatives
-                        html += `
+            } else if (traits.alternativeStrategy && forbidden.length > 0) {
+                // Forbidden cards - can suggest alternatives
+                html += `
                             <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
                                 <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> While the loss of key cards is significant, ${options.archetypeName} players can adapt by ${traits.alternativeStrategy}.
                                 </p>
                             </div>
                         `;
-                    } else if (forbidden.length > 0) {
-                        const cardList = forbidden.join(', ');
-                        html += `
+            } else if (forbidden.length > 0) {
+                const cardList = forbidden.join(', ');
+                html += `
                             <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
                                 <p class="text-sm ${pageColors.bodyTextColor}">
                                     <strong>Meta Implications:</strong> The loss of ${cardList} significantly impacts the archetype's power level and consistency. Players will need to adapt their strategies accordingly.
                                 </p>
                             </div>
                         `;
-                    }
-                    
-                    // Stats Box
-                    const totalArchetypeRestricted = forbidden.length + limited.length + semiLimited.length;
-                    const totalRelatedRestricted = relatedForbidden.length + relatedLimited.length + relatedSemiLimited.length;
-                    const totalRestricted = totalArchetypeRestricted + totalRelatedRestricted;
-                    
-                    html += `
+            }
+
+            // Stats Box
+            const totalArchetypeRestricted = forbidden.length + limited.length + semiLimited.length;
+            const totalRelatedRestricted = relatedForbidden.length + relatedLimited.length + relatedSemiLimited.length;
+            const totalRestricted = totalArchetypeRestricted + totalRelatedRestricted;
+
+            html += `
                         <div class="mt-8 bg-gray-900 bg-opacity-60 rounded border border-gray-700 p-3">
                             <div class="flex items-start">
                                 <i class="fas fa-info-circle text-gray-400 text-xs mr-2 mt-0.5"></i>
@@ -1207,12 +1456,12 @@ const CardLoader = (function () {
                             </div>
                         </div>
                     `;
-                    
-                    html += `</div>`;
-                }
-                
-                container.innerHTML = html;
-            }
+
+            html += `</div>`;
+        }
+
+        container.innerHTML = html;
+    }
 
     /**
      * Fetch all cards from an archetype using the YGOProDeck API
@@ -1223,23 +1472,23 @@ const CardLoader = (function () {
         try {
             const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?archetype=${encodeURIComponent(archetypeName)}`;
             console.log(`[CardLoader] Fetching archetype cards for: ${archetypeName}`);
-            
+
             const response = await fetch(apiUrl);
-            
+
             if (!response.ok) {
                 throw new Error(`Archetype API returned status ${response.status}`);
             }
-            
+
             const data = await response.json();
-            
+
             if (!data.data || !Array.isArray(data.data)) {
                 throw new Error('Invalid archetype API response format');
             }
-            
+
             // Extract card names
             const cardNames = data.data.map(card => card.name);
             console.log(`[CardLoader] Found ${cardNames.length} cards in ${archetypeName} archetype`);
-            
+
             return cardNames;
         } catch (error) {
             console.error(`[CardLoader] Failed to fetch archetype cards for ${archetypeName}:`, error);
@@ -1256,12 +1505,12 @@ const CardLoader = (function () {
     function extractRelatedCardsFromCache(archetypeCards) {
         const loadedCards = Object.keys(cardDataCache);
         const archetypeSet = new Set(archetypeCards.map(c => c.toLowerCase()));
-        
+
         // Filter out cards that are in the archetype
         const relatedCards = loadedCards.filter(cardName => {
             return !archetypeSet.has(cardName.toLowerCase());
         });
-        
+
         console.log(`[CardLoader] Found ${relatedCards.length} related cards from cache:`, relatedCards);
         return relatedCards;
     }
@@ -1274,43 +1523,43 @@ const CardLoader = (function () {
      */
     async function renderBanlistSectionByArchetype(containerId, archetypeName, options = {}) {
         const container = document.getElementById(containerId);
-        
+
         if (!container) {
             console.error(`[CardLoader] Container with ID "${containerId}" not found`);
             return;
         }
-        
+
         // Show loading state
         container.innerHTML = '<div class="card p-6"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading archetype and banlist data...</p></div>';
-        
+
         // Fetch all cards in the archetype
         const archetypeCards = await fetchArchetypeCards(archetypeName);
-        
+
         // Auto-extract related cards from cache and merge with manual ones
         let relatedCards = options.relatedCards || [];
-        
+
         // Wait a bit for loadCards to populate the cache
         await new Promise(resolve => setTimeout(resolve, 100));
-        
+
         if (archetypeCards.length === 0) {
             // Archetype not found - check if we have any related cards to analyze
             const autoExtracted = extractRelatedCardsFromCache([]);
-            
+
             // Merge manual and auto-extracted cards (avoid duplicates)
             const manualSet = new Set(relatedCards.map(c => c.toLowerCase()));
             const merged = [...relatedCards];
-            
+
             for (const card of autoExtracted) {
                 if (!manualSet.has(card.toLowerCase())) {
                     merged.push(card);
                 }
             }
-            
+
             if (merged.length === 0) {
                 container.innerHTML = '<div class="card p-6"><p class="text-center text-yellow-400"><i class="fas fa-exclamation-triangle mr-2"></i>Could not load archetype cards and no related cards found. Please check the archetype name.</p></div>';
                 return;
             }
-            
+
             // Use only related cards for analysis
             console.log(`[CardLoader] Archetype "${archetypeName}" not found. Analyzing ${merged.length} related cards only.`);
             const finalOptions = {
@@ -1318,35 +1567,35 @@ const CardLoader = (function () {
                 relatedCards: [],
                 archetypeName: archetypeName
             };
-            
+
             await renderBanlistSection(containerId, merged, finalOptions);
             return;
         }
-        
+
         const autoExtracted = extractRelatedCardsFromCache(archetypeCards);
-        
+
         // Merge manual and auto-extracted cards (avoid duplicates)
         const manualSet = new Set(relatedCards.map(c => c.toLowerCase()));
         const merged = [...relatedCards];
-        
+
         for (const card of autoExtracted) {
             if (!manualSet.has(card.toLowerCase())) {
                 merged.push(card);
             }
         }
-        
+
         console.log(`[CardLoader] Final related cards: ${relatedCards.length} manual + ${merged.length - relatedCards.length} auto-extracted = ${merged.length} total`);
-        
+
         // Use the regular renderBanlistSection with fetched cards
         const finalOptions = {
             ...options,
             relatedCards: merged,
             archetypeName: archetypeName
         };
-        
+
         await renderBanlistSection(containerId, archetypeCards, finalOptions);
     }
-    
+
     /**
      * Get cached card data
      */
@@ -1365,7 +1614,7 @@ const CardLoader = (function () {
     async function renderDeckSearchSection(containerId, archetypeName, options = {}) {
         console.log(`[CardLoader] renderDeckSearchSection called for: ${archetypeName}`);
         const container = document.getElementById(containerId);
-        
+
         if (!container) {
             console.error(`[CardLoader] Deck Search container with ID "${containerId}" not found`);
             return;
@@ -1388,11 +1637,11 @@ const CardLoader = (function () {
                     break;
                 }
             }
-            
+
             // Look for body/paragraph text color
             const paragraphs = document.querySelectorAll('p, li, .card p');
             let bodyTextColor = 'text-blue-200'; // default to match banlist
-            
+
             for (const p of paragraphs) {
                 const classes = Array.from(p.classList);
                 const textColorClass = classes.find(c => c.startsWith('text-') && !c.includes('gray'));
@@ -1401,7 +1650,7 @@ const CardLoader = (function () {
                     break;
                 }
             }
-            
+
             return { headerColor, bodyTextColor };
         };
         const pageColors = detectPageColors();
@@ -1414,7 +1663,7 @@ const CardLoader = (function () {
             if (!parentSection.classList.contains('mt-10')) {
                 parentSection.classList.add('mt-10', 'md:mt-16', 'mb-10', 'md:mb-16');
             }
-            
+
             // Inject the header if it doesn't exist
             if (!parentSection.querySelector('h2')) {
                 const header = document.createElement('h2');
@@ -1443,7 +1692,7 @@ const CardLoader = (function () {
             // Fallback to card-based search using a loaded card name from cache
             const loadedCardNames = Object.keys(cardDataCache);
             let encodedCardName;
-            
+
             if (loadedCardNames.length > 0) {
                 // Use the first loaded card name for the search
                 const firstCardName = loadedCardNames[0];
@@ -1495,7 +1744,7 @@ const CardLoader = (function () {
                 </div>
             </div>
         `;
-        
+
         container.innerHTML = html;
     }
 
@@ -1516,7 +1765,7 @@ const CardLoader = (function () {
         console.log('CardLoader configuration updated:', CONFIG);
     }
 
-   // Public API
+    // Public API
     console.log('[CardLoader] IIFE about to return public API');
     return {
         init,
@@ -1535,7 +1784,14 @@ const CardLoader = (function () {
         renderBanlistSection,
         fetchArchetypeCards,
         renderBanlistSectionByArchetype,
-        extractRelatedCardsFromCache,        
+        extractRelatedCardsFromCache,
+        // Expose a couple of helpers for testing
+        extractSummoningMaterials,
+        linkifyMaterials,
+        removeMaterialsFromDescription,
+        setMaterialsDebug: (val) => { debugMaterials = !!val; if (window) window.__CARDLOADER_DEBUG_MATERIALS__ = !!val; },
+        // Helpers for testing / external usage
+        linkifyMaterials,
     };
 })();
 

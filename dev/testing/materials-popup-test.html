@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Materials Highlight Test</title>
+    <link rel="stylesheet" href="../output.css"/>
+    <style>
+        body { background: #0b1220; color: #e0e7ff; font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; padding: 2rem; }
+        .popup { max-width: 700px; border: 1px solid rgba(255,255,255,0.06); padding: 1rem; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Materials Highlight Test</h1>
+    <div class="popup" id="test-popup"></div>
+
+    <script src="../assets/js/card-loader.js"></script>
+    <script>
+        // Case 1: Materials on the same line
+        const demoDescriptionSameLine = '1 DARK monster + "Fallen of Albaz"\nIf this card is Fusion Summoned: You can discard 1 card; Fusion Summon 1 Level 8 or lower Fusion Monster from your Extra Deck, except "Lubellion the Searing Dragon", by shuffling Fusion Materials mentioned on it into the Deck, from your monsters on the field, GY, and/or face-up banished cards.';
+        // Case 2: Materials on Next Line (this mirrors the format in the screenshot)
+        const demoDescriptionNextLine = '1 DARK monster\n+ "Fallen of Albaz"\nIf this card is Fusion Summoned: You can discard 1 card; Fusion Summon 1 Level 8 or lower Fusion Monster from your Extra Deck, except "Lubellion the Searing Dragon", by shuffling Fusion Materials mentioned on it into the Deck, from your monsters on the field, GY, and/or face-up banished cards.';
+        const popup = document.getElementById('test-popup');
+
+        // Enable debug logging for materials extraction (dev only)
+        if (CardLoader.setMaterialsDebug) CardLoader.setMaterialsDebug(true);
+
+        // Use the helper to format the materials extracted
+        const materialsSame = CardLoader.extractSummoningMaterials ? CardLoader.extractSummoningMaterials(demoDescriptionSameLine, 'Fusion Monster') : null;
+        const linkedSame = CardLoader.linkifyMaterials ? CardLoader.linkifyMaterials(materialsSame) : materialsSame;
+
+        const materialsNext = CardLoader.extractSummoningMaterials ? CardLoader.extractSummoningMaterials(demoDescriptionNextLine, 'Fusion Monster') : null;
+        const linkedNext = CardLoader.linkifyMaterials ? CardLoader.linkifyMaterials(materialsNext) : materialsNext;
+
+        // Case 3: Comma continuation on same line
+        const demoDescriptionCommaSame = '2 monsters, including a Fiend monster\nDuring the Main Phase (Quick Effect): You can target 1 face-up card you control; destroy it.';
+        const materialsCommaSame = CardLoader.extractSummoningMaterials ? CardLoader.extractSummoningMaterials(demoDescriptionCommaSame, 'Link Monster') : null;
+        const linkedCommaSame = CardLoader.linkifyMaterials ? CardLoader.linkifyMaterials(materialsCommaSame) : materialsCommaSame;
+
+        // Case 4: Comma continuation on next line
+        const demoDescriptionCommaNext = '2 monsters\n, including a Fiend monster\nDuring the Main Phase (Quick Effect): You can target 1 face-up card you control; destroy it.';
+        const materialsCommaNext = CardLoader.extractSummoningMaterials ? CardLoader.extractSummoningMaterials(demoDescriptionCommaNext, 'Link Monster') : null;
+        const linkedCommaNext = CardLoader.linkifyMaterials ? CardLoader.linkifyMaterials(materialsCommaNext) : materialsCommaNext;
+
+        // Case 5: Quoted name with trailing Monster type
+        const demoDescriptionAbyss = '1 "Abyss Actor" Pendulum Monster\nYou can target 1 card in your Pendulum Zone; Special Summon it.';
+        const materialsAbyss = CardLoader.extractSummoningMaterials ? CardLoader.extractSummoningMaterials(demoDescriptionAbyss, 'Link Monster') : null;
+        const linkedAbyss = CardLoader.linkifyMaterials ? CardLoader.linkifyMaterials(materialsAbyss) : materialsAbyss;
+
+        // Case 6: 'with different names' continuation on the next line
+        const demoDescriptionWithDifferent = '2+ monsters\nwith different names, except Tokens\nYou can only control 1 "Apollousa, Bow of the Goddess".';
+        const materialsWithDifferent = CardLoader.extractSummoningMaterials ? CardLoader.extractSummoningMaterials(demoDescriptionWithDifferent, 'Link Monster') : null;
+        const linkedWithDifferent = CardLoader.linkifyMaterials ? CardLoader.linkifyMaterials(materialsWithDifferent) : materialsWithDifferent;
+
+        // Case 7: Sentence-start after materials - should not be included
+        const demoDescriptionSentenceStart = '4+ Effect Monsters You can also use 1 monster your opponent controls as material to Link Summon this card.';
+        const materialsSentenceStart = CardLoader.extractSummoningMaterials ? CardLoader.extractSummoningMaterials(demoDescriptionSentenceStart, 'Link Monster') : null;
+        const linkedSentenceStart = CardLoader.linkifyMaterials ? CardLoader.linkifyMaterials(materialsSentenceStart) : materialsSentenceStart;
+
+        // Case 8: Battlin' Boxers (capitalization) with 'If a' which should not be included
+        const demoDescriptionBattlin = "2 Level 4 Battlin' Boxer monsters\nIf a Battlin' Boxer monster(s) you control would be destroyed by battle or by a card effect, you can detach 1 Xyz Material from this card instead of destroying 1 of those monsters.";
+        const materialsBattlin = CardLoader.extractSummoningMaterials ? CardLoader.extractSummoningMaterials(demoDescriptionBattlin, 'XYZ Monster') : null;
+        const linkedBattlin = CardLoader.linkifyMaterials ? CardLoader.linkifyMaterials(materialsBattlin) : materialsBattlin;
+        const linkedBattlinSafe = CardLoader.linkifyMaterials && materialsBattlin ? (CardLoader.linkifyMaterials(materialsBattlin).replace(/\s+(?:You|If|When|Once|During|For|Unless|While|Then|In the|If a|If an|If any|When a|When an|When you|While your)\b[\s\S]*$/i, '')).trim() : linkedBattlin;
+
+        popup.innerHTML = `
+            <h3>Same-line materials</h3>
+            <pre>${materialsSame}</pre>
+            <div>${linkedSame}</div>
+            <h4>After removal (safe):</h4>
+            <pre>${CardLoader.removeMaterialsFromDescription ? CardLoader.removeMaterialsFromDescription(demoDescriptionSameLine, materialsSame) : demoDescriptionSameLine.replace(materialsSame, '')}</pre>
+            <hr/>
+            <h3>Next-line materials</h3>
+            <pre>${materialsNext}</pre>
+            <div>${linkedNext}</div>
+            <hr/>
+            <h3>Comma same-line</h3>
+            <pre>${materialsCommaSame}</pre>
+            <div>${linkedCommaSame}</div>
+            <h4>After removal (safe):</h4>
+            <pre>${CardLoader.removeMaterialsFromDescription ? CardLoader.removeMaterialsFromDescription(demoDescriptionCommaSame, materialsCommaSame) : demoDescriptionCommaSame.replace(materialsCommaSame, '')}</pre>
+            <hr/>
+            <h3>Comma next-line</h3>
+            <pre>${materialsCommaNext}</pre>
+            <div>${linkedCommaNext}</div>
+            <h4>After removal (safe):</h4>
+            <pre>${CardLoader.removeMaterialsFromDescription ? CardLoader.removeMaterialsFromDescription(demoDescriptionCommaNext, materialsCommaNext) : demoDescriptionCommaNext.replace(materialsCommaNext, '')}</pre>
+            <hr/>
+            <h3>Quoted + trailing Monster</h3>
+            <pre>${materialsAbyss}</pre>
+            <div>${linkedAbyss}</div>
+            <hr/>
+            <h3>With different names</h3>
+            <pre>${materialsWithDifferent}</pre>
+            <div>${linkedWithDifferent}</div>
+            <hr/>
+            <h3>Sentence-start following materials</h3>
+            <pre>${materialsSentenceStart}</pre>
+            <div>${linkedSentenceStart}</div>
+            <hr/>
+            <h3>Battlin' Boxer XYZ</h3>
+            <pre>${materialsBattlin}</pre>
+            <div>${linkedBattlin}</div>
+            <h4>After removal (naive replace):</h4>
+            <pre>${demoDescriptionBattlin.replace(materialsBattlin, '')}</pre>
+            <h4>After removal (safe):</h4>
+            <pre>${CardLoader.removeMaterialsFromDescription ? CardLoader.removeMaterialsFromDescription(demoDescriptionBattlin, materialsBattlin) : demoDescriptionBattlin.replace(materialsBattlin, '')}</pre>
+                        <h4>Formatted HTML from formatCardDescription()</h4>
+                        <div style="border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:8px;">${CardLoader.formatCardDescription ? CardLoader.formatCardDescription(demoDescriptionBattlin, 'XYZ Monster') : ''}</div>
+            <h4>After removal (tolerant):</h4>
+            <pre>${CardLoader.removeMaterialsFromDescription ? CardLoader.removeMaterialsFromDescription(demoDescriptionBattlin, materialsBattlin, true) : demoDescriptionBattlin.replace(materialsBattlin, '')}</pre>
+            <h4>Contains duplicate materials after safe removal?</h4>
+            <pre>${(CardLoader.removeMaterialsFromDescription ? CardLoader.removeMaterialsFromDescription(demoDescriptionBattlin, materialsBattlin) : demoDescriptionBattlin.replace(materialsBattlin, '')).includes('2 Level 4 Battlin\' Boxer monsters')}</pre>
+            <h4>Debug Raw materials:</h4>
+            <pre>${CardLoader.extractSummoningMaterials ? CardLoader.extractSummoningMaterials(demoDescriptionBattlin, 'XYZ Monster') : null}</pre>
+            <h4>Safe linked</h4>
+            <pre>${linkedBattlinSafe}</pre>
+            <hr/>
+            <h3>Ignore name-becomes lines</h3>
+            <pre>${CardLoader.extractSummoningMaterials ? CardLoader.extractSummoningMaterials('1 Tuner + 1+ non-Tuner monsters\nThis card\'s name becomes "Summoned Skull"', 'Synchro Monster') : null}</pre>
+            <h4>After removal:</h4>
+            <pre>${demoDescriptionNextLine.replace(materialsNext, '')}</pre>
+        `;
+    </script>
+</body>
+</html>
