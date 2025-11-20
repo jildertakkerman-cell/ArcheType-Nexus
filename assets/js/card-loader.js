@@ -410,12 +410,20 @@ const CardLoader = (function () {
 
         // Common patterns for summoning materials
         const patterns = [
+            // Special summoning condition pattern (e.g., "Must be Special Summoned by \"Mask Change\"")
+            /^(Must (?:first )?be (?:Fusion |Synchro |Xyz |Link |Special )?Summoned (?:with|by|using) [^.]+\.?)/i,
+
             // Specific pattern for materials with "except" clause (Must be first to avoid partial matches)
             /^(\d+(?:\s*\+\s*\d+)?\s*[\w\s"]+monsters?,\s*except\s*[^\r\n]*)/i,
 
             // Specific Fusion patterns (Moved to top to avoid being shadowed by generic Link pattern)
-            /^(\d+\s*[\w\s"]+\s*\+\s*\d+\s*[\w\s"]+(?:\s*\+\s*\d+\s*[\w\s"]+)?)/i,
-            /^(\d+\s*[\w\s]+monsters?(?:\s*\+\s*(?:\d+\s*)?[\w\s"]+)*)/i,
+            // Pattern for: "1 X Fusion Monster + 1 Y monster" or "1 X + 1 Y + 1 Z monsters"
+            // Updated to include location qualifiers like "in your opponent's GY"
+            /^(\d+\s*[\w\s"]+\s*\+\s*\d+\s*[\w\s"]+?monsters?(?:\s+in\s+your\s+(?:opponent's\s+)?GY)?(?:\s*\+\s*\d+\s*[\w\s"]+?monsters?(?:\s+in\s+your\s+(?:opponent's\s+)?GY)?)*)/i,
+            // Pattern for: "2 monsters, including..." or "2+ Effect Monsters" or "2 \"Archetype\" monsters"
+            // Updated to allow "1+ "Fluffal" and/or "Edge Imp" monsters" - allowing quoted names and conjunctions
+            /^(\d+\+?\s*[\w\s",\/]+(?:monsters?|Fusion Monster)\s*(?:\+\s*(?:1\+|1 or more|\d+)\s*[\w\s",\/]+(?:monsters?|Fusion Monster))+(?:\s*\+\s*(?:1\+|1 or more|\d+)\s*[\w\s",\/]+(?:monsters?|Fusion Monster))*)/i,
+            /^(\d+\+?\s*[\w\s",\/]+monsters?(?:\s*\+\s*(?:\d+\s*)?[\w\s"]+)*)/i,
 
             // Link patterns - more inclusive for complex specifications
             // Capture line breaks and subordinate clauses until the next sentence (capitalized) or end
@@ -428,7 +436,7 @@ const CardLoader = (function () {
             /^(\d+(?:\s*\+\s*)?\s*[\w\s"]+monsters?\s*\([^)]*\))/i,
             // Fusion patterns - specific card names first
             // Capture situations like: 1 DARK monster + "Fallen of Albaz" (quoted card name after a +)
-            /^([^\r\n]*?"[^"]+"(?:\s*\+\s*"[^"]+")*(?:\s*\+\s*[^A-Z][^.]*)?)/im,
+            /^(?!If|When|You|Once|During|For|Unless|While|Then|In the)([^\r\n]*?"[^"]+"(?:\s*\+\s*"[^"]+")*(?:\s*\+\s*[^A-Z][^.]*)?)/im,
 
 
             /^("[^"]*"(?:\s*\+\s*"[^"]*")+(?:\s*\+\s*"[^"]*")*)/,
