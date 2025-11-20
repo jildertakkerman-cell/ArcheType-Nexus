@@ -402,7 +402,7 @@ const CardLoader = (function () {
     /**
      * Extract summoning materials from Extra Deck monster descriptions
      */
-    function extractSummoningMaterials(description, cardType) {
+    function extractSummoningMaterials(description, cardType, cardName) {
         // Only process Extra Deck monsters (Fusion, Synchro, XYZ)
         if (!cardType || (!cardType.includes('Fusion') && !cardType.includes('Synchro') && !cardType.includes('XYZ') && !cardType.includes('Link'))) {
             return null;
@@ -427,12 +427,12 @@ const CardLoader = (function () {
 
             // Link patterns - more inclusive for complex specifications
             // Capture line breaks and subordinate clauses until the next sentence (capitalized) or end
-            /^(\d+(?:\s*\+\s*)?\s*(?:[\w\s\-]+)?monsters?(?:\r?\n(?![A-Z]).*)*)/im,
+            /^(\d+(?:\s*\+\s*)?\s*(?:[\w\s\-]+)?monsters?(?:\r?\n(?!\s*(?:Monsters|[A-Z])).*)*)/im,
             // Synchro patterns - more inclusive for attributes and 1+ notation
             /^(\d+\s+(?:[\w"]+\s+)?Tuner\s*\+\s*\d+(?:\s*\+\s*)?(?:\s+or\s+more|\+)?\s+non-Tuner(?:\s+(?!monsters).*?)?\s*monsters?)/i,
             /^(\d+\s+(?:[\w"]+\s+)?Tuner\s+Synchro\s+Monster\s*\+\s*\d+(?:\s*\+\s*)?(?:\s+or\s+more|\+)?\s+non-Tuner(?:\s+(?!monsters).*?)?\s*monsters?)/i,
             // XYZ patterns
-            /^(\d+(?:\s*\+\s*)?\s*Level\s+\d+(?:\s+or\s+higher|\s+or\s+lower)?(?:.*?)monsters?(?:\r?\n(?![A-Z]).*)*)/im,
+            /^(\d+(?:\s*\+\s*)?\s*Level\s+\d+(?:\s+or\s+higher|\s+or\s+lower)?(?:.*?)monsters?(?:\r?\n(?!\s*(?:Monsters|[A-Z])).*)*)/im,
             /^(\d+(?:\s*\+\s*)?\s*[\w\s"]+monsters?\s*\([^)]*\))/i,
             // Fusion patterns - specific card names first
             // Capture situations like: 1 DARK monster + "Fallen of Albaz" (quoted card name after a +)
@@ -440,9 +440,9 @@ const CardLoader = (function () {
 
 
             /^("[^"]*"(?:\s*\+\s*"[^"]*")+(?:\s*\+\s*"[^"]*")*)/,
-            /^(\d+(?:\s*\+\s*\d+)?\s*[\w\s"]+monsters?)/i,
+            /^(\d+(?:\s*\+\s*\d+)?\s*[\w \t"]+monsters?)/i,
             // Generic catch-all for materials ending with "monsters" - include the following clause until next capitalized sentence
-            /^([^\r\n]*?monsters?(?:\r?\n(?![A-Z]).*)*)/im
+            /^([^\r\n]*?monsters?(?:\r?\n(?!\s*(?:Monsters|[A-Z])).*)*)/im
         ];
 
         for (const pattern of patterns) {
@@ -459,6 +459,12 @@ const CardLoader = (function () {
                 const effectMarker = materials.search(/\s+(?:You|If|When|Once|During|For|Unless|While|Then|In the|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains)\b/i);
                 if (effectMarker !== -1) {
                     materials = materials.substring(0, effectMarker).trim();
+                }
+
+                // Fallback cleanup: if materials ends with "Monsters" (case-insensitive) on a new line, trim it.
+                // This handles cases where the regex accidentally captured the start of the effect text "Monsters..."
+                if (/[\r\n]+\s*Monsters$/i.test(materials)) {
+                    materials = materials.replace(/[\r\n]+\s*Monsters$/i, '').trim();
                 }
 
                 // Make sure it's not too long (probably not materials if > 100 chars)
@@ -500,8 +506,16 @@ const CardLoader = (function () {
                     // words that directly follow a quoted name (e.g., 1 "Abyss Actor" Pendulum Monster)
                     // Ensure we don't cross a newline to find this.
                     // Also ensure we don't capture a full sentence like "A Fusion Summon of this card..."
-                    const trailingMonster = lookahead.match(/^[ \t]*([ \t\w"'\-]+?Monster(?:s)?)/i);
+                    const trailingMonster = lookahead.match(/^[ \t]*((?:(?!Monster)[ \t\w"'\-])+?Monster(?:s)?)/i);
+
                     if (trailingMonster && trailingMonster[0]) {
+                        // Check if we are just duplicating the word "monster(s)"
+                        const currentEnd = match[1].trim().match(/monsters?$/i);
+                        const nextStart = trailingMonster[1].trim().match(/^monsters?$/i);
+                        if (currentEnd && nextStart) {
+                            // Don't append if it's just "monsters" again
+                            return materials;
+                        }
                         // Only accept if it's a short noun phrase, not a long sentence
                         if (trailingMonster[0].length < 50 && !/^(?:A|The)\s/i.test(trailingMonster[1])) {
                             const combined = match[1] + trailingMonster[0];
@@ -520,7 +534,7 @@ const CardLoader = (function () {
     /**
      * Format card description with better readability for pendulum cards
      */
-    function formatCardDescription(description, cardType) {
+    function formatCardDescription(description, cardType, cardName) {
         // Check if this is a pendulum card (has both Pendulum Effect and Monster Effect sections)
         if (description.includes('[ Pendulum Effect ]') && description.includes('[ Monster Effect ]')) {
             // Split the description into sections
@@ -545,7 +559,7 @@ const CardLoader = (function () {
         }
 
         // Check for summoning materials in Extra Deck monsters
-        const summoningMaterials = extractSummoningMaterials(description, cardType);
+        const summoningMaterials = extractSummoningMaterials(description, cardType, cardName);
         if (summoningMaterials && debugMaterials) {
             console.groupCollapsed('[CardLoader] materials debug:', summoningMaterials);
             console.log('Original description:', description);
@@ -784,7 +798,7 @@ const CardLoader = (function () {
                     <div class="w-full h-px bg-blue-500 my-2"></div>
                 </div>
                 <div class="flex-1 overflow-y-auto" style="min-height: 0;">
-                    ${formatCardDescription(cardInfo.desc, cardInfo.type)}
+                    ${formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name)}
                     ${stats}
                 </div>
             </div>
