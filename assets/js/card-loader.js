@@ -46,8 +46,10 @@ const CardLoader = (function () {
 
         // Helper to apply responsive constraints
         const applyConstraints = (el) => {
-            el.style.maxWidth = 'min(400px, calc(100vw - 40px))';
-            el.style.maxHeight = 'min(500px, calc(100vh - 40px))';
+            // Use less margin on mobile to prevent unneeded scrolling
+            // 16px total margin (8px each side) for mobile, 400px max width for desktop
+            el.style.maxWidth = 'min(400px, calc(100vw - 16px))';
+            el.style.maxHeight = 'min(600px, calc(100vh - 20px))';
         };
 
         if (popup) {
