@@ -288,14 +288,20 @@ class DuelSimulator {
         if (zone) {
             const zoneRect = zone.getBoundingClientRect();
 
-            // Get actual card dimensions (or defaults if not yet rendered)
-            // NEW: Check if mobile to set correct default fallback
+            // DYNAMIC SIZING: Check if we are in mobile mode
             const isMobile = window.matchMedia("(max-width: 768px)").matches;
-            const defaultWidth = isMobile ? 70 : 120;
-            const defaultHeight = isMobile ? 102 : 175;
 
-            const cardWidth = token.offsetWidth || defaultWidth;
-            const cardHeight = token.offsetHeight || defaultHeight;
+            // On mobile, the zones define the size (approx 62x90). 
+            // On Desktop, we use the standard size (120x175).
+            const targetWidth = isMobile ? 62 : 120;
+            const targetHeight = isMobile ? 90 : 175;
+
+            // Force the token to match the grid size immediately
+            token.style.width = targetWidth + 'px';
+            token.style.height = targetHeight + 'px';
+
+            const cardWidth = targetWidth;
+            const cardHeight = targetHeight;
 
             // Special handling for hand zone - spread cards horizontally
             if (zoneId === 'zone-hand') {

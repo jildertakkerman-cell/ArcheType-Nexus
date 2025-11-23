@@ -388,90 +388,127 @@
     }
 }
 
-/* MOBILE OPTIMIZATIONS */
+/* --- MOBILE PORTRAIT LAYOUT (No Side Scroll) --- */
 @media (max-width: 768px) {
     .duel-board-wrapper {
-        /* Enable Horizontal Scrolling */
         width: 100%;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        /* Smooth scrolling on iOS */
-        padding-bottom: 10px;
-        /* Space for the scrollbar */
-        cursor: grab;
-    }
-
-    .duel-board-wrapper:active {
-        cursor: grabbing;
+        overflow: visible;
+        /* Disable scroll container */
     }
 
     .duel-board {
-        /* CRITICAL: Force the board to stay wide enough to preserve aspect ratio */
-        min-width: 680px;
-        width: 680px;
-        /* Explicit width ensures JS positioning works correctly */
-        height: 440px;
-        margin: 0;
-        /* Remove auto margins */
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        /* Allow board to grow vertically */
+        min-height: 550px;
+        /* Remove fixed aspect ratio, let it be a tall container */
     }
 
+    /* COMPLETE GRID RE-ARRANGEMENT */
     .field-grid {
-        /* Tighter gaps for mobile */
-        grid-template-columns: 75px 1fr 75px;
-        grid-template-rows: 80px 110px 110px;
-        gap: 4px;
-        padding: 8px;
+        display: grid;
+        /* Create a 4-column grid for the utility row at bottom */
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        /* Rows: EMZ | Monsters | Spells | Utility (Deck/GY/etc) */
+        grid-template-rows: 100px 100px 100px 90px;
+        gap: 8px;
+        padding: 10px 5px;
+
+        /* Re-map the areas to a vertical stack */
+        grid-template-areas:
+            "extra-monsters extra-monsters extra-monsters extra-monsters"
+            "main-monsters  main-monsters  main-monsters  main-monsters"
+            "spell-traps    spell-traps    spell-traps    spell-traps"
+            "field          extra-deck     gy             deck";
     }
 
-    /* Text adjustments */
-    .zone::after {
-        font-size: 0.35rem;
-        bottom: 2px;
+    /* --- 1. Extra Monster Zones (Top) --- */
+    .extra-monster-zones {
+        grid-area: extra-monsters;
+        gap: 30px;
+        /* Bring them closer */
+        align-items: flex-end;
+        /* Align to bottom of their row */
     }
 
-    /* Zone Sizing */
     .extra-monster-zone {
         width: 60px;
-        height: 70px;
+        height: 88px;
     }
 
-    .extra-monster-zones {
-        gap: 40px;
+    /* --- 2. Main Monster & Spell Zones (Middle) --- */
+    /* We force these containers to span the full width */
+    .main-monster-zones,
+    .spell-trap-zones {
+        display: grid;
+        /* 5 Equal columns for the 5 cards */
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        /* Tight gap to fit 5 cards on phone screen */
+        width: 100%;
     }
 
     .main-monster-zone,
     .spell-trap-zone {
-        min-height: 100px;
-    }
-
-    .hand-area {
-        height: 110px;
-        /* Shrink hand area slightly on mobile */
-    }
-
-    /* Adjust Token Size for the smaller grid */
-    .card-token {
-        width: 70px;
-        /* Scaled down from 120px */
-        height: 102px;
-        /* Maintain ~1.45 aspect ratio */
+        min-height: 0;
+        /* Allow shrinking */
+        height: 100%;
+        /* Fill the grid row */
         border-width: 1px;
+        /* Thinner borders for cleanliness */
     }
 
-    /* Controls adjustments */
-    .sim-controls {
-        flex-wrap: wrap;
-        gap: 0.5rem;
+    /* Hide the "Main Monster Zone" text on mobile to save visual noise */
+    .zone::after {
+        display: none;
     }
 
-    .sim-btn {
-        font-size: 0.8rem;
-        padding: 0.5rem 0.8rem;
+    /* Optional: Show tiny labels for Deck/GY only */
+    .gy-zone::after,
+    .deck-zone::after,
+    .field-zone::after {
+        display: block;
+        font-size: 0.5rem;
+        bottom: 2px;
     }
 
-    .sim-log {
-        font-size: 0.75rem;
-        height: 80px;
+    /* --- 3. Utility Zones (Bottom Row) --- */
+    /* These now sit side-by-side at the bottom */
+    .field-zone {
+        grid-area: field;
+    }
+
+    .extra-deck-zone {
+        grid-area: extra-deck;
+    }
+
+    .gy-zone {
+        grid-area: gy;
+    }
+
+    .deck-zone {
+        grid-area: deck;
+    }
+
+    /* --- 4. Hand Area (Fixed at bottom) --- */
+    .hand-area {
+        height: 100px;
+        border-top: 1px solid #3b82f6;
+    }
+
+    /* --- 5. Card Tokens (Resized for 5-column layout) --- */
+    .card-token {
+        /* Calculated: (Screen Width ~360 - Gaps) / 5 */
+        width: 62px;
+        height: 90px;
+        border-width: 1px;
+        border-radius: 3px;
+    }
+
+    /* Adjust active glow to not be too huge on small cards */
+    .card-token.active-card {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px #fbbf24;
     }
 }
