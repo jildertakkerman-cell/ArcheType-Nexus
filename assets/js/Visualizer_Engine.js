@@ -36,7 +36,7 @@ class DuelSimulator {
         });
     }
 
-async loadCardImages() {
+    async loadCardImages() {
         const cardNames = new Set();
         Object.values(this.combos).forEach(combo => {
             combo.cards.forEach(card => {
@@ -45,14 +45,14 @@ async loadCardImages() {
         });
 
         const nameArray = Array.from(cardNames);
-        
+
         // 1. Preload raw data via CardLoader
         if (typeof CardLoader !== 'undefined' && CardLoader.preloadCards) {
             await CardLoader.preloadCards(nameArray);
         }
 
         const imageMap = {};
-        
+
         // 2. Process images: Resize them to token size (120x175) in memory
         // This effectively creates "mipmaps" for the board
         const processingPromises = nameArray.map(async (name) => {
@@ -91,7 +91,7 @@ async loadCardImages() {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.crossOrigin = "Anonymous"; // Required to manipulate images from external URLs via Canvas
-            
+
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 canvas.width = targetWidth;
@@ -236,7 +236,7 @@ async loadCardImages() {
                     type: "monster", // Generic type for CSS styling
                     zone: "zone-hand",
                     // Use a standard YGO card back image
-                    img: "https://images.ygoprodeck.com/images/cards/back_high.jpg", 
+                    img: "https://images.ygoprodeck.com/images/cards/back_high.jpg",
                     isDummy: true
                 };
                 this.createCardToken(dummyData);
@@ -264,7 +264,7 @@ async loadCardImages() {
         token.style.cursor = 'pointer'; // Add pointer cursor to indicate clickability
 
         // --- CHANGED: Integration with CardLoader ---
-        
+
         // 1. Add Click Event for detailed CardLoader Popup
         token.addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent click from bubbling
@@ -289,9 +289,13 @@ async loadCardImages() {
             const zoneRect = zone.getBoundingClientRect();
 
             // Get actual card dimensions (or defaults if not yet rendered)
-            // Default to new larger size: 120x175
-            const cardWidth = token.offsetWidth || 120;
-            const cardHeight = token.offsetHeight || 175;
+            // NEW: Check if mobile to set correct default fallback
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+            const defaultWidth = isMobile ? 70 : 120;
+            const defaultHeight = isMobile ? 102 : 175;
+
+            const cardWidth = token.offsetWidth || defaultWidth;
+            const cardHeight = token.offsetHeight || defaultHeight;
 
             // Special handling for hand zone - spread cards horizontally
             if (zoneId === 'zone-hand') {
@@ -337,13 +341,13 @@ async loadCardImages() {
         }
     }
 
- moveCard(cardId, targetZoneId) {
+    moveCard(cardId, targetZoneId) {
         const cardObj = this.cards[cardId];
         if (!cardObj) return;
 
         // 1. Identify if this card is a Token
-        const isToken = (cardObj.data.type && cardObj.data.type.toLowerCase() === 'token') || 
-                        (cardObj.data.name && cardObj.data.name.toLowerCase().includes('token'));
+        const isToken = (cardObj.data.type && cardObj.data.type.toLowerCase() === 'token') ||
+            (cardObj.data.name && cardObj.data.name.toLowerCase().includes('token'));
 
         // 2. Identify if the card is leaving the field (to GY, Deck, Hand, Banish)
         const isLeavingField = ['zone-gy', 'zone-deck', 'zone-hand', 'zone-banish'].includes(targetZoneId);
@@ -358,7 +362,7 @@ async loadCardImages() {
         // 4. Handle Token Removal Logic
         if (isToken && isLeavingField) {
             this.log(`(Token ${cardObj.data.name} removed from play)`);
-            
+
             // Animate out
             cardObj.element.style.transition = "all 0.5s ease";
             cardObj.element.style.opacity = "0";
@@ -366,7 +370,7 @@ async loadCardImages() {
 
             // Hide element after animation instead of removing it
             cardObj.vanishTimeout = setTimeout(() => {
-                cardObj.element.style.display = 'none'; 
+                cardObj.element.style.display = 'none';
             }, 500);
 
             return; // Stop processing (don't move it to the GY zone)
@@ -376,13 +380,13 @@ async loadCardImages() {
         // Ensure the card is visible, full size, and opaque before moving
         cardObj.element.style.display = 'block';
         cardObj.element.style.opacity = '1';
-        cardObj.element.style.transform = 'scale(1)'; 
-        
+        cardObj.element.style.transform = 'scale(1)';
+
         // Restore standard transition for movement
         cardObj.element.style.transition = "left 0.4s ease-in-out, top 0.4s ease-in-out";
 
         // --- Standard Logic ---
-        
+
         this.setPosition(cardObj.element, targetZoneId);
 
         // Re-position all hand cards if moving to/from hand
@@ -412,14 +416,14 @@ async loadCardImages() {
         }
     }
 
-prevStep() {
+    prevStep() {
         if (this.currentStep > 0) {
             // 1. Calculate the step we want to be at (one step back)
             const targetIndex = this.currentStep - 1;
 
             // 2. Temporarily pause logging to avoid spamming the log during replay
-            const originalLog = this.log; 
-            this.log = () => {}; // No-op function
+            const originalLog = this.log;
+            this.log = () => { }; // No-op function
 
             // 3. Reset the board to the clean starting state
             this.loadCombo(this.currentComboId);
@@ -434,7 +438,7 @@ prevStep() {
             // 5. Restore Logging and Update State
             this.log = originalLog; // Restore the log function
             this.currentStep = targetIndex; // Update the counter
-            
+
             // Optional: Log that we stepped back
             this.log(`< Rewound to Step ${targetIndex}`);
         } else {
