@@ -1,11 +1,11 @@
-// card-loader.js - Enhanced with Banlist Functionality
+// card-loader.js - Enhanced with Banlist Functionality & Dummy Card Support
 // Place this file in: /js/card-loader.js
 
 /**
  * YuGiOh Card Loader Module with Banlist Integration
  * Handles fetching card data from API, displaying images, and checking banlist status
  */
-const CardLoader = (function () {
+window.CardLoader = (function () {
     console.log('[CardLoader] IIFE started');
 
     // Configuration
@@ -14,6 +14,7 @@ const CardLoader = (function () {
         API_URL: 'https://db.ygoprodeck.com/api/v7/cardinfo.php',
         BANLIST_API_URL: 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg',
         IMAGE_EXTENSIONS: ['.png', '.jpg'],
+        CARD_BACK_URL: 'https://images.ygoprodeck.com/images/cards/back_high.jpg'
     };
 
     // Internal state
@@ -200,6 +201,32 @@ const CardLoader = (function () {
             return;
         }
 
+        // Handle dummy cards (e.g. "dummy-0", "Any Water Card", "Any Card")
+        // Checks if name starts with 'dummy-' or 'any ' (case insensitive)
+        const lowerName = cardName.toLowerCase();
+        if (lowerName.startsWith('dummy-') || lowerName.startsWith('any ')) {
+            const dummyInfo = {
+                id: cardName,
+                name: cardName, // Keeps the capitalization passed in (e.g., "Any Water Card")
+                desc: 'A generic placeholder card used to represent non-specific requirements.',
+                type: 'Normal Monster', // Default type to ensure popup works
+                race: 'Normal', // Default race
+                is_dummy: true,
+                hosted_image_url: CONFIG.CARD_BACK_URL
+            };
+            
+            cardDataCache[cardName] = dummyInfo;
+            
+            // Allow popup on dummy cards so users can see the name they clicked
+            container.addEventListener('click', (event) => {
+                event.stopPropagation();
+                showPopup(event, cardName);
+            });
+            
+            displayCardImage(dummyInfo, container);
+            return;
+        }
+
         container.addEventListener('click', (event) => {
             event.stopPropagation();
             showPopup(event, cardName);
@@ -280,7 +307,7 @@ const CardLoader = (function () {
 
         // Check banlist status
         let banStatus = null;
-        if (typeof fetchBanlistData === 'function') {
+        if (!cardInfo.is_dummy && typeof fetchBanlistData === 'function') {
             // Use cached banlist if available
             if (!banlistData) banlistData = await fetchBanlistData();
             // Case-insensitive lookup
@@ -312,17 +339,27 @@ const CardLoader = (function () {
         img.alt = cardInfo.name;
         img.className = 'w-full h-auto rounded-lg shadow-md';
 
+        // --- Anti-Aliasing & Image Quality Restoration ---
+        // These properties ensure large images look smooth when squished down
+        img.style.imageRendering = 'high-quality'; // Modern standard
+        img.style.imageRendering = '-webkit-optimize-contrast'; // Legacy chrome fix
+        img.style.transform = 'translateZ(0)'; // Force GPU compositing/smoothing
+        img.style.backfaceVisibility = 'hidden'; // Prevents jagged edges during transforms
+        // -------------------------------------------------
+
         img.onerror = function () {
-            if (imageUrl.endsWith('.png')) {
-                const jpgUrl = imageUrl.replace('.png', '.jpg');
-                console.warn(`PNG not found, trying JPG: ${jpgUrl}`);
-                img.src = jpgUrl;
-                img.onerror = function () {
-                    console.error(`Image not found: ${cardInfo.name} (ID: ${cardInfo.id})`);
-                    container.innerHTML = `<div class="card-placeholder">${cardInfo.name}<br><small>Missing: ${cardInfo.id}</small></div>`;
-                };
+            // If it's a dummy card (card back), we don't need to try alternative APIs
+            if (cardInfo.is_dummy) return;
+
+            const publicApiUrl = `https://images.ygoprodeck.com/images/cards/${cardInfo.id}.jpg`;
+
+            // If we haven't tried the public API yet
+            if (img.src !== publicApiUrl) {
+                console.warn(`Custom bucket image failed for ${cardInfo.name}, trying public API: ${publicApiUrl}`);
+                img.src = publicApiUrl;
             } else {
-                console.error(`Image not found: ${cardInfo.name} (ID: ${cardInfo.id})`);
+                // Both custom and public failed
+                console.error(`Image not found in both custom bucket and public API: ${cardInfo.name} (ID: ${cardInfo.id})`);
                 container.innerHTML = `<div class="card-placeholder">${cardInfo.name}<br><small>Missing: ${cardInfo.id}</small></div>`;
             }
         };
@@ -1156,7 +1193,6 @@ const CardLoader = (function () {
 
             html = `
                         <div class="card p-8 mb-10 md:mb-16">
-                            <!-- Status Badge -->
                             <div class="flex justify-center mb-6">
                                 <div class="inline-flex items-center px-6 py-3 bg-green-600 bg-opacity-10 border-2 border-green-500 rounded-full">
                                     <i class="fas fa-check-circle text-green-400 text-2xl mr-3"></i>
@@ -1164,12 +1200,10 @@ const CardLoader = (function () {
                                 </div>
                             </div>
                             
-                            <!-- Main Message -->
                             <p class="text-center text-lg mb-6 ${pageColors.bodyTextColor} leading-relaxed">
                                 ${unrestrictedMsg}
                             </p>
                             
-                            <!-- Benefits Grid -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                 <div class="bg-gradient-to-br from-green-900 to-green-800 bg-opacity-30 p-4 rounded-lg border border-green-600 border-opacity-40">
                                     <div class="flex items-center mb-2">
@@ -1196,7 +1230,6 @@ const CardLoader = (function () {
                                 </div>
                             </div>
                             
-                            <!-- Stats Box -->
                             <div class="mt-8 bg-gray-900 bg-opacity-60 rounded border border-gray-700 p-3">
                                 <div class="flex items-start">
                                     <i class="fas fa-info-circle text-gray-400 text-xs mr-2 mt-0.5"></i>
@@ -1518,6 +1551,12 @@ const CardLoader = (function () {
             console.log(`[CardLoader] Fetching archetype cards for: ${archetypeName}`);
 
             const response = await fetch(apiUrl);
+
+            if (response.status === 400) {
+                // Archetype not found, return empty array
+                console.log(`[CardLoader] Archetype "${archetypeName}" not found in API (400), returning empty array`);
+                return [];
+            }
 
             if (!response.ok) {
                 throw new Error(`Archetype API returned status ${response.status}`);
