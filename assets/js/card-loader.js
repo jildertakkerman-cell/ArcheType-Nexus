@@ -62,7 +62,9 @@ const CardLoader = (function () {
         popup.className = 'z-50 bg-gray-900 border-2 border-blue-500 text-white p-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none';
         popup.style.position = 'fixed';
         popup.style.display = 'none';
-        popup.style.width = 'auto';
+        // Use 100% width so it expands to fill the maxWidth constraint
+        // This ensures it uses the full available space on mobile
+        popup.style.width = '100%';
         applyConstraints(popup);
         document.body.appendChild(popup);
     }
