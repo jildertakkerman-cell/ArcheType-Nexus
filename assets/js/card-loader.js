@@ -27,12 +27,18 @@ window.CardLoader = (function () {
     let currentCard = null;
     // Debug toggle for development — when true, material extraction steps are logged
     let debugMaterials = false;
+    let initialized = false;
 
     /**
      * Initialize the card loader system
      * Call this once when the page loads
      */
     function init() {
+        if (initialized) {
+            console.log('CardLoader already initialized, skipping');
+            return;
+        }
+        initialized = true;
         createPopup();
         setupGlobalClickListener();
         console.log('CardLoader initialized');
@@ -89,6 +95,12 @@ window.CardLoader = (function () {
     async function loadSuggestionForm() {
         if (document.body.dataset.page === 'index') {
             console.log('Skipping suggestion form on index page');
+            return;
+        }
+
+        // Check if form already exists to prevent duplicates
+        if (document.getElementById('toggle-form-btn')) {
+            console.log('Suggestion form already loaded, skipping injection.');
             return;
         }
 
@@ -214,15 +226,15 @@ window.CardLoader = (function () {
                 is_dummy: true,
                 hosted_image_url: CONFIG.CARD_BACK_URL
             };
-            
+
             cardDataCache[cardName] = dummyInfo;
-            
+
             // Allow popup on dummy cards so users can see the name they clicked
             container.addEventListener('click', (event) => {
                 event.stopPropagation();
                 showPopup(event, cardName);
             });
-            
+
             displayCardImage(dummyInfo, container);
             return;
         }
