@@ -234,6 +234,21 @@ const CardLoader = (function () {
     }
 
     /**
+     * Get card image URL by name
+     */
+    async function getCardImageUrl(cardName) {
+        try {
+            const cardInfo = await fetchCardData(cardName);
+            if (!cardInfo) return null;
+            // Construct and return the hosted image URL using the same format as loadCard()
+            return `${CONFIG.IMAGE_BASE_URL}/${cardInfo.id}.png`;
+        } catch (error) {
+            console.error(`Failed to get image URL for "${cardName}":`, error);
+            return null;
+        }
+    }
+
+    /**
      * Fetch card data from API
      */
     async function fetchCardData(cardName) {
@@ -1796,6 +1811,7 @@ const CardLoader = (function () {
         init,
         loadCard,
         loadCards,
+        getCardImageUrl,
         preloadCards,
         getCachedCard,
         clearCache,
