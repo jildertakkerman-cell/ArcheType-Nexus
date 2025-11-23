@@ -43,16 +43,25 @@ const CardLoader = (function () {
      */
     function createPopup() {
         popup = document.getElementById('card-popup');
-        if (popup) return;
+
+        // Helper to apply responsive constraints
+        const applyConstraints = (el) => {
+            el.style.maxWidth = 'min(400px, calc(100vw - 40px))';
+            el.style.maxHeight = 'min(500px, calc(100vh - 40px))';
+        };
+
+        if (popup) {
+            applyConstraints(popup);
+            return;
+        }
 
         popup = document.createElement('div');
         popup.id = 'card-popup';
         popup.className = 'z-50 bg-gray-900 border-2 border-blue-500 text-white p-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none';
         popup.style.position = 'fixed';
         popup.style.display = 'none';
-        popup.style.maxWidth = 'min(400px, calc(100vw - 40px))'; // Increased max-width for better readability
         popup.style.width = 'auto';
-        popup.style.maxHeight = 'min(500px, calc(100vh - 40px))'; // Fixed max-height for mobile compatibility
+        applyConstraints(popup);
         document.body.appendChild(popup);
     }
 
@@ -832,31 +841,25 @@ const CardLoader = (function () {
     function movePopup(event) {
         if (!popup) return;
 
-        const popupWidth = popup.offsetWidth || 400; // fallback width
-        const popupHeight = popup.offsetHeight || 500; // fallback height
-        const cushion = 20;
         const isMobile = window.innerWidth <= 768;
 
-        let x, y;
-
         if (isMobile) {
-            // On mobile, center the popup both horizontally and vertically
-            x = (window.innerWidth - popupWidth) / 2;
-            y = (window.innerHeight - popupHeight) / 2;
-
-            // Ensure it fits within screen bounds
-            if (x < cushion) x = cushion;
-            if (y < cushion) y = cushion;
-            if (x + popupWidth > window.innerWidth - cushion) {
-                x = window.innerWidth - popupWidth - cushion;
-            }
-            if (y + popupHeight > window.innerHeight - cushion) {
-                y = window.innerHeight - popupHeight - cushion;
-            }
+            // On mobile, use CSS centering to handle dynamic content resizing
+            popup.style.position = 'fixed';
+            popup.style.left = '50%';
+            popup.style.top = '50%';
+            popup.style.transform = 'translate(-50%, -50%)';
+            popup.style.margin = '0';
         } else {
             // Desktop: position near cursor
-            x = event.clientX + cushion;
-            y = event.clientY + cushion;
+            popup.style.transform = 'none';
+
+            const popupWidth = popup.offsetWidth || 400;
+            const popupHeight = popup.offsetHeight || 500;
+            const cushion = 20;
+
+            let x = event.clientX + cushion;
+            let y = event.clientY + cushion;
 
             // Keep popup within viewport bounds
             if (x + popupWidth > window.innerWidth) {
@@ -869,12 +872,12 @@ const CardLoader = (function () {
             // Ensure popup doesn't go off-screen to the left or top
             if (x < cushion) x = cushion;
             if (y < cushion) y = cushion;
-        }
 
-        // Use fixed positioning (stays in viewport, doesn't scroll with page)
-        popup.style.position = 'fixed';
-        popup.style.left = `${x}px`;
-        popup.style.top = `${y}px`;
+            // Use fixed positioning (stays in viewport, doesn't scroll with page)
+            popup.style.position = 'fixed';
+            popup.style.left = `${x}px`;
+            popup.style.top = `${y}px`;
+        }
     }
 
     /**
