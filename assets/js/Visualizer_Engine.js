@@ -217,8 +217,31 @@ async loadCardImages() {
 
         this.log(`Loaded: ${combo.title}`);
 
-        // Create cards
+        // 1. Create specific combo cards
         combo.cards.forEach(cardData => this.createCardToken(cardData));
+
+        // 2. NEW: Auto-fill Hand with Dummy Cards (Card Backs)
+        // Count current cards in hand
+        const handCards = combo.cards.filter(c => c.zone === 'zone-hand');
+        const currentHandSize = handCards.length;
+        const maxHandSize = 5;
+
+        // Add dummy cards if hand is below 5
+        if (currentHandSize < maxHandSize) {
+            for (let i = 0; i < (maxHandSize - currentHandSize); i++) {
+                const dummyId = `dummy-${i}`;
+                const dummyData = {
+                    id: dummyId,
+                    name: "Random Card", // Tooltip text
+                    type: "monster", // Generic type for CSS styling
+                    zone: "zone-hand",
+                    // Use a standard YGO card back image
+                    img: "https://images.ygoprodeck.com/images/cards/back_high.jpg", 
+                    isDummy: true
+                };
+                this.createCardToken(dummyData);
+            }
+        }
     }
 
     createCardToken(data) {
