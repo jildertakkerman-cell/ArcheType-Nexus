@@ -569,7 +569,7 @@ class DuelSimulator {
                         <div class="zone extra-monster-zone" id="zone-em-left"></div>
                         <div class="zone extra-monster-zone" id="zone-em-right"></div>
                     </div>
-                    <div class="empty-corner top-right"></div>
+                    <!-- Banished Zone takes this spot -->
                     
                     <div class="zone field-zone" id="zone-field"></div>
                     <div class="main-monster-zones">
@@ -743,6 +743,12 @@ class DuelSimulator {
             const jY = (zoneId.includes('gy') || zoneId.includes('deck') || zoneId.includes('banish')) ? (Math.random() * 4 - 2) : 0;
             token.style.left = (zoneRect.left - boardRect.left + (zoneRect.width - w) / 2 + jX) + 'px';
             token.style.top = (zoneRect.top - boardRect.top + (zoneRect.height - h) / 2 + jY) + 'px';
+            // Rotate banished cards sideways
+            if (zoneId.includes('banish')) {
+                token.style.transform = 'rotate(90deg)';
+            } else {
+                token.style.transform = 'none';
+            }
         }
     }
 
@@ -885,7 +891,7 @@ class DuelSimulator {
     }
     showGraveyardContents() {
         const gyCards = Object.values(this.cards).filter(c => c.element.getAttribute('data-zone') === 'zone-gy');
-        
+
         if (gyCards.length === 0) {
             this.log('Graveyard is empty');
             return;
@@ -906,81 +912,81 @@ class DuelSimulator {
         // Create side panel overlay
         const overlay = document.createElement('div');
         overlay.id = 'gy-side-panel';
-        overlay.style.cssText = 'position:fixed; top:0; right:0; width:400px; height:100%; background:rgba(30,41,59,0.98); z-index:9999; box-shadow:-4px 0 20px rgba(0,0,0,0.5); border-left:2px solid #38bdf8; display:flex; flex-direction:column; animation:slideIn 0.3s ease-out;';
-        
+        overlay.style.cssText = 'position:fixed; top:0; right:0; width:' + (window.innerWidth <= 768 ? '100%' : '400px') + '; height:100%; background:rgba(30,41,59,0.98); z-index:9999; box-shadow:-4px 0 20px rgba(0,0,0,0.5); border-left:2px solid #38bdf8; display:flex; flex-direction:column; animation:slideIn 0.3s ease-out;';
+
         // Add slide-in animation
         const style = document.createElement('style');
         style.textContent = '@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }';
         document.head.appendChild(style);
-        
+
         // Header
         const header = document.createElement('div');
         header.style.cssText = 'padding:20px; border-bottom:2px solid #38bdf8; display:flex; justify-content:space-between; align-items:center; background:#0f172a;';
-        
+
         const title = document.createElement('h3');
         title.textContent = `Graveyard (${gyCards.length} cards)`;
         title.style.cssText = 'color:#38bdf8; margin:0; font-size:20px; font-weight:bold;';
-        
+
         const closeBtn = document.createElement('button');
         closeBtn.innerHTML = '<i class="fas fa-times"></i>';
         closeBtn.style.cssText = 'background:transparent; border:none; color:#38bdf8; font-size:24px; cursor:pointer; padding:0; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:4px; transition:background 0.2s;';
         closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(56,189,248,0.1)';
         closeBtn.onmouseleave = () => closeBtn.style.background = 'transparent';
         closeBtn.onclick = () => document.body.removeChild(overlay);
-        
+
         header.appendChild(title);
         header.appendChild(closeBtn);
-        
+
         // Scrollable card container
         const cardContainer = document.createElement('div');
         cardContainer.style.cssText = 'flex:1; overflow-y:auto; padding:20px;';
-        
+
         const cardGrid = document.createElement('div');
         cardGrid.style.cssText = 'display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;';
-        
+
         gyCards.forEach(c => {
             const cardWrapper = document.createElement('div');
-            cardWrapper.style.cssText = 'cursor:pointer; transition:transform 0.2s; position:relative;';
-            cardWrapper.onmouseenter = () => cardWrapper.style.transform = 'scale(1.05)';
-            cardWrapper.onmouseleave = () => cardWrapper.style.transform = 'scale(1)';
-            
+            cardWrapper.style.cssText = 'cursor:pointer; transition:transform 0.2s; position:relative; display:flex; align-items:center; justify-content:center;';
+            cardWrapper.onmouseenter = () => cardWrapper.style.transform = 'rotate(90deg) scale(1.05)';
+            cardWrapper.onmouseleave = () => cardWrapper.style.transform = 'rotate(90deg) scale(1)';
+
             const cardImg = document.createElement('div');
             cardImg.style.cssText = `width:100%; aspect-ratio:59/86; background-size:cover; background-position:center; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4); border:2px solid #38bdf8; ${c.element.style.backgroundImage ? 'background-image:' + c.element.style.backgroundImage : ''}`;
-            
+
             cardWrapper.onclick = (e) => {
                 if (typeof window.CardLoader !== 'undefined' && !c.data.isDummy) {
                     window.CardLoader.showPopup(e, c.data.name);
                 }
             };
-            
+
             cardWrapper.appendChild(cardImg);
             cardGrid.appendChild(cardWrapper);
         });
-        
+
         cardContainer.appendChild(cardGrid);
-        
+
         // Footer with info
         const footer = document.createElement('div');
         footer.style.cssText = 'padding:16px 20px; border-top:2px solid #38bdf8; background:#0f172a; color:#94a3b8; font-size:12px; text-align:center;';
         footer.textContent = 'Click any card to view details';
-        
+
         overlay.appendChild(header);
         overlay.appendChild(cardContainer);
         overlay.appendChild(footer);
-        
+
         // Close on background click
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) {
                 document.body.removeChild(overlay);
             }
         });
-        
+
         document.body.appendChild(overlay);
     }
 
     showBanishedContents() {
         const banishedCards = Object.values(this.cards).filter(c => c.element.getAttribute('data-zone') === 'zone-banish');
-        
+
         if (banishedCards.length === 0) {
             this.log('Banished zone is empty');
             return;
@@ -1002,70 +1008,75 @@ class DuelSimulator {
         // Create side panel overlay
         const overlay = document.createElement('div');
         overlay.id = 'banish-side-panel';
-        overlay.style.cssText = 'position:fixed; top:0; right:0; width:400px; height:100%; background:rgba(30,41,59,0.98); z-index:9999; box-shadow:-4px 0 20px rgba(0,0,0,0.5); border-left:2px solid #f97316; display:flex; flex-direction:column; animation:slideIn 0.3s ease-out;';
-        
+        overlay.style.cssText = 'position:fixed; top:0; right:0; width:' + (window.innerWidth <= 768 ? '100%' : '400px') + '; height:100%; background:rgba(30,41,59,0.98); z-index:9999; box-shadow:-4px 0 20px rgba(0,0,0,0.5); border-left:2px solid #f97316; display:flex; flex-direction:column; animation:slideIn 0.3s ease-out;';
+
         // Header
         const header = document.createElement('div');
         header.style.cssText = 'padding:20px; border-bottom:2px solid #f97316; display:flex; justify-content:space-between; align-items:center; background:#0f172a;';
-        
+
         const title = document.createElement('h3');
         title.textContent = `Banished (${banishedCards.length} cards)`;
         title.style.cssText = 'color:#f97316; margin:0; font-size:20px; font-weight:bold;';
-        
+
         const closeBtn = document.createElement('button');
         closeBtn.innerHTML = '<i class="fas fa-times"></i>';
         closeBtn.style.cssText = 'background:transparent; border:none; color:#f97316; font-size:24px; cursor:pointer; padding:0; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:4px; transition:background 0.2s;';
         closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(249,115,22,0.1)';
         closeBtn.onmouseleave = () => closeBtn.style.background = 'transparent';
         closeBtn.onclick = () => document.body.removeChild(overlay);
-        
+
         header.appendChild(title);
         header.appendChild(closeBtn);
-        
+
         // Scrollable card container
         const cardContainer = document.createElement('div');
         cardContainer.style.cssText = 'flex:1; overflow-y:auto; padding:20px;';
-        
+
         const cardGrid = document.createElement('div');
         cardGrid.style.cssText = 'display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;';
-        
+
         banishedCards.forEach(c => {
             const cardWrapper = document.createElement('div');
-            cardWrapper.style.cssText = 'cursor:pointer; transition:transform 0.2s; position:relative;';
+            // Use a square-ish container to accommodate the rotated card
+            cardWrapper.style.cssText = 'cursor:pointer; transition:transform 0.2s; position:relative; display:flex; align-items:center; justify-content:center; height:140px;';
             cardWrapper.onmouseenter = () => cardWrapper.style.transform = 'scale(1.05)';
             cardWrapper.onmouseleave = () => cardWrapper.style.transform = 'scale(1)';
-            
+
             const cardImg = document.createElement('div');
-            cardImg.style.cssText = `width:100%; aspect-ratio:59/86; background-size:cover; background-position:center; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4); border:2px solid #f97316; ${c.element.style.backgroundImage ? 'background-image:' + c.element.style.backgroundImage : ''}`;
-            
+            // Rotate the card 90 degrees. Swap width/height aspect ratio considerations.
+            // Original card is ~59x86. Rotated it's ~86x59.
+            // We set width to be smaller to fit in grid, and rotate it.
+            cardImg.style.cssText = `width:80px; height:116px; background-size:cover; background-position:center; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4); border:2px solid #f97316; transform:rotate(90deg); ${c.element.style.backgroundImage ? 'background-image:' + c.element.style.backgroundImage : ''}`;
+
             cardWrapper.onclick = (e) => {
                 if (typeof window.CardLoader !== 'undefined' && !c.data.isDummy) {
                     window.CardLoader.showPopup(e, c.data.name);
                 }
             };
-            
+
             cardWrapper.appendChild(cardImg);
             cardGrid.appendChild(cardWrapper);
         });
-        
+
         cardContainer.appendChild(cardGrid);
-        
+
         // Footer with info
         const footer = document.createElement('div');
         footer.style.cssText = 'padding:16px 20px; border-top:2px solid #f97316; background:#0f172a; color:#94a3b8; font-size:12px; text-align:center;';
         footer.textContent = 'Click any card to view details';
-        
+
         overlay.appendChild(header);
         overlay.appendChild(cardContainer);
         overlay.appendChild(footer);
-        
+
         // Close on background click
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) {
                 document.body.removeChild(overlay);
             }
         });
-        
+
         document.body.appendChild(overlay);
     }
+
 }
