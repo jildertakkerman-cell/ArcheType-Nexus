@@ -882,6 +882,7 @@ window.CardLoader = (function () {
         `;
 
         popup.style.display = 'block';
+        popup.style.zIndex = '10000';
         movePopup(event);
         popup.style.pointerEvents = 'auto'; // Enable pointer events for scrolling
         setTimeout(() => { popup.style.opacity = 1; }, 10);
