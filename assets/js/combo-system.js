@@ -947,8 +947,8 @@ class DuelSimulator {
         gyCards.forEach(c => {
             const cardWrapper = document.createElement('div');
             cardWrapper.style.cssText = 'cursor:pointer; transition:transform 0.2s; position:relative; display:flex; align-items:center; justify-content:center;';
-            cardWrapper.onmouseenter = () => cardWrapper.style.transform = 'rotate(90deg) scale(1.05)';
-            cardWrapper.onmouseleave = () => cardWrapper.style.transform = 'rotate(90deg) scale(1)';
+            cardWrapper.onmouseenter = () => cardWrapper.style.transform = 'scale(1.05)';
+            cardWrapper.onmouseleave = () => cardWrapper.style.transform = 'scale(1)';
 
             const cardImg = document.createElement('div');
             cardImg.style.cssText = `width:100%; aspect-ratio:59/86; background-size:cover; background-position:center; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4); border:2px solid #38bdf8; ${c.element.style.backgroundImage ? 'background-image:' + c.element.style.backgroundImage : ''}`;
@@ -1038,7 +1038,7 @@ class DuelSimulator {
         banishedCards.forEach(c => {
             const cardWrapper = document.createElement('div');
             // Use a square-ish container to accommodate the rotated card
-            cardWrapper.style.cssText = 'cursor:pointer; transition:transform 0.2s; position:relative; display:flex; align-items:center; justify-content:center; height:140px;';
+            cardWrapper.style.cssText = 'cursor:pointer; transition:transform 0.2s; position:relative; display:flex; align-items:center; justify-content:center;';
             cardWrapper.onmouseenter = () => cardWrapper.style.transform = 'scale(1.05)';
             cardWrapper.onmouseleave = () => cardWrapper.style.transform = 'scale(1)';
 
@@ -1046,7 +1046,7 @@ class DuelSimulator {
             // Rotate the card 90 degrees. Swap width/height aspect ratio considerations.
             // Original card is ~59x86. Rotated it's ~86x59.
             // We set width to be smaller to fit in grid, and rotate it.
-            cardImg.style.cssText = `width:80px; height:116px; background-size:cover; background-position:center; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4); border:2px solid #f97316; transform:rotate(90deg); ${c.element.style.backgroundImage ? 'background-image:' + c.element.style.backgroundImage : ''}`;
+            cardImg.style.cssText = `width:100%; aspect-ratio:59/86; background-size:cover; background-position:center; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4); border:2px solid #f97316; ${c.element.style.backgroundImage ? 'background-image:' + c.element.style.backgroundImage : ''}`;
 
             cardWrapper.onclick = (e) => {
                 if (typeof window.CardLoader !== 'undefined' && !c.data.isDummy) {
