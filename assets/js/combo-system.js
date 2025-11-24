@@ -530,8 +530,12 @@ class DuelSimulator {
 
         // 3. Resize Observer (Keeps cards aligned when tabs change)
         if (window.ResizeObserver) {
+            let resizeTimeout;
             this.resizeObserver = new ResizeObserver(() => {
-                if (this.boardEl.offsetParent !== null) this.repositionCards();
+                if (this.boardEl.offsetParent !== null) {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => this.repositionCards(), 100);
+                }
             });
             this.resizeObserver.observe(this.boardEl);
         }
@@ -682,10 +686,8 @@ class DuelSimulator {
         this.setPosition(token, data.zone || 'zone-deck');
 
         // 3. Enable smooth transitions for future moves
-        // We use a double requestAnimationFrame to ensure the initial 'none' has applied
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                // Apply smooth easing for movement
                 token.style.transition = 'left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s, height 0.3s, opacity 0.3s, transform 0.3s';
             });
         });
@@ -699,14 +701,23 @@ class DuelSimulator {
         });
     }
 
-    setPosition(token, zoneId) {
+    setPosition(token, zoneId, cachedRects = null) {
         const wrapper = document.getElementById(this.containerId);
-        const zone = wrapper.querySelector(`#${zoneId}`);
-        const boardRect = this.boardEl.getBoundingClientRect();
 
-        if (!zone || boardRect.width === 0) return;
+        let boardRect, zoneRect;
 
-        const zoneRect = zone.getBoundingClientRect();
+        if (cachedRects) {
+            boardRect = cachedRects.board;
+            zoneRect = cachedRects.zones[zoneId];
+        } else {
+            const zone = wrapper.querySelector(`#${zoneId}`);
+            if (!zone) return;
+            boardRect = this.boardEl.getBoundingClientRect();
+            zoneRect = zone.getBoundingClientRect();
+        }
+
+        if (!zoneRect || boardRect.width === 0) return;
+
         const isMobile = window.matchMedia("(max-width: 768px)").matches;
         const w = isMobile ? 62 : 120;
         const h = isMobile ? 90 : 175;
@@ -732,9 +743,32 @@ class DuelSimulator {
     }
 
     repositionCards() {
+        if (!this.boardEl) return;
+
+        const boardRect = this.boardEl.getBoundingClientRect();
+        if (boardRect.width === 0) return;
+
+        const wrapper = document.getElementById(this.containerId);
+        const zoneIds = [
+            'zone-em-left', 'zone-em-right',
+            'zone-field', 'zone-gy', 'zone-deck', 'zone-extra', 'zone-hand',
+            'zone-m1', 'zone-m2', 'zone-m3', 'zone-m4', 'zone-m5',
+            'zone-s1', 'zone-s2', 'zone-s3', 'zone-s4', 'zone-s5'
+        ];
+
+        const cachedRects = {
+            board: boardRect,
+            zones: {}
+        };
+
+        zoneIds.forEach(id => {
+            const el = wrapper.querySelector(`#${id}`);
+            if (el) cachedRects.zones[id] = el.getBoundingClientRect();
+        });
+
         Object.values(this.cards).forEach(c => {
             const z = c.element.getAttribute('data-zone') || c.data.zone;
-            this.setPosition(c.element, z);
+            this.setPosition(c.element, z, cachedRects);
         });
     }
 
