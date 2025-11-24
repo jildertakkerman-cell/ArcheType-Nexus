@@ -106,9 +106,9 @@ class ComboSelector {
                 </label>
                 <select id="${selectorId}" class="combo-selector">
                     ${comboNumbers.map(num => {
-                        const combo = combos[`combo${num}`];
-                        return `<option value="${num}" ${num === defaultCombo ? 'selected' : ''}>${combo.title || `Combo #${num}`}</option>`;
-                    }).join('')}
+            const combo = combos[`combo${num}`];
+            return `<option value="${num}" ${num === defaultCombo ? 'selected' : ''}>${combo.title || `Combo #${num}`}</option>`;
+        }).join('')}
                 </select>
             </div>
         `;
@@ -139,13 +139,13 @@ class ComboSelector {
         const getStyle = (el, prop) => window.getComputedStyle(el).getPropertyValue(prop);
         const bodyBg = getStyle(document.body, 'background-color');
         const root = document.documentElement;
-        
+
         // 1. Explicit Archetype Detection
-        
+
         // Yummy Theme (Purple/Pink)
-        if (bodyBg.includes('26, 17, 42') || bodyBg.includes('#1a112a') || 
+        if (bodyBg.includes('26, 17, 42') || bodyBg.includes('#1a112a') ||
             getStyle(document.body, 'border-color').includes('236, 72, 153') || // Pink-500
-            document.querySelector('.text-pink-500') || 
+            document.querySelector('.text-pink-500') ||
             document.title.toLowerCase().includes('yummy')) {
             return {
                 accentColor: '#ec4899', // Pink-500
@@ -169,25 +169,25 @@ class ComboSelector {
         }
 
         // 2. Generic Scanner (Fallback)
-        let accentColor = getComputedStyle(root).getPropertyValue('--accent-color') || 
-                          getComputedStyle(root).getPropertyValue('--primary-color');
+        let accentColor = getComputedStyle(root).getPropertyValue('--accent-color') ||
+            getComputedStyle(root).getPropertyValue('--primary-color');
 
         if (!accentColor || !accentColor.trim()) {
             const headers = document.querySelectorAll('h1, h2, h3');
             for (const h of headers) {
                 const color = getStyle(h, 'color');
                 const rgb = color.match(/\d+/g);
-                if (rgb && (Math.abs(rgb[0]-rgb[1]) > 20 || Math.abs(rgb[1]-rgb[2]) > 20)) {
+                if (rgb && (Math.abs(rgb[0] - rgb[1]) > 20 || Math.abs(rgb[1] - rgb[2]) > 20)) {
                     accentColor = color;
                     break;
                 }
             }
         }
-        
+
         if (!accentColor) accentColor = '#60a5fa'; // Blue-400
 
         const rgb = bodyBg.match(/\d+/g);
-        const isDarkMode = rgb ? (parseInt(rgb[0])*0.299 + parseInt(rgb[1])*0.587 + parseInt(rgb[2])*0.114) < 128 : true;
+        const isDarkMode = rgb ? (parseInt(rgb[0]) * 0.299 + parseInt(rgb[1]) * 0.587 + parseInt(rgb[2]) * 0.114) < 128 : true;
 
         return {
             accentColor: accentColor.trim(),
@@ -213,19 +213,19 @@ class ComboGuide {
         const theme = ComboSelector.inferTheme();
         const accent = theme.accentColor;
         const textMain = theme.textColor;
-        
+
         // 2. Clear & Setup
         container.innerHTML = '';
         const combos = comboData.combos || {};
-        const imageMap = {}; 
+        const imageMap = {};
 
         Object.keys(combos).forEach((key, comboIndex) => {
             const combo = combos[key];
             const normalizedKey = key.replace('combo', '');
-            
+
             const comboSection = document.createElement('div');
             comboSection.id = `combo-${normalizedKey}-content`;
-            comboSection.className = 'combo-content hidden animate-fadeIn flex flex-col gap-6'; 
+            comboSection.className = 'combo-content hidden animate-fadeIn flex flex-col gap-6';
             if (comboIndex === 0) comboSection.classList.remove('hidden');
 
             const cardNameMap = {};
@@ -246,7 +246,7 @@ class ComboGuide {
             guideContainer.className = 'rounded-2xl border shadow-lg overflow-hidden backdrop-blur-sm';
             guideContainer.style.backgroundColor = theme.backgroundColor;
             guideContainer.style.borderColor = `${accent}60`;
-            
+
             // --- HEADER / TOGGLE BAR ---
             const header = document.createElement('div');
             header.className = 'p-4 md:p-5 border-b cursor-pointer transition-colors duration-200 flex items-center justify-between group hover:bg-white/5';
@@ -283,30 +283,54 @@ class ComboGuide {
             `;
             guideContainer.appendChild(header);
 
+            // --- DESCRIPTION (if exists) ---
+            let descriptionHtml = '';
+            if (combo.description) {
+                descriptionHtml = `
+                    <div class="px-6 pt-6 pb-2" style="background-color: ${theme.isDarkMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.4)'};">
+                        <p class="text-sm md:text-base leading-relaxed italic opacity-90" style="color: ${textMain}">
+                            <i class="fas fa-quote-left mr-2 opacity-50"></i>${combo.description}<i class="fas fa-quote-right ml-2 opacity-50"></i>
+                        </p>
+                    </div>
+                `;
+            }
+
             // --- STEPS CONTAINER ---
             const stepsWrapper = document.createElement('div');
             stepsWrapper.id = `guide-steps-${key}`;
-            stepsWrapper.className = 'p-6 md:p-8 flex flex-col gap-8 hidden';
+            stepsWrapper.className = `${combo.description ? 'pt-4' : 'pt-6'} px-6 pb-6 md:px-8 md:pb-8 flex flex-col gap-8 hidden`;
             stepsWrapper.style.backgroundColor = theme.isDarkMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.4)';
+
+            // Add description HTML if it exists
+            if (descriptionHtml) {
+                const descDiv = document.createElement('div');
+                descDiv.innerHTML = descriptionHtml;
+                guideContainer.appendChild(descDiv.firstElementChild);
+            }
 
             if (combo.steps) {
                 combo.steps.forEach((step, stepIndex) => {
                     const stepNum = stepIndex + 1;
                     const cardName = cardNameMap[step.card] || step.card;
                     const imgId = `combo-${key}-step-${stepNum}-img`;
-                    
+
                     // Collect cards for batch loading via CardLoader
                     if (cardName) imageMap[imgId] = cardName;
 
-                    // 1. Expand Jargon (SS -> Special Summon)
-                    let friendlyText = this.formatForBeginners(step.text);
-                    
-                    // 2. Highlight Cards
-                    const highlightedText = this.highlightKeywords(friendlyText, cardNameMap, accent, theme.isDarkMode);
+                    // 1. Use customText if available, otherwise use auto-generated text
+                    let displayText = step.customText || step.text;
+
+                    // 2. Expand Jargon (SS -> Special Summon) only if using auto-generated text
+                    if (!step.customText) {
+                        displayText = this.formatForBeginners(displayText);
+                    }
+
+                    // 3. Highlight Cards
+                    const highlightedText = this.highlightKeywords(displayText, cardNameMap, accent, theme.isDarkMode);
 
                     const stepCard = document.createElement('div');
                     stepCard.className = 'relative group';
-                    
+
                     stepCard.innerHTML = `
                         <div class="
                             flex flex-col md:flex-row items-center gap-6 
@@ -401,14 +425,14 @@ class ComboGuide {
         let processed = text;
         const names = Object.values(nameMap).sort((a, b) => b.length - a.length);
         const hoverColor = isDark ? '#fff' : '#000';
-        
+
         names.forEach(name => {
             if (processed.includes(name)) {
                 // Escape special regex chars in card names (like parentheses)
                 const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const regex = new RegExp(escapedName, 'g');
-                
-                processed = processed.replace(regex, 
+
+                processed = processed.replace(regex,
                     `<span class="font-bold border-b border-dotted cursor-help transition-colors" 
                            style="color: ${color}; border-color: ${color}80;"
                            onmouseover="this.style.color='${hoverColor}'" 
@@ -447,7 +471,7 @@ class DuelSimulator {
         this.logEl = container.querySelector('.sim-log');
         this.boardEl = container.querySelector('.duel-board');
         this.playBtn = container.querySelector('.btn-play');
-        
+
         // NOTE: Removed internal createPopup(). Using global CardLoader.showPopup instead.
 
         // 3. Resize Observer (Keeps cards aligned when tabs change)
@@ -460,11 +484,11 @@ class DuelSimulator {
 
         // 4. Start Loading
         this.loadCombo(this.currentComboId);
-        
+
         // FIX: Ensure cards are positioned correctly after board is fully rendered.
         setTimeout(() => this.repositionCards(), 50);
         setTimeout(() => this.repositionCards(), 300); // Safety fallback
-        
+
         // Trigger preload via CardLoader
         this.preloadAllImages();
     }
@@ -549,7 +573,7 @@ class DuelSimulator {
         const hand = combo.cards.filter(c => c.zone === 'zone-hand');
         for (let i = 0; i < (5 - hand.length); i++) {
             this.createCardToken({
-                id: `dummy-${i}`, name: "Random Card", type: "monster", 
+                id: `dummy-${i}`, name: "Random Card", type: "monster",
                 zone: "zone-hand", isDummy: true
             });
         }
@@ -557,29 +581,29 @@ class DuelSimulator {
         requestAnimationFrame(() => this.repositionCards());
     }
 
-   createCardToken(data) {
+    createCardToken(data) {
         const token = document.createElement('div');
         token.id = `token-${data.id}`;
         token.className = `card-token ctype-${data.type || 'monster'}`;
-        
+
         // 1. Initialize with NO transition to prevent "flying in" on load
         token.style.transition = 'none';
         token.style.willChange = 'left, top, transform'; // Performance optimization
 
         // Helper to set background safely
         const setImg = (url) => {
-            if(url) token.style.backgroundImage = `url('${url}')`;
+            if (url) token.style.backgroundImage = `url('${url}')`;
         };
 
         // Case 1: Explicit Dummy / Placeholder
         if (data.isDummy || String(data.id).startsWith('dummy-') || String(data.name).toLowerCase().startsWith('any ')) {
             setImg("https://images.ygoprodeck.com/images/cards/back_high.jpg");
-        } 
+        }
         // Case 2: Use CardLoader to fetch URL (cached or API)
         else if (typeof window.CardLoader !== 'undefined') {
             // Set default back while loading
             setImg("https://images.ygoprodeck.com/images/cards/back_high.jpg");
-            
+
             // Attempt to get the URL from CardLoader
             window.CardLoader.getCardImageUrl(data.name).then(url => {
                 if (url) {
@@ -599,7 +623,7 @@ class DuelSimulator {
 
         token.style.pointerEvents = 'auto';
         token.style.cursor = 'pointer';
-        
+
         // 2. Snap to initial position immediately (Instant)
         this.setPosition(token, data.zone || 'zone-deck');
 
@@ -611,7 +635,7 @@ class DuelSimulator {
                 token.style.transition = 'left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s, height 0.3s, opacity 0.3s, transform 0.3s';
             });
         });
-        
+
         // Attach Click Event to Global CardLoader Popup
         token.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -625,7 +649,7 @@ class DuelSimulator {
         const wrapper = document.getElementById(this.containerId);
         const zone = wrapper.querySelector(`#${zoneId}`);
         const boardRect = this.boardEl.getBoundingClientRect();
-        
+
         if (!zone || boardRect.width === 0) return;
 
         const zoneRect = zone.getBoundingClientRect();
@@ -642,14 +666,14 @@ class DuelSimulator {
             const total = handTokens.length;
             const spacing = 5;
             const startX = (zoneRect.width - (total * w + (total - 1) * spacing)) / 2;
-            
+
             token.style.left = (zoneRect.left - boardRect.left + startX + (idx * (w + spacing))) + 'px';
             token.style.top = (zoneRect.top - boardRect.top + (zoneRect.height - h) / 2) + 'px';
         } else {
             const jX = (zoneId.includes('gy') || zoneId.includes('deck')) ? (Math.random() * 4 - 2) : 0;
             const jY = (zoneId.includes('gy') || zoneId.includes('deck')) ? (Math.random() * 4 - 2) : 0;
-            token.style.left = (zoneRect.left - boardRect.left + (zoneRect.width - w)/2 + jX) + 'px';
-            token.style.top = (zoneRect.top - boardRect.top + (zoneRect.height - h)/2 + jY) + 'px';
+            token.style.left = (zoneRect.left - boardRect.left + (zoneRect.width - w) / 2 + jX) + 'px';
+            token.style.top = (zoneRect.top - boardRect.top + (zoneRect.height - h) / 2 + jY) + 'px';
         }
     }
 
@@ -683,7 +707,7 @@ class DuelSimulator {
         c.element.style.display = 'block';
         c.element.style.opacity = '1';
         c.element.style.transform = 'scale(1)';
-        
+
         // Ensure high Z-Index during movement so it flies OVER other cards
         c.element.style.zIndex = '100';
 
@@ -698,16 +722,16 @@ class DuelSimulator {
         }
 
         c.element.setAttribute('data-zone', targetZoneId);
-        
+
         this.setPosition(c.element, targetZoneId);
         if (targetZoneId === 'zone-hand' || c.data.zone === 'zone-hand') this.repositionCards();
 
         c.element.classList.add('active-card');
-        
+
         // Remove Z-Index boost and active class after animation completes
         setTimeout(() => {
             c.element.classList.remove('active-card');
-            c.element.style.zIndex = ''; 
+            c.element.style.zIndex = '';
         }, 600);
     }
 
@@ -728,10 +752,10 @@ class DuelSimulator {
         if (this.currentStep > 0) {
             const target = this.currentStep - 1;
             const oldLog = this.log;
-            this.log = () => {}; 
+            this.log = () => { };
             this.loadCombo(this.currentComboId);
             const steps = this.combos[this.currentComboId].steps;
-            for(let i=0; i<target; i++) this.moveCard(steps[i].card, steps[i].to);
+            for (let i = 0; i < target; i++) this.moveCard(steps[i].card, steps[i].to);
             this.log = oldLog;
             this.currentStep = target;
             this.log(`< Rewound to Step ${target}`);
