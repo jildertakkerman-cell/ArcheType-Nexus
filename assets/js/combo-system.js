@@ -127,11 +127,65 @@ class ComboSelector {
 
     static setTheme(theme) {
         const root = document.documentElement;
+
+        // Set accent/primary colors
         if (theme.accentColor) {
             root.style.setProperty('--combo-accent', theme.accentColor);
             root.style.setProperty('--combo-selector-focus-border', theme.accentColor);
-            // Also set these for the generic CSS to pick up if used elsewhere
             root.style.setProperty('--primary-color', theme.accentColor);
+            root.style.setProperty('--combo-selector-border', theme.accentColor);
+            root.style.setProperty('--combo-selector-label-color', theme.accentColor);
+
+            // Create focus ring color with opacity
+            const accentRgb = theme.accentColor.match(/\d+/g);
+            if (accentRgb && accentRgb.length >= 3) {
+                root.style.setProperty('--combo-selector-focus-ring', `rgba(${accentRgb[0]}, ${accentRgb[1]}, ${accentRgb[2]}, 0.5)`);
+            } else if (theme.accentColor.startsWith('#')) {
+                // Convert hex to rgba
+                const hex = theme.accentColor.replace('#', '');
+                const r = parseInt(hex.substr(0, 2), 16);
+                const g = parseInt(hex.substr(2, 2), 16);
+                const b = parseInt(hex.substr(4, 2), 16);
+                root.style.setProperty('--combo-selector-focus-ring', `rgba(${r}, ${g}, ${b}, 0.5)`);
+            }
+        }
+
+        // Set background colors
+        if (theme.backgroundColor) {
+            root.style.setProperty('--combo-selector-bg', theme.backgroundColor);
+        }
+
+        // Set text color
+        if (theme.textColor) {
+            root.style.setProperty('--combo-selector-text', theme.textColor);
+            root.style.setProperty('--combo-selector-option-text', theme.textColor);
+        }
+
+        // Set hover background (slightly more opaque than base)
+        if (theme.backgroundColor) {
+            const bgMatch = theme.backgroundColor.match(/rgba?\(([^)]+)\)/);
+            if (bgMatch) {
+                const parts = bgMatch[1].split(',').map(p => p.trim());
+                if (parts.length === 4) {
+                    // Increase opacity for hover
+                    const newOpacity = Math.min(parseFloat(parts[3]) + 0.2, 1);
+                    root.style.setProperty('--combo-selector-hover-bg', `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${newOpacity})`);
+                }
+            }
+        }
+
+        // Set option background
+        if (theme.cardBg) {
+            root.style.setProperty('--combo-selector-option-bg', theme.cardBg);
+        }
+
+        // Set gradient colors for options
+        if (theme.secondaryColor && theme.accentColor) {
+            root.style.setProperty('--combo-selector-option-gradient-start', theme.secondaryColor);
+            root.style.setProperty('--combo-selector-option-gradient-end', theme.accentColor);
+        } else if (theme.accentColor) {
+            root.style.setProperty('--combo-selector-option-gradient-start', theme.accentColor);
+            root.style.setProperty('--combo-selector-option-gradient-end', theme.accentColor);
         }
     }
 
