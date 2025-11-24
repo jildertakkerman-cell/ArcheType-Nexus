@@ -477,7 +477,7 @@ class ComboGuide {
 
     static highlightKeywords(text, nameMap, color, isDark) {
         let processed = text;
-        const names = Object.values(nameMap).sort((a, b) => b.length - a.length);
+        const names = [...new Set(Object.values(nameMap))].sort((a, b) => b.length - a.length);
         const hoverColor = isDark ? '#fff' : '#000';
 
         names.forEach(name => {
