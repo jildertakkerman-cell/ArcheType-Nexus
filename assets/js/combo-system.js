@@ -189,15 +189,28 @@ class ComboSelector {
         }
     }
 
-    static inferTheme() {
+        static inferTheme() {
         const getStyle = (el, prop) => window.getComputedStyle(el).getPropertyValue(prop);
         const bodyBg = getStyle(document.body, 'background-color');
         const root = document.documentElement;
 
         // 1. Explicit Archetype Detection
 
+        // Kewl Tune Theme (Neon Pink/Cyan)
+        if (document.title.toLowerCase().includes('kewl tune') || bodyBg.includes('kewl')) {
+             return {
+                accentColor: '#ff00ff', // Neon Pink
+                secondaryColor: '#00ffff', // Neon Cyan
+                isDarkMode: true,
+                backgroundColor: 'rgba(20, 20, 30, 0.8)', // Dark background
+                cardBg: 'rgba(0, 0, 0, 0.5)',
+                textColor: '#ffffff'
+            };
+        }
+
         // Yummy Theme (Purple/Pink)
         if (bodyBg.includes('26, 17, 42') || bodyBg.includes('#1a112a') ||
+
             getStyle(document.body, 'border-color').includes('236, 72, 153') || // Pink-500
             document.querySelector('.text-pink-500') ||
             document.title.toLowerCase().includes('yummy')) {
