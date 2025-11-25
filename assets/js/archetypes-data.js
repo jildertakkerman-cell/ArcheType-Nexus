@@ -5998,7 +5998,7 @@ const archetypes = [
                 </svg>`,
         firstReleaseDate: "2005-11-16",
         latestReleaseDate: "2017-10-02",
-    
+
 
     },
     {
@@ -26832,8 +26832,8 @@ const archetypes = [
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="9" fill="#000000" font-weight="bold">Black Dinosaur</text>
                     </svg>`,
-                    firstReleaseDate: '2005-10-20',
-                    latestReleaseDate: '2014-12-24',
+        firstReleaseDate: '2005-10-20',
+        latestReleaseDate: '2014-12-24',
     },
     {
         name: "Barrier Statue",
@@ -26872,9 +26872,9 @@ const archetypes = [
                         <rect x="30" y="50" width="5" height="15" fill="url(#barrierGradient)"/>
                         <rect x="65" y="50" width="5" height="15" fill="url(#barrierGradient)"/>
                         <text x="50" y="95" text-anchor="middle" font-size="9" fill="#696969" font-weight="bold">Barrier Statue</text>
-                    </svg>`,                    
-                    firstReleaseDate: '2006-11-15',
-                    latestReleaseDate: '2006-11-15',
+                    </svg>`,
+        firstReleaseDate: '2006-11-15',
+        latestReleaseDate: '2006-11-15',
     },
     {
         name: "Coach",
@@ -26913,8 +26913,8 @@ const archetypes = [
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#ff6347" font-weight="bold">Coach</text>
                     </svg>`,
-                    firstReleaseDate: '2013-12-07',  
-latestReleaseDate: '2013-08-09',
+        firstReleaseDate: '2013-12-07',
+        latestReleaseDate: '2013-08-09',
     },
     {
         name: "Cosmic Dragon",
@@ -26959,8 +26959,8 @@ latestReleaseDate: '2013-08-09',
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="9" fill="#000080" font-weight="bold">Cosmic Dragon</text>
                     </svg>`,
-                    firstReleaseDate: '2010-08-31',
-                    latestReleaseDate: '2023-07-28',
+        firstReleaseDate: '2010-08-31',
+        latestReleaseDate: '2023-07-28',
     },
     {
         name: "Book",
@@ -26996,8 +26996,8 @@ latestReleaseDate: '2013-08-09',
                         </rect>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#8b4513" font-weight="bold">Book</text>
                     </svg>`,
-                    firstReleaseDate: '2004-01-11',
-                    latestReleaseDate: '2021-04-06',
+        firstReleaseDate: '2004-01-11',
+        latestReleaseDate: '2021-04-06',
 
     },
     {
@@ -27043,9 +27043,9 @@ latestReleaseDate: '2013-08-09',
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="8" fill="#8b0000" font-weight="bold">Chtonian Infernal</text>
                     </svg>`,
-                        firstReleaseDate: '2005-03-19',
-                        latestReleaseDate: '2025-09-26',
-                    
+        firstReleaseDate: '2005-03-19',
+        latestReleaseDate: '2025-09-26',
+
     },
     {
         name: "Adventure",
@@ -27127,8 +27127,8 @@ latestReleaseDate: '2013-08-09',
                         <ellipse cx="50" cy="70" rx="10" ry="5" fill="#c0c0c0" stroke="#000000" stroke-width="1"/>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#ff69b4" font-weight="bold">Charity</text>
                     </svg>`,
-                    firstReleaseDate: '2007-07-30',  // D.D. Crow release date
-                    latestReleaseDate: '2014-05-16', 
+        firstReleaseDate: '2007-07-30',  // D.D. Crow release date
+        latestReleaseDate: '2014-05-16',
     },
     {
         name: "Ancient Fairy Dragon",
@@ -27221,8 +27221,8 @@ latestReleaseDate: '2013-08-09',
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#add8e6" font-weight="bold">Clear World</text>
                     </svg>`,
-                    firstReleaseDate: '2009-11-17',  
-                    latestReleaseDate: '2025-03-14',
+        firstReleaseDate: '2009-11-17',
+        latestReleaseDate: '2025-03-14',
     },
     {
         name: "Crashbug",
@@ -27269,8 +27269,8 @@ latestReleaseDate: '2013-08-09',
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#696969" font-weight="bold">Crashbug</text>
                     </svg>`,
-                    firstReleaseDate: '2011-08-16',  
-                    latestReleaseDate: '2011-08-16',
+        firstReleaseDate: '2011-08-16',
+        latestReleaseDate: '2011-08-16',
     },
     {
         name: "Cocoon of Evolution",
@@ -27311,8 +27311,8 @@ latestReleaseDate: '2013-08-09',
                         <text x="50" y="95" text-anchor="middle" font-size="8" fill="#228B22" font-weight="bold">Cocoon</text>
                         <text x="50" y="105" text-anchor="middle" font-size="8" fill="#228B22" font-weight="bold">Evolution</text>
                     </svg>`,
-                    firstReleaseDate: '2002-06-26',  
-                    latestReleaseDate: '2024-08-23',    
+        firstReleaseDate: '2002-06-26',
+        latestReleaseDate: '2024-08-23',
     },
     {
         name: "C Series",
@@ -27354,8 +27354,8 @@ latestReleaseDate: '2013-08-09',
                         </circle>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#FFFFFF" font-weight="bold">C Series</text>
                     </svg>`,
-                    firstReleaseDate: '2009-01-09',  // D.D. Crow release date
-                    latestReleaseDate: '2023-10-02', 
+        firstReleaseDate: '2009-01-09',  // D.D. Crow release date
+        latestReleaseDate: '2023-10-02',
 
     },
     {
@@ -27454,7 +27454,7 @@ latestReleaseDate: '2013-08-09',
                         <text x="15" y="25" font-size="6" fill="#FFFFFF" opacity="0.7">0101</text>
                         <text x="75" y="85" font-size="6" fill="#FFFFFF" opacity="0.7">1010</text>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#00FF00" font-weight="bold">Cyberse</text>
-                    </svg>`,                    
+                    </svg>`,
         firstReleaseDate: '2017-04-08',
         latestReleaseDate: '2025-05-05',
     },
@@ -27508,8 +27508,8 @@ latestReleaseDate: '2013-08-09',
                         </defs>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#FFD700" font-weight="bold">A-to-Z</text>
                     </svg>`,
-                    firstReleaseDate: '2003-05-16',  
-                    latestReleaseDate: '2025-03-14',
+        firstReleaseDate: '2003-05-16',
+        latestReleaseDate: '2025-03-14',
     },
     {
         name: "Cupid",
@@ -27638,8 +27638,8 @@ latestReleaseDate: '2013-08-09',
                         <path d="M46 65 Q46 60 50 60 Q54 60 54 65" stroke="#000000" stroke-width="1" fill="none"/>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#4682B4" font-weight="bold">Backup</text>
                     </svg>`,
-                    firstReleaseDate: '2017-04-07',
-                    latestReleaseDate: '2025-05-02',
+        firstReleaseDate: '2017-04-07',
+        latestReleaseDate: '2025-05-02',
     },
     {
         name: "Cataclysmic",
@@ -27732,8 +27732,8 @@ latestReleaseDate: '2013-08-09',
                         </path>
                         <text x="50" y="95" text-anchor="middle" font-size="10" fill="#228B22" font-weight="bold">Cicada</text>
                     </svg>`,
-                    firstReleaseDate: '2020-07-24',  
-                    latestReleaseDate: '2022-11-18',
+        firstReleaseDate: '2020-07-24',
+        latestReleaseDate: '2022-11-18',
     },
     {
         name: "Counter Fairy",
@@ -28990,8 +28990,8 @@ latestReleaseDate: '2013-08-09',
 <path d="M45 65 Q55 55 65 65" stroke="#ffd700" stroke-width="1" fill="none"/>
 <text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">DIE ROLL</text>
 </svg>`,
-firstReleaseDate: "2003-01-03",
-latestReleaseDate: '2024-09-02'
+        firstReleaseDate: "2003-01-03",
+        latestReleaseDate: '2024-09-02'
     },
     {
         name: "Digital Bug",
@@ -29073,8 +29073,8 @@ latestReleaseDate: '2024-09-02'
 <path d="M48 35 Q53 30 58 35" stroke="#f472b6" stroke-width="1" fill="none"/>
 <text x="50" y="85" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">DIABOLOS</text>
 </svg>`,
-firstReleaseDate: "2007-05-16",
-latestReleaseDate: "2018-04-20"
+        firstReleaseDate: "2007-05-16",
+        latestReleaseDate: "2018-04-20"
     },
 
     {
@@ -29173,6 +29173,121 @@ latestReleaseDate: "2018-04-20"
                         <circle cx="75" cy="75" r="3" fill="#da70d6"/>
                         <text x="50" y="90" text-anchor="middle" font-size="7" fill="#ffffff" font-weight="bold">ZERA</text>
                     </svg>`
+    },
+    {
+        name: 'Hecahands',
+        description: 'A strategy defined by Resource Appropriation, converting opponent\'s assets into fusion materials and board presence.',
+        filepath: 'pages/Hecahands Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="hecaVoid" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#000000;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a0525;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="hecaGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#hecaVoid)" stroke="#9d4edd" stroke-width="2"/>
+                        <!-- Abstract Hand/Grasp Shape -->
+                        <path d="M35 65 Q30 40 45 30 Q50 20 55 30 Q70 40 65 65" fill="none" stroke="#00ff9d" stroke-width="2" filter="url(#hecaGlow)"/>
+                        <path d="M45 30 L45 45 M55 30 L55 45" stroke="#00ff9d" stroke-width="1" opacity="0.5"/>
+                        <circle cx="50" cy="50" r="5" fill="#9d4edd" filter="url(#hecaGlow)">
+                             <animate attributeName="r" values="5;7;5" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="85" text-anchor="middle" font-size="8" fill="#e0e0e0" font-weight="bold" font-family="monospace">HECAHANDS</text>
+                    </svg>`,
+        firstReleaseDate: '2025-10-25',
+        latestReleaseDate: null,
+
+    },
+    {
+        name: 'Enneacraft',
+        description: 'A strategy defined by Reactive Obscurity, using Face-Down mechanics and Sinquisition Counters to control the board and inflict burn damage.',
+        filepath: 'pages/Enneacraft Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="enneaGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#151b2b;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0b0f19;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="enneaGlow">
+                                <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <rect x="10" y="10" width="80" height="80" rx="10" fill="url(#enneaGrad)" stroke="#06b6d4" stroke-width="2"/>
+                        <!-- Circuit lines -->
+                        <path d="M20 20 L30 20 L30 30" stroke="#06b6d4" stroke-width="1" fill="none"/>
+                        <path d="M80 80 L70 80 L70 70" stroke="#f43f5e" stroke-width="1" fill="none"/>
+                        
+                        <!-- Central "9" / Eye motif -->
+                        <path d="M50 35 Q65 35 65 50 Q65 65 50 65 Q35 65 35 50 Q35 35 50 35 Z M65 50 L65 75" stroke="#06b6d4" stroke-width="3" fill="none" filter="url(#enneaGlow)"/>
+                        
+                        <!-- Hidden/Face-down element -->
+                        <rect x="42" y="42" width="16" height="16" fill="#f43f5e" opacity="0.8">
+                            <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/>
+                        </rect>
+                        
+                        <text x="50" y="92" text-anchor="middle" font-size="8" fill="#06b6d4" font-weight="bold" font-family="monospace">ENNEACRAFT</text>
+                    </svg>`,
+        firstReleaseDate: '2025-11-15',
+        latestReleaseDate: null,
+
+    },
+    {
+        name: 'Kewl Tune',
+        description: 'A Synchro-based strategy utilizing "Hand Tuning" to substitute on-field materials, creating complex control boards with "Turn 0" capabilities.',
+        filepath: 'pages/Kewl tune Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="kewlGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#0f0f13;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#181820;stop-opacity:1" />
+                            </linearGradient>
+                            <filter id="kewlGlow">
+                                <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <rect x="10" y="10" width="80" height="80" rx="12" fill="url(#kewlGrad)" stroke="#bd00ff" stroke-width="2"/>
+                        
+                        <!-- Visualizer Bars -->
+                        <rect x="20" y="50" width="8" height="20" fill="#00ffff" filter="url(#kewlGlow)">
+                            <animate attributeName="height" values="20;40;15;30;20" dur="1.5s" repeatCount="indefinite"/>
+                            <animate attributeName="y" values="50;30;55;40;50" dur="1.5s" repeatCount="indefinite"/>
+                        </rect>
+                        <rect x="35" y="40" width="8" height="30" fill="#ff00ff" filter="url(#kewlGlow)">
+                            <animate attributeName="height" values="30;10;35;20;30" dur="1.2s" repeatCount="indefinite"/>
+                            <animate attributeName="y" values="40;60;35;50;40" dur="1.2s" repeatCount="indefinite"/>
+                        </rect>
+                        <rect x="50" y="30" width="8" height="40" fill="#00ffff" filter="url(#kewlGlow)">
+                            <animate attributeName="height" values="40;20;50;25;40" dur="1.8s" repeatCount="indefinite"/>
+                            <animate attributeName="y" values="30;50;20;45;30" dur="1.8s" repeatCount="indefinite"/>
+                        </rect>
+                        <rect x="65" y="45" width="8" height="25" fill="#ff00ff" filter="url(#kewlGlow)">
+                            <animate attributeName="height" values="25;45;15;35;25" dur="1.4s" repeatCount="indefinite"/>
+                            <animate attributeName="y" values="45;25;55;35;45" dur="1.4s" repeatCount="indefinite"/>
+                        </rect>
+                        
+                        <!-- Musical Note Overlay -->
+                        <path d="M75 25 L75 55 M75 55 Q70 60 65 55" stroke="#bd00ff" stroke-width="2" fill="none" opacity="0.5"/>
+                        
+                        <text x="50" y="88" text-anchor="middle" font-size="7" fill="#e0e0e0" font-weight="bold" font-family="Orbitron, sans-serif" letter-spacing="1">KEWL TUNE</text>
+                    </svg>`,
+        firstReleaseDate: '2025-11-20',
+        latestReleaseDate: null,
+
     }
 ];// Export for use in main script
 if (typeof module !== 'undefined' && module.exports) {
