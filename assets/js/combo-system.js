@@ -542,10 +542,27 @@ class DuelSimulator {
         // NOTE: Removed internal createPopup(). Using global CardLoader.showPopup instead.
 
         // 3. Resize Observer (Keeps cards aligned when tabs change)
+        // Optimized to not trigger during scrolling for better performance
         if (window.ResizeObserver) {
             let resizeTimeout;
+            let scrollTimeout;
+            let isScrolling = false;
+
+            // Detect scrolling to pause resize observer
+            const handleScroll = () => {
+                isScrolling = true;
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    isScrolling = false;
+                    // Reposition once after scrolling stops
+                    this.repositionCards();
+                }, 150);
+            };
+
+            window.addEventListener('scroll', handleScroll, { passive: true });
+
             this.resizeObserver = new ResizeObserver(() => {
-                if (this.boardEl.offsetParent !== null) {
+                if (this.boardEl.offsetParent !== null && !isScrolling) {
                     clearTimeout(resizeTimeout);
                     resizeTimeout = setTimeout(() => this.repositionCards(), 250);
                 }
@@ -663,7 +680,7 @@ class DuelSimulator {
 
         // 1. Initialize with NO transition to prevent "flying in" on load
         token.style.transition = 'none';
-        token.style.willChange = 'left, top, transform'; // Performance optimization
+        // Note: will-change is set only during transitions to save GPU memory
 
         // Helper to set background safely
         const setImg = (url) => {
