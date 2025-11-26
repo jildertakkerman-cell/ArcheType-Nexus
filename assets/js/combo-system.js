@@ -353,10 +353,12 @@ class ComboGuide {
             // --- DESCRIPTION (if exists) ---
             let descriptionHtml = '';
             if (combo.description) {
+                // Parse markdown links in description
+                const parsedDescription = this.parseMarkdownLinks(combo.description, accent);
                 descriptionHtml = `
                     <div class="px-6 pt-6 pb-2" style="background-color: ${theme.isDarkMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.4)'};">
                         <p class="text-sm md:text-base leading-relaxed italic opacity-90" style="color: ${textMain}">
-                            <i class="fas fa-quote-left mr-2 opacity-50"></i>${combo.description}<i class="fas fa-quote-right ml-2 opacity-50"></i>
+                            <i class="fas fa-quote-left mr-2 opacity-50"></i>${parsedDescription}<i class="fas fa-quote-right ml-2 opacity-50"></i>
                         </p>
                     </div>
                 `;
@@ -483,9 +485,43 @@ class ComboGuide {
             t = t.replace(r.regex, r.val);
         });
 
-        // Sentence case fix for the very first letter if needed, 
-        // though usually JSON is capitalized.
+        // Sentence case fix for the very first letter if needed
         return t.charAt(0).toUpperCase() + t.slice(1);
+    }
+
+    /**
+     * Parse markdown links and convert them to beautiful HTML anchors with icons
+     * @param {string} text - Text containing markdown links
+     * @param {string} accentColor - Accent color for styling links
+     * @returns {string} Text with HTML links
+     */
+    static parseMarkdownLinks(text, accentColor) {
+        if (!text) return '';
+
+        // Match markdown links: [text](url)
+        const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+        return text.replace(markdownLinkRegex, (match, linkText, url) => {
+            // Detect if it's a YouTube link
+            const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+            const icon = isYouTube ? 'fab fa-youtube' : 'fas fa-external-link-alt';
+
+            // Create a beautiful pill-shaped button with icon
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline"
+                       style="
+                           background: linear-gradient(135deg, ${accentColor}20, ${accentColor}40);
+                           border: 2px solid ${accentColor};
+                           color: ${accentColor};
+                           box-shadow: 0 2px 8px ${accentColor}30;
+                       "
+                       onmouseover="this.style.background='linear-gradient(135deg, ${accentColor}40, ${accentColor}60)'; this.style.boxShadow='0 4px 16px ${accentColor}50';"
+                       onmouseout="this.style.background='linear-gradient(135deg, ${accentColor}20, ${accentColor}40)'; this.style.boxShadow='0 2px 8px ${accentColor}30';">
+                        <i class="${icon}"></i>
+                        <span>${linkText}</span>
+                        <i class="fas fa-arrow-right text-xs"></i>
+                    </a>`;
+        });
     }
 
     static highlightKeywords(text, nameMap, color, isDark) {
