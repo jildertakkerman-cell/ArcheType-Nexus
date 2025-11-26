@@ -189,7 +189,7 @@ class ComboSelector {
         }
     }
 
-        static inferTheme() {
+    static inferTheme() {
         const getStyle = (el, prop) => window.getComputedStyle(el).getPropertyValue(prop);
         const bodyBg = getStyle(document.body, 'background-color');
         const root = document.documentElement;
@@ -198,7 +198,7 @@ class ComboSelector {
 
         // Kewl Tune Theme (Neon Pink/Cyan)
         if (document.title.toLowerCase().includes('kewl tune') || bodyBg.includes('kewl')) {
-             return {
+            return {
                 accentColor: '#ff00ff', // Neon Pink
                 secondaryColor: '#00ffff', // Neon Cyan
                 isDarkMode: true,
@@ -547,7 +547,7 @@ class DuelSimulator {
             this.resizeObserver = new ResizeObserver(() => {
                 if (this.boardEl.offsetParent !== null) {
                     clearTimeout(resizeTimeout);
-                    resizeTimeout = setTimeout(() => this.repositionCards(), 100);
+                    resizeTimeout = setTimeout(() => this.repositionCards(), 250);
                 }
             });
             this.resizeObserver.observe(this.boardEl);

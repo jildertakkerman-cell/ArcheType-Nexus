@@ -3476,9 +3476,9 @@ const archetypes = [
 
     },
     {
-        name: 'Red Dragon Archfiend',
+        name: 'Resonator',
         description: 'A Synchro-focused combo deck centered on "Red Dragon Archfiend" and the "Resonator" engine.',
-        filepath: 'pages/Red Dragon Archfiend Deck Analysis.html',
+        filepath: 'pages/Resonator Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M50 10 C 40 40, 20 50, 50 90 C 80 50, 60 40, 50 10 Z" fill="#b91c1c" stroke="#fecaca" stroke-width="3" />
                                 <path d="M50 10 L 70 30 L 90 20 L 80 50 L 90 80 L 70 70 L 50 90 L 30 70 L 10 80 L 20 50 L 10 20 L 30 30 Z" fill="none" stroke="#ef4444" stroke-width="2"/>
