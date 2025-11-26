@@ -7901,7 +7901,7 @@ const archetypes = [
 
     },
     {
-        name: 'YUMMY',
+        name: 'Yummy',
         description: 'A highly-synergistic, combo-centric strategy centered on LIGHT Beast monsters.',
         filepath: 'pages/Yummy Archetype Deep Dive.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
