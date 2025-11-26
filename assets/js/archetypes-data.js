@@ -1656,9 +1656,9 @@ const archetypes = [
 
     },
     {
-        name: 'Fiendschmidt',
+        name: 'Fiendsmith',
         description: 'A DARK Fiend archetype that uses banishing and graveyard manipulation to control the field and summon powerful boss monsters.',
-        filepath: 'pages/Fiendschmidt Deck Analysis.html',
+        filepath: 'pages/Fiendsmith Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="fiendschmidtGrad" cx="50%" cy="30%" r="70%">
