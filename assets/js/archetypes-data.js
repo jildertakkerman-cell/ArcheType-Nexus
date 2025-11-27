@@ -20480,15 +20480,88 @@ const archetypes = [
         filepath: 'pages/Mitsurugi Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <linearGradient id="mitsurugiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#f87171;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
+                            <linearGradient id="mitsurugiBladeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#e5e7eb;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#f3f4f6;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#9ca3af;stop-opacity:1" />
                             </linearGradient>
+                            <linearGradient id="mitsurugiHandleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#7c2d12;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#991b1b;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#450a0a;stop-opacity:1" />
+                            </linearGradient>
+                            <radialGradient id="mitsurugiTsubaGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+                                <stop offset="70%" style="stop-color:#f59e0b;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+                            </radialGradient>
+                            <linearGradient id="mitsurugiEnergyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#fef3c7;stop-opacity:0.8" />
+                                <stop offset="50%" style="stop-color:#fbbf24;stop-opacity:0.6" />
+                                <stop offset="100%" style="stop-color:#dc2626;stop-opacity:0.4" />
+                            </linearGradient>
+                            <filter id="mitsurugiGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
                         </defs>
-                        <rect x="30" y="40" width="40" height="20" rx="8" fill="url(#mitsurugiGrad)" stroke="#f87171" stroke-width="2"/>
-                        <path d="M40 60 L60 40" stroke="#fbbf24" stroke-width="4"/>
-                        <circle cx="50" cy="50" r="7" fill="#fff7e6" stroke="#f87171" stroke-width="2"/>
-                        <text x="50" y="80" text-anchor="middle" font-size="15" fill="#f87171" font-weight="bold">Mitsurugi</text>
+                        
+                        <!-- Background circle -->
+                        <circle cx="50" cy="50" r="45" fill="#1f2937" stroke="#dc2626" stroke-width="2" opacity="0.9"/>
+                        
+                        <!-- Katana blade (diagonal from top-left to bottom-right) -->
+                        <path d="M25 25 L75 75" stroke="url(#mitsurugiBladeGrad)" stroke-width="6" stroke-linecap="round" filter="url(#mitsurugiGlow)"/>
+                        <path d="M25 25 L75 75" stroke="#ffffff" stroke-width="2" opacity="0.7"/>
+                        
+                        <!-- Blade edge highlight -->
+                        <path d="M27 23 L77 73" stroke="#ffffff" stroke-width="1" opacity="0.9"/>
+                        
+                        <!-- Tsuba (guard) - circular with decorative pattern -->
+                        <circle cx="38" cy="38" r="8" fill="url(#mitsurugiTsubaGrad)" stroke="#92400e" stroke-width="1.5"/>
+                        <circle cx="38" cy="38" r="5" fill="none" stroke="#7c2d12" stroke-width="1"/>
+                        <path d="M34 38 L42 38 M38 34 L38 42" stroke="#7c2d12" stroke-width="1"/>
+                        
+                        <!-- Handle (tsuka) with wrapping -->
+                        <path d="M38 38 L15 15" stroke="url(#mitsurugiHandleGrad)" stroke-width="5" stroke-linecap="round"/>
+                        
+                        <!-- Handle wrapping pattern (tsuka-ito) -->
+                        <g opacity="0.8">
+                            <path d="M36 36 L17 17" stroke="#450a0a" stroke-width="1"/>
+                            <path d="M34 34 L19 19" stroke="#450a0a" stroke-width="1"/>
+                            <path d="M32 32 L21 21" stroke="#450a0a" stroke-width="1"/>
+                            <path d="M30 30 L23 23" stroke="#450a0a" stroke-width="1"/>
+                        </g>
+                        
+                        <!-- Pommel (kashira) -->
+                        <circle cx="15" cy="15" r="3" fill="#fbbf24" stroke="#d97706" stroke-width="1"/>
+                        
+                        <!-- Quick attack energy slashes -->
+                        <g opacity="0.7" filter="url(#mitsurugiGlow)">
+                            <path d="M60 30 L70 20" stroke="url(#mitsurugiEnergyGrad)" stroke-width="3" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0.7;0.3;0.7" dur="2s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M70 40 L80 30" stroke="url(#mitsurugiEnergyGrad)" stroke-width="2.5" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M50 60 L60 50" stroke="url(#mitsurugiEnergyGrad)" stroke-width="2" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0.7;0.4;0.7" dur="2.5s" repeatCount="indefinite"/>
+                            </path>
+                        </g>
+                        
+                        <!-- Chainable negation indicators (chain links) -->
+                        <g opacity="0.6">
+                            <circle cx="65" cy="65" r="4" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+                            <circle cx="72" cy="72" r="4" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+                            <path d="M67 67 L70 70" stroke="#fbbf24" stroke-width="1.5"/>
+                        </g>
+                        
+                        <!-- Field control aura -->
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#dc2626" stroke-width="1" opacity="0.3" stroke-dasharray="4 4">
+                            <animate attributeName="stroke-dashoffset" values="0;8" dur="3s" repeatCount="indefinite"/>
+                        </circle>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -22140,38 +22213,138 @@ const archetypes = [
         filepath: 'pages/Primite Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="primiteAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#a16207" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#78350f" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#451a03" stop-opacity="0.9"/>
+                            <radialGradient id="primiteDragonGrad" cx="40%" cy="30%" r="70%">
+                                <stop offset="0%" style="stop-color:#fef3c7;stop-opacity:1" />
+                                <stop offset="30%" style="stop-color:#d97706;stop-opacity:1" />
+                                <stop offset="70%" style="stop-color:#92400e;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#451a03;stop-opacity:1" />
                             </radialGradient>
-                            <linearGradient id="primiteGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#d97706"/>
-                                <stop offset="100%" stop-color="#451a03"/>
+                            <linearGradient id="primiteScaleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#a16207;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#78350f;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#451a03;stop-opacity:1" />
                             </linearGradient>
-                            <filter id="primiteShadow">
+                            <radialGradient id="primiteEyeGrad" cx="30%" cy="30%" r="70%">
+                                <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#f59e0b;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#dc2626;stop-opacity:1" />
+                            </radialGradient>
+                            <linearGradient id="primiteTransformGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#fef3c7;stop-opacity:0.9" />
+                                <stop offset="50%" style="stop-color:#fbbf24;stop-opacity:0.7" />
+                                <stop offset="100%" style="stop-color:#d97706;stop-opacity:0.5" />
+                            </linearGradient>
+                            <filter id="primiteGlow">
                                 <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
                                 <feMerge>
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
+                            <filter id="primiteDragonShadow">
+                                <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                                <feOffset dx="2" dy="2" result="offsetblur"/>
+                                <feFlood flood-color="#451a03" flood-opacity="0.7"/>
+                                <feComposite in2="offsetblur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#primiteAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#primiteShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#primiteGlow)" stroke="#451a03" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#a16207" stroke="#78350f" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#78350f" stroke="#451a03" stroke-width="2"/>
+                        
+                        <!-- Background circle -->
+                        <circle cx="50" cy="50" r="45" fill="#1a1410" stroke="#92400e" stroke-width="2" opacity="0.9"/>
+                        
+                        <!-- Primal dragon head silhouette -->
+                        <g filter="url(#primiteDragonShadow)">
+                            <!-- Dragon snout/jaw -->
+                            <path d="M30 45 Q25 50 30 55 L40 55 Q45 50 40 45 Z" fill="url(#primiteDragonGrad)" stroke="#451a03" stroke-width="1.5"/>
+                            
+                            <!-- Dragon head main body -->
+                            <ellipse cx="55" cy="45" rx="20" ry="18" fill="url(#primiteDragonGrad)" stroke="#451a03" stroke-width="2"/>
+                            
+                            <!-- Dragon horns -->
+                            <path d="M45 30 Q40 20 38 15 Q42 18 45 25" fill="url(#primiteScaleGrad)" stroke="#451a03" stroke-width="1.5"/>
+                            <path d="M65 30 Q70 20 72 15 Q68 18 65 25" fill="url(#primiteScaleGrad)" stroke="#451a03" stroke-width="1.5"/>
+                            
+                            <!-- Dragon eye (fierce, glowing) -->
+                            <ellipse cx="58" cy="42" rx="6" ry="8" fill="url(#primiteEyeGrad)" filter="url(#primiteGlow)">
+                                <animate attributeName="opacity" values="1;0.6;1" dur="3s" repeatCount="indefinite"/>
+                            </ellipse>
+                            <ellipse cx="59" cy="40" rx="2" ry="3" fill="#fef3c7" opacity="0.9"/>
+                            
+                            <!-- Dragon scales pattern -->
+                            <g opacity="0.7">
+                                <circle cx="48" cy="38" r="2" fill="#78350f"/>
+                                <circle cx="52" cy="35" r="1.5" fill="#78350f"/>
+                                <circle cx="60" cy="35" r="2" fill="#78350f"/>
+                                <circle cx="65" cy="38" r="1.5" fill="#78350f"/>
+                                <circle cx="50" cy="48" r="1.5" fill="#78350f"/>
+                                <circle cx="55" cy="50" r="2" fill="#78350f"/>
+                                <circle cx="62" cy="48" r="1.5" fill="#78350f"/>
+                            </g>
+                            
+                            <!-- Dragon nostril -->
+                            <ellipse cx="35" cy="50" rx="2" ry="3" fill="#451a03" opacity="0.8"/>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#78350f">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#451a03">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#451a03" font-weight="bold">Primite</text>
+                        
+                        <!-- Transformation energy aura (representing Normal Monster transformation) -->
+                        <g opacity="0.8" filter="url(#primiteGlow)">
+                            <circle cx="50" cy="50" r="38" fill="none" stroke="url(#primiteTransformGrad)" stroke-width="2" stroke-dasharray="8 4">
+                                <animate attributeName="stroke-dashoffset" values="0;12" dur="4s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.8;0.4;0.8" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="50" cy="50" r="32" fill="none" stroke="url(#primiteTransformGrad)" stroke-width="1.5" stroke-dasharray="6 6" opacity="0.6">
+                                <animate attributeName="stroke-dashoffset" values="12;0" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        
+                        <!-- Control/disruption energy particles -->
+                        <g filter="url(#primiteGlow)">
+                            <circle cx="25" cy="30" r="2" fill="#fbbf24" opacity="0.9">
+                                <animate attributeName="cy" values="30;20;30" dur="2s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="75" cy="35" r="2.5" fill="#f59e0b" opacity="0.8">
+                                <animate attributeName="cy" values="35;25;35" dur="2.5s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.5s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="20" cy="65" r="1.5" fill="#d97706" opacity="0.7">
+                                <animate attributeName="cy" values="65;55;65" dur="3s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.7;0.3;0.7" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="80" cy="60" r="2" fill="#fbbf24" opacity="0.9">
+                                <animate attributeName="cy" values="60;50;60" dur="2.2s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.9;0.4;0.9" dur="2.2s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        
+                        <!-- Normal Monster card symbol (representing the transformation source) -->
+                        <g opacity="0.7">
+                            <rect x="15" y="70" width="12" height="16" rx="1" fill="#78350f" stroke="#451a03" stroke-width="1"/>
+                            <rect x="17" y="72" width="8" height="3" fill="#fbbf24" opacity="0.6"/>
+                        </g>
+                        
+                        <!-- Engine/power indicator (gears/mechanism) -->
+                        <g opacity="0.6" transform="translate(75, 75)">
+                            <circle r="6" fill="none" stroke="#d97706" stroke-width="1.5">
+                                <animateTransform attributeName="transform" type="rotate" values="0;360" dur="8s" repeatCount="indefinite"/>
+                            </circle>
+                            <path d="M-2 0 L2 0 M0 -2 L0 2" stroke="#d97706" stroke-width="1">
+                                <animateTransform attributeName="transform" type="rotate" values="0;360" dur="8s" repeatCount="indefinite"/>
+                            </path>
+                        </g>
+                        
+                        <!-- Disruption effect indicators (lightning-like) -->
+                        <g opacity="0.5" stroke="#fbbf24" stroke-width="1.5" fill="none">
+                            <path d="M35 65 L38 70 L36 72">
+                                <animate attributeName="opacity" values="0.5;0.9;0.5" dur="1.5s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M65 68 L62 73 L64 75">
+                                <animate attributeName="opacity" values="0.9;0.5;0.9" dur="1.5s" repeatCount="indefinite"/>
+                            </path>
+                        </g>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
