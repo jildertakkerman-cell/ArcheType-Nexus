@@ -20,6 +20,7 @@ window.CardLoader = (function () {
     // Internal state
     const cardDataCache = {};
     const banlistCache = {};
+    const discordLinksCache = {};
     let banlistData = null;
     let popup = null;
     let activePopup = null;
@@ -1007,6 +1008,36 @@ window.CardLoader = (function () {
         }
     }
 
+
+    /**
+     * Fetch Discord links from JSON file
+     * @returns {Promise<Array>} Array of Discord link objects
+     */
+    async function fetchDiscordLinks() {
+        if (Object.keys(discordLinksCache).length > 0) {
+            return discordLinksCache;
+        }
+
+        try {
+            const response = await fetch('/assets/data/discord_links.json');
+            if (!response.ok) {
+                throw new Error(`Discord links fetch error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            // Convert array to object for faster lookup
+            data.forEach(item => {
+                discordLinksCache[item.archetype.toLowerCase()] = item.link;
+            });
+
+            console.log('[CardLoader] Discord links cached:', Object.keys(discordLinksCache).length, 'archetypes');
+            return discordLinksCache;
+        } catch (error) {
+            console.error('[CardLoader] Failed to fetch Discord links:', error);
+            return {};
+        }
+    }
     /**
      * Check banlist status for specific cards
      * @param {Array<string>} cardNames - Array of card names to check
@@ -1774,6 +1805,11 @@ window.CardLoader = (function () {
             }
         }
 
+        // Fetch Discord links
+        const discordLinks = await fetchDiscordLinks();
+        const discordUrl = discordLinks[archetypeName.toLowerCase()] || null;
+        console.log(`[CardLoader] Discord link for ${archetypeName}:`, discordUrl);
+
         let competitiveUrl, casualUrl;
 
         if (archetypeExists) {
@@ -1811,7 +1847,7 @@ window.CardLoader = (function () {
                     <i class="fas fa-search-plus mr-2 text-accent"></i>
                     Explore deck lists from the YGOProDeck community featuring ${archetypeName}. Find inspiration for your next build!
                 </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-${discordUrl ? '3' : '2'} gap-6">
                     
                     <a href="${competitiveUrl}" target="_blank" rel="noopener noreferrer" 
                        class="block p-6 rounded-lg shadow-lg text-center font-bold text-white transition-transform transform hover:scale-105 
@@ -1835,7 +1871,20 @@ window.CardLoader = (function () {
                         <span class="block text-xs font-normal text-gray-200 mt-1">
                             All User-Submitted Decks
                         </span>
+                    </a>                    
+                    ${discordUrl ? `
+                    <a href="${discordUrl}" target="_blank" rel="noopener noreferrer" 
+                       class="block p-6 rounded-lg shadow-lg text-center font-bold text-white transition-transform transform hover:scale-105 
+                              bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700">
+                        <h3 class="text-lg">
+                            <i class="fab fa-discord mr-2"></i>
+                            Join ${archetypeName} Discord
+                        </h3>
+                        <span class="block text-xs font-normal text-purple-100 mt-1">
+                            Archetype Community Server
+                        </span>
                     </a>
+                    ` : ''}
 
                 </div>
             </div>
