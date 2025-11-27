@@ -78,6 +78,97 @@ class ComboLoader {
             }
         };
     }
+
+    /**
+     * Render the complete combo system with a single function call
+     * This is the main entry point for loading combos onto a page
+     * @param {string} containerId - ID of the container element (will create sub-containers inside)
+     * @param {string} archetypeName - Name of the archetype (e.g., 'Blue-Eyes', 'Yummy')
+     * @param {Object} options - Optional configuration
+     * @param {string} options.selectorContainerId - Custom ID for selector container (default: 'combo-selector-container')
+     * @param {string} options.guideContainerId - Custom ID for guide container (default: 'combo-guide-container')
+     * @param {Object} options.selectorOptions - Options to pass to ComboSelector.render
+     * @returns {Promise<Object>} Object containing loaded data and initialized simulators
+     */
+    static async renderComboSystem(containerId, archetypeName, options = {}) {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`[ComboLoader] Container not found: ${containerId}`);
+            return null;
+        }
+
+        const {
+            selectorContainerId = 'combo-selector-container',
+            guideContainerId = 'combo-guide-container',
+            selectorOptions = {}
+        } = options;
+
+        // 1. Setup container structure
+        container.innerHTML = `
+            <div id="${selectorContainerId}"></div>
+            <div id="${guideContainerId}"></div>
+        `;
+
+        try {
+            // 2. Load combo data
+            const comboData = await this.loadCombos(archetypeName);
+
+            if (!comboData || !comboData.combos) {
+                console.error(`[ComboLoader] No combo data found for ${archetypeName}`);
+                return null;
+            }
+
+            // 3. Define the showCombo callback for switching between combos
+            const showCombo = (comboKey) => {
+                const combos = comboData.combos || {};
+                Object.keys(combos).forEach(key => {
+                    const normalizedKey = key.replace('combo', '');
+                    const contentDiv = document.getElementById(`combo-${normalizedKey}-content`);
+                    if (contentDiv) {
+                        contentDiv.classList.add('hidden');
+                    }
+                });
+
+                const selectedContent = document.getElementById(`combo-${comboKey}-content`);
+                if (selectedContent) {
+                    selectedContent.classList.remove('hidden');
+                }
+            };
+
+            // 4. Render combo selector
+            ComboSelector.render(selectorContainerId, comboData, showCombo, selectorOptions);
+
+            // 5. Render combo guide (includes simulators)
+            ComboGuide.render(guideContainerId, comboData);
+
+            // 6. Initialize all DuelSimulator instances
+            const simulators = {};
+            Object.keys(comboData.combos).forEach(key => {
+                const normalizedKey = key.replace('combo', '');
+                const simElementId = `duel-simulator-${key}`;
+                simulators[key] = new DuelSimulator(simElementId, { [normalizedKey]: comboData.combos[key] });
+            });
+
+            console.log(`[ComboLoader] Successfully loaded combo system for ${archetypeName}`);
+
+            return {
+                data: comboData,
+                simulators: simulators,
+                showCombo: showCombo
+            };
+
+        } catch (error) {
+            console.error(`[ComboLoader] Failed to render combo system for ${archetypeName}:`, error);
+            container.innerHTML = `
+                <div class="p-6 text-center text-red-400">
+                    <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                    <p>Failed to load combo system for ${archetypeName}</p>
+                    <p class="text-sm mt-2 opacity-75">${error.message}</p>
+                </div>
+            `;
+            return null;
+        }
+    }
 }
 
 /**
@@ -99,23 +190,49 @@ class ComboSelector {
         const combos = comboData.combos || {};
         const comboNumbers = Object.keys(combos).map(key => key.replace('combo', ''));
 
+        // Infer theme to get colors
+        const theme = ComboSelector.inferTheme();
+        console.log('[ComboSelector] Using theme:', theme);
+
+        // Create a cleaner, more integrated selector
         container.innerHTML = `
-            <div class="combo-selector-container">
-                <label for="${selectorId}" class="combo-selector-label">
-                    <i class="${labelIcon}"></i>${labelText}
+            <div style="max-width: 32rem; margin: 0 auto 2rem auto;">
+                <label for="${selectorId}" style="display: block; text-align: center; color: ${theme.accentColor}; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <i class="${labelIcon}" style="margin-right: 0.5rem;"></i>${labelText}
                 </label>
-                <select id="${selectorId}" class="combo-selector">
-                    ${comboNumbers.map(num => {
+                <div style="position: relative;">
+                    <select id="${selectorId}" 
+                        style="
+                            appearance: none;
+                            width: 100%;
+                            padding: 1rem 3rem 1rem 1.25rem;
+                            background-color: ${theme.cardBg};
+                            border: 2px solid ${theme.accentColor};
+                            border-radius: 0.5rem;
+                            color: ${theme.textColor};
+                            font-weight: 700;
+                            font-size: 1.125rem;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                        "
+                        onmouseover="this.style.backgroundColor='${theme.backgroundColor}'; this.style.boxShadow='0 0 15px ${theme.accentColor}40';"
+                        onmouseout="this.style.backgroundColor='${theme.cardBg}'; this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.3)';"
+                        onfocus="this.style.outline='none'; this.style.borderColor='${theme.accentColor}'; this.style.boxShadow='0 0 0 3px ${theme.accentColor}40';"
+                        onblur="this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.3)';">
+                        ${comboNumbers.map(num => {
             const combo = combos[`combo${num}`];
             return `<option value="${num}" ${num === defaultCombo ? 'selected' : ''}>${combo.title || `Combo #${num}`}</option>`;
         }).join('')}
-                </select>
+                    </select>
+                    <div style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: ${theme.accentColor};">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                </div>
             </div>
         `;
-
-        // Apply Theme
-        const theme = ComboSelector.inferTheme();
-        if (theme) ComboSelector.setTheme(theme);
 
         const selector = document.getElementById(selectorId);
         if (selector && onChangeCallback) {
@@ -128,6 +245,8 @@ class ComboSelector {
     static setTheme(theme) {
         const root = document.documentElement;
 
+        console.log('[ComboSelector] Applying theme:', theme);
+
         // Set accent/primary colors
         if (theme.accentColor) {
             root.style.setProperty('--combo-accent', theme.accentColor);
@@ -135,6 +254,10 @@ class ComboSelector {
             root.style.setProperty('--primary-color', theme.accentColor);
             root.style.setProperty('--combo-selector-border', theme.accentColor);
             root.style.setProperty('--combo-selector-label-color', theme.accentColor);
+
+            // Set arrow color (needs to be URL-encoded for SVG)
+            const arrowColor = theme.accentColor.replace('#', '%23');
+            root.style.setProperty('--combo-selector-arrow-color', arrowColor);
 
             // Create focus ring color with opacity
             const accentRgb = theme.accentColor.match(/\d+/g);
@@ -187,6 +310,8 @@ class ComboSelector {
             root.style.setProperty('--combo-selector-option-gradient-start', theme.accentColor);
             root.style.setProperty('--combo-selector-option-gradient-end', theme.accentColor);
         }
+
+        console.log('[ComboSelector] Theme applied successfully');
     }
 
     static inferTheme() {
@@ -194,7 +319,23 @@ class ComboSelector {
         const bodyBg = getStyle(document.body, 'background-color');
         const root = document.documentElement;
 
+        console.log('[ComboSelector] Inferring theme... Page title:', document.title);
+        console.log('[ComboSelector] Body background:', bodyBg);
+
         // 1. Explicit Archetype Detection
+
+        // A-to-Z Theme (Golden Yellow)
+        if (document.title.toLowerCase().includes('a-to-z') || bodyBg.includes('10, 14, 26')) {
+            console.log('[ComboSelector] Detected A-to-Z theme');
+            return {
+                accentColor: '#facc15', // Golden Yellow
+                secondaryColor: '#fbbf24', // Amber-400
+                isDarkMode: true,
+                backgroundColor: 'rgba(22, 30, 45, 0.95)', // Dark Blue-Gray
+                cardBg: 'rgba(32, 42, 58, 0.8)',
+                textColor: '#d1d5db'
+            };
+        }
 
         // Kewl Tune Theme (Neon Pink/Cyan)
         if (document.title.toLowerCase().includes('kewl tune') || bodyBg.includes('kewl')) {
@@ -210,7 +351,6 @@ class ComboSelector {
 
         // Yummy Theme (Purple/Pink)
         if (bodyBg.includes('26, 17, 42') || bodyBg.includes('#1a112a') ||
-
             getStyle(document.body, 'border-color').includes('236, 72, 153') || // Pink-500
             document.querySelector('.text-pink-500') ||
             document.title.toLowerCase().includes('yummy')) {
@@ -235,32 +375,82 @@ class ComboSelector {
             };
         }
 
-        // 2. Generic Scanner (Fallback)
+        // Mermail Theme (Cyan/Blue)
+        if (document.title.toLowerCase().includes('mermail') || bodyBg.includes('3, 12, 20')) {
+            return {
+                accentColor: '#38bdf8', // Sky-400
+                secondaryColor: '#0ea5e9', // Sky-500
+                isDarkMode: true,
+                backgroundColor: 'rgba(11, 26, 42, 0.95)',
+                cardBg: 'rgba(11, 26, 42, 0.95)',
+                textColor: '#e0f2fe'
+            };
+        }
+
+        // 2. Enhanced Generic Scanner (Fallback)
+        // First check CSS variables
         let accentColor = getComputedStyle(root).getPropertyValue('--accent-color') ||
             getComputedStyle(root).getPropertyValue('--primary-color');
 
+        // Check for .text-accent class elements
         if (!accentColor || !accentColor.trim()) {
-            const headers = document.querySelectorAll('h1, h2, h3');
-            for (const h of headers) {
-                const color = getStyle(h, 'color');
-                const rgb = color.match(/\d+/g);
-                if (rgb && (Math.abs(rgb[0] - rgb[1]) > 20 || Math.abs(rgb[1] - rgb[2]) > 20)) {
+            const accentElements = document.querySelectorAll('.text-accent, strong.text-accent');
+            for (const el of accentElements) {
+                const color = getStyle(el, 'color');
+                if (color && color !== 'rgb(0, 0, 0)' && color !== 'rgb(255, 255, 255)') {
                     accentColor = color;
                     break;
                 }
             }
         }
 
-        if (!accentColor) accentColor = '#60a5fa'; // Blue-400
+        // Check headers for colorful text
+        if (!accentColor || !accentColor.trim()) {
+            const headers = document.querySelectorAll('h1, h2, h3, h4');
+            for (const h of headers) {
+                const color = getStyle(h, 'color');
+                const rgb = color.match(/\d+/g);
+                // Look for non-grayscale colors (where RGB values differ significantly)
+                if (rgb && (Math.abs(rgb[0] - rgb[1]) > 30 || Math.abs(rgb[1] - rgb[2]) > 30 || Math.abs(rgb[0] - rgb[2]) > 30)) {
+                    accentColor = color;
+                    break;
+                }
+            }
+        }
+
+        // Check .card elements for border colors
+        if (!accentColor || !accentColor.trim()) {
+            const cards = document.querySelectorAll('.card, .card-panel');
+            for (const card of cards) {
+                const borderColor = getStyle(card, 'border-left-color') || getStyle(card, 'border-color');
+                const rgb = borderColor.match(/\d+/g);
+                if (rgb && (Math.abs(rgb[0] - rgb[1]) > 30 || Math.abs(rgb[1] - rgb[2]) > 30)) {
+                    accentColor = borderColor;
+                    break;
+                }
+            }
+        }
+
+        if (!accentColor || !accentColor.trim()) accentColor = '#60a5fa'; // Blue-400 fallback
 
         const rgb = bodyBg.match(/\d+/g);
         const isDarkMode = rgb ? (parseInt(rgb[0]) * 0.299 + parseInt(rgb[1]) * 0.587 + parseInt(rgb[2]) * 0.114) < 128 : true;
+
+        // Detect card background color from existing .card elements
+        let cardBg = isDarkMode ? 'rgba(0, 0, 0, 0.2)' : '#ffffff';
+        const existingCard = document.querySelector('.card, .card-panel');
+        if (existingCard) {
+            const cardBgColor = getStyle(existingCard, 'background-color');
+            if (cardBgColor && cardBgColor !== 'rgba(0, 0, 0, 0)') {
+                cardBg = cardBgColor;
+            }
+        }
 
         return {
             accentColor: accentColor.trim(),
             isDarkMode: isDarkMode,
             backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.6)' : 'rgba(255, 255, 255, 0.8)',
-            cardBg: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : '#ffffff',
+            cardBg: cardBg,
             textColor: isDarkMode ? '#f3f4f6' : '#1f2937'
         };
     }
@@ -380,7 +570,14 @@ class ComboGuide {
             if (combo.steps) {
                 combo.steps.forEach((step, stepIndex) => {
                     const stepNum = stepIndex + 1;
-                    const cardName = cardNameMap[step.card] || step.card;
+
+                    // Resolve primary card for this step (handle single card or multiple actions)
+                    let primaryCardId = step.card;
+                    if (!primaryCardId && step.actions && step.actions.length > 0) {
+                        primaryCardId = step.actions[0].card;
+                    }
+
+                    const cardName = cardNameMap[primaryCardId] || primaryCardId || "Unknown Card";
                     const imgId = `combo-${key}-step-${stepNum}-img`;
 
                     // Collect cards for batch loading via CardLoader
@@ -852,6 +1049,41 @@ class DuelSimulator {
         const c = this.cards[cardId];
         if (!c) return;
 
+        // Handle Material Attachment (Logical)
+        if (targetZoneId.startsWith('material:')) {
+            const parentId = targetZoneId.split(':')[1];
+            this.attachMaterial(cardId, parentId);
+            return;
+        }
+
+        // Auto-resolve Spell/Trap zone collisions to prevent stacking
+        const stZones = ['zone-s1', 'zone-s2', 'zone-s3', 'zone-s4', 'zone-s5'];
+        if (stZones.includes(targetZoneId)) {
+            const isOccupied = Object.values(this.cards).some(other =>
+                other.id !== cardId &&
+                other.element.getAttribute('data-zone') === targetZoneId &&
+                other.element.style.display !== 'none' &&
+                other.element.style.opacity !== '0'
+            );
+
+            if (isOccupied) {
+                // Find first empty ST zone
+                const emptyZone = stZones.find(zId =>
+                    !Object.values(this.cards).some(other =>
+                        other.id !== cardId &&
+                        other.element.getAttribute('data-zone') === zId &&
+                        other.element.style.display !== 'none' &&
+                        other.element.style.opacity !== '0'
+                    )
+                );
+
+                if (emptyZone) {
+                    this.log(`Zone ${targetZoneId} occupied, redirecting ${c.data.name} to ${emptyZone}`);
+                    targetZoneId = emptyZone;
+                }
+            }
+        }
+
         const isToken = (c.data.type || '').toLowerCase().includes('token') || (c.data.name || '').toLowerCase().includes('token');
         const isLeaving = ['zone-gy', 'zone-deck', 'zone-hand', 'zone-banish'].includes(targetZoneId);
 
@@ -866,6 +1098,30 @@ class DuelSimulator {
             c.element.style.transform = "scale(0.5)";
             c.vanishTimeout = setTimeout(() => c.element.style.display = 'none', 500);
             return;
+        }
+
+        // Check for attached materials and move them if parent is leaving field
+        if (this.materials && this.materials[cardId] && this.materials[cardId].length > 0) {
+            if (isLeaving) {
+                // Move all materials to GY
+                const mats = [...this.materials[cardId]];
+                this.log(`Materials for ${c.data.name} sent to GY`);
+                mats.forEach(matId => {
+                    this.moveCard(matId, 'zone-gy');
+                });
+                this.materials[cardId] = []; // Clear attachments
+            } else {
+                // If parent moves to another field zone, materials should follow (visually)
+                setTimeout(() => {
+                    this.materials[cardId].forEach(matId => {
+                        const mat = this.cards[matId];
+                        if (mat) {
+                            mat.element.setAttribute('data-zone', targetZoneId);
+                            this.setPosition(mat.element, targetZoneId);
+                        }
+                    });
+                }, 50);
+            }
         }
 
         c.element.style.display = 'block';
@@ -899,12 +1155,41 @@ class DuelSimulator {
         }, 600);
     }
 
+    attachMaterial(cardId, parentId) {
+        if (!this.materials) this.materials = {};
+        if (!this.materials[parentId]) this.materials[parentId] = [];
+
+        // Avoid duplicates
+        if (!this.materials[parentId].includes(cardId)) {
+            this.materials[parentId].push(cardId);
+        }
+
+        const parent = this.cards[parentId];
+        const child = this.cards[cardId];
+
+        if (parent && child) {
+            const parentZone = parent.element.getAttribute('data-zone');
+
+            // Move child to parent's zone visually
+            child.element.setAttribute('data-zone', parentZone);
+            this.setPosition(child.element, parentZone);
+        }
+    }
+
     nextStep() {
         const steps = this.combos[this.currentComboId].steps;
         if (this.currentStep < steps.length) {
             const s = steps[this.currentStep];
             this.log(`> ${s.text}`);
-            this.moveCard(s.card, s.to);
+
+            if (s.actions && Array.isArray(s.actions)) {
+                s.actions.forEach(action => {
+                    this.moveCard(action.card, action.to);
+                });
+            } else {
+                this.moveCard(s.card, s.to);
+            }
+
             this.currentStep++;
         } else {
             this.log("Combo Complete!");
@@ -1146,3 +1431,39 @@ class DuelSimulator {
     }
 
 }
+
+// ============================================================================
+// AUTO-INITIALIZATION
+// ============================================================================
+// Automatically initialize combo systems on page load for elements with data-combo-system attribute
+// Usage: <div data-combo-system="Blue-Eyes"></div>
+
+document.addEventListener('DOMContentLoaded', () => {
+    const comboContainers = document.querySelectorAll('[data-combo-system]');
+
+    if (comboContainers.length > 0) {
+        console.log(`[ComboLoader] Found ${comboContainers.length} combo system(s) to auto-initialize`);
+    }
+
+    comboContainers.forEach(async (container) => {
+        const archetypeName = container.dataset.comboSystem;
+
+        if (!archetypeName) {
+            console.warn('[ComboLoader] Found data-combo-system attribute with no value, skipping');
+            return;
+        }
+
+        // Auto-generate ID if not provided
+        if (!container.id) {
+            const generatedId = `combo-system-${archetypeName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+            container.id = generatedId;
+            console.log(`[ComboLoader] Auto-generated ID: ${generatedId}`);
+        }
+
+        try {
+            await ComboLoader.renderComboSystem(container.id, archetypeName, {});
+        } catch (error) {
+            console.error(`[ComboLoader] Failed to auto-initialize combo system for ${archetypeName}:`, error);
+        }
+    });
+});
