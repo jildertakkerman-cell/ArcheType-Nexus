@@ -1049,6 +1049,9 @@ class DuelSimulator {
         const c = this.cards[cardId];
         if (!c) return;
 
+        // If the card is already in the target zone, do nothing
+        if (c.element.getAttribute('data-zone') === targetZoneId) return;
+
         // Handle Material Attachment (Logical)
         if (targetZoneId.startsWith('material:')) {
             const parentId = targetZoneId.split(':')[1];
