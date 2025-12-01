@@ -1,27 +1,37 @@
 import json
 import os
 
-# Paths to the combo files
-combo_files = [
-    r"c:\Users\jilde\Downloads\ABC XYZ combo X.json",
-    r"c:\Users\jilde\Downloads\ABC XYZ combo Hangar (4).json",
-    r"c:\Users\jilde\Downloads\ABC XYZ combo Hangar less safe.json",
-    r"c:\Users\jilde\Downloads\ABC XYZ combo X  with TTG.json"
-]
+# Directory with the combo files
+temp_dir = 'temp_jsons'
 
-# Corresponding titles
-titles = [
-    "ABC XYZ combo X",
-    "ABC XYZ combo Hangar",
-    "ABC XYZ combo Hangar less safe",
-    "ABC XYZ combo X with TTG"
-]
+# Get list of JSON files
+json_files = [f for f in os.listdir(temp_dir) if f.endswith('.json')]
+
+# Custom titles and descriptions
+custom_info = {
+    "ABC XYZ combo Hangar less safe.json": {
+        "title": "ABC XYZ Combo with Hangar (Less Safe)",
+        "description": "A variant of the ABC XYZ combo using Union Hangar with reduced safety measures, distilled from replay file."
+    },
+    "ABC XYZ combo X  with TTG.json": {
+        "title": "ABC XYZ Combo X with Torque Tune Gear",
+        "description": "ABC XYZ combo starting with X-Cross Cannon, incorporating Torque Tune Gear, distilled from replay file."
+    },
+    "ABC XYZ combo X.json": {
+        "title": "ABC XYZ Combo X",
+        "description": "Standard ABC XYZ combo starting with X-Cross Cannon, distilled from replay file."
+    },
+    "ABC XYZ combo Hangar.json": {
+        "title": "ABC XYZ Combo with Hangar",
+        "description": "ABC XYZ combo utilizing Union Hangar for setup, distilled from replay file."
+    }
+}
 
 # Target file
-target_file = r"c:\Users\jilde\Documents\VSCode-Projects-main\Apps\ArcheType Nexus\assets\data\combos\a-to-z-combos.json"
+target_file = r"assets\data\combos\a-to-z-combos.json"
 
 # Load existing data
-if os.path.exists(target_file):
+if os.path.exists(target_file) and os.path.getsize(target_file) > 0:
     with open(target_file, 'r') as f:
         merged_data = json.load(f)
 else:
@@ -38,14 +48,19 @@ if existing_combos:
 else:
     combo_counter = 1
 
-for file_path, title in zip(combo_files, titles):
+for file_name in json_files:
+    file_path = os.path.join(temp_dir, file_name)
     if os.path.exists(file_path):
         with open(file_path, 'r') as f:
             data = json.load(f)
             # Assuming each file has "combos" with "combo1"
             for combo_key, combo_data in data.get("combos", {}).items():
                 new_key = f"combo{combo_counter}"
-                combo_data["title"] = title
+                if file_name in custom_info:
+                    combo_data["title"] = custom_info[file_name]["title"]
+                    combo_data["description"] = custom_info[file_name]["description"]
+                else:
+                    combo_data["title"] = os.path.splitext(file_name)[0]
                 merged_data["combos"][new_key] = combo_data
                 combo_counter += 1
     else:

@@ -494,6 +494,10 @@ window.CardLoader = (function () {
             // Specific pattern for materials with "except" clause (Must be first to avoid partial matches)
             /^(\d+(?:\s*\+\s*\d+)?\s*[\w\s"]+monsters?,\s*except\s*[^\r\n]*)/i,
 
+            // Pattern for materials with "or" between quoted card names (e.g., 1 LIGHT Machine monster + "Y-Yare Head" or "Z-Zillion Tank")
+            // Must come early to avoid being shadowed by generic patterns that stop at "monster"
+            /^(\d+\s+[\w\s]+monster\s*\+\s*"[^"]+"\s+or\s+"[^"]+")/i,
+
             // Specific Fusion patterns (Moved to top to avoid being shadowed by generic Link pattern)
             // Pattern for: "1 X Fusion Monster + 1 Y monster" or "1 X + 1 Y + 1 Z monsters"
             // Updated to include location qualifiers like "in your opponent's GY"
@@ -512,10 +516,10 @@ window.CardLoader = (function () {
             // XYZ patterns
             /^(\d+(?:\s*\+\s*)?\s*Level\s+\d+(?:\s+or\s+higher|\s+or\s+lower)?(?:.*?)monsters?(?:\r?\n(?!\s*(?:Monsters|[A-Z])).*)*)/im,
             /^(\d+(?:\s*\+\s*)?\s*[\w\s"]+monsters?\s*\([^)]*\))/i,
+
             // Fusion patterns - specific card names first
             // Capture situations like: 1 DARK monster + "Fallen of Albaz" (quoted card name after a +)
             /^(?!If|When|You|Once|During|For|Unless|While|Then|In the)([^\r\n]*?"[^"]+"(?:\s*\+\s*"[^"]+")*(?:\s*\+\s*[^A-Z][^.]*)?)/im,
-
 
             /^("[^"]*"(?:\s*\+\s*"[^"]*")+(?:\s*\+\s*"[^"]*")*)/,
             /^(\d+(?:\s*\+\s*\d+)?\s*[\w \t"]+monsters?)/i,
@@ -1871,7 +1875,8 @@ window.CardLoader = (function () {
                         <span class="block text-xs font-normal text-gray-200 mt-1">
                             All User-Submitted Decks
                         </span>
-                    </a>                    
+                    </a>
+                    
                     ${discordUrl ? `
                     <a href="${discordUrl}" target="_blank" rel="noopener noreferrer" 
                        class="block p-6 rounded-lg shadow-lg text-center font-bold text-white transition-transform transform hover:scale-105 

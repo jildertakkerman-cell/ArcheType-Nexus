@@ -550,6 +550,11 @@ class ComboGuide {
                         <p class="text-sm md:text-base leading-relaxed italic opacity-90" style="color: ${textMain}">
                             <i class="fas fa-quote-left mr-2 opacity-50"></i>${parsedDescription}<i class="fas fa-quote-right ml-2 opacity-50"></i>
                         </p>
+                        ${combo.credits ? `
+                        <p class="mt-3 text-xs font-medium opacity-70" style="color: ${accent};">
+                            <i class="fas fa-user-circle mr-1"></i>${combo.credits}
+                        </p>
+                        ` : ''}
                     </div>
                 `;
             }
@@ -1185,11 +1190,41 @@ class DuelSimulator {
             const s = steps[this.currentStep];
             this.log(`> ${s.text}`);
 
+            // Check if this step is an effect activation
+            const isEffectActivation = s.text && s.text.toLowerCase().includes('activate effect');
+
+            // Check for Extra Deck summon types
+            const summonType = this.detectSummonType(s.text);
+
             if (s.actions && Array.isArray(s.actions)) {
+                // For summons, find the summoned card (usually the last action or the one going to a monster zone)
+                let summonedCardId = null;
+                if (summonType) {
+                    // Find the card being summoned (typically goes to a monster zone, not to GY)
+                    for (const action of s.actions) {
+                        if (action.to && !action.to.includes('gy') && !action.isOverlay) {
+                            summonedCardId = action.card;
+                        }
+                    }
+                }
+
                 s.actions.forEach(action => {
+                    if (isEffectActivation) {
+                        this.playEffectAnimation(action.card);
+                    }
+                    // Play summon animation on the summoned card
+                    if (summonType && action.card === summonedCardId) {
+                        this.playSummonAnimation(action.card, summonType);
+                    }
                     this.moveCard(action.card, action.to);
                 });
             } else {
+                if (isEffectActivation) {
+                    this.playEffectAnimation(s.card);
+                }
+                if (summonType) {
+                    this.playSummonAnimation(s.card, summonType);
+                }
                 this.moveCard(s.card, s.to);
             }
 
@@ -1198,6 +1233,85 @@ class DuelSimulator {
             this.log("Combo Complete!");
             this.togglePlay(false);
         }
+    }
+
+    /**
+     * Detect the type of Extra Deck summon from step text
+     * @param {string} text - The step text
+     * @returns {string|null} The summon type or null if not a summon
+     */
+    detectSummonType(text) {
+        if (!text) return null;
+        const lowerText = text.toLowerCase();
+
+        if (lowerText.includes('xyz summon')) return 'xyz';
+        if (lowerText.includes('synchro summon')) return 'synchro';
+        if (lowerText.includes('contact fusion')) return 'contact-fusion';
+        if (lowerText.includes('fusion summon') || lowerText.includes('fusion')) return 'fusion';
+        if (lowerText.includes('link summon')) return 'link';
+
+        return null;
+    }
+
+    /**
+     * Play a visual summon animation on a card
+     * @param {string} cardId - The ID of the card being summoned
+     * @param {string} summonType - The type of summon (xyz, synchro, fusion, link, contact-fusion)
+     */
+    playSummonAnimation(cardId, summonType) {
+        const c = this.cards[cardId];
+        if (!c || !c.element) return;
+
+        const token = c.element;
+        const animationClass = `${summonType}-summoning`;
+
+        // Remove any existing summon animation classes
+        token.classList.remove('xyz-summoning', 'synchro-summoning', 'fusion-summoning', 'link-summoning', 'contact-fusion-summoning');
+
+        // Force a reflow to restart animation
+        void token.offsetWidth;
+
+        // Add the animation class
+        token.classList.add(animationClass);
+
+        // Determine animation duration based on type
+        const durations = {
+            'xyz': 1250,
+            'synchro': 1150,
+            'fusion': 1350,
+            'link': 1050,
+            'contact-fusion': 1250
+        };
+
+        // Remove the class after animation completes
+        setTimeout(() => {
+            token.classList.remove(animationClass);
+        }, durations[summonType] || 1200);
+    }
+
+    /**
+     * Play a visual effect animation on a card when it activates its effect
+     * @param {string} cardId - The ID of the card activating its effect
+     */
+    playEffectAnimation(cardId) {
+        const c = this.cards[cardId];
+        if (!c || !c.element) return;
+
+        const token = c.element;
+
+        // Remove any existing animation class
+        token.classList.remove('activating-effect');
+
+        // Force a reflow to restart animation
+        void token.offsetWidth;
+
+        // Add the animation class
+        token.classList.add('activating-effect');
+
+        // Remove the class after animation completes
+        setTimeout(() => {
+            token.classList.remove('activating-effect');
+        }, 850);
     }
 
     prevStep() {
