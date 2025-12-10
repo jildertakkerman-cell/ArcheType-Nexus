@@ -3452,24 +3452,66 @@ const archetypes = [
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="summonedSkullGrad" cx="50%" cy="50%" r="70%">
-                            <stop offset="0%" style="stop-color:#2a0a12;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#581c37;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#11080b;stop-opacity:1" />
+                            <stop offset="0%" style="stop-color:#1a0510;stop-opacity:1" />
+                            <stop offset="40%" style="stop-color:#3d0f24;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0a0308;stop-opacity:1" />
                         </radialGradient>
+                        <filter id="skullGlow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="2" result="glow"/>
+                            <feMerge>
+                                <feMergeNode in="glow"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <linearGradient id="boneGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#f5e6d3"/>
+                            <stop offset="50%" style="stop-color:#d4c4b0"/>
+                            <stop offset="100%" style="stop-color:#a89880"/>
+                        </linearGradient>
                     </defs>
-                    <circle cx="50" cy="50" r="45" fill="url(#summonedSkullGrad)" stroke="#f43f5e" stroke-width="3"/>
+                    <!-- Background with dark aura -->
+                    <circle cx="50" cy="50" r="47" fill="url(#summonedSkullGrad)" stroke="#8b1538" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="44" fill="none" stroke="#f43f5e" stroke-width="1" opacity="0.5"/>
                     
-                    <!-- Demonic horns -->
-                    <path d="M35 25 Q30 15 35 10 Q40 15 35 25" fill="#581c37" stroke="#f43f5e" stroke-width="1"/>
-                    <path d="M65 25 Q70 15 65 10 Q60 15 65 25" fill="#581c37" stroke="#f43f5e" stroke-width="1"/>
+                    <!-- Large curved horns -->
+                    <path d="M28 38 Q18 28 22 12 Q28 18 32 28 Q30 32 28 38" fill="#4a1a2e" stroke="#f43f5e" stroke-width="1.5" filter="url(#skullGlow)"/>
+                    <path d="M72 38 Q82 28 78 12 Q72 18 68 28 Q70 32 72 38" fill="#4a1a2e" stroke="#f43f5e" stroke-width="1.5" filter="url(#skullGlow)"/>
                     
-                    <!-- Skull face -->
-                    <circle cx="45" cy="45" r="3" fill="#fde8ef"/>
-                    <circle cx="55" cy="45" r="3" fill="#fde8ef"/>
-                    <path d="M45 55 Q50 60 55 55" stroke="#fde8ef" stroke-width="2" fill="none"/>
+                    <!-- Skull shape -->
+                    <ellipse cx="50" cy="48" rx="22" ry="20" fill="url(#boneGrad)" stroke="#8b7355" stroke-width="1"/>
                     
-                    <!-- Flame accents -->
-                    <path d="M50 70 Q45 75 50 80 Q55 75 50 70" fill="#f43f5e" opacity="0.8"/>
+                    <!-- Brow ridge -->
+                    <path d="M32 42 Q40 36 50 38 Q60 36 68 42" fill="none" stroke="#8b7355" stroke-width="2"/>
+                    
+                    <!-- Eye sockets - dark and menacing -->
+                    <ellipse cx="40" cy="46" rx="6" ry="7" fill="#1a0510"/>
+                    <ellipse cx="60" cy="46" rx="6" ry="7" fill="#1a0510"/>
+                    
+                    <!-- Glowing red eyes -->
+                    <ellipse cx="40" cy="46" rx="3" ry="4" fill="#f43f5e" filter="url(#skullGlow)">
+                        <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <ellipse cx="60" cy="46" rx="3" ry="4" fill="#f43f5e" filter="url(#skullGlow)">
+                        <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                    </ellipse>
+                    
+                    <!-- Nose cavity -->
+                    <path d="M48 54 L50 58 L52 54 Z" fill="#3d0f24"/>
+                    
+                    <!-- Teeth/jaw -->
+                    <path d="M38 62 L40 66 L44 62 L48 66 L52 62 L56 66 L60 62 L62 66" fill="none" stroke="url(#boneGrad)" stroke-width="2" stroke-linecap="round"/>
+                    
+                    <!-- Lightning accents -->
+                    <path d="M20 55 L25 52 L22 58 L28 54" stroke="#f43f5e" stroke-width="1" fill="none" opacity="0.7">
+                        <animate attributeName="opacity" values="0.3;0.9;0.3" dur="1.5s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M80 55 L75 52 L78 58 L72 54" stroke="#f43f5e" stroke-width="1" fill="none" opacity="0.7">
+                        <animate attributeName="opacity" values="0.3;0.9;0.3" dur="1.5s" begin="0.75s" repeatCount="indefinite"/>
+                    </path>
+                    
+                    <!-- Dark energy wisps -->
+                    <path d="M30 75 Q35 70 32 65" stroke="#8b1538" stroke-width="2" fill="none" opacity="0.6"/>
+                    <path d="M70 75 Q65 70 68 65" stroke="#8b1538" stroke-width="2" fill="none" opacity="0.6"/>
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
