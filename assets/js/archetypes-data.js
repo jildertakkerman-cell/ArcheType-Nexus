@@ -3446,18 +3446,18 @@ const archetypes = [
 
     },
     {
-        name: 'Archfiend',
+        name: 'Summoned Skull',
         description: 'A control-oriented strategy built around "Summoned Skull" and its retrained boss monsters, relying on hybrid engines for grind-game control.',
-        filepath: 'pages/Archfiend Deck Analysis.html',
+        filepath: 'pages/Summoned Skull Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <radialGradient id="archfiendGrad" cx="50%" cy="50%" r="70%">
+                        <radialGradient id="summonedSkullGrad" cx="50%" cy="50%" r="70%">
                             <stop offset="0%" style="stop-color:#2a0a12;stop-opacity:1" />
                             <stop offset="50%" style="stop-color:#581c37;stop-opacity:1" />
                             <stop offset="100%" style="stop-color:#11080b;stop-opacity:1" />
                         </radialGradient>
                     </defs>
-                    <circle cx="50" cy="50" r="45" fill="url(#archfiendGrad)" stroke="#f43f5e" stroke-width="3"/>
+                    <circle cx="50" cy="50" r="45" fill="url(#summonedSkullGrad)" stroke="#f43f5e" stroke-width="3"/>
                     
                     <!-- Demonic horns -->
                     <path d="M35 25 Q30 15 35 10 Q40 15 35 25" fill="#581c37" stroke="#f43f5e" stroke-width="1"/>
