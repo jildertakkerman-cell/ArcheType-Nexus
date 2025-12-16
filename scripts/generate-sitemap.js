@@ -2,8 +2,20 @@
 
 /**
  * Generate sitemap.xml from archetypes-data.js
+ * 
  * This script reads the archetypes data and creates a sitemap.xml file
  * in the root directory with all archetype pages and the main index page.
+ * 
+ * Usage:
+ *   node scripts/generate-sitemap.js
+ * 
+ * The script will:
+ * - Read all archetypes from assets/js/archetypes-data.js
+ * - Generate a sitemap.xml with 489 URLs (1 index + 488 archetype pages)
+ * - Use actual release dates when available (latestReleaseDate field)
+ * - Place the sitemap.xml in the root directory
+ * 
+ * Note: Update the baseUrl variable with your actual domain before deploying
  */
 
 const fs = require('fs');
@@ -27,13 +39,17 @@ const archetypes = eval(`[${archetypesMatch[1]}]`);
 console.log(`Found ${archetypes.length} archetypes`);
 
 // Base URL - using placeholder that can be updated
-// In production, this should be replaced with the actual domain
-const baseUrl = 'https://example.com'; // Update with actual domain
+// IMPORTANT: Replace 'https://example.com' with your actual domain before deploying
+// Example: const baseUrl = 'https://yourdomain.com';
+const baseUrl = 'https://example.com'; // TODO: Update with actual domain
 
 // Start building the sitemap XML
 const currentDate = new Date().toISOString();
 
 let sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<!-- Auto-generated sitemap from archetypes-data.js -->
+<!-- Generated on: ${currentDate} -->
+<!-- To regenerate, run: node scripts/generate-sitemap.js -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
 
