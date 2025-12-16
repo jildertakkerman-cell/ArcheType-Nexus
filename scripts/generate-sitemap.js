@@ -37,7 +37,7 @@ console.log(`Found ${archetypes.length} archetypes`);
 
 // Base URL - configurable via environment variable or defaults to placeholder
 // Usage: SITE_URL=https://yourdomain.com node scripts/generate-sitemap.js
-const baseUrl = process.env.SITE_URL || 'https://example.com';
+const baseUrl = process.env.SITE_URL || 'https://archetypesnexus.com';
 
 // Start building the sitemap XML
 const currentDate = new Date().toISOString();
