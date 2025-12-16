@@ -58,16 +58,30 @@ sitemapXml += `  <url>
   </url>
 `;
 
-// Add all archetype pages
+// Add all archetype pages (with deduplication)
+const processedPaths = new Set();
+let duplicateCount = 0;
+
 archetypes.forEach((archetype) => {
     if (archetype.filepath) {
+        // Skip duplicates
+        if (processedPaths.has(archetype.filepath)) {
+            duplicateCount++;
+            return;
+        }
+        processedPaths.add(archetype.filepath);
+        
         // Construct the URL from the filepath and encode it properly
         // encodeURI preserves slashes and encodes spaces and special characters
         const encodedPath = archetype.filepath.split('/').map(segment => encodeURIComponent(segment)).join('/');
         const url = `${baseUrl}/${encodedPath}`;
         
         // Use the latest release date if available, otherwise use a default
-        const lastmod = archetype.latestReleaseDate || currentDate;
+        // Validate that it looks like a date (YYYY-MM-DD format)
+        let lastmod = currentDate;
+        if (archetype.latestReleaseDate && /^\d{4}-\d{2}-\d{2}$/.test(archetype.latestReleaseDate)) {
+            lastmod = archetype.latestReleaseDate;
+        }
         
         sitemapXml += `  <url>
     <loc>${url}</loc>
@@ -79,6 +93,10 @@ archetypes.forEach((archetype) => {
     }
 });
 
+if (duplicateCount > 0) {
+    console.log(`⚠ Skipped ${duplicateCount} duplicate archetype(s)`);
+}
+
 // Close the urlset
 sitemapXml += `</urlset>
 `;
@@ -88,4 +106,4 @@ const sitemapPath = path.join(__dirname, '../sitemap.xml');
 fs.writeFileSync(sitemapPath, sitemapXml, 'utf8');
 
 console.log(`✓ Sitemap generated successfully at: ${sitemapPath}`);
-console.log(`✓ Total URLs: ${archetypes.length + 1} (1 index + ${archetypes.length} archetype pages)`);
+console.log(`✓ Total URLs: ${processedPaths.size + 1} (1 index + ${processedPaths.size} unique archetype pages)`);
