@@ -295,18 +295,65 @@ const archetypes = [
         filepath: 'pages/Dark Magician Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <linearGradient id="dmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#6a4c93;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#2b1055;stop-opacity:1" />
+                            <radialGradient id="dmGrad" cx="50%" cy="50%" r="55%">
+                                <stop offset="0%" stop-color="#7c3aed"/>
+                                <stop offset="50%" stop-color="#4c1d95"/>
+                                <stop offset="100%" stop-color="#1e1b4b"/>
                             </radialGradient>
+                            <linearGradient id="dmStaff" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#fbbf24"/>
+                                <stop offset="50%" stop-color="#c77dff"/>
+                                <stop offset="100%" stop-color="#7c3aed"/>
+                            </linearGradient>
+                            <radialGradient id="dmOrb" cx="30%" cy="30%" r="70%">
+                                <stop offset="0%" stop-color="#a78bfa"/>
+                                <stop offset="100%" stop-color="#6d28d9"/>
+                            </radialGradient>
+                            <filter id="dmGlow">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
                         </defs>
-                        <circle cx="50" cy="50" r="45" fill="url(#dmGrad)" stroke="#9d4edd" stroke-width="3"/>
-                        <path d="M50 15 L50 75" stroke="#c77dff" stroke-width="4" stroke-linecap="round"/>
-                        <circle cx="50" cy="20" r="6" fill="#e0aaff"/>
-                        <path d="M35 30 L65 30" stroke="#c77dff" stroke-width="3"/>
-                        <path d="M40 45 L60 45" stroke="#c77dff" stroke-width="2"/>
-                        <circle cx="50" cy="70" r="8" fill="#7209b7" stroke="#c77dff" stroke-width="2"/>
-                        <path d="M42 70 L58 70 M50 62 L50 78" stroke="#e0aaff" stroke-width="2"/>
+                        <!-- Magical aura background -->
+                        <circle cx="50" cy="50" r="46" fill="url(#dmGrad)" stroke="#8b5cf6" stroke-width="2"/>
+                        <!-- Rotating magic circle -->
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="#a78bfa" stroke-width="1" stroke-dasharray="6 4" opacity="0.5">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="15s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Staff -->
+                        <path d="M50 18 L50 82" stroke="url(#dmStaff)" stroke-width="5" stroke-linecap="round" filter="url(#dmGlow)"/>
+                        <!-- Staff ornament top -->
+                        <path d="M40 25 L50 15 L60 25" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Magical orb at top -->
+                        <circle cx="50" cy="22" r="8" fill="url(#dmOrb)" stroke="#e0aaff" stroke-width="1.5" filter="url(#dmGlow)">
+                            <animate attributeName="r" values="7;9;7" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Staff crossguards -->
+                        <path d="M35 32 L65 32" stroke="#c77dff" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M38 38 L62 38" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+                        <!-- Magical runes/symbols -->
+                        <circle cx="35" cy="50" r="4" fill="none" stroke="#e0aaff" stroke-width="1.5">
+                            <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="65" cy="50" r="4" fill="none" stroke="#e0aaff" stroke-width="1.5">
+                            <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Bottom orb -->
+                        <circle cx="50" cy="72" r="10" fill="#4c1d95" stroke="#c77dff" stroke-width="2"/>
+                        <path d="M42 72 L58 72 M50 64 L50 80" stroke="#e0aaff" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Magic sparkles -->
+                        <circle cx="25" cy="35" r="1.5" fill="#fbbf24">
+                            <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="75" cy="40" r="1" fill="#fbbf24">
+                            <animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="30" cy="70" r="1" fill="#e0aaff">
+                            <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="70" cy="65" r="1.5" fill="#e0aaff">
+                            <animate attributeName="opacity" values="0.6;1;0.6" dur="1.3s" repeatCount="indefinite"/>
+                        </circle>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -340,10 +387,52 @@ const archetypes = [
         description: 'A DARK Fiend archetype that thrives on discarding cards to unleash powerful effects and swarm the field.',
         filepath: 'pages/Dark World Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M50 10 L80 40 L80 70 L50 90 L20 70 L20 40 Z" fill="#2a0944" stroke="#7209b7" stroke-width="2"/>
-                        <path d="M35 45 L65 45 M40 55 L60 55" stroke="#7209b7" stroke-width="3"/>
-                        <circle cx="50" cy="35" r="8" fill="#7209b7"/>
-                        <path d="M30 65 Q50 80 70 65" stroke="#7209b7" stroke-width="3" fill="none"/>
+                        <defs>
+                            <radialGradient id="darkWorldPortal" cx="50%" cy="50%" r="55%">
+                                <stop offset="0%" stop-color="#7209b7"/>
+                                <stop offset="50%" stop-color="#3c096c"/>
+                                <stop offset="100%" stop-color="#10002b"/>
+                            </radialGradient>
+                            <linearGradient id="darkWorldFlame" x1="0%" y1="100%" x2="0%" y2="0%">
+                                <stop offset="0%" stop-color="#7209b7"/>
+                                <stop offset="100%" stop-color="#e0aaff"/>
+                            </linearGradient>
+                            <filter id="darkWorldGlow">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Dark portal background -->
+                        <path d="M50 8 L85 38 L85 68 L50 92 L15 68 L15 38 Z" fill="url(#darkWorldPortal)" stroke="#9d4edd" stroke-width="2"/>
+                        <!-- Inner hexagon portal -->
+                        <path d="M50 20 L72 35 L72 60 L50 75 L28 60 L28 35 Z" fill="none" stroke="#c77dff" stroke-width="2" opacity="0.8">
+                            <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Fiend silhouette -->
+                        <path d="M40 35 L45 25 L50 30 L55 25 L60 35 L55 40 L58 55 L50 65 L42 55 L45 40 Z" fill="#10002b" stroke="#9d4edd" stroke-width="1.5"/>
+                        <!-- Glowing eyes -->
+                        <circle cx="45" cy="38" r="3" fill="#e0aaff" filter="url(#darkWorldGlow)">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="55" cy="38" r="3" fill="#e0aaff" filter="url(#darkWorldGlow)">
+                            <animate attributeName="opacity" values="1;0.7;1" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Discarded card effect -->
+                        <rect x="20" y="45" width="8" height="12" rx="1" fill="url(#darkWorldFlame)" opacity="0.8">
+                            <animate attributeName="y" values="45;40;45" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+                        </rect>
+                        <rect x="72" y="48" width="8" height="12" rx="1" fill="url(#darkWorldFlame)" opacity="0.7">
+                            <animate attributeName="y" values="48;43;48" dur="2.5s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.7;0.2;0.7" dur="2.5s" repeatCount="indefinite"/>
+                        </rect>
+                        <!-- Dark energy wisps -->
+                        <path d="M25 70 Q35 60 30 50" fill="none" stroke="#9d4edd" stroke-width="1.5" opacity="0.6">
+                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M75 70 Q65 60 70 50" fill="none" stroke="#9d4edd" stroke-width="1.5" opacity="0.6">
+                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2.2s" repeatCount="indefinite"/>
+                        </path>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -399,10 +488,57 @@ const archetypes = [
         description: 'A series of tiny LIGHT Fiend monsters that focus on filling both players\' fields with 0 ATK/DEF monsters that cannot be Tributed.',
         filepath: 'pages/Duston Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="50" cy="50" r="20" fill="#f4a261" stroke="#e76f51" stroke-width="2"/>
-                        <path d="M40 40 L60 60 M60 40 L40 60" stroke="#e76f51" stroke-width="3"/>
-                        <path d="M30 30 L35 35 M65 35 L70 30 M30 70 L35 65 M70 70 L65 65" stroke="#e76f51" stroke-width="2"/>
-                        <circle cx="50" cy="50" r="8" fill="#e76f51"/>
+                        <defs>
+                            <radialGradient id="dustonBg" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#fef3c7"/>
+                                <stop offset="100%" stop-color="#d4a373"/>
+                            </radialGradient>
+                            <filter id="dustonGlow">
+                                <feGaussianBlur stdDeviation="1" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Background -->
+                        <circle cx="50" cy="50" r="46" fill="url(#dustonBg)" stroke="#a8763e" stroke-width="2"/>
+                        <!-- House Duston (center) -->
+                        <ellipse cx="50" cy="48" rx="14" ry="12" fill="#f4a261" stroke="#e76f51" stroke-width="2"/>
+                        <circle cx="45" cy="45" r="3" fill="#1a1a1a"/>
+                        <circle cx="55" cy="45" r="3" fill="#1a1a1a"/>
+                        <ellipse cx="50" cy="53" rx="4" ry="2" fill="#1a1a1a"/>
+                        <!-- Yellow Duston -->
+                        <ellipse cx="25" cy="35" rx="10" ry="8" fill="#fbbf24" stroke="#d97706" stroke-width="1.5" filter="url(#dustonGlow)">
+                            <animate attributeName="ry" values="8;9;8" dur="1.5s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <circle cx="22" cy="33" r="2" fill="#1a1a1a"/>
+                        <circle cx="28" cy="33" r="2" fill="#1a1a1a"/>
+                        <!-- Green Duston -->
+                        <ellipse cx="75" cy="40" rx="10" ry="8" fill="#22c55e" stroke="#16a34a" stroke-width="1.5" filter="url(#dustonGlow)">
+                            <animate attributeName="ry" values="8;9;8" dur="1.8s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <circle cx="72" cy="38" r="2" fill="#1a1a1a"/>
+                        <circle cx="78" cy="38" r="2" fill="#1a1a1a"/>
+                        <!-- Red Duston -->
+                        <ellipse cx="30" cy="70" rx="10" ry="8" fill="#ef4444" stroke="#dc2626" stroke-width="1.5" filter="url(#dustonGlow)">
+                            <animate attributeName="ry" values="8;9;8" dur="1.3s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <circle cx="27" cy="68" r="2" fill="#1a1a1a"/>
+                        <circle cx="33" cy="68" r="2" fill="#1a1a1a"/>
+                        <!-- Blue Duston -->
+                        <ellipse cx="70" cy="72" rx="10" ry="8" fill="#3b82f6" stroke="#2563eb" stroke-width="1.5" filter="url(#dustonGlow)">
+                            <animate attributeName="ry" values="8;9;8" dur="1.6s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <circle cx="67" cy="70" r="2" fill="#1a1a1a"/>
+                        <circle cx="73" cy="70" r="2" fill="#1a1a1a"/>
+                        <!-- Dust particles -->
+                        <circle cx="40" cy="25" r="2" fill="#d4a373" opacity="0.7">
+                            <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="60" cy="28" r="1.5" fill="#d4a373" opacity="0.6">
+                            <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="50" cy="80" r="2" fill="#d4a373" opacity="0.5">
+                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.8s" repeatCount="indefinite"/>
+                        </circle>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -436,11 +572,51 @@ const archetypes = [
         description: 'A Dark Synchro archetype based on the Nazca Lines, featuring powerful field-controlling immortals that can attack directly.',
         filepath: 'pages/Earthbound Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 50 L50 10 L90 50 L50 90 Z" fill="#3c096c" stroke="#5a189a" stroke-width="2"/>
-                        <path d="M30 50 L70 50" stroke="#5a189a" stroke-width="3"/>
-                        <path d="M50 30 L50 70" stroke="#5a189a" stroke-width="3"/>
-                        <circle cx="50" cy="50" r="15" fill="none" stroke="#5a189a" stroke-width="2"/>
-                        <circle cx="50" cy="50" r="5" fill="#5a189a"/>
+                        <defs>
+                            <radialGradient id="earthboundCore" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#7b2cbf"/>
+                                <stop offset="50%" stop-color="#3c096c"/>
+                                <stop offset="100%" stop-color="#10002b"/>
+                            </radialGradient>
+                            <linearGradient id="nazcaLine" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#ff6d00"/>
+                                <stop offset="50%" stop-color="#ff9500"/>
+                                <stop offset="100%" stop-color="#ffbd00"/>
+                            </linearGradient>
+                            <filter id="earthboundGlow">
+                                <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Dark diamond background -->
+                        <path d="M50 5 L95 50 L50 95 L5 50 Z" fill="url(#earthboundCore)" stroke="#9d4edd" stroke-width="2"/>
+                        <!-- Nazca geoglyph pattern (hummingbird stylized) -->
+                        <g filter="url(#earthboundGlow)">
+                            <path d="M35 40 L45 35 L55 35 L65 40 L60 50 L65 60 L55 65 L45 65 L35 60 L40 50 Z" fill="none" stroke="url(#nazcaLine)" stroke-width="2.5">
+                                <animate attributeName="stroke-width" values="2;3;2" dur="3s" repeatCount="indefinite"/>
+                            </path>
+                            <!-- Wings -->
+                            <path d="M35 40 Q20 35 15 50 Q20 65 35 60" fill="none" stroke="url(#nazcaLine)" stroke-width="2"/>
+                            <path d="M65 40 Q80 35 85 50 Q80 65 65 60" fill="none" stroke="url(#nazcaLine)" stroke-width="2"/>
+                            <!-- Beak -->
+                            <path d="M45 35 L50 25 L55 35" fill="none" stroke="url(#nazcaLine)" stroke-width="2"/>
+                            <!-- Tail -->
+                            <path d="M45 65 L50 80 L55 65" fill="none" stroke="url(#nazcaLine)" stroke-width="2"/>
+                        </g>
+                        <!-- Central dark synchro ring -->
+                        <circle cx="50" cy="50" r="10" fill="none" stroke="#5a189a" stroke-width="2" stroke-dasharray="4 2">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="8s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Immortal energy core -->
+                        <circle cx="50" cy="50" r="5" fill="#ff6d00">
+                            <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Corner seals -->
+                        <circle cx="50" cy="12" r="3" fill="#ff9500" opacity="0.8"/>
+                        <circle cx="88" cy="50" r="3" fill="#ff9500" opacity="0.8"/>
+                        <circle cx="50" cy="88" r="3" fill="#ff9500" opacity="0.8"/>
+                        <circle cx="12" cy="50" r="3" fill="#ff9500" opacity="0.8"/>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -950,19 +1126,66 @@ const archetypes = [
         filepath: 'pages/Entity Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="entityGrad" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#6a5acd;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#0c0a1a;stop-opacity:1" />
+                            <radialGradient id="entityVoid" cx="50%" cy="50%" r="55%">
+                                <stop offset="0%" stop-color="#1e1b4b"/>
+                                <stop offset="40%" stop-color="#0f0a1e"/>
+                                <stop offset="100%" stop-color="#000005"/>
                             </radialGradient>
+                            <radialGradient id="entityCore" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#a78bfa"/>
+                                <stop offset="100%" stop-color="#6366f1"/>
+                            </radialGradient>
+                            <filter id="entityGlow">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
                         </defs>
-                        <circle cx="50" cy="50" r="45" fill="url(#entityGrad)" stroke="#6a5acd" stroke-width="2"/>
-                        <path d="M30 40 Q50 20 70 40 Q80 50 70 60 Q50 80 30 60 Q20 50 30 40 Z" fill="none" stroke="#c77dff" stroke-width="3"/>
-                        <circle cx="50" cy="50" r="8" fill="#e0aaff"/>
-                        <circle cx="35" cy="35" r="2" fill="#6a5acd"/>
-                        <circle cx="65" cy="35" r="2" fill="#6a5acd"/>
-                        <circle cx="35" cy="65" r="2" fill="#6a5acd"/>
-                        <circle cx="65" cy="65" r="2" fill="#6a5acd"/>
-                        <text x="50" y="75" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">ENTITY</text>
+                        <!-- Cosmic void background -->
+                        <circle cx="50" cy="50" r="46" fill="url(#entityVoid)" stroke="#4c1d95" stroke-width="2"/>
+                        <!-- Outer dimensional ring -->
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="8 4" opacity="0.6">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="20s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Entity tentacles/tendrils -->
+                        <g filter="url(#entityGlow)">
+                            <path d="M50 50 Q30 30 20 40 Q15 50 25 55" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round">
+                                <animate attributeName="d" values="M50 50 Q30 30 20 40 Q15 50 25 55;M50 50 Q25 35 18 45 Q12 55 22 58;M50 50 Q30 30 20 40 Q15 50 25 55" dur="4s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M50 50 Q70 30 80 40 Q85 50 75 55" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round">
+                                <animate attributeName="d" values="M50 50 Q70 30 80 40 Q85 50 75 55;M50 50 Q75 35 82 45 Q88 55 78 58;M50 50 Q70 30 80 40 Q85 50 75 55" dur="4.5s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M50 50 Q40 70 35 80 Q45 85 50 78" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round">
+                                <animate attributeName="d" values="M50 50 Q40 70 35 80 Q45 85 50 78;M50 50 Q38 75 32 82 Q42 88 48 80;M50 50 Q40 70 35 80 Q45 85 50 78" dur="3.5s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M50 50 Q60 70 65 80 Q55 85 50 78" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round">
+                                <animate attributeName="d" values="M50 50 Q60 70 65 80 Q55 85 50 78;M50 50 Q62 75 68 82 Q58 88 52 80;M50 50 Q60 70 65 80 Q55 85 50 78" dur="5s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M50 50 Q35 45 25 30" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round">
+                                <animate attributeName="d" values="M50 50 Q35 45 25 30;M50 50 Q32 42 22 28;M50 50 Q35 45 25 30" dur="3s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M50 50 Q65 45 75 30" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round">
+                                <animate attributeName="d" values="M50 50 Q65 45 75 30;M50 50 Q68 42 78 28;M50 50 Q65 45 75 30" dur="3.2s" repeatCount="indefinite"/>
+                            </path>
+                        </g>
+                        <!-- Central all-seeing eye -->
+                        <ellipse cx="50" cy="50" rx="15" ry="10" fill="#1e1b4b" stroke="#a78bfa" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="6" fill="url(#entityCore)">
+                            <animate attributeName="r" values="5;7;5" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="50" cy="50" r="2" fill="#000005"/>
+                        <!-- Dimensional stars -->
+                        <circle cx="20" cy="20" r="1.5" fill="#c4b5fd" opacity="0.8">
+                            <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="80" cy="25" r="1" fill="#c4b5fd" opacity="0.7">
+                            <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="15" cy="65" r="1" fill="#c4b5fd" opacity="0.6">
+                            <animate attributeName="opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="85" cy="70" r="1.5" fill="#c4b5fd" opacity="0.8">
+                            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2.2s" repeatCount="indefinite"/>
+                        </circle>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -20615,15 +20838,36 @@ const archetypes = [
         filepath: 'pages/Mokey Mokey Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="mokeyGrad" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#fef9c3;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
+                            <radialGradient id="mokeyGrad" cx="50%" cy="40%" r="60%">
+                                <stop offset="0%" stop-color="#fef9c3"/>
+                                <stop offset="100%" stop-color="#fde047"/>
+                            </radialGradient>
+                            <radialGradient id="mokeyBlush" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#fca5a5"/>
+                                <stop offset="100%" stop-color="#fca5a5" stop-opacity="0"/>
                             </radialGradient>
                         </defs>
-                        <ellipse cx="50" cy="60" rx="28" ry="18" fill="url(#mokeyGrad)" stroke="#fbbf24" stroke-width="2"/>
-                        <rect x="38" y="38" width="24" height="24" rx="12" fill="#fff" stroke="#fbbf24" stroke-width="2"/>
-                        <circle cx="50" cy="50" r="7" fill="#fde68a" stroke="#fbbf24" stroke-width="2"/>
-                        <text x="50" y="80" text-anchor="middle" font-size="15" fill="#fbbf24" font-weight="bold">Mokey Mokey</text>
+                        <!-- Sky background -->
+                        <circle cx="50" cy="50" r="45" fill="#bfdbfe" stroke="#fbbf24" stroke-width="2"/>
+                        <!-- Clouds -->
+                        <ellipse cx="25" cy="25" rx="12" ry="6" fill="#fff" opacity="0.7"/>
+                        <ellipse cx="75" cy="30" rx="10" ry="5" fill="#fff" opacity="0.7"/>
+                        <!-- Mokey Mokey body (rectangular blob) -->
+                        <rect x="30" y="35" width="40" height="45" rx="8" fill="url(#mokeyGrad)" stroke="#fbbf24" stroke-width="2"/>
+                        <!-- Little wings/ears -->
+                        <ellipse cx="28" cy="42" rx="6" ry="10" fill="#fef9c3" stroke="#fbbf24" stroke-width="1"/>
+                        <ellipse cx="72" cy="42" rx="6" ry="10" fill="#fef9c3" stroke="#fbbf24" stroke-width="1"/>
+                        <!-- Eyes (simple dots) -->
+                        <circle cx="42" cy="52" r="3" fill="#1f2937"/>
+                        <circle cx="58" cy="52" r="3" fill="#1f2937"/>
+                        <!-- Blush -->
+                        <ellipse cx="35" cy="60" rx="5" ry="3" fill="url(#mokeyBlush)" opacity="0.6"/>
+                        <ellipse cx="65" cy="60" rx="5" ry="3" fill="url(#mokeyBlush)" opacity="0.6"/>
+                        <!-- Simple mouth -->
+                        <path d="M45 65 Q50 70 55 65" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Little feet -->
+                        <ellipse cx="40" cy="82" rx="6" ry="4" fill="#fde047" stroke="#fbbf24" stroke-width="1"/>
+                        <ellipse cx="60" cy="82" rx="6" ry="4" fill="#fde047" stroke="#fbbf24" stroke-width="1"/>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -20635,14 +20879,32 @@ const archetypes = [
         filepath: 'pages/Mathmech Deck Analyis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="mathmechGrad" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#f472b6;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#818cf8;stop-opacity:1" />
+                            <radialGradient id="mathmechGrad" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#4c1d95"/>
+                                <stop offset="100%" stop-color="#1e1b4b"/>
                             </radialGradient>
+                            <linearGradient id="mathmechGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#f472b6"/>
+                                <stop offset="100%" stop-color="#818cf8"/>
+                            </linearGradient>
                         </defs>
-                        <ellipse cx="50" cy="60" rx="30" ry="20" fill="url(#mathmechGrad)" stroke="#818cf8" stroke-width="2"/>
-                        <rect x="40" y="35" width="20" height="20" rx="6" fill="#fff" stroke="#f472b6" stroke-width="2"/>
-                        <text x="50" y="80" text-anchor="middle" font-size="15" fill="#818cf8" font-weight="bold">Mathmech</text>
+                        <!-- Digital background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#mathmechGrad)" stroke="url(#mathmechGlow)" stroke-width="2"/>
+                        <!-- Circuit lines -->
+                        <path d="M15 50 L30 50 L35 40 L45 60 L55 40 L65 60 L70 50 L85 50" fill="none" stroke="#818cf8" stroke-width="2" opacity="0.5"/>
+                        <path d="M50 15 L50 30 M50 70 L50 85" stroke="#f472b6" stroke-width="2" opacity="0.5"/>
+                        <!-- Sigma symbol (main) -->
+                        <text x="50" y="58" text-anchor="middle" font-size="36" fill="url(#mathmechGlow)" font-weight="bold" font-family="serif">Σ</text>
+                        <!-- Floating math symbols -->
+                        <text x="22" y="35" text-anchor="middle" font-size="12" fill="#f472b6" opacity="0.8">÷</text>
+                        <text x="78" y="35" text-anchor="middle" font-size="12" fill="#818cf8" opacity="0.8">×</text>
+                        <text x="22" y="75" text-anchor="middle" font-size="12" fill="#818cf8" opacity="0.8">+</text>
+                        <text x="78" y="75" text-anchor="middle" font-size="12" fill="#f472b6" opacity="0.8">=</text>
+                        <!-- Digital pulse -->
+                        <circle cx="50" cy="50" r="25" fill="none" stroke="#c084fc" stroke-width="1" opacity="0.4">
+                            <animate attributeName="r" values="25;35;25" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/>
+                        </circle>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -20654,14 +20916,43 @@ const archetypes = [
         filepath: 'pages/Mayakashi Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="mayakashiGrad" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#fca5a5;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+                            <radialGradient id="mayakashiGrad" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#4c1d95"/>
+                                <stop offset="100%" stop-color="#1e1b4b"/>
                             </radialGradient>
+                            <linearGradient id="mayaFlame" x1="0%" y1="100%" x2="0%" y2="0%">
+                                <stop offset="0%" stop-color="#7c3aed"/>
+                                <stop offset="50%" stop-color="#a78bfa"/>
+                                <stop offset="100%" stop-color="#c4b5fd" stop-opacity="0.5"/>
+                            </linearGradient>
                         </defs>
-                        <ellipse cx="50" cy="60" rx="30" ry="20" fill="url(#mayakashiGrad)" stroke="#7c3aed" stroke-width="2"/>
-                        <rect x="40" y="35" width="20" height="20" rx="6" fill="#fff" stroke="#fca5a5" stroke-width="2"/>
-                        <text x="50" y="80" text-anchor="middle" font-size="15" fill="#7c3aed" font-weight="bold">Mayakashi</text>
+                        <!-- Dark mystical background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#mayakashiGrad)" stroke="#7c3aed" stroke-width="2"/>
+                        <!-- Spirit flames -->
+                        <path d="M25 70 Q20 50 30 35 Q35 50 25 70" fill="url(#mayaFlame)" opacity="0.7">
+                            <animate attributeName="d" values="M25 70 Q20 50 30 35 Q35 50 25 70;M25 70 Q18 45 30 30 Q38 50 25 70;M25 70 Q20 50 30 35 Q35 50 25 70" dur="1.5s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M75 70 Q80 50 70 35 Q65 50 75 70" fill="url(#mayaFlame)" opacity="0.7">
+                            <animate attributeName="d" values="M75 70 Q80 50 70 35 Q65 50 75 70;M75 70 Q82 45 70 30 Q62 50 75 70;M75 70 Q80 50 70 35 Q65 50 75 70" dur="1.5s" begin="0.3s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Yokai mask -->
+                        <ellipse cx="50" cy="50" rx="22" ry="28" fill="#fef3c7" stroke="#92400e" stroke-width="2"/>
+                        <!-- Mask markings -->
+                        <path d="M35 40 Q38 35 45 38" stroke="#7c3aed" stroke-width="2" fill="none"/>
+                        <path d="M65 40 Q62 35 55 38" stroke="#7c3aed" stroke-width="2" fill="none"/>
+                        <!-- Eyes -->
+                        <ellipse cx="40" cy="48" rx="5" ry="3" fill="#7c3aed"/>
+                        <ellipse cx="60" cy="48" rx="5" ry="3" fill="#7c3aed"/>
+                        <!-- Menacing smile -->
+                        <path d="M40 62 Q50 72 60 62" fill="none" stroke="#7c3aed" stroke-width="2"/>
+                        <path d="M42 64 L44 60 M50 66 L50 62 M58 64 L56 60" stroke="#7c3aed" stroke-width="1.5"/>
+                        <!-- Floating orbs -->
+                        <circle cx="20" cy="80" r="4" fill="#a78bfa" opacity="0.6">
+                            <animate attributeName="cy" values="80;75;80" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="80" cy="78" r="3" fill="#c4b5fd" opacity="0.6">
+                            <animate attributeName="cy" values="78;73;78" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+                        </circle>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -20756,15 +21047,42 @@ const archetypes = [
         filepath: 'pages/Megalith Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="megalithGrad" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#a3e635;stop-opacity:1" />
+                            <linearGradient id="megalithStone" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#d1d5db"/>
+                                <stop offset="50%" stop-color="#9ca3af"/>
+                                <stop offset="100%" stop-color="#6b7280"/>
+                            </linearGradient>
+                            <radialGradient id="megalithGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#fbbf24"/>
+                                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
                             </radialGradient>
+                            <linearGradient id="megalithSky" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#1e1b4b"/>
+                                <stop offset="100%" stop-color="#312e81"/>
+                            </linearGradient>
                         </defs>
-                        <ellipse cx="50" cy="60" rx="28" ry="18" fill="url(#megalithGrad)" stroke="#a3e635" stroke-width="2"/>
-                        <rect x="38" y="38" width="24" height="24" rx="8" fill="#fff" stroke="#fbbf24" stroke-width="2"/>
-                        <circle cx="50" cy="50" r="7" fill="#a3e635" stroke="#fbbf24" stroke-width="2"/>
-                        <text x="50" y="80" text-anchor="middle" font-size="15" fill="#a3e635" font-weight="bold">Megalith</text>
+                        <!-- Night sky background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#megalithSky)" stroke="#a3e635" stroke-width="2"/>
+                        <!-- Stars -->
+                        <circle cx="25" cy="20" r="1" fill="#fef9c3"/>
+                        <circle cx="75" cy="25" r="1.5" fill="#fef9c3"/>
+                        <circle cx="60" cy="15" r="1" fill="#fef9c3"/>
+                        <circle cx="35" cy="30" r="1" fill="#fef9c3"/>
+                        <!-- Stone pillars (Stonehenge-like) -->
+                        <rect x="18" y="45" width="12" height="40" fill="url(#megalithStone)" stroke="#4b5563" stroke-width="1"/>
+                        <rect x="70" y="45" width="12" height="40" fill="url(#megalithStone)" stroke="#4b5563" stroke-width="1"/>
+                        <rect x="44" y="50" width="12" height="35" fill="url(#megalithStone)" stroke="#4b5563" stroke-width="1"/>
+                        <!-- Capstone -->
+                        <rect x="15" y="40" width="70" height="8" rx="2" fill="url(#megalithStone)" stroke="#4b5563" stroke-width="1"/>
+                        <!-- Ritual glow in center -->
+                        <circle cx="50" cy="65" r="12" fill="url(#megalithGlow)" opacity="0.8">
+                            <animate attributeName="r" values="12;15;12" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Ritual symbol -->
+                        <path d="M50 58 L55 68 L50 65 L45 68 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <!-- Ground -->
+                        <path d="M5 85 Q50 80 95 85 L95 95 L5 95 Z" fill="#374151"/>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -20776,15 +21094,48 @@ const archetypes = [
         filepath: 'pages/Materiactor Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="materiactorGrad" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#818cf8;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
+                            <radialGradient id="materiactorBg" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#1e1b4b"/>
+                                <stop offset="100%" stop-color="#0f0a1e"/>
                             </radialGradient>
+                            <radialGradient id="xyzOrb" cx="30%" cy="30%" r="60%">
+                                <stop offset="0%" stop-color="#fef08a"/>
+                                <stop offset="100%" stop-color="#ca8a04"/>
+                            </radialGradient>
+                            <linearGradient id="materiactorCard" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#818cf8"/>
+                                <stop offset="100%" stop-color="#4c1d95"/>
+                            </linearGradient>
                         </defs>
-                        <ellipse cx="50" cy="60" rx="28" ry="18" fill="url(#materiactorGrad)" stroke="#818cf8" stroke-width="2"/>
-                        <rect x="38" y="38" width="24" height="24" rx="8" fill="#fff" stroke="#fbbf24" stroke-width="2"/>
-                        <circle cx="50" cy="50" r="7" fill="#818cf8" stroke="#fbbf24" stroke-width="2"/>
-                        <text x="50" y="80" text-anchor="middle" font-size="15" fill="#818cf8" font-weight="bold">Materiactor</text>
+                        <!-- Dark space background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#materiactorBg)" stroke="#818cf8" stroke-width="2"/>
+                        <!-- Orbiting Xyz materials -->
+                        <g>
+                            <circle cx="50" cy="20" r="8" fill="url(#xyzOrb)" stroke="#fbbf24" stroke-width="1">
+                                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        <g>
+                            <circle cx="25" cy="65" r="7" fill="url(#xyzOrb)" stroke="#fbbf24" stroke-width="1">
+                                <animateTransform attributeName="transform" type="rotate" from="120 50 50" to="480 50 50" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        <g>
+                            <circle cx="75" cy="65" r="7" fill="url(#xyzOrb)" stroke="#fbbf24" stroke-width="1">
+                                <animateTransform attributeName="transform" type="rotate" from="240 50 50" to="600 50 50" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        <!-- Central Xyz monster card shape -->
+                        <rect x="35" y="35" width="30" height="40" rx="3" fill="url(#materiactorCard)" stroke="#c4b5fd" stroke-width="2"/>
+                        <!-- Rank 3 stars -->
+                        <text x="42" y="45" font-size="8" fill="#fbbf24">★</text>
+                        <text x="50" y="45" font-size="8" fill="#fbbf24">★</text>
+                        <text x="58" y="45" font-size="8" fill="#fbbf24">★</text>
+                        <!-- Monster silhouette -->
+                        <ellipse cx="50" cy="60" rx="10" ry="12" fill="#312e81" stroke="#818cf8" stroke-width="1"/>
+                        <!-- Orbital path indicators -->
+                        <circle cx="50" cy="50" r="30" fill="none" stroke="#818cf8" stroke-width="1" opacity="0.3" stroke-dasharray="4 4"/>
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="#c4b5fd" stroke-width="1" opacity="0.2" stroke-dasharray="2 4"/>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -20970,37 +21321,31 @@ const archetypes = [
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ninjaAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#1f2937" stop-opacity="0.7"/>
-                                <stop offset="50%" stop-color="#374151" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#111827" stop-opacity="0.8"/>
+                                <stop offset="0%" stop-color="#1f2937"/>
+                                <stop offset="100%" stop-color="#0f0f1a"/>
                             </radialGradient>
-                            <linearGradient id="ninjaGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#6b7280"/>
-                                <stop offset="100%" stop-color="#111827"/>
+                            <linearGradient id="ninjaBlade" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#e5e7eb"/>
+                                <stop offset="50%" stop-color="#9ca3af"/>
+                                <stop offset="100%" stop-color="#6b7280"/>
                             </linearGradient>
-                            <filter id="ninjaShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#ninjaAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#ninjaShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#ninjaGlow)" stroke="#111827" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#6b7280" stroke="#374151" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#374151" stroke="#111827" stroke-width="2"/>
+                        <!-- Dark background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#ninjaAura)" stroke="#374151" stroke-width="2"/>
+                        <!-- Shuriken -->
+                        <g transform="translate(50,45)">
+                            <path d="M0,-20 L5,-5 L20,0 L5,5 L0,20 L-5,5 L-20,0 L-5,-5 Z" fill="url(#ninjaBlade)" stroke="#4b5563" stroke-width="1">
+                                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4s" repeatCount="indefinite"/>
+                            </path>
+                            <circle cx="0" cy="0" r="4" fill="#1f2937" stroke="#6b7280" stroke-width="1"/>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#374151">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#111827">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#111827" font-weight="bold">Ninja</text>
+                        <!-- Ninja eyes -->
+                        <ellipse cx="35" cy="75" rx="6" ry="3" fill="#dc2626">
+                            <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <ellipse cx="65" cy="75" rx="6" ry="3" fill="#dc2626">
+                            <animate attributeName="opacity" values="1;0.5;1" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+                        </ellipse>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -21013,37 +21358,33 @@ const archetypes = [
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nobleAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#e5e7eb" stop-opacity="0.7"/>
-                                <stop offset="50%" stop-color="#9ca3af" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#374151" stop-opacity="0.8"/>
+                                <stop offset="0%" stop-color="#1e3a5f"/>
+                                <stop offset="100%" stop-color="#0f172a"/>
                             </radialGradient>
-                            <linearGradient id="nobleGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#e5e7eb"/>
-                                <stop offset="100%" stop-color="#374151"/>
+                            <linearGradient id="nobleSword" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#f8fafc"/>
+                                <stop offset="50%" stop-color="#cbd5e1"/>
+                                <stop offset="100%" stop-color="#94a3b8"/>
                             </linearGradient>
-                            <filter id="nobleShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
+                            <linearGradient id="nobleGold" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#fcd34d"/>
+                                <stop offset="100%" stop-color="#b45309"/>
+                            </linearGradient>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#nobleAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#nobleShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#nobleGlow)" stroke="#374151" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#9ca3af" stroke="#374151" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="75" r="2" fill="#9ca3af">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        <!-- Shield background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#nobleAura)" stroke="#fcd34d" stroke-width="2"/>
+                        <!-- Shield shape -->
+                        <path d="M50 15 L75 30 L75 55 Q75 75 50 90 Q25 75 25 55 L25 30 Z" fill="#1e40af" stroke="url(#nobleGold)" stroke-width="3"/>
+                        <!-- Shield cross -->
+                        <path d="M50 25 L50 80" stroke="#fcd34d" stroke-width="4"/>
+                        <path d="M35 45 L65 45" stroke="#fcd34d" stroke-width="4"/>
+                        <!-- Sword behind shield -->
+                        <path d="M72 8 L78 14 L55 55 L50 50 Z" fill="url(#nobleSword)" stroke="#64748b" stroke-width="1"/>
+                        <rect x="75" y="5" width="8" height="3" rx="1" fill="url(#nobleGold)"/>
+                        <!-- Glow effect -->
+                        <circle cx="50" cy="45" r="6" fill="#fcd34d" opacity="0.6">
+                            <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#374151">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#374151" font-weight="bold">Noble Knight</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -21056,37 +21397,45 @@ const archetypes = [
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="nitroAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#ef4444" stop-opacity="0.7"/>
-                                <stop offset="50%" stop-color="#dc2626" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#991b1b" stop-opacity="0.8"/>
+                                <stop offset="0%" stop-color="#7f1d1d"/>
+                                <stop offset="100%" stop-color="#1c1917"/>
                             </radialGradient>
-                            <linearGradient id="nitroGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#ef4444"/>
-                                <stop offset="100%" stop-color="#991b1b"/>
+                            <linearGradient id="nitroFlame" x1="0%" y1="100%" x2="0%" y2="0%">
+                                <stop offset="0%" stop-color="#fbbf24"/>
+                                <stop offset="40%" stop-color="#f97316"/>
+                                <stop offset="100%" stop-color="#dc2626"/>
                             </linearGradient>
-                            <filter id="nitroShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
+                            <linearGradient id="nitroMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#e5e7eb"/>
+                                <stop offset="50%" stop-color="#6b7280"/>
+                                <stop offset="100%" stop-color="#374151"/>
+                            </linearGradient>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#nitroAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#nitroShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#nitroGlow)" stroke="#991b1b" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#dc2626" stroke="#991b1b" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="75" r="2" fill="#dc2626">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#991b1b">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Nitro</text>
+                        <!-- Dark background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#nitroAura)" stroke="#ef4444" stroke-width="2"/>
+                        <!-- Speed lines -->
+                        <path d="M10 35 L25 35" stroke="#fbbf24" stroke-width="2" opacity="0.7"/>
+                        <path d="M10 50 L30 50" stroke="#f97316" stroke-width="3" opacity="0.8"/>
+                        <path d="M10 65 L25 65" stroke="#fbbf24" stroke-width="2" opacity="0.7"/>
+                        <!-- Nitro canister -->
+                        <rect x="40" y="30" width="20" height="40" rx="5" fill="url(#nitroMetal)" stroke="#374151" stroke-width="2"/>
+                        <rect x="43" y="35" width="14" height="10" rx="2" fill="#1f2937"/>
+                        <text x="50" y="43" text-anchor="middle" font-size="8" fill="#ef4444" font-weight="bold">N₂O</text>
+                        <!-- Flames coming out -->
+                        <path d="M50 70 Q45 80 50 90 Q55 80 50 70" fill="url(#nitroFlame)">
+                            <animate attributeName="d" values="M50 70 Q45 80 50 90 Q55 80 50 70;M50 70 Q42 82 50 95 Q58 82 50 70;M50 70 Q45 80 50 90 Q55 80 50 70" dur="0.3s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M45 72 Q40 78 45 85" fill="none" stroke="#fbbf24" stroke-width="2">
+                            <animate attributeName="opacity" values="1;0.5;1" dur="0.2s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M55 72 Q60 78 55 85" fill="none" stroke="#fbbf24" stroke-width="2">
+                            <animate attributeName="opacity" values="0.5;1;0.5" dur="0.2s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Pressure gauge -->
+                        <circle cx="50" cy="55" r="6" fill="#1f2937" stroke="#ef4444" stroke-width="1"/>
+                        <path d="M50 55 L50 50" stroke="#ef4444" stroke-width="2">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 55;45 50 55;0 50 55" dur="1s" repeatCount="indefinite"/>
+                        </path>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -21227,38 +21576,41 @@ const archetypes = [
         filepath: 'pages/Odd-Eyes Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="oddeyesAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.7"/>
-                                <stop offset="50%" stop-color="#8b5cf6" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.8"/>
+                            <radialGradient id="oddeyesBg" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#4c1d95"/>
+                                <stop offset="100%" stop-color="#1e1b4b"/>
                             </radialGradient>
-                            <linearGradient id="oddeyesGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#a855f7"/>
-                                <stop offset="100%" stop-color="#7c3aed"/>
-                            </linearGradient>
-                            <filter id="oddeyesShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
+                            <radialGradient id="redEye" cx="30%" cy="30%" r="70%">
+                                <stop offset="0%" stop-color="#fca5a5"/>
+                                <stop offset="100%" stop-color="#dc2626"/>
+                            </radialGradient>
+                            <radialGradient id="greenEye" cx="30%" cy="30%" r="70%">
+                                <stop offset="0%" stop-color="#86efac"/>
+                                <stop offset="100%" stop-color="#16a34a"/>
+                            </radialGradient>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#oddeyesAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
+                        <!-- Background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#oddeyesBg)" stroke="#a855f7" stroke-width="2"/>
+                        <!-- Dragon silhouette -->
+                        <path d="M50 15 L60 25 L58 35 L65 30 L62 40 L70 38 L60 50 L65 55 L55 60 L60 70 L50 65 L40 70 L45 60 L35 55 L40 50 L30 38 L38 40 L35 30 L42 35 L40 25 Z" fill="#7c3aed" stroke="#a855f7" stroke-width="1"/>
+                        <!-- Odd Eyes - Red left, Green right -->
+                        <ellipse cx="38" cy="45" rx="10" ry="12" fill="url(#redEye)" stroke="#991b1b" stroke-width="2">
+                            <animate attributeName="ry" values="12;10;12" dur="3s" repeatCount="indefinite"/>
                         </ellipse>
-                        <g filter="url(#oddeyesShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#oddeyesGlow)" stroke="#7c3aed" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#a855f7" stroke="#8b5cf6" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="75" r="2" fill="#8b5cf6">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#7c3aed">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#7c3aed" font-weight="bold">Odd-Eyes</text>
+                        <ellipse cx="62" cy="45" rx="10" ry="12" fill="url(#greenEye)" stroke="#166534" stroke-width="2">
+                            <animate attributeName="ry" values="12;10;12" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <!-- Pupils -->
+                        <ellipse cx="38" cy="45" rx="4" ry="6" fill="#1f2937"/>
+                        <ellipse cx="62" cy="45" rx="4" ry="6" fill="#1f2937"/>
+                        <!-- Eye glints -->
+                        <circle cx="35" cy="42" r="2" fill="#fff" opacity="0.8"/>
+                        <circle cx="59" cy="42" r="2" fill="#fff" opacity="0.8"/>
+                        <!-- Pendulum scales -->
+                        <rect x="12" y="70" width="12" height="18" rx="2" fill="#3b82f6" stroke="#1e40af" stroke-width="1"/>
+                        <text x="18" y="82" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">4</text>
+                        <rect x="76" y="70" width="12" height="18" rx="2" fill="#3b82f6" stroke="#1e40af" stroke-width="1"/>
+                        <text x="82" y="82" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">4</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -21336,38 +21688,40 @@ const archetypes = [
         filepath: 'pages/Ojama Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="ojamaAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#f97316" stop-opacity="0.7"/>
-                                <stop offset="50%" stop-color="#ea580c" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#c2410c" stop-opacity="0.8"/>
+                            <radialGradient id="ojamaBg" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#fef3c7"/>
+                                <stop offset="100%" stop-color="#fbbf24"/>
                             </radialGradient>
-                            <linearGradient id="ojamaGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#f97316"/>
-                                <stop offset="100%" stop-color="#c2410c"/>
-                            </linearGradient>
-                            <filter id="ojamaShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#ojamaAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#ojamaShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#ojamaGlow)" stroke="#c2410c" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#f97316" stroke="#ea580c" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#ea580c" stroke="#c2410c" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="75" r="2" fill="#ea580c">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#c2410c">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#c2410c" font-weight="bold">Ojama</text>
+                        <!-- Yellow background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#ojamaBg)" stroke="#f59e0b" stroke-width="2"/>
+                        <!-- Ojama Yellow body (center) -->
+                        <ellipse cx="50" cy="55" rx="18" ry="25" fill="#fef9c3" stroke="#fbbf24" stroke-width="2"/>
+                        <!-- Ojama Green body (left) -->
+                        <ellipse cx="22" cy="58" rx="12" ry="18" fill="#bbf7d0" stroke="#22c55e" stroke-width="2"/>
+                        <!-- Ojama Black body (right) -->
+                        <ellipse cx="78" cy="58" rx="12" ry="18" fill="#1f2937" stroke="#374151" stroke-width="2"/>
+                        <!-- Yellow's big eyes -->
+                        <circle cx="44" cy="48" r="6" fill="#fff" stroke="#1f2937" stroke-width="1"/>
+                        <circle cx="56" cy="48" r="6" fill="#fff" stroke="#1f2937" stroke-width="1"/>
+                        <circle cx="44" cy="48" r="3" fill="#1f2937"/>
+                        <circle cx="56" cy="48" r="3" fill="#1f2937"/>
+                        <!-- Yellow's wide smile -->
+                        <path d="M40 62 Q50 72 60 62" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Green's eye -->
+                        <circle cx="22" cy="52" r="4" fill="#fff" stroke="#1f2937" stroke-width="1"/>
+                        <circle cx="22" cy="52" r="2" fill="#1f2937"/>
+                        <!-- Black's eye -->
+                        <circle cx="78" cy="52" r="4" fill="#fff" stroke="#1f2937" stroke-width="1"/>
+                        <circle cx="78" cy="52" r="2" fill="#1f2937"/>
+                        <!-- Yellow's antennae -->
+                        <path d="M45 32 Q42 22 38 20" stroke="#fbbf24" stroke-width="3" fill="none"/>
+                        <circle cx="38" cy="20" r="3" fill="#fbbf24"/>
+                        <path d="M55 32 Q58 22 62 20" stroke="#fbbf24" stroke-width="3" fill="none"/>
+                        <circle cx="62" cy="20" r="3" fill="#fbbf24"/>
+                        <!-- Speedline effect (annoying energy) -->
+                        <path d="M10 35 L18 35" stroke="#f59e0b" stroke-width="2" opacity="0.7"/>
+                        <path d="M82 35 L90 35" stroke="#f59e0b" stroke-width="2" opacity="0.7"/>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -21745,38 +22099,42 @@ const archetypes = [
         filepath: 'pages/Penguin Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="penguinAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#dbeafe" stop-opacity="0.7"/>
-                                <stop offset="50%" stop-color="#93c5fd" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#1e40af" stop-opacity="0.8"/>
-                            </radialGradient>
-                            <linearGradient id="penguinGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#dbeafe"/>
+                            <radialGradient id="penguinBg" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#bfdbfe"/>
                                 <stop offset="100%" stop-color="#1e40af"/>
+                            </radialGradient>
+                            <linearGradient id="penguinBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#1e293b"/>
+                                <stop offset="100%" stop-color="#0f172a"/>
                             </linearGradient>
-                            <filter id="penguinShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#penguinAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#penguinShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#penguinGlow)" stroke="#1e40af" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#dbeafe" stroke="#93c5fd" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#93c5fd" stroke="#1e40af" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="75" r="2" fill="#93c5fd">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#1e40af">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="bold">Penguin</text>
+                        <!-- Icy background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#penguinBg)" stroke="#3b82f6" stroke-width="2"/>
+                        <!-- Ice crystals -->
+                        <path d="M15 75 L20 65 L25 75" fill="#e0f2fe" stroke="#93c5fd" stroke-width="1"/>
+                        <path d="M75 78 L82 68 L89 78" fill="#e0f2fe" stroke="#93c5fd" stroke-width="1"/>
+                        <!-- Penguin body -->
+                        <ellipse cx="50" cy="55" rx="22" ry="30" fill="url(#penguinBody)" stroke="#334155" stroke-width="2"/>
+                        <!-- White belly -->
+                        <ellipse cx="50" cy="60" rx="14" ry="22" fill="#f8fafc"/>
+                        <!-- Head -->
+                        <circle cx="50" cy="28" r="16" fill="url(#penguinBody)" stroke="#334155" stroke-width="2"/>
+                        <!-- Eyes -->
+                        <circle cx="44" cy="26" r="5" fill="#fff"/>
+                        <circle cx="56" cy="26" r="5" fill="#fff"/>
+                        <circle cx="44" cy="26" r="2.5" fill="#1f2937"/>
+                        <circle cx="56" cy="26" r="2.5" fill="#1f2937"/>
+                        <!-- Beak -->
+                        <path d="M50 32 L45 38 L50 36 L55 38 Z" fill="#f59e0b" stroke="#d97706" stroke-width="1"/>
+                        <!-- Wings -->
+                        <ellipse cx="28" cy="55" rx="8" ry="18" fill="#1e293b" stroke="#334155" stroke-width="1" transform="rotate(-15 28 55)"/>
+                        <ellipse cx="72" cy="55" rx="8" ry="18" fill="#1e293b" stroke="#334155" stroke-width="1" transform="rotate(15 72 55)"/>
+                        <!-- Feet -->
+                        <ellipse cx="42" cy="88" rx="8" ry="4" fill="#f59e0b" stroke="#d97706" stroke-width="1"/>
+                        <ellipse cx="58" cy="88" rx="8" ry="4" fill="#f59e0b" stroke="#d97706" stroke-width="1"/>
+                        <!-- Blush -->
+                        <ellipse cx="38" cy="32" rx="4" ry="2" fill="#fca5a5" opacity="0.5"/>
+                        <ellipse cx="62" cy="32" rx="4" ry="2" fill="#fca5a5" opacity="0.5"/>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -22126,38 +22484,51 @@ const archetypes = [
         filepath: 'pages/Prank_kids Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="prankAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#f59e0b" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#d97706" stop-opacity="0.9"/>
+                            <radialGradient id="prankBg" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#fef3c7"/>
+                                <stop offset="100%" stop-color="#fbbf24"/>
                             </radialGradient>
-                            <linearGradient id="prankGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#fbbf24"/>
-                                <stop offset="100%" stop-color="#d97706"/>
-                            </linearGradient>
-                            <filter id="prankShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#prankAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#prankShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#prankGlow)" stroke="#d97706" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="75" r="2" fill="#f59e0b">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#d97706">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#d97706" font-weight="bold">Prank Kids</text>
+                        <!-- Playful yellow background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#prankBg)" stroke="#f59e0b" stroke-width="2"/>
+                        <!-- Confetti/sparkles -->
+                        <circle cx="20" cy="25" r="3" fill="#ec4899"/>
+                        <circle cx="80" cy="30" r="2" fill="#3b82f6"/>
+                        <circle cx="75" cy="75" r="3" fill="#22c55e"/>
+                        <circle cx="25" cy="70" r="2" fill="#8b5cf6"/>
+                        <rect x="15" y="40" width="4" height="4" fill="#f43f5e" transform="rotate(45 17 42)"/>
+                        <rect x="82" y="55" width="3" height="3" fill="#06b6d4" transform="rotate(45 83.5 56.5)"/>
+                        <!-- Prank-Kids Rocksies (blue - left) -->
+                        <circle cx="28" cy="50" r="14" fill="#3b82f6" stroke="#1e40af" stroke-width="2"/>
+                        <circle cx="25" cy="47" r="4" fill="#fff"/>
+                        <circle cx="31" cy="47" r="4" fill="#fff"/>
+                        <circle cx="25" cy="47" r="2" fill="#1e40af"/>
+                        <circle cx="31" cy="47" r="2" fill="#1e40af"/>
+                        <path d="M23 55 Q28 60 33 55" stroke="#1e3a5f" stroke-width="2" fill="none"/>
+                        <!-- Prank-Kids Lampsies (red - center) -->
+                        <circle cx="50" cy="45" r="16" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
+                        <circle cx="45" cy="42" r="5" fill="#fff"/>
+                        <circle cx="55" cy="42" r="5" fill="#fff"/>
+                        <circle cx="45" cy="42" r="2.5" fill="#7f1d1d"/>
+                        <circle cx="55" cy="42" r="2.5" fill="#7f1d1d"/>
+                        <path d="M44 52 Q50 58 56 52" stroke="#7f1d1d" stroke-width="2" fill="none"/>
+                        <!-- Flame on top -->
+                        <path d="M50 28 Q45 22 50 15 Q55 22 50 28" fill="#fbbf24" stroke="#f59e0b" stroke-width="1">
+                            <animate attributeName="d" values="M50 28 Q45 22 50 15 Q55 22 50 28;M50 28 Q44 20 50 12 Q56 20 50 28;M50 28 Q45 22 50 15 Q55 22 50 28" dur="0.5s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Prank-Kids Dropsies (green - right) -->
+                        <circle cx="72" cy="50" r="14" fill="#22c55e" stroke="#15803d" stroke-width="2"/>
+                        <circle cx="69" cy="47" r="4" fill="#fff"/>
+                        <circle cx="75" cy="47" r="4" fill="#fff"/>
+                        <circle cx="69" cy="47" r="2" fill="#166534"/>
+                        <circle cx="75" cy="47" r="2" fill="#166534"/>
+                        <path d="M67 55 Q72 60 77 55" stroke="#166534" stroke-width="2" fill="none"/>
+                        <!-- Water drop on Dropsies -->
+                        <path d="M72 32 Q70 37 72 40 Q74 37 72 32" fill="#60a5fa"/>
+                        <!-- Ground reaction lines -->
+                        <path d="M30 75 L32 80 L28 80 Z" fill="#f59e0b"/>
+                        <path d="M50 78 L52 83 L48 83 Z" fill="#f59e0b"/>
+                        <path d="M70 75 L72 80 L68 80 Z" fill="#f59e0b"/>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -23218,38 +23589,37 @@ const archetypes = [
         filepath: 'pages/Rokket Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="rokketAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#dc2626" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#b91c1c" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#991b1b" stop-opacity="0.9"/>
-                            </radialGradient>
-                            <linearGradient id="rokketGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#ef4444"/>
+                            <linearGradient id="rokketShell" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#4a4a4a"/>
+                                <stop offset="50%" stop-color="#2a2a2a"/>
+                                <stop offset="100%" stop-color="#1a1a1a"/>
+                            </linearGradient>
+                            <linearGradient id="rokketTip" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#dc2626"/>
                                 <stop offset="100%" stop-color="#991b1b"/>
                             </linearGradient>
-                            <filter id="rokketShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
+                            <filter id="rokketGlow">
+                                <feGaussianBlur stdDeviation="2" result="glow"/>
+                                <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#rokketAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#rokketShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#rokketGlow)" stroke="#991b1b" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#dc2626" stroke="#b91c1c" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#b91c1c" stroke="#991b1b" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="75" r="2" fill="#b91c1c">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        <!-- Bullet casing body -->
+                        <rect x="35" y="30" width="30" height="45" rx="3" fill="url(#rokketShell)" stroke="#555" stroke-width="1"/>
+                        <!-- Bullet tip (red dragon head) -->
+                        <path d="M35 30 L50 10 L65 30 Z" fill="url(#rokketTip)" stroke="#b91c1c" stroke-width="1"/>
+                        <!-- Dragon eye on bullet -->
+                        <circle cx="50" cy="22" r="4" fill="#000"/>
+                        <circle cx="51" cy="21" r="2" fill="#dc2626" filter="url(#rokketGlow)">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#991b1b">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Rokket</text>
+                        <!-- Casing grooves -->
+                        <line x1="37" y1="45" x2="63" y2="45" stroke="#555" stroke-width="1"/>
+                        <line x1="37" y1="55" x2="63" y2="55" stroke="#555" stroke-width="1"/>
+                        <line x1="37" y1="65" x2="63" y2="65" stroke="#555" stroke-width="1"/>
+                        <!-- Base of bullet -->
+                        <rect x="33" y="75" width="34" height="8" rx="2" fill="#3a3a3a" stroke="#555" stroke-width="1"/>
+                        <ellipse cx="50" cy="75" rx="17" ry="3" fill="#4a4a4a"/>
+                        <text x="50" y="95" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="bold">ROKKET</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -23456,37 +23826,39 @@ const archetypes = [
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="redEyesAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#dc2626" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#b91c1c" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#991b1b" stop-opacity="0.9"/>
+                                <stop offset="0%" stop-color="#1a1a1a"/>
+                                <stop offset="100%" stop-color="#0a0a0a"/>
                             </radialGradient>
-                            <linearGradient id="redEyesGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#ef4444"/>
+                            <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#ff0000"/>
+                                <stop offset="60%" stop-color="#dc2626"/>
                                 <stop offset="100%" stop-color="#991b1b"/>
-                            </linearGradient>
-                            <filter id="redEyesShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
+                            </radialGradient>
+                            <filter id="redEyeFlare">
+                                <feGaussianBlur stdDeviation="3" result="glow"/>
+                                <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#redEyesAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#redEyesShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#redEyesGlow)" stroke="#991b1b" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#dc2626" stroke="#b91c1c" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#b91c1c" stroke="#991b1b" stroke-width="2"/>
+                        <!-- Dragon head silhouette -->
+                        <ellipse cx="50" cy="50" rx="42" ry="35" fill="url(#redEyesAura)"/>
+                        <!-- Dragon snout -->
+                        <path d="M50 55 L30 70 L35 75 L50 65 L65 75 L70 70 Z" fill="#1a1a1a" stroke="#333" stroke-width="1"/>
+                        <!-- Horns -->
+                        <path d="M25 35 L15 15 L30 30" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+                        <path d="M75 35 L85 15 L70 30" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+                        <!-- Red glowing eyes -->
+                        <g filter="url(#redEyeFlare)">
+                            <ellipse cx="35" cy="45" rx="8" ry="5" fill="url(#eyeGlow)">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                            </ellipse>
+                            <ellipse cx="65" cy="45" rx="8" ry="5" fill="url(#eyeGlow)">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                            </ellipse>
+                            <!-- Eye pupils -->
+                            <ellipse cx="35" cy="45" rx="3" ry="4" fill="#000"/>
+                            <ellipse cx="65" cy="45" rx="3" ry="4" fill="#000"/>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#b91c1c">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#991b1b">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Red-Eyes</text>
+                        <text x="50" y="92" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="bold">RED-EYES</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -23649,38 +24021,39 @@ const archetypes = [
         filepath: 'pages/Shark Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="sharkAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#0284c7" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#0369a1" stop-opacity="0.9"/>
-                            </radialGradient>
-                            <linearGradient id="sharkGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#38bdf8"/>
-                                <stop offset="100%" stop-color="#0369a1"/>
+                            <linearGradient id="sharkBody" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#475569"/>
+                                <stop offset="50%" stop-color="#334155"/>
+                                <stop offset="100%" stop-color="#e2e8f0"/>
                             </linearGradient>
-                            <filter id="sharkShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
+                            <linearGradient id="waterBg" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#0c4a6e" stop-opacity="0.3"/>
+                                <stop offset="100%" stop-color="#0369a1" stop-opacity="0.5"/>
+                            </linearGradient>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#sharkAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#sharkShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#sharkGlow)" stroke="#0369a1" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#0ea5e9" stroke="#0284c7" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#0284c7" stroke="#0369a1" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="75" r="2" fill="#0284c7">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#0369a1">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#0369a1" font-weight="bold">Shark</text>
+                        <!-- Water background -->
+                        <ellipse cx="50" cy="50" rx="45" ry="40" fill="url(#waterBg)"/>
+                        <!-- Shark body -->
+                        <ellipse cx="50" cy="50" rx="32" ry="15" fill="url(#sharkBody)"/>
+                        <!-- Dorsal fin -->
+                        <path d="M50 35 L45 50 L55 50 Z" fill="#475569" stroke="#334155" stroke-width="1"/>
+                        <!-- Tail fin -->
+                        <path d="M82 50 L92 35 L88 50 L92 65 Z" fill="#475569" stroke="#334155" stroke-width="1"/>
+                        <!-- Pectoral fins -->
+                        <path d="M40 55 L30 70 L45 60 Z" fill="#475569"/>
+                        <path d="M60 55 L70 70 L55 60 Z" fill="#475569"/>
+                        <!-- Shark head -->
+                        <path d="M18 50 L30 45 L30 55 Z" fill="#475569"/>
+                        <!-- Eye -->
+                        <circle cx="28" cy="47" r="3" fill="#0f172a"/>
+                        <circle cx="29" cy="46" r="1" fill="#64748b"/>
+                        <!-- Gills -->
+                        <line x1="35" y1="47" x2="35" y2="53" stroke="#1e293b" stroke-width="1"/>
+                        <line x1="38" y1="47" x2="38" y2="53" stroke="#1e293b" stroke-width="1"/>
+                        <line x1="41" y1="47" x2="41" y2="53" stroke="#1e293b" stroke-width="1"/>
+                        <!-- Teeth hint -->
+                        <path d="M18 50 L22 48 L20 50 L22 52" stroke="#f8fafc" stroke-width="1" fill="none"/>
+                        <text x="50" y="92" text-anchor="middle" font-size="10" fill="#0ea5e9" font-weight="bold">SHARK</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -23905,38 +24278,37 @@ const archetypes = [
         filepath: 'pages/Six Samurai Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="sixSamuraiAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#dc2626" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#b91c1c" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#991b1b" stop-opacity="0.9"/>
-                            </radialGradient>
-                            <linearGradient id="sixSamuraiGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#ef4444"/>
-                                <stop offset="100%" stop-color="#991b1b"/>
+                            <linearGradient id="samuraiHelmet" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#991b1b"/>
+                                <stop offset="50%" stop-color="#7f1d1d"/>
+                                <stop offset="100%" stop-color="#450a0a"/>
                             </linearGradient>
-                            <filter id="sixSamuraiShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
+                            <linearGradient id="katanaBlade" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#e5e7eb"/>
+                                <stop offset="50%" stop-color="#f3f4f6"/>
+                                <stop offset="100%" stop-color="#9ca3af"/>
+                            </linearGradient>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#sixSamuraiAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#sixSamuraiShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#sixSamuraiGlow)" stroke="#991b1b" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#dc2626" stroke="#b91c1c" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#b91c1c" stroke="#991b1b" stroke-width="2"/>
+                        <!-- Kabuto helmet base -->
+                        <path d="M25 55 Q25 30 50 25 Q75 30 75 55 L70 60 L30 60 Z" fill="url(#samuraiHelmet)" stroke="#fbbf24" stroke-width="2"/>
+                        <!-- Helmet crest (Maedate) -->
+                        <path d="M50 25 L45 10 L50 15 L55 10 Z" fill="#fbbf24" stroke="#d97706" stroke-width="1"/>
+                        <!-- Helmet horns -->
+                        <path d="M30 35 L15 20" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M70 35 L85 20" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+                        <!-- Face guard -->
+                        <rect x="35" y="55" width="30" height="15" rx="3" fill="#1f2937" stroke="#fbbf24" stroke-width="1"/>
+                        <!-- Crossed katanas behind -->
+                        <g transform="translate(50,50)">
+                            <line x1="-30" y1="30" x2="30" y2="-10" stroke="url(#katanaBlade)" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="30" y1="30" x2="-30" y2="-10" stroke="url(#katanaBlade)" stroke-width="4" stroke-linecap="round"/>
+                            <!-- Handles -->
+                            <line x1="-30" y1="30" x2="-38" y2="38" stroke="#7f1d1d" stroke-width="5" stroke-linecap="round"/>
+                            <line x1="30" y1="30" x2="38" y2="38" stroke="#7f1d1d" stroke-width="5" stroke-linecap="round"/>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#b91c1c">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#991b1b">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="bold">Six Samurai</text>
+                        <!-- Number 6 emblem -->
+                        <text x="50" y="67" text-anchor="middle" font-size="10" fill="#fbbf24" font-weight="bold">六</text>
+                        <text x="50" y="95" text-anchor="middle" font-size="8" fill="#dc2626" font-weight="bold">SIX SAMURAI</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
