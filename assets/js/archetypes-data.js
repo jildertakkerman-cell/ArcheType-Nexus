@@ -3214,8 +3214,64 @@ const archetypes = [
         description: 'A Pendulum-based stun strategy that locks down the opponent with continuous floodgate effects.',
         filepath: 'pages/Amorphage Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M 50 10 L 85 30 L 85 70 L 50 90 L 15 70 L 15 30 Z" fill="#4a0e5f" stroke="#abff4f" stroke-width="2" />
-                        <path d="M 40 40 L 50 25 L 60 40 L 70 35 L 75 50 L 60 60 L 65 75 L 50 70 L 35 75 L 40 60 L 25 50 L 30 35 Z" fill="#abff4f" />
+                        <defs>
+                            <radialGradient id="amorphageBg" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#581c87"/>
+                                <stop offset="60%" stop-color="#3b0764"/>
+                                <stop offset="100%" stop-color="#1e0438"/>
+                            </radialGradient>
+                            <linearGradient id="amorphageVirus" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#d9f99d"/>
+                                <stop offset="50%" stop-color="#a3e635"/>
+                                <stop offset="100%" stop-color="#65a30d"/>
+                            </linearGradient>
+                            <filter id="amorphageGlow">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Hexagon background -->
+                        <path d="M50 8 L88 28 L88 72 L50 92 L12 72 L12 28 Z" fill="url(#amorphageBg)" stroke="#a3e635" stroke-width="2"/>
+                        <!-- Inner hexagon -->
+                        <path d="M50 18 L78 33 L78 67 L50 82 L22 67 L22 33 Z" fill="none" stroke="#65a30d" stroke-width="1" opacity="0.6"/>
+                        <!-- Virus/Dragon creature -->
+                        <g filter="url(#amorphageGlow)">
+                            <!-- Body -->
+                            <ellipse cx="50" cy="52" rx="18" ry="14" fill="url(#amorphageVirus)" stroke="#4d7c0f" stroke-width="1.5"/>
+                            <!-- Head -->
+                            <ellipse cx="50" cy="38" rx="12" ry="10" fill="url(#amorphageVirus)" stroke="#4d7c0f" stroke-width="1.5"/>
+                            <!-- Horns -->
+                            <path d="M40 32 Q35 22 30 18" fill="none" stroke="#a3e635" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M60 32 Q65 22 70 18" fill="none" stroke="#a3e635" stroke-width="3" stroke-linecap="round"/>
+                            <!-- Evil eyes -->
+                            <circle cx="45" cy="36" r="3" fill="#dc2626">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="1.5s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="55" cy="36" r="3" fill="#dc2626">
+                                <animate attributeName="opacity" values="1;0.8;1" dur="1.5s" repeatCount="indefinite"/>
+                            </circle>
+                            <!-- Tail -->
+                            <path d="M50 66 Q55 75 48 82" fill="none" stroke="url(#amorphageVirus)" stroke-width="4" stroke-linecap="round"/>
+                        </g>
+                        <!-- Pendulum scales on sides -->
+                        <rect x="15" y="40" width="8" height="20" rx="2" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+                        </rect>
+                        <rect x="77" y="40" width="8" height="20" rx="2" fill="#ef4444" stroke="#dc2626" stroke-width="1">
+                            <animate attributeName="opacity" values="1;0.7;1" dur="2s" repeatCount="indefinite"/>
+                        </rect>
+                        <!-- Lock/floodgate chains -->
+                        <path d="M23 50 Q35 45 40 50" fill="none" stroke="#a3e635" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.7"/>
+                        <path d="M77 50 Q65 45 60 50" fill="none" stroke="#a3e635" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.7"/>
+                        <!-- Toxic particles -->
+                        <circle cx="25" cy="25" r="2" fill="#a3e635" opacity="0.6">
+                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="75" cy="28" r="1.5" fill="#d9f99d" opacity="0.5">
+                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="1.8s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="30" cy="78" r="1.5" fill="#a3e635" opacity="0.6"/>
+                        <circle cx="70" cy="75" r="2" fill="#d9f99d" opacity="0.5"/>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -3488,10 +3544,59 @@ const archetypes = [
         description: 'A Link-focused strategy that uses Link-1s to control the gamestate',
         filepath: 'pages/Appliancer Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="50" cy="50" r="45" fill="#4338ca" stroke="#fff" stroke-width="2"/>
-                                <path d="M 30 30 L 70 70 M 70 30 L 30 70" stroke="#a5b4fc" stroke-width="5"/>
-                                <circle cx="50" cy="50" r="10" fill="#fff"/>
-                </svg>`,
+                        <defs>
+                            <radialGradient id="appliancerBg" cx="50%" cy="50%" r="55%">
+                                <stop offset="0%" stop-color="#6366f1"/>
+                                <stop offset="60%" stop-color="#4338ca"/>
+                                <stop offset="100%" stop-color="#312e81"/>
+                            </radialGradient>
+                            <linearGradient id="appliancerMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#e0e7ff"/>
+                                <stop offset="50%" stop-color="#a5b4fc"/>
+                                <stop offset="100%" stop-color="#818cf8"/>
+                            </linearGradient>
+                            <filter id="appliancerGlow">
+                                <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Background -->
+                        <circle cx="50" cy="50" r="46" fill="url(#appliancerBg)" stroke="#a5b4fc" stroke-width="2"/>
+                        <!-- Central appliance body (washing machine style) -->
+                        <rect x="30" y="28" width="40" height="44" rx="4" fill="url(#appliancerMetal)" stroke="#6366f1" stroke-width="2"/>
+                        <!-- Appliance door/window -->
+                        <circle cx="50" cy="52" r="14" fill="#312e81" stroke="#a5b4fc" stroke-width="2"/>
+                        <circle cx="50" cy="52" r="10" fill="none" stroke="#c7d2fe" stroke-width="1" opacity="0.6"/>
+                        <!-- Spinning element inside -->
+                        <g filter="url(#appliancerGlow)">
+                            <path d="M50 42 L54 52 L50 62 L46 52 Z" fill="#a5b4fc" opacity="0.8">
+                                <animateTransform attributeName="transform" type="rotate" values="0 50 52;360 50 52" dur="2s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M40 52 L50 48 L60 52 L50 56 Z" fill="#c7d2fe" opacity="0.8">
+                                <animateTransform attributeName="transform" type="rotate" values="0 50 52;360 50 52" dur="2s" repeatCount="indefinite"/>
+                            </path>
+                        </g>
+                        <!-- Control panel -->
+                        <rect x="32" y="30" width="36" height="10" rx="2" fill="#1e1b4b" stroke="#6366f1" stroke-width="1"/>
+                        <!-- Buttons/indicators -->
+                        <circle cx="38" cy="35" r="2" fill="#22c55e">
+                            <animate attributeName="opacity" values="0.6;1;0.6" dur="1s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="45" cy="35" r="2" fill="#ef4444"/>
+                        <rect x="50" y="33" width="15" height="4" rx="1" fill="#312e81" stroke="#818cf8" stroke-width="0.5"/>
+                        <!-- Link arrows pointing inward (Link-1 theme) -->
+                        <path d="M50 15 L50 22" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" filter="url(#appliancerGlow)"/>
+                        <path d="M47 19 L50 15 L53 19" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M50 85 L50 78" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" filter="url(#appliancerGlow)"/>
+                        <path d="M47 81 L50 85 L53 81" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M15 50 L22 50" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" filter="url(#appliancerGlow)"/>
+                        <path d="M19 47 L15 50 L19 53" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M85 50 L78 50" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" filter="url(#appliancerGlow)"/>
+                        <path d="M81 47 L85 50 L81 53" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Energy connection lines -->
+                        <path d="M22 50 Q30 45 30 50" fill="none" stroke="#a5b4fc" stroke-width="1" opacity="0.5"/>
+                        <path d="M78 50 Q70 45 70 50" fill="none" stroke="#a5b4fc" stroke-width="1" opacity="0.5"/>
+                    </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
 
@@ -3659,11 +3764,73 @@ const archetypes = [
         description: 'A high-variance strategy centered on coin flips, transformed into a control deck with Light Barrier.',
         filepath: 'pages/Arcana Force Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="50" cy="50" r="45" fill="#1e293b" stroke="#fde047" stroke-width="3"/>
-                                <path d="M50 20 L60 40 L50 60 L40 40 Z" fill="#fde047"/>
-                                <path d="M50 60 L60 80 L50 100 L40 80 Z" fill="#fde047" opacity="0.7"/>
-                                <circle cx="50" cy="50" r="5" fill="#fff"/>
-                </svg>`,
+                        <defs>
+                            <radialGradient id="arcanaForceBg" cx="50%" cy="50%" r="55%">
+                                <stop offset="0%" stop-color="#334155"/>
+                                <stop offset="60%" stop-color="#1e293b"/>
+                                <stop offset="100%" stop-color="#0f172a"/>
+                            </radialGradient>
+                            <linearGradient id="arcanaGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fef3c7"/>
+                                <stop offset="50%" stop-color="#fde047"/>
+                                <stop offset="100%" stop-color="#ca8a04"/>
+                            </linearGradient>
+                            <linearGradient id="arcanaSilver" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#f1f5f9"/>
+                                <stop offset="50%" stop-color="#94a3b8"/>
+                                <stop offset="100%" stop-color="#475569"/>
+                            </linearGradient>
+                            <filter id="arcanaGlow">
+                                <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Mystical background -->
+                        <circle cx="50" cy="50" r="46" fill="url(#arcanaForceBg)" stroke="url(#arcanaGold)" stroke-width="3"/>
+                        <!-- Outer mystical ring -->
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#fde047" stroke-width="1" opacity="0.4" stroke-dasharray="6 3">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="20s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Tarot card shape -->
+                        <rect x="32" y="18" width="36" height="54" rx="3" fill="#1e293b" stroke="url(#arcanaGold)" stroke-width="2"/>
+                        <rect x="35" y="21" width="30" height="48" rx="2" fill="none" stroke="#fde047" stroke-width="1" opacity="0.5"/>
+                        <!-- Upright sun symbol (positive effect) -->
+                        <g filter="url(#arcanaGlow)">
+                            <circle cx="50" cy="38" r="8" fill="url(#arcanaGold)"/>
+                            <!-- Sun rays -->
+                            <path d="M50 26 L50 30" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M50 46 L50 50" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M38 38 L42 38" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M58 38 L62 38" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M42 30 L44 32" stroke="#fde047" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M58 30 L56 32" stroke="#fde047" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M42 46 L44 44" stroke="#fde047" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M58 46 L56 44" stroke="#fde047" stroke-width="1.5" stroke-linecap="round"/>
+                        </g>
+                        <!-- Inverted moon symbol (negative effect) -->
+                        <g opacity="0.7">
+                            <path d="M45 58 Q40 62 45 66 Q55 66 55 62 Q50 58 45 58" fill="url(#arcanaSilver)" stroke="#94a3b8" stroke-width="1"/>
+                        </g>
+                        <!-- Coin flip indicator -->
+                        <ellipse cx="50" cy="82" rx="12" ry="4" fill="url(#arcanaGold)" stroke="#ca8a04" stroke-width="1">
+                            <animate attributeName="ry" values="4;2;4" dur="1s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <text x="50" y="85" text-anchor="middle" font-size="6" fill="#0f172a" font-weight="bold">FLIP</text>
+                        <!-- Roman numeral decorations -->
+                        <text x="50" y="16" text-anchor="middle" font-size="8" fill="#fde047" font-weight="bold">XXI</text>
+                        <!-- Light Barrier rays -->
+                        <path d="M15 50 Q25 45 25 50" fill="none" stroke="#fde047" stroke-width="1" opacity="0.4"/>
+                        <path d="M85 50 Q75 45 75 50" fill="none" stroke="#fde047" stroke-width="1" opacity="0.4"/>
+                        <!-- Stars -->
+                        <circle cx="20" cy="25" r="1.5" fill="#fde047" opacity="0.7">
+                            <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="80" cy="30" r="1" fill="#fde047" opacity="0.6">
+                            <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="25" cy="75" r="1" fill="#fde047" opacity="0.5"/>
+                        <circle cx="75" cy="72" r="1.5" fill="#fde047" opacity="0.6"/>
+                    </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
 
@@ -3745,9 +3912,71 @@ const archetypes = [
         description: 'A Synchro-focused combo deck centered on "Red Dragon Archfiend" and the "Resonator" engine.',
         filepath: 'pages/Resonator Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M50 10 C 40 40, 20 50, 50 90 C 80 50, 60 40, 50 10 Z" fill="#b91c1c" stroke="#fecaca" stroke-width="3" />
-                                <path d="M50 10 L 70 30 L 90 20 L 80 50 L 90 80 L 70 70 L 50 90 L 30 70 L 10 80 L 20 50 L 10 20 L 30 30 Z" fill="none" stroke="#ef4444" stroke-width="2"/>
-                </svg>`,
+                        <defs>
+                            <radialGradient id="resonatorBg" cx="50%" cy="40%" r="65%">
+                                <stop offset="0%" stop-color="#dc2626"/>
+                                <stop offset="50%" stop-color="#991b1b"/>
+                                <stop offset="100%" stop-color="#450a0a"/>
+                            </radialGradient>
+                            <linearGradient id="resonatorFork" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fef3c7"/>
+                                <stop offset="50%" stop-color="#fbbf24"/>
+                                <stop offset="100%" stop-color="#d97706"/>
+                            </linearGradient>
+                            <filter id="resonatorGlow">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Fiery background -->
+                        <circle cx="50" cy="50" r="46" fill="url(#resonatorBg)" stroke="#fecaca" stroke-width="2"/>
+                        <!-- Synchro rings -->
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.5" stroke-dasharray="5 3">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="8s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="50" cy="50" r="34" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.3" stroke-dasharray="3 5">
+                            <animateTransform attributeName="transform" type="rotate" values="360 50 50;0 50 50" dur="6s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Tuning Fork (Resonator symbol) -->
+                        <g filter="url(#resonatorGlow)">
+                            <!-- Fork handle -->
+                            <rect x="47" y="45" width="6" height="35" rx="2" fill="url(#resonatorFork)" stroke="#d97706" stroke-width="1"/>
+                            <!-- Fork prongs -->
+                            <path d="M42 45 L42 25 Q42 20 47 20 L47 45" fill="url(#resonatorFork)" stroke="#d97706" stroke-width="1"/>
+                            <path d="M58 45 L58 25 Q58 20 53 20 L53 45" fill="url(#resonatorFork)" stroke="#d97706" stroke-width="1"/>
+                            <!-- Fork base ring -->
+                            <ellipse cx="50" cy="80" rx="8" ry="3" fill="url(#resonatorFork)" stroke="#d97706" stroke-width="1"/>
+                        </g>
+                        <!-- Sound/vibration waves -->
+                        <path d="M35 30 Q30 35 35 40" fill="none" stroke="#fecaca" stroke-width="2" opacity="0.7">
+                            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="1s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M28 25 Q20 35 28 45" fill="none" stroke="#fecaca" stroke-width="1.5" opacity="0.5">
+                            <animate attributeName="opacity" values="0.2;0.7;0.2" dur="1s" begin="0.2s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M65 30 Q70 35 65 40" fill="none" stroke="#fecaca" stroke-width="2" opacity="0.7">
+                            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="1s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M72 25 Q80 35 72 45" fill="none" stroke="#fecaca" stroke-width="1.5" opacity="0.5">
+                            <animate attributeName="opacity" values="0.2;0.7;0.2" dur="1s" begin="0.2s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Red Dragon Archfiend flames -->
+                        <path d="M20 60 Q25 50 22 40 Q30 50 25 60" fill="#ef4444" opacity="0.7">
+                            <animate attributeName="d" values="M20 60 Q25 50 22 40 Q30 50 25 60;M18 58 Q23 48 20 38 Q28 48 23 58;M20 60 Q25 50 22 40 Q30 50 25 60" dur="0.8s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M80 60 Q75 50 78 40 Q70 50 75 60" fill="#ef4444" opacity="0.7">
+                            <animate attributeName="d" values="M80 60 Q75 50 78 40 Q70 50 75 60;M82 58 Q77 48 80 38 Q72 48 77 58;M80 60 Q75 50 78 40 Q70 50 75 60" dur="0.8s" begin="0.4s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Dragon eye hints -->
+                        <circle cx="25" cy="70" r="3" fill="#fbbf24" opacity="0.8">
+                            <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="75" cy="70" r="3" fill="#fbbf24" opacity="0.8">
+                            <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Tuner stars -->
+                        <circle cx="50" cy="12" r="2" fill="#fbbf24" filter="url(#resonatorGlow)"/>
+                    </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
 
@@ -3757,9 +3986,71 @@ const archetypes = [
         description: 'A control deck using Trap Monsters and a banishment-based resource loop.',
         filepath: 'pages/Argostars Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M50 10 L90 50 L50 90 L10 50 Z" fill="#2b6cb0" stroke="#90cdf4" stroke-width="3"/>
-                    <path d="M50 25 L75 50 L50 75 L25 50 Z" fill="#4299e1"/>
-                    <path d="M50 10 L50 90 M10 50 L90 50" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2"/>
+                        <defs>
+                            <radialGradient id="argostarsBg" cx="50%" cy="50%" r="55%">
+                                <stop offset="0%" stop-color="#1e3a5f"/>
+                                <stop offset="60%" stop-color="#0c1929"/>
+                                <stop offset="100%" stop-color="#020617"/>
+                            </radialGradient>
+                            <linearGradient id="argostarsStar" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fef3c7"/>
+                                <stop offset="50%" stop-color="#fbbf24"/>
+                                <stop offset="100%" stop-color="#f59e0b"/>
+                            </linearGradient>
+                            <linearGradient id="argostarsTrap" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#c084fc"/>
+                                <stop offset="100%" stop-color="#7c3aed"/>
+                            </linearGradient>
+                            <filter id="argostarsGlow">
+                                <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Night sky background -->
+                        <circle cx="50" cy="50" r="46" fill="url(#argostarsBg)" stroke="#3b82f6" stroke-width="2"/>
+                        <!-- Constellation pattern (Argo Navis ship) -->
+                        <g filter="url(#argostarsGlow)">
+                            <!-- Main stars -->
+                            <circle cx="25" cy="35" r="3" fill="url(#argostarsStar)"/>
+                            <circle cx="40" cy="28" r="2.5" fill="url(#argostarsStar)"/>
+                            <circle cx="55" cy="25" r="3" fill="url(#argostarsStar)"/>
+                            <circle cx="70" cy="32" r="2.5" fill="url(#argostarsStar)"/>
+                            <circle cx="80" cy="45" r="3" fill="url(#argostarsStar)"/>
+                            <circle cx="75" cy="60" r="2.5" fill="url(#argostarsStar)"/>
+                            <circle cx="60" cy="70" r="3" fill="url(#argostarsStar)"/>
+                            <circle cx="45" cy="68" r="2.5" fill="url(#argostarsStar)"/>
+                            <circle cx="30" cy="55" r="3" fill="url(#argostarsStar)"/>
+                            <!-- Central star -->
+                            <circle cx="50" cy="50" r="4" fill="url(#argostarsStar)">
+                                <animate attributeName="r" values="3.5;4.5;3.5" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        <!-- Constellation lines -->
+                        <path d="M25 35 L40 28 L55 25 L70 32 L80 45 L75 60 L60 70 L45 68 L30 55 L25 35" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.6"/>
+                        <path d="M40 28 L50 50 L60 70" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
+                        <path d="M70 32 L50 50 L30 55" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
+                        <!-- Trap card border design -->
+                        <path d="M50 8 L92 50 L50 92 L8 50 Z" fill="none" stroke="url(#argostarsTrap)" stroke-width="2" opacity="0.7"/>
+                        <path d="M50 15 L85 50 L50 85 L15 50 Z" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+                        <!-- Banishment portal effect -->
+                        <circle cx="50" cy="50" r="18" fill="none" stroke="#c084fc" stroke-width="1.5" opacity="0.5" stroke-dasharray="4 4">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="10s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Loop arrows (resource loop) -->
+                        <path d="M35 80 Q25 75 30 65" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.6"/>
+                        <path d="M32 67 L30 65 L28 68" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.6"/>
+                        <path d="M65 80 Q75 75 70 65" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.6"/>
+                        <path d="M72 67 L70 65 L68 68" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.6"/>
+                        <!-- Distant stars -->
+                        <circle cx="15" cy="20" r="1" fill="#fbbf24" opacity="0.5">
+                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="85" cy="22" r="0.8" fill="#fbbf24" opacity="0.4">
+                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="18" cy="78" r="0.8" fill="#fbbf24" opacity="0.4"/>
+                        <circle cx="82" cy="80" r="1" fill="#fbbf24" opacity="0.5"/>
+                        <circle cx="50" cy="5" r="1" fill="#fbbf24" opacity="0.6"/>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -4565,9 +4856,76 @@ const archetypes = [
         description: 'A highly efficient Spell Engine used for explosive draw cycling or total turn denial (Bamboolock).',
         filepath: 'pages/Bamboo Sword Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M 20 80 L 80 20" stroke="#a7f3d0" stroke-width="6" stroke-linecap="round"/>
-                    <path d="M 20 20 L 80 80" stroke="#a7f3d0" stroke-width="6" stroke-linecap="round"/>
-                    <circle cx="50" cy="50" r="30" fill="none" stroke="#6ee7b7" stroke-width="3"/>
+                    <defs>
+                        <linearGradient id="bamboo-blade-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#a7f3d0"/>
+                            <stop offset="40%" stop-color="#34d399"/>
+                            <stop offset="70%" stop-color="#10b981"/>
+                            <stop offset="100%" stop-color="#047857"/>
+                        </linearGradient>
+                        <linearGradient id="bamboo-handle-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fef3c7"/>
+                            <stop offset="50%" stop-color="#fbbf24"/>
+                            <stop offset="100%" stop-color="#d97706"/>
+                        </linearGradient>
+                        <linearGradient id="spell-card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#6ee7b7"/>
+                            <stop offset="100%" stop-color="#34d399"/>
+                        </linearGradient>
+                        <filter id="bamboo-glow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Spell card border -->
+                    <rect x="15" y="10" width="70" height="80" rx="5" fill="none" stroke="url(#spell-card-grad)" stroke-width="2" opacity="0.6"/>
+                    <!-- Main bamboo sword blade -->
+                    <path d="M50 15 L52 15 L55 65 L50 70 L45 65 L48 15 Z" fill="url(#bamboo-blade-grad)" filter="url(#bamboo-glow)" opacity="0.9">
+                        <animate attributeName="opacity" values="0.9;0.7;0.9" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- Bamboo nodes -->
+                    <rect x="46" y="25" width="8" height="3" rx="1" fill="#047857" opacity="0.8"/>
+                    <rect x="46" y="40" width="8" height="3" rx="1" fill="#047857" opacity="0.8"/>
+                    <rect x="46" y="55" width="8" height="3" rx="1" fill="#047857" opacity="0.8"/>
+                    <!-- Handle wrapping -->
+                    <rect x="44" y="68" width="12" height="8" rx="2" fill="url(#bamboo-handle-grad)" stroke="#92400e" stroke-width="1"/>
+                    <path d="M46 70 L54 74 M46 74 L54 70" stroke="#7c2d12" stroke-width="1" opacity="0.7"/>
+                    <!-- Draw cycling cards floating -->
+                    <rect x="20" y="25" width="10" height="14" rx="1" fill="#10b981" opacity="0.6" transform="rotate(-15 25 32)">
+                        <animate attributeName="y" values="25;20;25" dur="2s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.6;0.3;0.6" dur="2s" repeatCount="indefinite"/>
+                    </rect>
+                    <rect x="70" y="25" width="10" height="14" rx="1" fill="#10b981" opacity="0.6" transform="rotate(15 75 32)">
+                        <animate attributeName="y" values="25;20;25" dur="2.5s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2.5s" repeatCount="indefinite"/>
+                    </rect>
+                    <!-- Energy flow from sword -->
+                    <path d="M50 20 Q45 30 50 40" fill="none" stroke="#a7f3d0" stroke-width="1" opacity="0.5" stroke-dasharray="3 3">
+                        <animate attributeName="stroke-dashoffset" values="0;12" dur="2s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M50 20 Q55 30 50 40" fill="none" stroke="#a7f3d0" stroke-width="1" opacity="0.5" stroke-dasharray="3 3">
+                        <animate attributeName="stroke-dashoffset" values="12;0" dur="2s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- Bamboolock chain indicator -->
+                    <circle cx="25" cy="75" r="3" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.7">
+                        <animate attributeName="opacity" values="0.7;0.3;0.7" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="75" cy="75" r="3" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.7">
+                        <animate attributeName="opacity" values="0.3;0.7;0.3" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <path d="M28 75 L72 75" stroke="#fbbf24" stroke-width="1" opacity="0.4" stroke-dasharray="4 4">
+                        <animate attributeName="stroke-dashoffset" values="0;16" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- Sparkle effects -->
+                    <circle cx="35" cy="35" r="1" fill="#a7f3d0" opacity="0.8">
+                        <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="65" cy="45" r="1" fill="#a7f3d0" opacity="0.8">
+                        <animate attributeName="opacity" values="0.2;0.8;0.2" dur="1.8s" repeatCount="indefinite"/>
+                    </circle>
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -4579,9 +4937,78 @@ const archetypes = [
         description: 'A Level 8 EARTH Beast-Warrior engine focused on repeatable destruction and Rank 8 Xyz access.',
         filepath: 'pages/Barbaros Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M 20 30 L 50 15 L 80 30 L 85 70 L 50 85 L 15 70 Z" fill="#b45309" stroke="#fde68a" stroke-width="2"/>
-                    <path d="M 30 40 L 50 30 L 70 40" stroke="#2a201a" stroke-width="3" stroke-linecap="round"/>
-                    <path d="M 50 30 L 50 60" stroke="#2a201a" stroke-width="3" stroke-linecap="round"/>
+                    <defs>
+                        <radialGradient id="barbaros-body-grad" cx="0.3" cy="0.2">
+                            <stop offset="0%" stop-color="#fde68a"/>
+                            <stop offset="40%" stop-color="#b45309"/>
+                            <stop offset="80%" stop-color="#78350f"/>
+                            <stop offset="100%" stop-color="#451a03"/>
+                        </radialGradient>
+                        <linearGradient id="barbaros-armor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fef3c7"/>
+                            <stop offset="30%" stop-color="#fbbf24"/>
+                            <stop offset="70%" stop-color="#d97706"/>
+                            <stop offset="100%" stop-color="#92400e"/>
+                        </linearGradient>
+                        <radialGradient id="barbaros-eye-grad" cx="0.4" cy="0.3">
+                            <stop offset="0%" stop-color="#fef3c7"/>
+                            <stop offset="50%" stop-color="#dc2626"/>
+                            <stop offset="100%" stop-color="#7f1d1d"/>
+                        </radialGradient>
+                        <filter id="barbaros-glow">
+                            <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Beast-warrior body/shield -->
+                    <path d="M20 30 L50 15 L80 30 L85 70 L50 85 L15 70 Z" fill="url(#barbaros-body-grad)" stroke="#fde68a" stroke-width="2" filter="url(#barbaros-glow)"/>
+                    <!-- Muscular chest armor -->
+                    <path d="M35 35 L50 28 L65 35 L60 55 L50 60 L40 55 Z" fill="url(#barbaros-armor-grad)" stroke="#92400e" stroke-width="1" opacity="0.9"/>
+                    <!-- Beast horns -->
+                    <path d="M30 30 L25 18 L35 25" fill="#451a03" stroke="#78350f" stroke-width="1"/>
+                    <path d="M70 30 L75 18 L65 25" fill="#451a03" stroke="#78350f" stroke-width="1"/>
+                    <!-- Fierce beast eyes -->
+                    <ellipse cx="42" cy="38" rx="4" ry="3" fill="url(#barbaros-eye-grad)" filter="url(#barbaros-glow)">
+                        <animate attributeName="opacity" values="1;0.6;1" dur="3s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <ellipse cx="58" cy="38" rx="4" ry="3" fill="url(#barbaros-eye-grad)" filter="url(#barbaros-glow)">
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <!-- Beast snout -->
+                    <path d="M45 45 L50 50 L55 45" fill="#78350f" stroke="#451a03" stroke-width="1"/>
+                    <!-- Level 8 star indicators -->
+                    <g fill="#fbbf24" opacity="0.8">
+                        <polygon points="15,62 17,66 21,66 18,69 19,73 15,71 11,73 12,69 9,66 13,66" transform="scale(0.6) translate(10,5)">
+                            <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+                        </polygon>
+                        <polygon points="15,62 17,66 21,66 18,69 19,73 15,71 11,73 12,69 9,66 13,66" transform="scale(0.6) translate(25,5)">
+                            <animate attributeName="opacity" values="0.6;0.9;0.6" dur="2.2s" repeatCount="indefinite"/>
+                        </polygon>
+                        <polygon points="15,62 17,66 21,66 18,69 19,73 15,71 11,73 12,69 9,66 13,66" transform="scale(0.6) translate(110,5)">
+                            <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2.4s" repeatCount="indefinite"/>
+                        </polygon>
+                        <polygon points="15,62 17,66 21,66 18,69 19,73 15,71 11,73 12,69 9,66 13,66" transform="scale(0.6) translate(125,5)">
+                            <animate attributeName="opacity" values="0.6;0.9;0.6" dur="2.6s" repeatCount="indefinite"/>
+                        </polygon>
+                    </g>
+                    <!-- Destruction energy aura -->
+                    <circle cx="50" cy="50" r="30" fill="none" stroke="#dc2626" stroke-width="1" opacity="0.4" stroke-dasharray="4 6">
+                        <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="10s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- EARTH attribute indicator -->
+                    <path d="M45 70 L50 65 L55 70 L50 75 Z" fill="#78350f" stroke="#fbbf24" stroke-width="1" opacity="0.8">
+                        <animate attributeName="opacity" values="0.8;0.5;0.8" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- Power emanation -->
+                    <circle cx="30" cy="60" r="2" fill="#fbbf24" opacity="0.6">
+                        <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="70" cy="60" r="2" fill="#fbbf24" opacity="0.6">
+                        <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite"/>
+                    </circle>
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -4901,8 +5328,76 @@ const archetypes = [
         description: 'A Rank 6 Xyz toolbox strategy that uses external engines like Hieratics to summon its boss monsters.',
         filepath: 'pages/Bounzer Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 10 L85 25 L85 75 L50 90 L15 75 L15 25 Z" fill="#f97316" stroke="#fff" stroke-width="2"/>
-                <path d="M50 35 L50 65 M30 50 L70 50" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round"/>
+                    <defs>
+                        <radialGradient id="bounzer-core-grad" cx="0.3" cy="0.2">
+                            <stop offset="0%" stop-color="#fed7aa"/>
+                            <stop offset="40%" stop-color="#f97316"/>
+                            <stop offset="80%" stop-color="#c2410c"/>
+                            <stop offset="100%" stop-color="#7c2d12"/>
+                        </radialGradient>
+                        <linearGradient id="bounzer-armor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fef3c7"/>
+                            <stop offset="50%" stop-color="#fbbf24"/>
+                            <stop offset="100%" stop-color="#d97706"/>
+                        </linearGradient>
+                        <radialGradient id="xyz-overlay-grad" cx="0.5" cy="0.5">
+                            <stop offset="0%" stop-color="#1e1b4b"/>
+                            <stop offset="70%" stop-color="#312e81"/>
+                            <stop offset="100%" stop-color="#4338ca"/>
+                        </radialGradient>
+                        <filter id="bounzer-glow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Main body hexagon -->
+                    <path d="M50 10 L85 25 L85 75 L50 90 L15 75 L15 25 Z" fill="url(#bounzer-core-grad)" stroke="#fbbf24" stroke-width="2" filter="url(#bounzer-glow)"/>
+                    <!-- Inner armor plating -->
+                    <path d="M50 20 L75 32 L75 68 L50 80 L25 68 L25 32 Z" fill="url(#bounzer-armor-grad)" stroke="#c2410c" stroke-width="1" opacity="0.8"/>
+                    <!-- Negation symbol (X) -->
+                    <path d="M35 35 L65 65" stroke="#7c2d12" stroke-width="6" stroke-linecap="round" filter="url(#bounzer-glow)">
+                        <animate attributeName="opacity" values="1;0.7;1" dur="2s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M65 35 L35 65" stroke="#7c2d12" stroke-width="6" stroke-linecap="round" filter="url(#bounzer-glow)">
+                        <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- Bouncing effect rings -->
+                    <circle cx="50" cy="50" r="25" fill="none" stroke="#f97316" stroke-width="2" opacity="0.6">
+                        <animate attributeName="r" values="25;30;25" dur="1.5s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="50" cy="50" r="32" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.4">
+                        <animate attributeName="r" values="32;38;32" dur="2s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- Rank 6 Xyz overlay units -->
+                    <circle cx="20" cy="50" r="4" fill="url(#xyz-overlay-grad)" stroke="#818cf8" stroke-width="1" filter="url(#bounzer-glow)">
+                        <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="6s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.9;0.5;0.9" dur="3s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="80" cy="50" r="4" fill="url(#xyz-overlay-grad)" stroke="#818cf8" stroke-width="1" filter="url(#bounzer-glow)">
+                        <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="6s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="50" cy="95" r="4" fill="url(#xyz-overlay-grad)" stroke="#818cf8" stroke-width="1" filter="url(#bounzer-glow)" opacity="0.7">
+                        <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="6s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- Toolbox indicator sparkles -->
+                    <circle cx="30" cy="25" r="1.5" fill="#fbbf24" opacity="0.8">
+                        <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="70" cy="25" r="1.5" fill="#fbbf24" opacity="0.8">
+                        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.8s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="30" cy="75" r="1.5" fill="#f97316" opacity="0.7">
+                        <animate attributeName="opacity" values="0.7;0.2;0.7" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="70" cy="75" r="1.5" fill="#f97316" opacity="0.7">
+                        <animate attributeName="opacity" values="0.2;0.7;0.2" dur="2.2s" repeatCount="indefinite"/>
+                    </circle>
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -5810,11 +6305,93 @@ const archetypes = [
         description: 'A compact engine that converts two Effect Monsters into a massive number of Link Materials for aggressive plays.',
         filepath: 'pages/Code Breaker Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 20 H 80 V 80 H 20 Z" fill="none" stroke="#00ff80" stroke-width="5"/>
-                    <path d="M40 20 V 50" stroke="#00ff80" stroke-width="5" />
-                    <path d="M60 80 V 50" stroke="#00ff80" stroke-width="5" />
-                    <path d="M45 45 H 70" stroke="#ff00ff" stroke-width="4" />
-                    <path d="M25 55 H 55" stroke="#00ffff" stroke-width="4" />
+                    <defs>
+                        <linearGradient id="codebreaker-matrix-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00ff80"/>
+                            <stop offset="50%" stop-color="#10b981"/>
+                            <stop offset="100%" stop-color="#059669"/>
+                        </linearGradient>
+                        <linearGradient id="codebreaker-virus-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ff00ff"/>
+                            <stop offset="50%" stop-color="#d946ef"/>
+                            <stop offset="100%" stop-color="#a855f7"/>
+                        </linearGradient>
+                        <linearGradient id="codebreaker-data-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00ffff"/>
+                            <stop offset="50%" stop-color="#22d3ee"/>
+                            <stop offset="100%" stop-color="#0891b2"/>
+                        </linearGradient>
+                        <filter id="codebreaker-glow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <filter id="digital-glitch">
+                            <feTurbulence baseFrequency="0.05" numOctaves="2" result="noise"/>
+                            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2"/>
+                        </filter>
+                    </defs>
+                    <!-- Dark terminal background -->
+                    <rect x="15" y="15" width="70" height="70" rx="5" fill="#0a0a0f" stroke="url(#codebreaker-matrix-grad)" stroke-width="3" filter="url(#codebreaker-glow)"/>
+                    <!-- Matrix code rain effect -->
+                    <text x="20" y="30" fill="#00ff80" font-family="monospace" font-size="6" opacity="0.7">
+                        <animate attributeName="opacity" values="0.7;0.3;0.7" dur="2s" repeatCount="indefinite"/>01101
+                    </text>
+                    <text x="60" y="35" fill="#00ff80" font-family="monospace" font-size="6" opacity="0.6">
+                        <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite"/>10010
+                    </text>
+                    <text x="35" y="75" fill="#00ff80" font-family="monospace" font-size="6" opacity="0.5">
+                        <animate attributeName="opacity" values="0.5;0.8;0.5" dur="1.8s" repeatCount="indefinite"/>11001
+                    </text>
+                    <!-- Central breaking/hacking symbol -->
+                    <path d="M35 40 L50 50 L35 60" fill="none" stroke="url(#codebreaker-virus-grad)" stroke-width="4" stroke-linecap="round" filter="url(#codebreaker-glow)">
+                        <animate attributeName="stroke-dashoffset" values="0;20" dur="1.5s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M65 40 L50 50 L65 60" fill="none" stroke="url(#codebreaker-data-grad)" stroke-width="4" stroke-linecap="round" filter="url(#codebreaker-glow)">
+                        <animate attributeName="stroke-dashoffset" values="20;0" dur="1.5s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- Link material conversion arrows -->
+                    <path d="M25 50 L35 50" stroke="#ff00ff" stroke-width="2" opacity="0.8">
+                        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M65 50 L75 50" stroke="#00ffff" stroke-width="2" opacity="0.8">
+                        <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- Effect monster inputs (2 circles) -->
+                    <circle cx="22" cy="35" r="4" fill="none" stroke="#ff00ff" stroke-width="2" filter="url(#codebreaker-glow)">
+                        <animate attributeName="r" values="4;5;4" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="22" cy="65" r="4" fill="none" stroke="#00ffff" stroke-width="2" filter="url(#codebreaker-glow)">
+                        <animate attributeName="r" values="5;4;5" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- Link material outputs (multiple small circles) -->
+                    <circle cx="78" cy="30" r="2" fill="#00ff80" opacity="0.9">
+                        <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="78" cy="40" r="2" fill="#00ff80" opacity="0.8">
+                        <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.4s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="78" cy="50" r="2" fill="#00ff80" opacity="0.9">
+                        <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.6s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="78" cy="60" r="2" fill="#00ff80" opacity="0.8">
+                        <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.8s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="78" cy="70" r="2" fill="#00ff80" opacity="0.9">
+                        <animate attributeName="opacity" values="0.9;0.4;0.9" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- Scan lines -->
+                    <line x1="15" y1="45" x2="85" y2="45" stroke="#00ff80" stroke-width="0.5" opacity="0.3">
+                        <animate attributeName="y1" values="20;80;20" dur="4s" repeatCount="indefinite"/>
+                        <animate attributeName="y2" values="20;80;20" dur="4s" repeatCount="indefinite"/>
+                    </line>
+                    <!-- Corner brackets -->
+                    <path d="M18 25 L18 18 L25 18" fill="none" stroke="#00ff80" stroke-width="2"/>
+                    <path d="M75 18 L82 18 L82 25" fill="none" stroke="#00ff80" stroke-width="2"/>
+                    <path d="M18 75 L18 82 L25 82" fill="none" stroke="#00ff80" stroke-width="2"/>
+                    <path d="M75 82 L82 82 L82 75" fill="none" stroke="#00ff80" stroke-width="2"/>
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -7806,13 +8383,90 @@ const archetypes = [
         description: 'A whimsical Beast archetype that combines childlike artwork with powerful draw effects and creative Normal Monster support.',
         filepath: 'pages/Doodle Beast Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M50 10 L80 30 L80 70 L50 90 L20 70 L20 30 Z" fill="#fef9c3" stroke="#eab308" stroke-width="2"/>
-                        <path d="M35 35 L45 45 L35 55" stroke="#eab308" stroke-width="3" fill="none"/>  <!-- Sketch line 1 -->
-                        <path d="M55 35 L65 45 L55 55" stroke="#eab308" stroke-width="3" fill="none"/>  <!-- Sketch line 2 -->
-                        <path d="M40 65 Q50 55 60 65" stroke="#eab308" stroke-width="3" fill="none"/>  <!-- Smile -->
-                        <circle cx="40" cy="40" r="4" fill="#eab308"/>  <!-- Eye 1 -->
-                        <circle cx="60" cy="40" r="4" fill="#eab308"/>  <!-- Eye 2 -->
-                    </svg>`,
+                    <defs>
+                        <linearGradient id="doodle-paper-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fefce8"/>
+                            <stop offset="50%" stop-color="#fef9c3"/>
+                            <stop offset="100%" stop-color="#fef08a"/>
+                        </linearGradient>
+                        <linearGradient id="crayon-yellow-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fbbf24"/>
+                            <stop offset="50%" stop-color="#eab308"/>
+                            <stop offset="100%" stop-color="#ca8a04"/>
+                        </linearGradient>
+                        <linearGradient id="crayon-orange-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fb923c"/>
+                            <stop offset="100%" stop-color="#ea580c"/>
+                        </linearGradient>
+                        <linearGradient id="crayon-blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#60a5fa"/>
+                            <stop offset="100%" stop-color="#2563eb"/>
+                        </linearGradient>
+                        <filter id="crayon-texture">
+                            <feTurbulence baseFrequency="0.04" numOctaves="3" result="noise"/>
+                            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1"/>
+                        </filter>
+                        <filter id="doodle-shadow">
+                            <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Sketchpad paper background -->
+                    <rect x="12" y="8" width="76" height="84" rx="5" fill="url(#doodle-paper-grad)" stroke="#d4a574" stroke-width="2" filter="url(#doodle-shadow)"/>
+                    <!-- Paper lines -->
+                    <line x1="18" y1="25" x2="82" y2="25" stroke="#bfdbfe" stroke-width="1" opacity="0.5"/>
+                    <line x1="18" y1="45" x2="82" y2="45" stroke="#bfdbfe" stroke-width="1" opacity="0.5"/>
+                    <line x1="18" y1="65" x2="82" y2="65" stroke="#bfdbfe" stroke-width="1" opacity="0.5"/>
+                    <!-- Doodle beast body (wobbly circle) -->
+                    <path d="M35 50 Q30 35 50 30 Q70 35 65 50 Q70 65 50 70 Q30 65 35 50" fill="url(#crayon-yellow-grad)" stroke="url(#crayon-orange-grad)" stroke-width="3" filter="url(#crayon-texture)" stroke-linejoin="round">
+                        <animate attributeName="d" values="M35 50 Q30 35 50 30 Q70 35 65 50 Q70 65 50 70 Q30 65 35 50;M36 51 Q31 36 50 31 Q69 36 64 51 Q69 64 50 69 Q31 64 36 51;M35 50 Q30 35 50 30 Q70 35 65 50 Q70 65 50 70 Q30 65 35 50" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- Cute wobbly ears -->
+                    <ellipse cx="35" cy="28" rx="6" ry="10" fill="url(#crayon-yellow-grad)" stroke="url(#crayon-orange-grad)" stroke-width="2" transform="rotate(-20 35 28)" filter="url(#crayon-texture)">
+                        <animateTransform attributeName="transform" type="rotate" values="-20 35 28;-15 35 28;-20 35 28" dur="2s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <ellipse cx="65" cy="28" rx="6" ry="10" fill="url(#crayon-yellow-grad)" stroke="url(#crayon-orange-grad)" stroke-width="2" transform="rotate(20 65 28)" filter="url(#crayon-texture)">
+                        <animateTransform attributeName="transform" type="rotate" values="20 65 28;15 65 28;20 65 28" dur="2.2s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <!-- Big sparkly eyes -->
+                    <circle cx="42" cy="45" r="6" fill="#1f2937" filter="url(#doodle-shadow)"/>
+                    <circle cx="58" cy="45" r="6" fill="#1f2937" filter="url(#doodle-shadow)"/>
+                    <circle cx="44" cy="43" r="2" fill="#ffffff" opacity="0.9">
+                        <animate attributeName="opacity" values="0.9;0.5;0.9" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="60" cy="43" r="2" fill="#ffffff" opacity="0.9">
+                        <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- Happy smile -->
+                    <path d="M42 55 Q50 62 58 55" fill="none" stroke="#7c2d12" stroke-width="2" stroke-linecap="round" filter="url(#crayon-texture)">
+                        <animate attributeName="d" values="M42 55 Q50 62 58 55;M42 56 Q50 63 58 56;M42 55 Q50 62 58 55" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- Cute nose -->
+                    <ellipse cx="50" cy="52" rx="2" ry="1.5" fill="#f97316"/>
+                    <!-- Draw effect cards -->
+                    <rect x="15" y="75" width="8" height="10" rx="1" fill="url(#crayon-blue-grad)" opacity="0.7" transform="rotate(-10 19 80)">
+                        <animate attributeName="y" values="75;72;75" dur="2s" repeatCount="indefinite"/>
+                    </rect>
+                    <rect x="77" y="75" width="8" height="10" rx="1" fill="url(#crayon-blue-grad)" opacity="0.7" transform="rotate(10 81 80)">
+                        <animate attributeName="y" values="75;72;75" dur="2.5s" repeatCount="indefinite"/>
+                    </rect>
+                    <!-- Sparkle doodles -->
+                    <path d="M25 35 L27 30 L29 35 L34 33 L29 35 L31 40 L29 35 L24 37 Z" fill="#fbbf24" opacity="0.8">
+                        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.5s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M71 35 L73 30 L75 35 L80 33 L75 35 L77 40 L75 35 L70 37 Z" fill="#fbbf24" opacity="0.8">
+                        <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.8s" repeatCount="indefinite"/>
+                    </path>
+                    <!-- Little paws -->
+                    <circle cx="38" cy="68" r="3" fill="url(#crayon-orange-grad)" opacity="0.8"/>
+                    <circle cx="62" cy="68" r="3" fill="url(#crayon-orange-grad)" opacity="0.8"/>
+                    <!-- Whimsical scribble lines -->
+                    <path d="M20 18 Q25 15 30 18" fill="none" stroke="url(#crayon-blue-grad)" stroke-width="1.5" opacity="0.5"/>
+                    <path d="M70 18 Q75 15 80 18" fill="none" stroke="url(#crayon-orange-grad)" stroke-width="1.5" opacity="0.5"/>
+                </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
 
