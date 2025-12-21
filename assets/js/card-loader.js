@@ -208,7 +208,45 @@ window.CardLoader = (function () {
         }
 
         try {
-            console.log(`[CardLoader] Fetching ${format.toUpperCase()} banlist from API...`);
+            // First, try to load from local banlist.json (primary source - manually maintained)
+            console.log(`[CardLoader] Fetching ${format.toUpperCase()} banlist from local JSON...`);
+            const localResponse = await fetch('../assets/data/banlist.json');
+            
+            if (localResponse.ok) {
+                const localData = await localResponse.json();
+                
+                if (localData[format]) {
+                    const banlistMap = {};
+                    
+                    // Process forbidden cards
+                    if (localData[format].forbidden && Array.isArray(localData[format].forbidden)) {
+                        localData[format].forbidden.forEach(cardName => {
+                            banlistMap[cardName] = 'Forbidden';
+                        });
+                    }
+                    
+                    // Process limited cards
+                    if (localData[format].limited && Array.isArray(localData[format].limited)) {
+                        localData[format].limited.forEach(cardName => {
+                            banlistMap[cardName] = 'Limited';
+                        });
+                    }
+                    
+                    // Process semi-limited cards
+                    if (localData[format].semiLimited && Array.isArray(localData[format].semiLimited)) {
+                        localData[format].semiLimited.forEach(cardName => {
+                            banlistMap[cardName] = 'Semi-Limited';
+                        });
+                    }
+                    
+                    banlistCache[format] = banlistMap;
+                    console.log(`[CardLoader] ${format.toUpperCase()} banlist loaded from local JSON. Last updated: ${localData.lastUpdated || 'unknown'}. Total restricted cards:`, Object.keys(banlistMap).length);
+                    return banlistMap;
+                }
+            }
+            
+            // Fallback to API if local file fails or is missing
+            console.log(`[CardLoader] Local banlist not found, falling back to API for ${format.toUpperCase()}...`);
             const response = await fetch(CONFIG.BANLIST_API_URLS[format]);
 
             if (!response.ok) {
@@ -243,7 +281,7 @@ window.CardLoader = (function () {
             });
 
             banlistCache[format] = banlistMap;
-            console.log(`[CardLoader] ${format.toUpperCase()} banlist loaded successfully. Total restricted cards:`, Object.keys(banlistMap).length);
+            console.log(`[CardLoader] ${format.toUpperCase()} banlist loaded from API. Total restricted cards:`, Object.keys(banlistMap).length);
             return banlistMap;
         } catch (error) {
             console.error(`Failed to fetch ${format} banlist data:`, error);
@@ -367,15 +405,15 @@ window.CardLoader = (function () {
             return;
         }
 
-        // Check banlist status
+        // Check banlist status using the currently selected format (TCG, OCG, or Master Duel)
         let banStatus = null;
         if (!cardInfo.is_dummy && typeof fetchBanlistData === 'function') {
-            // Use cached banlist if available
-            if (!banlistData) banlistData = await fetchBanlistData();
+            // Fetch banlist for the current format (uses cache if available)
+            const currentBanlist = await fetchBanlistData(currentBanlistFormat);
             // Case-insensitive lookup
-            banStatus = banlistData[cardInfo.name] || (() => {
+            banStatus = currentBanlist[cardInfo.name] || (() => {
                 const lowerName = cardInfo.name.toLowerCase();
-                for (const [key, status] of Object.entries(banlistData)) {
+                for (const [key, status] of Object.entries(currentBanlist)) {
                     if (key.toLowerCase() === lowerName) {
                         return status;
                     }

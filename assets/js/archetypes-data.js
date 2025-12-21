@@ -10817,6 +10817,80 @@ const archetypes = [
 
     },
     {
+        name: 'Dragon Link',
+        description: 'A powerful combo-focused strategy that chains together Dragon monsters and Link Summons to build formidable boards, leveraging Rokket, Bystial, and other Dragon engines for explosive plays and consistent end boards.',
+        filepath: 'pages/Dragon Link Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="dragonLinkChain" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#c0c0c0"/>
+                            <stop offset="50%" stop-color="#808080"/>
+                            <stop offset="100%" stop-color="#404040"/>
+                        </linearGradient>
+                        <linearGradient id="dragonLinkFire" x1="0%" y1="100%" x2="0%" y2="0%">
+                            <stop offset="0%" stop-color="#dc2626"/>
+                            <stop offset="50%" stop-color="#f59e0b"/>
+                            <stop offset="100%" stop-color="#fde047"/>
+                        </linearGradient>
+                        <radialGradient id="dragonLinkCore" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#fde047"/>
+                            <stop offset="60%" stop-color="#dc2626"/>
+                            <stop offset="100%" stop-color="#7f1d1d"/>
+                        </radialGradient>
+                        <filter id="dragonLinkGlow">
+                            <feGaussianBlur stdDeviation="2" result="glow"/>
+                            <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Background circle -->
+                    <circle cx="50" cy="50" r="45" fill="#1a1a2e" stroke="#dc2626" stroke-width="2"/>
+                    <!-- Chain links forming a hexagon pattern -->
+                    <g stroke="url(#dragonLinkChain)" stroke-width="4" fill="none">
+                        <!-- Top link -->
+                        <ellipse cx="50" cy="20" rx="12" ry="6" transform="rotate(0 50 20)"/>
+                        <!-- Upper right link -->
+                        <ellipse cx="75" cy="35" rx="12" ry="6" transform="rotate(60 75 35)"/>
+                        <!-- Lower right link -->
+                        <ellipse cx="75" cy="65" rx="12" ry="6" transform="rotate(-60 75 65)"/>
+                        <!-- Bottom link -->
+                        <ellipse cx="50" cy="80" rx="12" ry="6" transform="rotate(0 50 80)"/>
+                        <!-- Lower left link -->
+                        <ellipse cx="25" cy="65" rx="12" ry="6" transform="rotate(60 25 65)"/>
+                        <!-- Upper left link -->
+                        <ellipse cx="25" cy="35" rx="12" ry="6" transform="rotate(-60 25 35)"/>
+                    </g>
+                    <!-- Central dragon emblem -->
+                    <circle cx="50" cy="50" r="18" fill="url(#dragonLinkCore)" filter="url(#dragonLinkGlow)">
+                        <animate attributeName="r" values="18;20;18" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- Dragon head silhouette -->
+                    <path d="M42 55 L50 40 L58 55 L55 52 L50 58 L45 52 Z" fill="#1a1a2e" stroke="#fde047" stroke-width="1"/>
+                    <!-- Dragon eye -->
+                    <circle cx="50" cy="48" r="3" fill="#fde047">
+                        <animate attributeName="opacity" values="1;0.6;1" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- Energy trails connecting links -->
+                    <g stroke="url(#dragonLinkFire)" stroke-width="1.5" fill="none" opacity="0.7">
+                        <path d="M50 26 Q50 38 50 32"/>
+                        <path d="M68 38 Q56 44 62 41"/>
+                        <path d="M68 62 Q56 56 62 59"/>
+                        <path d="M50 74 Q50 62 50 68"/>
+                        <path d="M32 62 Q44 56 38 59"/>
+                        <path d="M32 38 Q44 44 38 41"/>
+                    </g>
+                    <!-- Link marker arrows -->
+                    <g fill="#dc2626">
+                        <polygon points="50,8 46,14 54,14"/>
+                        <polygon points="50,92 46,86 54,86"/>
+                        <polygon points="8,50 14,46 14,54"/>
+                        <polygon points="92,50 86,46 86,54"/>
+                    </g>
+                </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: null,
+
+    },
+    {
         name: 'Dragonmaid',
         description: 'A unique Dragon archetype featuring maids that transform into their dragon forms during battle, creating a dynamic control strategy.',
         filepath: 'pages/Dragonmaid Deck Analysis.html',
