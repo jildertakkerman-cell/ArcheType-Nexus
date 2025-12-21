@@ -1531,18 +1531,34 @@ window.CardLoader = (function () {
 
             const impactColor = forbidden.length > 0 ? 'red' : 'yellow';
 
-            // Enhanced intro with traits
+            // Enhanced intro with traits - generate natural flowing text
             let autoIntro = '';
             if (options.customMessages?.intro) {
                 autoIntro = options.customMessages.intro;
-            } else if (traits.keyLoss && forbidden.length > 0) {
-                autoIntro = `The loss of ${forbidden[0]}${forbidden.length > 1 ? ` and ${forbidden.length - 1} other card${forbidden.length > 2 ? 's' : ''}` : ''} directly impacts the archetype's ${traits.keyLoss}.`;
-            } else if (forbidden.length > 1) {
-                autoIntro = `The ${options.archetypeName} archetype has been significantly impacted by the ${formatName} banlist, with ${forbidden.length} cards forbidden.`;
-            } else if (forbidden.length === 1) {
-                autoIntro = `The ${options.archetypeName} archetype has been impacted by the ${formatName} banlist, with one card forbidden.`;
-            } else {
-                autoIntro = `The ${options.archetypeName} archetype has been moderately restricted by the ${formatName} banlist, with ${limited.length} card${limited.length > 1 ? 's' : ''} limited.`;
+            } else if (forbidden.length > 0) {
+                // Build forbidden card list text
+                const forbiddenText = forbidden.length === 1 
+                    ? `<strong class="text-red-300">${forbidden[0]}</strong>` 
+                    : forbidden.length === 2 
+                        ? `<strong class="text-red-300">${forbidden[0]}</strong> and <strong class="text-red-300">${forbidden[1]}</strong>`
+                        : `<strong class="text-red-300">${forbidden[0]}</strong> and ${forbidden.length - 1} other card${forbidden.length > 2 ? 's' : ''}`;
+                
+                autoIntro = `The ${options.archetypeName} archetype faces significant restrictions on the ${formatName} banlist with ${forbiddenText} forbidden.`;
+                
+                // Add limited context if present
+                if (limited.length > 0) {
+                    autoIntro += ` Additionally, ${limited.length} card${limited.length > 1 ? 's are' : ' is'} limited.`;
+                }
+            } else if (limited.length > 0) {
+                const limitedText = limited.length === 1 
+                    ? `<strong class="text-yellow-300">${limited[0]}</strong>` 
+                    : limited.length === 2 
+                        ? `<strong class="text-yellow-300">${limited[0]}</strong> and <strong class="text-yellow-300">${limited[1]}</strong>`
+                        : `${limited.length} cards`;
+                
+                autoIntro = `The ${options.archetypeName} archetype has been moderately restricted by the ${formatName} banlist, with ${limitedText} limited.`;
+            } else if (semiLimited.length > 0) {
+                autoIntro = `The ${options.archetypeName} archetype has minor restrictions on the ${formatName} banlist, with ${semiLimited.length} card${semiLimited.length > 1 ? 's' : ''} semi-limited.`;
             }
 
             html = `
