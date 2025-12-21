@@ -30064,41 +30064,74 @@ const archetypes = [
         filepath: "pages/Black Dinosaur Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="blackdinoGradient" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#000000;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#8b0000;stop-opacity:1" />
-                            </radialGradient>
+                            <linearGradient id="blackdinoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#1a0a0a;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#2d1515;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="blackdinoBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2a2a2a;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#1a1a1a;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0a0a0a;stop-opacity:1" />
+                            </linearGradient>
                             <filter id="blackdinoGlow">
-                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                                 <feMerge> 
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
+                            <filter id="redGlow">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feFlood flood-color="#ff0000" flood-opacity="0.6"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
                         </defs>
-                        <!-- Dinosaur body -->
-                        <ellipse cx="50" cy="60" rx="25" ry="20" fill="url(#blackdinoGradient)" filter="url(#blackdinoGlow)" stroke="#000000" stroke-width="2"/>
-                        <!-- Head -->
-                        <circle cx="50" cy="35" r="15" fill="url(#blackdinoGradient)" stroke="#000000" stroke-width="1"/>
-                        <!-- Eyes -->
-                        <circle cx="45" cy="32" r="3" fill="#ff0000">
-                            <animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="55" cy="32" r="3" fill="#ff0000">
-                            <animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite"/>
-                        </circle>
-                        <!-- Spikes -->
-                        <path d="M35 50 L40 40 L45 50" fill="#000000"/>
-                        <path d="M55 50 L60 40 L65 50" fill="#000000"/>
+                        <!-- Background -->
+                        <rect x="0" y="0" width="100" height="100" rx="8" fill="url(#blackdinoBg)"/>
+                        <!-- T-Rex body -->
+                        <ellipse cx="48" cy="55" rx="22" ry="16" fill="url(#blackdinoBody)" stroke="#3a3a3a" stroke-width="1.5"/>
+                        <!-- Powerful back leg -->
+                        <path d="M38 68 L35 82 L40 82 L42 72" fill="url(#blackdinoBody)" stroke="#3a3a3a" stroke-width="1"/>
+                        <path d="M55 68 L58 82 L63 82 L60 72" fill="url(#blackdinoBody)" stroke="#3a3a3a" stroke-width="1"/>
                         <!-- Tail -->
-                        <path d="M75 60 Q85 55 90 60 Q85 65 75 60" fill="url(#blackdinoGradient)" stroke="#000000" stroke-width="1">
-                            <animate attributeName="d" values="M75 60 Q85 55 90 60 Q85 65 75 60;M75 60 Q90 50 95 60 Q90 70 75 60" dur="2s" repeatCount="indefinite"/>
-                        </path>
-                        <!-- Fire breath -->
-                        <path d="M30 35 Q20 30 15 35 Q20 40 30 35" fill="#ff4500" opacity="0.8">
-                            <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
-                        </path>
-                        <text x="50" y="95" text-anchor="middle" font-size="9" fill="#000000" font-weight="bold">Black Dinosaur</text>
+                        <path d="M68 52 Q78 48 85 52 Q82 56 75 58 Q70 56 68 54" fill="url(#blackdinoBody)" stroke="#3a3a3a" stroke-width="1"/>
+                        <!-- Spinal ridges -->
+                        <path d="M32 48 L36 40 L40 48" fill="#1a1a1a" stroke="#3a3a3a" stroke-width="0.5"/>
+                        <path d="M40 46 L44 38 L48 46" fill="#1a1a1a" stroke="#3a3a3a" stroke-width="0.5"/>
+                        <path d="M48 45 L52 37 L56 45" fill="#1a1a1a" stroke="#3a3a3a" stroke-width="0.5"/>
+                        <!-- Neck -->
+                        <path d="M28 52 Q22 45 20 38" fill="none" stroke="url(#blackdinoBody)" stroke-width="10" stroke-linecap="round"/>
+                        <!-- Head -->
+                        <ellipse cx="18" cy="32" rx="12" ry="8" fill="url(#blackdinoBody)" stroke="#3a3a3a" stroke-width="1"/>
+                        <!-- Jaw -->
+                        <path d="M8 34 L6 38 L18 36 L18 34" fill="url(#blackdinoBody)" stroke="#3a3a3a" stroke-width="0.5"/>
+                        <!-- Teeth -->
+                        <path d="M8 34 L9 37 L10 34 L11 37 L12 34 L13 37 L14 34 L15 37 L16 34" fill="none" stroke="#e8e8e8" stroke-width="0.8"/>
+                        <!-- Eye -->
+                        <ellipse cx="14" cy="30" rx="3" ry="2.5" fill="#1a0000" stroke="#660000" stroke-width="0.5"/>
+                        <circle cx="14" cy="30" r="1.5" fill="#cc0000" filter="url(#redGlow)">
+                            <animate attributeName="r" values="1.5;2;1.5" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Small arms -->
+                        <path d="M32 55 L28 60 L26 58" fill="none" stroke="url(#blackdinoBody)" stroke-width="3" stroke-linecap="round"/>
+                        <!-- Dark aura particles -->
+                        <circle cx="75" cy="35" r="2" fill="#660000" opacity="0.6">
+                            <animate attributeName="cy" values="35;30;35" dur="3s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.6;0.2;0.6" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="82" cy="42" r="1.5" fill="#660000" opacity="0.5">
+                            <animate attributeName="cy" values="42;36;42" dur="2.5s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.5;0.1;0.5" dur="2.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="70" cy="28" r="1" fill="#880000" opacity="0.4">
+                            <animate attributeName="cy" values="28;22;28" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Label -->
+                        <text x="50" y="95" text-anchor="middle" font-size="7" fill="#aa4444" font-weight="bold">BLACK DINOSAUR</text>
                     </svg>`,
         firstReleaseDate: '2005-10-20',
         latestReleaseDate: '2014-12-24',

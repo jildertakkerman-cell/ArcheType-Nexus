@@ -12,16 +12,52 @@ window.CardLoader = (function () {
     const CONFIG = {
         IMAGE_BASE_URL: 'https://storage.googleapis.com/yugioh-card-images-archetype-nexus/cards',
         API_URL: 'https://db.ygoprodeck.com/api/v7/cardinfo.php',
-        BANLIST_API_URL: 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg',
+        BANLIST_API_URLS: {
+            tcg: 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg',
+            ocg: 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=ocg',
+            masterduel: 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=masterduel'
+        },
+        BANLIST_API_URL: 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg', // Legacy support
         IMAGE_EXTENSIONS: ['.png', '.jpg'],
         CARD_BACK_URL: 'https://images.ygoprodeck.com/images/cards/back_high.jpg'
     };
 
+    // Banlist format display names and icons
+    // NOTE: Full class names must be spelled out for Tailwind to detect them at build time
+    const BANLIST_FORMATS = {
+        tcg: { 
+            name: 'TCG', 
+            icon: 'fa-globe-americas', 
+            color: 'blue',
+            activeClasses: 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 border-2 border-blue-400',
+            inactiveClasses: 'bg-gray-800 text-gray-400 border-2 border-gray-700 hover:border-gray-500 hover:text-gray-200'
+        },
+        ocg: { 
+            name: 'OCG', 
+            icon: 'fa-globe-asia', 
+            color: 'red',
+            activeClasses: 'bg-red-600 text-white shadow-lg shadow-red-500/30 border-2 border-red-400',
+            inactiveClasses: 'bg-gray-800 text-gray-400 border-2 border-gray-700 hover:border-gray-500 hover:text-gray-200'
+        },
+        masterduel: { 
+            name: 'Master Duel', 
+            icon: 'fa-gamepad', 
+            color: 'purple',
+            activeClasses: 'bg-purple-600 text-white shadow-lg shadow-purple-500/30 border-2 border-purple-400',
+            inactiveClasses: 'bg-gray-800 text-gray-400 border-2 border-gray-700 hover:border-gray-500 hover:text-gray-200'
+        }
+    };
+
     // Internal state
     const cardDataCache = {};
-    const banlistCache = {};
+    const banlistCache = {
+        tcg: {},
+        ocg: {},
+        masterduel: {}
+    };
     const discordLinksCache = {};
     let banlistData = null;
+    let currentBanlistFormat = 'tcg'; // Default format
     let popup = null;
     let activePopup = null;
     let lastShown = 0;
@@ -156,16 +192,24 @@ window.CardLoader = (function () {
 
     /**
      * Fetch banlist data from YGOProDeck API
-     * Returns a map of card names to their banlist status
+     * @param {string} format - The format to fetch ('tcg', 'ocg', or 'masterduel')
+     * @returns {Promise<Object>} Object mapping card names to their banlist status
      */
-    async function fetchBanlistData() {
-        if (banlistData) {
-            return banlistData;
+    async function fetchBanlistData(format = 'tcg') {
+        // Validate format
+        if (!CONFIG.BANLIST_API_URLS[format]) {
+            console.warn(`[CardLoader] Invalid banlist format: ${format}, defaulting to tcg`);
+            format = 'tcg';
+        }
+
+        // Return cached data if available
+        if (Object.keys(banlistCache[format]).length > 0) {
+            return banlistCache[format];
         }
 
         try {
-            console.log('[CardLoader] Fetching banlist from API...');
-            const response = await fetch(CONFIG.BANLIST_API_URL);
+            console.log(`[CardLoader] Fetching ${format.toUpperCase()} banlist from API...`);
+            const response = await fetch(CONFIG.BANLIST_API_URLS[format]);
 
             if (!response.ok) {
                 throw new Error(`Banlist API returned status ${response.status}`);
@@ -177,11 +221,16 @@ window.CardLoader = (function () {
                 throw new Error('Invalid banlist API response format');
             }
 
+            // Determine which banlist_info key to use based on format
+            const banlistKey = format === 'tcg' ? 'ban_tcg' : 
+                               format === 'ocg' ? 'ban_ocg' : 
+                               'ban_masterduel';
+
             // Create a map of card name -> banlist status
             const banlistMap = {};
             data.data.forEach(card => {
-                if (card.banlist_info && card.banlist_info.ban_tcg) {
-                    const status = card.banlist_info.ban_tcg;
+                if (card.banlist_info && card.banlist_info[banlistKey]) {
+                    const status = card.banlist_info[banlistKey];
                     // Map API status to our format
                     if (status === 'Banned') {
                         banlistMap[card.name] = 'Forbidden';
@@ -193,11 +242,11 @@ window.CardLoader = (function () {
                 }
             });
 
-            banlistData = banlistMap;
-            console.log('[CardLoader] Banlist loaded successfully. Total restricted cards:', Object.keys(banlistMap).length);
+            banlistCache[format] = banlistMap;
+            console.log(`[CardLoader] ${format.toUpperCase()} banlist loaded successfully. Total restricted cards:`, Object.keys(banlistMap).length);
             return banlistMap;
         } catch (error) {
-            console.error('Failed to fetch banlist data:', error);
+            console.error(`Failed to fetch ${format} banlist data:`, error);
             // Return empty object on error
             return {};
         }
@@ -980,37 +1029,7 @@ window.CardLoader = (function () {
     // BANLIST FUNCTIONALITY
     // ========================================
 
-    /**
-     * Fetch all banned cards from the API
-     * @returns {Promise<Object>} Object mapping card names to their banlist status
-     */
-    async function fetchBanlistData() {
-        if (Object.keys(banlistCache).length > 0) {
-            return banlistCache;
-        }
-
-        try {
-            const response = await fetch(CONFIG.BANLIST_API_URL);
-            if (!response.ok) {
-                throw new Error(`Banlist API error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const bannedCards = data.data;
-
-            bannedCards.forEach(card => {
-                if (card.banlist_info && card.banlist_info.ban_tcg) {
-                    banlistCache[card.name] = card.banlist_info.ban_tcg;
-                }
-            });
-
-            console.log('[CardLoader] Banlist data cached:', Object.keys(banlistCache).length, 'cards');
-            return banlistCache;
-        } catch (error) {
-            console.error('[CardLoader] Failed to fetch banlist data:', error);
-            return {};
-        }
-    }
+    // Note: fetchBanlistData is defined earlier in the file with multi-format support
 
 
     /**
@@ -1105,6 +1124,9 @@ window.CardLoader = (function () {
             return;
         }
 
+        // Store render params for format switching
+        container._banlistParams = { cards, options };
+
         // Detect page color scheme from existing headers or accent classes
         const detectPageColors = () => {
             // Look for existing h2/h3 elements to detect text color
@@ -1161,10 +1183,10 @@ window.CardLoader = (function () {
             }
 
             // Inject the header if it doesn't exist
-            if (!parentSection.querySelector('h2')) {
+            if (!parentSection.querySelector('h2.banlist-header')) {
                 const header = document.createElement('h2');
-                header.className = `text-xl md:text-3xl font-bold ${pageColors.headerColor} mb-6 text-center`;
-                header.innerHTML = '<i class="fas fa-gavel mr-2"></i>TCG Banlist Impact';
+                header.className = `banlist-header text-xl md:text-3xl font-bold ${pageColors.headerColor} mb-6 text-center`;
+                header.innerHTML = `<i class="fas fa-gavel mr-2"></i><span class="banlist-title-text">Banlist Impact</span>`;
                 if (parentSection === container) {
                     container.insertBefore(header, container.firstChild);
                 } else {
@@ -1173,8 +1195,70 @@ window.CardLoader = (function () {
             }
         }
 
-        // Show loading state
-        container.innerHTML = '<div class="card p-6"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading banlist data...</p></div>';
+        // Create format toggle buttons HTML
+        const formatToggleHtml = `
+            <div class="banlist-format-toggle flex justify-center gap-2 mb-6 flex-wrap">
+                ${Object.entries(BANLIST_FORMATS).map(([format, info]) => `
+                    <button 
+                        class="banlist-format-btn px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center gap-2
+                            ${format === currentBanlistFormat ? info.activeClasses : info.inactiveClasses}"
+                        data-format="${format}"
+                        ${format === currentBanlistFormat ? 'disabled' : ''}
+                    >
+                        <i class="fas ${info.icon}"></i>
+                        ${info.name}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+
+        // Show loading state with format toggle
+        container.innerHTML = formatToggleHtml + '<div class="banlist-content"><div class="card p-6"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading banlist data...</p></div></div>';
+
+        // Add click handlers for format buttons
+        container.querySelectorAll('.banlist-format-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const newFormat = e.currentTarget.dataset.format;
+                if (newFormat !== currentBanlistFormat) {
+                    currentBanlistFormat = newFormat;
+                    // Update header title
+                    const titleSpan = parentSection?.querySelector('.banlist-title-text');
+                    if (titleSpan) {
+                        titleSpan.textContent = `${BANLIST_FORMATS[newFormat].name} Banlist Impact`;
+                    }
+                    // Re-render with new format
+                    await renderBanlistContent(container, cards, options, newFormat, pageColors);
+                }
+            });
+        });
+
+        // Render content for current format
+        await renderBanlistContent(container, cards, options, currentBanlistFormat, pageColors);
+    }
+
+    /**
+     * Render the banlist content for a specific format
+     * @private
+     */
+    async function renderBanlistContent(container, cards, options, format, pageColors) {
+        const contentContainer = container.querySelector('.banlist-content');
+        if (!contentContainer) return;
+
+        // Update button states
+        container.querySelectorAll('.banlist-format-btn').forEach(btn => {
+            const btnFormat = btn.dataset.format;
+            const info = BANLIST_FORMATS[btnFormat];
+            if (btnFormat === format) {
+                btn.className = `banlist-format-btn px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center gap-2 ${info.activeClasses}`;
+                btn.disabled = true;
+            } else {
+                btn.className = `banlist-format-btn px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center gap-2 ${info.inactiveClasses}`;
+                btn.disabled = false;
+            }
+        });
+
+        // Show loading
+        contentContainer.innerHTML = '<div class="card p-6"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading ' + BANLIST_FORMATS[format].name + ' banlist...</p></div>';
 
         // Auto-extract related cards from cache and merge with manual ones
         let relatedCards = options.relatedCards || [];
@@ -1195,8 +1279,8 @@ window.CardLoader = (function () {
 
         console.log(`[CardLoader] Final related cards: ${relatedCards.length} manual + ${merged.length - relatedCards.length} auto-extracted = ${merged.length} total`);
 
-        // Fetch real banlist data from API
-        const banlist = await fetchBanlistData();
+        // Fetch real banlist data from API for the selected format
+        const banlist = await fetchBanlistData(format);
 
         // Helper function for case-insensitive banlist lookup
         function getBanlistStatus(cardName, banlistMap) {
@@ -1227,6 +1311,7 @@ window.CardLoader = (function () {
 
         // Extract archetype traits for dynamic messaging
         const traits = options.archetypeTraits || {};
+        const formatName = BANLIST_FORMATS[format].name;
 
         let html = '';
 
@@ -1234,9 +1319,9 @@ window.CardLoader = (function () {
             // Auto-generated unrestricted message with optional traits
             let unrestrictedMsg = '';
             if (traits.coreMechanic) {
-                unrestrictedMsg = `The ${options.archetypeName} archetype, with its ${traits.coreMechanic}, operates at full power with no restrictions on the current TCG banlist.`;
+                unrestrictedMsg = `The ${options.archetypeName} archetype, with its ${traits.coreMechanic}, operates at full power with no restrictions on the current ${formatName} banlist.`;
             } else {
-                unrestrictedMsg = `As of the current TCG format, the ${options.archetypeName} archetype is entirely unrestricted, allowing it to operate at full capacity.`;
+                unrestrictedMsg = `As of the current ${formatName} format, the ${options.archetypeName} archetype is entirely unrestricted, allowing it to operate at full capacity.`;
             }
 
             html = `
@@ -1306,7 +1391,7 @@ window.CardLoader = (function () {
             if (traits.supportReliance) {
                 relatedImpactMsg = `While the ${options.archetypeName} core remains untouched, the archetype's ${traits.supportReliance} means restrictions on generic support cards do have an impact.`;
             } else {
-                relatedImpactMsg = `The ${options.archetypeName} archetype itself is largely untouched by the TCG banlist, but key synergistic cards it relies on are affected.`;
+                relatedImpactMsg = `The ${options.archetypeName} archetype itself is largely untouched by the ${formatName} banlist, but key synergistic cards it relies on are affected.`;
             }
 
             const totalRelatedRestricted = relatedForbidden.length + relatedLimited.length + relatedSemiLimited.length;
@@ -1415,11 +1500,11 @@ window.CardLoader = (function () {
             } else if (traits.keyLoss && forbidden.length > 0) {
                 autoIntro = `The loss of ${forbidden[0]}${forbidden.length > 1 ? ` and ${forbidden.length - 1} other card${forbidden.length > 2 ? 's' : ''}` : ''} directly impacts the archetype's ${traits.keyLoss}.`;
             } else if (forbidden.length > 1) {
-                autoIntro = `The ${options.archetypeName} archetype has been significantly impacted by the TCG banlist, with ${forbidden.length} cards forbidden.`;
+                autoIntro = `The ${options.archetypeName} archetype has been significantly impacted by the ${formatName} banlist, with ${forbidden.length} cards forbidden.`;
             } else if (forbidden.length === 1) {
-                autoIntro = `The ${options.archetypeName} archetype has been impacted by the TCG banlist, with one card forbidden.`;
+                autoIntro = `The ${options.archetypeName} archetype has been impacted by the ${formatName} banlist, with one card forbidden.`;
             } else {
-                autoIntro = `The ${options.archetypeName} archetype has been moderately restricted by the TCG banlist, with ${limited.length} card${limited.length > 1 ? 's' : ''} limited.`;
+                autoIntro = `The ${options.archetypeName} archetype has been moderately restricted by the ${formatName} banlist, with ${limited.length} card${limited.length > 1 ? 's' : ''} limited.`;
             }
 
             html = `
@@ -1585,7 +1670,7 @@ window.CardLoader = (function () {
             html += `</div>`;
         }
 
-        container.innerHTML = html;
+        contentContainer.innerHTML = html;
     }
 
     /**
