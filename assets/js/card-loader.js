@@ -25,23 +25,23 @@ window.CardLoader = (function () {
     // Banlist format display names and icons
     // NOTE: Full class names must be spelled out for Tailwind to detect them at build time
     const BANLIST_FORMATS = {
-        tcg: { 
-            name: 'TCG', 
-            icon: 'fa-globe-americas', 
+        tcg: {
+            name: 'TCG',
+            icon: 'fa-globe-americas',
             color: 'blue',
             activeClasses: 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 border-2 border-blue-400',
             inactiveClasses: 'bg-gray-800 text-gray-400 border-2 border-gray-700 hover:border-gray-500 hover:text-gray-200'
         },
-        ocg: { 
-            name: 'OCG', 
-            icon: 'fa-globe-asia', 
+        ocg: {
+            name: 'OCG',
+            icon: 'fa-globe-asia',
             color: 'red',
             activeClasses: 'bg-red-600 text-white shadow-lg shadow-red-500/30 border-2 border-red-400',
             inactiveClasses: 'bg-gray-800 text-gray-400 border-2 border-gray-700 hover:border-gray-500 hover:text-gray-200'
         },
-        masterduel: { 
-            name: 'Master Duel', 
-            icon: 'fa-gamepad', 
+        masterduel: {
+            name: 'Master Duel',
+            icon: 'fa-gamepad',
             color: 'purple',
             activeClasses: 'bg-purple-600 text-white shadow-lg shadow-purple-500/30 border-2 border-purple-400',
             inactiveClasses: 'bg-gray-800 text-gray-400 border-2 border-gray-700 hover:border-gray-500 hover:text-gray-200'
@@ -211,40 +211,40 @@ window.CardLoader = (function () {
             // First, try to load from local banlist.json (primary source - manually maintained)
             console.log(`[CardLoader] Fetching ${format.toUpperCase()} banlist from local JSON...`);
             const localResponse = await fetch('../assets/data/banlist.json');
-            
+
             if (localResponse.ok) {
                 const localData = await localResponse.json();
-                
+
                 if (localData[format]) {
                     const banlistMap = {};
-                    
+
                     // Process forbidden cards
                     if (localData[format].forbidden && Array.isArray(localData[format].forbidden)) {
                         localData[format].forbidden.forEach(cardName => {
                             banlistMap[cardName] = 'Forbidden';
                         });
                     }
-                    
+
                     // Process limited cards
                     if (localData[format].limited && Array.isArray(localData[format].limited)) {
                         localData[format].limited.forEach(cardName => {
                             banlistMap[cardName] = 'Limited';
                         });
                     }
-                    
+
                     // Process semi-limited cards
                     if (localData[format].semiLimited && Array.isArray(localData[format].semiLimited)) {
                         localData[format].semiLimited.forEach(cardName => {
                             banlistMap[cardName] = 'Semi-Limited';
                         });
                     }
-                    
+
                     banlistCache[format] = banlistMap;
                     console.log(`[CardLoader] ${format.toUpperCase()} banlist loaded from local JSON. Last updated: ${localData.lastUpdated || 'unknown'}. Total restricted cards:`, Object.keys(banlistMap).length);
                     return banlistMap;
                 }
             }
-            
+
             // Fallback to API if local file fails or is missing
             console.log(`[CardLoader] Local banlist not found, falling back to API for ${format.toUpperCase()}...`);
             const response = await fetch(CONFIG.BANLIST_API_URLS[format]);
@@ -260,9 +260,9 @@ window.CardLoader = (function () {
             }
 
             // Determine which banlist_info key to use based on format
-            const banlistKey = format === 'tcg' ? 'ban_tcg' : 
-                               format === 'ocg' ? 'ban_ocg' : 
-                               'ban_masterduel';
+            const banlistKey = format === 'tcg' ? 'ban_tcg' :
+                format === 'ocg' ? 'ban_ocg' :
+                    'ban_masterduel';
 
             // Create a map of card name -> banlist status
             const banlistMap = {};
@@ -1086,7 +1086,7 @@ window.CardLoader = (function () {
             }
 
             const data = await response.json();
-            
+
             // Convert array to object for faster lookup
             data.forEach(item => {
                 discordLinksCache[item.archetype.toLowerCase()] = item.link;
@@ -1537,25 +1537,25 @@ window.CardLoader = (function () {
                 autoIntro = options.customMessages.intro;
             } else if (forbidden.length > 0) {
                 // Build forbidden card list text
-                const forbiddenText = forbidden.length === 1 
-                    ? `<strong class="text-red-300">${forbidden[0]}</strong>` 
-                    : forbidden.length === 2 
+                const forbiddenText = forbidden.length === 1
+                    ? `<strong class="text-red-300">${forbidden[0]}</strong>`
+                    : forbidden.length === 2
                         ? `<strong class="text-red-300">${forbidden[0]}</strong> and <strong class="text-red-300">${forbidden[1]}</strong>`
                         : `<strong class="text-red-300">${forbidden[0]}</strong> and ${forbidden.length - 1} other card${forbidden.length > 2 ? 's' : ''}`;
-                
+
                 autoIntro = `The ${options.archetypeName} archetype faces significant restrictions on the ${formatName} banlist with ${forbiddenText} forbidden.`;
-                
+
                 // Add limited context if present
                 if (limited.length > 0) {
                     autoIntro += ` Additionally, ${limited.length} card${limited.length > 1 ? 's are' : ' is'} limited.`;
                 }
             } else if (limited.length > 0) {
-                const limitedText = limited.length === 1 
-                    ? `<strong class="text-yellow-300">${limited[0]}</strong>` 
-                    : limited.length === 2 
+                const limitedText = limited.length === 1
+                    ? `<strong class="text-yellow-300">${limited[0]}</strong>`
+                    : limited.length === 2
                         ? `<strong class="text-yellow-300">${limited[0]}</strong> and <strong class="text-yellow-300">${limited[1]}</strong>`
                         : `${limited.length} cards`;
-                
+
                 autoIntro = `The ${options.archetypeName} archetype has been moderately restricted by the ${formatName} banlist, with ${limitedText} limited.`;
             } else if (semiLimited.length > 0) {
                 autoIntro = `The ${options.archetypeName} archetype has minor restrictions on the ${formatName} banlist, with ${semiLimited.length} card${semiLimited.length > 1 ? 's' : ''} semi-limited.`;
@@ -2038,6 +2038,129 @@ window.CardLoader = (function () {
     }
 
     /**
+     * Inject AI-generated content warnings into combo sections
+     * Automatically detects combo sections and adds warning banners
+     */
+    function injectComboWarnings() {
+        // Skip if already injected
+        if (document.querySelector('.ai-combo-warning')) {
+            return;
+        }
+
+        // Infer page theme for consistent styling
+        const getTheme = () => {
+            const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+            const rgb = bodyBg.match(/\d+/g);
+            const isDark = rgb ? (parseInt(rgb[0]) * 0.299 + parseInt(rgb[1]) * 0.587 + parseInt(rgb[2]) * 0.114) < 128 : true;
+
+            // Try to detect accent color from existing elements
+            let accentColor = '#f59e0b'; // Default amber
+            const accentEl = document.querySelector('.text-accent, [class*="text-accent"]');
+            if (accentEl) {
+                const color = window.getComputedStyle(accentEl).color;
+                if (color && color !== 'rgb(0, 0, 0)') {
+                    accentColor = color;
+                }
+            }
+
+            return { isDark, accentColor };
+        };
+
+        const theme = getTheme();
+
+        // Create warning banner HTML
+        const createWarningBanner = () => {
+            const warning = document.createElement('div');
+            warning.className = 'ai-combo-warning';
+            warning.style.cssText = `
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 16px 20px;
+                margin: 16px 0;
+                border-radius: 12px;
+                background: ${theme.isDark ? 'rgba(251, 191, 36, 0.1)' : 'rgba(251, 191, 36, 0.15)'};
+                border: 1px solid ${theme.isDark ? 'rgba(251, 191, 36, 0.3)' : 'rgba(251, 191, 36, 0.5)'};
+                font-size: 0.875rem;
+                line-height: 1.5;
+            `;
+
+            warning.innerHTML = `
+                <div style="flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: rgba(251, 191, 36, 0.2); border-radius: 50%; margin-top: 2px;">
+                    <i class="fas fa-robot" style="color: #fbbf24; font-size: 12px;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: #fbbf24; margin-bottom: 4px;">
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 6px; font-size: 0.75rem;"></i>Unverified AI Content
+                    </div>
+                    <div style="color: ${theme.isDark ? '#d1d5db' : '#4b5563'}; font-size: 0.8rem; margin-bottom: 8px;">
+                        This combo line is AI-generated and may contain errors or illegal plays (e.g., banned cards).
+                    </div>
+                    <a href="Replay-Converter.html" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1f2937; font-weight: 600; font-size: 0.75rem; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);"><i class="fas fa-video"></i> Know the correct line? Submit a Replay to fix this guide <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></a>
+                    </div>
+                </div>
+            `;
+
+            return warning;
+        };
+
+        // Detection patterns for combo sections
+        const comboPatterns = [
+            /combo/i,
+            /one[- ]card/i,
+            /starter/i,
+            /endboard/i,
+            /end[- ]?board/i
+        ];
+
+        // 1. Find combo section headings (h2, h3) and inject warning after them
+        const headings = document.querySelectorAll('h2, h3');
+        let warningInjected = false; // Only inject ONE per page
+
+        for (const heading of headings) {
+            if (warningInjected) break; // Only ONE warning per page
+            const text = heading.textContent || '';
+            const matchesCombo = comboPatterns.some(pattern => pattern.test(text));
+
+            if (matchesCombo) {
+                // Find the parent section or card container
+                const section = heading.closest('section') || heading.closest('.card') || heading.parentElement;
+
+                // Avoid duplicate warnings in the same section
+                if (section) { // Only inject if we found a valid section
+                    warningInjected = true;
+
+                    // Insert warning after the heading
+                    const warning = createWarningBanner();
+                    heading.insertAdjacentElement('afterend', warning);
+                }
+            }
+        }
+
+        // 2. Handle dynamic combo system containers (data-combo-system attribute)
+        const comboContainers = document.querySelectorAll('[data-combo-system]');
+        comboContainers.forEach(container => {
+            if (!warningInjected && !container.querySelector('.ai-combo-warning')) {
+                const warning = createWarningBanner();
+                container.insertAdjacentElement('afterbegin', warning);
+                warningInjected = true;
+            }
+        });
+
+        // 3. Handle combo-selector-container (dynamic combos)
+        const selectorContainers = document.querySelectorAll('#combo-selector-container, [id*="combo-selector"]');
+        selectorContainers.forEach(container => {
+            const parent = container.parentElement;
+            if (!warningInjected && parent && !parent.querySelector('.ai-combo-warning')) {
+                const warning = createWarningBanner();
+                container.insertAdjacentElement('beforebegin', warning);
+            }
+        });
+
+        console.log('[CardLoader] AI combo warnings injected');
+    }
+
+    /**
      * Clear the cache
      */
     function clearCache() {
@@ -2082,12 +2205,20 @@ window.CardLoader = (function () {
         setMaterialsDebug: (val) => { debugMaterials = !!val; if (window) window.__CARDLOADER_DEBUG_MATERIALS__ = !!val; },
         // Helpers for testing / external usage
         linkifyMaterials,
+        // AI content warning injection
+        injectComboWarnings,
     };
 })();
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', CardLoader.init);
+    document.addEventListener('DOMContentLoaded', () => {
+        CardLoader.init();
+        // Inject AI warnings after a short delay to ensure DOM is fully rendered
+        setTimeout(() => CardLoader.injectComboWarnings(), 500);
+    });
 } else {
     CardLoader.init();
+    // Inject AI warnings after a short delay to ensure DOM is fully rendered
+    setTimeout(() => CardLoader.injectComboWarnings(), 500);
 }

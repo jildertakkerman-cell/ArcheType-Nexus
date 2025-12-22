@@ -151,6 +151,11 @@ class ComboLoader {
 
             console.log(`[ComboLoader] Successfully loaded combo system for ${archetypeName}`);
 
+            // 7. Inject AI-generated content warnings for combo sections
+            if (window.CardLoader && typeof window.CardLoader.injectComboWarnings === 'function') {
+                setTimeout(() => window.CardLoader.injectComboWarnings(), 100);
+            }
+
             return {
                 data: comboData,
                 simulators: simulators,
