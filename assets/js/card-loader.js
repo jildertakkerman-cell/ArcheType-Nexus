@@ -2042,6 +2042,13 @@ window.CardLoader = (function () {
      * Automatically detects combo sections and adds warning banners
      */
     function injectComboWarnings() {
+        // Skip if combos are verified (meta tag opt-out)
+        const verifiedMeta = document.querySelector('meta[name="combos-verified"]');
+        if (verifiedMeta && verifiedMeta.content === 'true') {
+            console.log('[CardLoader] Combos marked as verified, skipping AI warning injection');
+            return;
+        }
+
         // Skip if already injected
         if (document.querySelector('.ai-combo-warning')) {
             return;
