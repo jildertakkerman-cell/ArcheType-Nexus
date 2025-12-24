@@ -19,7 +19,9 @@ window.CardLoader = (function () {
         },
         BANLIST_API_URL: 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg', // Legacy support
         IMAGE_EXTENSIONS: ['.png', '.jpg'],
-        CARD_BACK_URL: 'https://images.ygoprodeck.com/images/cards/back_high.jpg'
+        CARD_BACK_URL: 'https://images.ygoprodeck.com/images/cards/back_high.jpg',
+        // TCGplayer affiliate tag for price links (leave empty if not using affiliate program)
+        TCGPLAYER_AFFILIATE_TAG: ''
     };
 
     // Banlist format display names and icons
@@ -912,6 +914,65 @@ window.CardLoader = (function () {
     }
 
     /**
+     * Format price section HTML for card popup
+     * Uses prices from YGOProDeck API (card_prices array)
+     * @param {Object} cardInfo - Card data object from API
+     * @returns {string} HTML string for price section
+     */
+    function formatPriceSection(cardInfo) {
+        if (!cardInfo || !cardInfo.card_prices || !cardInfo.card_prices[0]) {
+            return '';
+        }
+
+        const prices = cardInfo.card_prices[0];
+        const tcgPrice = parseFloat(prices.tcgplayer_price);
+        const cmPrice = parseFloat(prices.cardmarket_price);
+
+        // If both prices are 0 or missing, don't show price section
+        if ((!tcgPrice || tcgPrice === 0) && (!cmPrice || cmPrice === 0)) {
+            return '';
+        }
+
+        const encodedName = encodeURIComponent(cardInfo.name);
+
+        // Build TCGplayer URL with optional affiliate tag
+        let tcgUrl = `https://www.tcgplayer.com/search/yugioh/product?q=${encodedName}`;
+        if (CONFIG.TCGPLAYER_AFFILIATE_TAG) {
+            tcgUrl += `&utm_campaign=affiliate&utm_medium=${CONFIG.TCGPLAYER_AFFILIATE_TAG}`;
+        }
+
+        // Cardmarket URL
+        const cmUrl = `https://www.cardmarket.com/en/YuGiOh/Products/Search?searchString=${encodedName}`;
+
+        let priceHtml = '<div class="mt-3 pt-2 border-t border-gray-700">';
+        priceHtml += '<div class="text-xs text-gray-400 mb-1">💰 Prices</div>';
+        priceHtml += '<div class="flex flex-wrap gap-3 text-xs">';
+
+        // TCGplayer price
+        if (tcgPrice && tcgPrice > 0) {
+            priceHtml += `<a href="${tcgUrl}" target="_blank" rel="noopener noreferrer" 
+                class="text-blue-400 hover:text-blue-300 hover:underline transition-colors flex items-center gap-1">
+                <span class="text-green-400">$${tcgPrice.toFixed(2)}</span>
+                <span class="text-gray-500">TCGplayer</span>
+                <i class="fas fa-external-link-alt text-[10px] opacity-60"></i>
+            </a>`;
+        }
+
+        // Cardmarket price
+        if (cmPrice && cmPrice > 0) {
+            priceHtml += `<a href="${cmUrl}" target="_blank" rel="noopener noreferrer" 
+                class="text-blue-400 hover:text-blue-300 hover:underline transition-colors flex items-center gap-1">
+                <span class="text-green-400">€${cmPrice.toFixed(2)}</span>
+                <span class="text-gray-500">Cardmarket</span>
+                <i class="fas fa-external-link-alt text-[10px] opacity-60"></i>
+            </a>`;
+        }
+
+        priceHtml += '</div></div>';
+        return priceHtml;
+    }
+
+    /**
      * Show popup with card details
      */
     function showPopup(event, cardName) {
@@ -969,6 +1030,7 @@ window.CardLoader = (function () {
                 <div class="flex-1 overflow-y-auto" style="min-height: 0;">
                     ${formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name)}
                     ${stats}
+                    ${formatPriceSection(cardInfo)}
                 </div>
             </div>
         `;
