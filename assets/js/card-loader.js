@@ -2173,58 +2173,59 @@ window.CardLoader = (function () {
             return warning;
         };
 
-        // Detection patterns for combo sections
-        const comboPatterns = [
-            /combo/i,
-            /one[- ]card/i,
-            /starter/i,
-            /endboard/i,
-            /end[- ]?board/i
-        ];
+        // Detection: Only match headings where the word "combo" appears as a significant part
+        // This avoids false positives like table cells with "Starter" or sections mentioning "Endboard"
+        const isComboHeading = (text) => {
+            // Must contain "combo" as a word (not just "combination" etc)
+            // Patterns like "Combo Lines", "One-Card Combo", "Basic Combos" should match
+            return /\bcombo(?:s|es)?\b/i.test(text);
+        };
 
-        // 1. Find combo section headings (h2, h3) and inject warning after them
-        const headings = document.querySelectorAll('h2, h3');
-        let warningInjected = false; // Only inject ONE per page
+        let warningInjected = false;
 
-        for (const heading of headings) {
-            if (warningInjected) break; // Only ONE warning per page
-            const text = heading.textContent || '';
-            const matchesCombo = comboPatterns.some(pattern => pattern.test(text));
+        // Priority 1: Handle combo-selector-container first (dynamic combo system UI)
+        const selectorContainers = document.querySelectorAll('#combo-selector-container, [id*="combo-selector"]');
+        for (const container of selectorContainers) {
+            if (warningInjected) break;
+            const parent = container.parentElement;
+            if (parent && !parent.querySelector('.ai-combo-warning')) {
+                const warning = createWarningBanner();
+                container.insertAdjacentElement('beforebegin', warning);
+                warningInjected = true;
+            }
+        }
 
-            if (matchesCombo) {
-                // Find the parent section or card container
-                const section = heading.closest('section') || heading.closest('.card') || heading.parentElement;
-
-                // Avoid duplicate warnings in the same section
-                if (section) { // Only inject if we found a valid section
-                    warningInjected = true;
-
-                    // Insert warning after the heading
+        // Priority 2: Handle data-combo-system attribute containers
+        if (!warningInjected) {
+            const comboContainers = document.querySelectorAll('[data-combo-system]');
+            for (const container of comboContainers) {
+                if (warningInjected) break;
+                if (!container.querySelector('.ai-combo-warning')) {
                     const warning = createWarningBanner();
-                    heading.insertAdjacentElement('afterend', warning);
+                    container.insertAdjacentElement('afterbegin', warning);
+                    warningInjected = true;
                 }
             }
         }
 
-        // 2. Handle dynamic combo system containers (data-combo-system attribute)
-        const comboContainers = document.querySelectorAll('[data-combo-system]');
-        comboContainers.forEach(container => {
-            if (!warningInjected && !container.querySelector('.ai-combo-warning')) {
-                const warning = createWarningBanner();
-                container.insertAdjacentElement('afterbegin', warning);
-                warningInjected = true;
-            }
-        });
+        // Priority 3: Find combo section headings (h2, h3) only if no dynamic combo system found
+        // Only match headings that explicitly mention "combo" in the title
+        if (!warningInjected) {
+            const headings = document.querySelectorAll('h2, h3');
+            for (const heading of headings) {
+                if (warningInjected) break;
+                const text = heading.textContent || '';
 
-        // 3. Handle combo-selector-container (dynamic combos)
-        const selectorContainers = document.querySelectorAll('#combo-selector-container, [id*="combo-selector"]');
-        selectorContainers.forEach(container => {
-            const parent = container.parentElement;
-            if (!warningInjected && parent && !parent.querySelector('.ai-combo-warning')) {
-                const warning = createWarningBanner();
-                container.insertAdjacentElement('beforebegin', warning);
+                if (isComboHeading(text)) {
+                    const section = heading.closest('section') || heading.closest('.card') || heading.parentElement;
+                    if (section) {
+                        warningInjected = true;
+                        const warning = createWarningBanner();
+                        heading.insertAdjacentElement('afterend', warning);
+                    }
+                }
             }
-        });
+        }
 
         console.log('[CardLoader] AI combo warnings injected');
     }
