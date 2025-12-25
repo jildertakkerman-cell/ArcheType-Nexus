@@ -21,7 +21,7 @@
         'ad_storage': 'denied',
         'ad_user_data': 'denied',
         'ad_personalization': 'denied',
-        'analytics_storage': 'granted', // Analytics is marked as required in config
+        'analytics_storage': 'denied', // Analytics is now optional - user must consent
         'wait_for_update': 500 // Wait for consent banner to load
     });
 

@@ -25,12 +25,19 @@ silktideCookieBannerManager.updateCookieBannerConfig({
             id: "analytics",
             name: "Analytics",
             description: "<p>These cookies help us improve the site by tracking which pages are most popular and how visitors move around the site.</p>",
-            required: true,
+            required: false,
             onAccept: function () {
                 console.log('Analytics cookies accepted');
                 if (typeof gtag === 'function') {
                     gtag('consent', 'update', {
                         'analytics_storage': 'granted'
+                    });
+                }
+            },
+            onReject: function () {
+                if (typeof gtag === 'function') {
+                    gtag('consent', 'update', {
+                        'analytics_storage': 'denied'
                     });
                 }
             }
