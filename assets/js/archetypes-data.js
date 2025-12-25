@@ -30735,50 +30735,57 @@ const archetypes = [
     },
     {
         name: "P series",
-        description: "An archetype featuring 'P' monsters, emphasizing photon and light-based strategies.",
+        description: "The :P series (I:P Masquerena, S:P Little Knight, EM:P Meowmine) is a cornerstone of modern deckbuilding, providing generic, powerful, and recursive interruptions that convert minimal board presence into multiple layers of reactive disruption during the opponent's turn.",
         filepath: "pages/P series Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="pGrad" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#FFFF00;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#FFD700;stop-opacity:1" />
-                            </radialGradient>
-                            <filter id="glowP">
-                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                            <linearGradient id="pSeriesGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#9370DB;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#4B0082;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#2E0854;stop-opacity:1" />
+                            </linearGradient>
+                            <filter id="pSeriesGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                                 <feMerge> 
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
                         </defs>
-                        <!-- Background burst -->
-                        <circle cx="50" cy="50" r="40" fill="url(#pGrad)" opacity="0.4">
-                            <animate attributeName="r" values="40;45;40" dur="2s" repeatCount="indefinite"/>
-                        </circle>
-                        <!-- The 'P' -->
-                        <path d="M30 25 L30 75 L50 75 Q60 75 60 65 L60 55 Q60 45 50 45 L40 45 L40 35 L50 35 Q60 35 60 25 L60 25" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" filter="url(#glowP)">
-                            <animate attributeName="stroke-dasharray" values="0,200;200,0" dur="3s" repeatCount="indefinite"/>
-                        </path>
-                        <!-- Photon beams -->
-                        <line x1="50" y1="10" x2="50" y2="30" stroke="#FFFF00" stroke-width="3" opacity="0.8">
-                            <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1s" repeatCount="indefinite"/>
-                        </line>
-                        <line x1="70" y1="30" x2="55" y2="40" stroke="#FFFF00" stroke-width="3" opacity="0.8">
-                            <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1s" repeatCount="indefinite" begin="0.3s"/>
-                        </line>
-                        <line x1="70" y1="70" x2="55" y2="60" stroke="#FFFF00" stroke-width="3" opacity="0.8">
-                            <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1s" repeatCount="indefinite" begin="0.6s"/>
-                        </line>
-                        <line x1="50" y1="90" x2="50" y2="70" stroke="#FFFF00" stroke-width="3" opacity="0.8">
-                            <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1s" repeatCount="indefinite" begin="0.9s"/>
-                        </line>
-                        <line x1="30" y1="70" x2="45" y2="60" stroke="#FFFF00" stroke-width="3" opacity="0.8">
-                            <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1s" repeatCount="indefinite" begin="1.2s"/>
-                        </line>
-                        <line x1="30" y1="30" x2="45" y2="40" stroke="#FFFF00" stroke-width="3" opacity="0.8">
-                            <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1s" repeatCount="indefinite" begin="1.5s"/>
-                        </line>
-                        <text x="50" y="95" text-anchor="middle" font-size="10" fill="#FFD700" font-weight="bold">P Series</text>
+                        <!-- Background hex pattern for Link theme -->
+                        <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" fill="url(#pSeriesGrad)" stroke="#9370DB" stroke-width="2" filter="url(#pSeriesGlow)">
+                            <animate attributeName="stroke-opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+                        </polygon>
+                        <!-- Link Arrows (8 directions) -->
+                        <polygon points="50,5 45,15 55,15" fill="#FFD700" opacity="0.9">
+                            <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.5s" repeatCount="indefinite"/>
+                        </polygon>
+                        <polygon points="50,95 45,85 55,85" fill="#FFD700" opacity="0.9">
+                            <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.5s" repeatCount="indefinite" begin="0.75s"/>
+                        </polygon>
+                        <polygon points="5,50 15,45 15,55" fill="#FFD700" opacity="0.9">
+                            <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.5s" repeatCount="indefinite" begin="0.375s"/>
+                        </polygon>
+                        <polygon points="95,50 85,45 85,55" fill="#FFD700" opacity="0.9">
+                            <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.5s" repeatCount="indefinite" begin="1.125s"/>
+                        </polygon>
+                        <!-- Masquerade Mask (I:P Masquerena reference) -->
+                        <ellipse cx="50" cy="45" rx="22" ry="12" fill="#1a1a2e" stroke="#C0C0C0" stroke-width="2"/>
+                        <ellipse cx="38" cy="45" rx="8" ry="6" fill="none" stroke="#FFD700" stroke-width="2">
+                            <animate attributeName="stroke" values="#FFD700;#FFF;#FFD700" dur="2s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <ellipse cx="62" cy="45" rx="8" ry="6" fill="none" stroke="#FFD700" stroke-width="2">
+                            <animate attributeName="stroke" values="#FFD700;#FFF;#FFD700" dur="2s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <!-- Mask decorations -->
+                        <path d="M28 42 Q20 35 15 40" stroke="#C0C0C0" stroke-width="2" fill="none"/>
+                        <path d="M72 42 Q80 35 85 40" stroke="#C0C0C0" stroke-width="2" fill="none"/>
+                        <!-- Knight sword (S:P Little Knight reference) -->
+                        <line x1="50" y1="55" x2="50" y2="75" stroke="#C0C0C0" stroke-width="3"/>
+                        <line x1="44" y1="60" x2="56" y2="60" stroke="#C0C0C0" stroke-width="2"/>
+                        <polygon points="50,75 46,80 54,80" fill="#C0C0C0"/>
+                        <!-- :P text stylized -->
+                        <text x="50" y="95" text-anchor="middle" font-size="9" fill="#9370DB" font-weight="bold">:P Series</text>
                     </svg>`
     },
     {
