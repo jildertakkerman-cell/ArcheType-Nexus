@@ -1,0 +1,2534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Replay Analyzer | Archetype Nexus</title>
+    <!-- Google Analytics -->
+    <script src="../assets/js/google-analytics.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Fonts and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Cookie Consent CSS -->
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+
+    <style>
+        :root {
+            /* Crimson/Obsidian Theme (Pro Analysis) */
+            --bg-color: #0a0a0a;
+            /* Neutral-950 */
+            --bg-secondary: #171717;
+            /* Neutral-900 */
+            --text-color: #f5f5f5;
+            /* Neutral-50 */
+            --text-muted: #a3a3a3;
+            /* Neutral-400 */
+
+            /* High Contrast Accents */
+            --accent-color: #ef4444;
+            /* Red-500 */
+            --accent-glow: #b91c1c;
+            /* Red-700 */
+            --accent-secondary: #f59e0b;
+            /* Amber-500 */
+
+            /* Clean Glass */
+            --glass-bg: rgba(23, 23, 23, 0.85);
+            --glass-border: rgba(64, 64, 64, 0.5);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
+
+            /* Chart/Data Colors */
+            --player1-color: #ef4444;
+            /* Red */
+            --player2-color: #f59e0b;
+            /* Amber */
+            --delta-positive: #10b981;
+            /* Emerald */
+            --delta-negative: #f43f5e;
+            /* Rose */
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #171717 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-attachment: fixed;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Explanation Card Style (Distinct from analysis cards) */
+        .info-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6));
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid rgba(168, 85, 247, 0.3);
+            /* Top highlight */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(12px);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .info-card:hover {
+            box-shadow: 0 8px 30px rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+
+        .info-card h2 {
+            background: linear-gradient(to right, #ef4444, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+        }
+
+        .info-card i {
+            /* Reset ion fill for icon since background-clip hides it on text */
+            -webkit-text-fill-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .info-card p,
+        .info-card li {
+            font-size: 0.95rem;
+            color: var(--text-color);
+            opacity: 0.9;
+            line-height: 1.7;
+        }
+
+        .info-card ul {
+            margin: 0.5rem 0 0 1.5rem;
+        }
+
+        /* Home Button */
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text-color);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            border-color: var(--accent-color);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+            /* Red glow */
+        }
+
+        .home-button i {
+            font-size: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Contribution Opt-in */
+        .contribution-option {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(239, 68, 68, 0.08);
+            /* Red tint */
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: 10px;
+            text-align: left;
+            backdrop-filter: blur(4px);
+        }
+
+        .contribution-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .contribution-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .contribution-label strong {
+            color: var(--accent-color);
+        }
+
+        .contribution-details {
+            margin-top: 0.5rem;
+            padding-left: 30px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .contribution-details summary {
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .contribution-details summary:hover {
+            opacity: 1;
+        }
+
+        .drop-zone {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 2px dashed var(--glass-border);
+            border-radius: 1rem;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: var(--accent-color);
+            background: rgba(220, 38, 38, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(220, 38, 38, 0.3);
+        }
+
+        .drop-zone svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            fill: var(--accent-color);
+        }
+
+        .drop-zone p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Analysis Results */
+        .analysis-container {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .analysis-container.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .player-names {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .player-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .player-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .player-dot.p1 {
+            background: var(--player1-color);
+        }
+
+        .player-dot.p2 {
+            background: var(--player2-color);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        /* Summary Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value.positive {
+            color: var(--delta-positive);
+        }
+
+        .stat-value.negative {
+            color: var(--delta-negative);
+        }
+
+        .stat-value.neutral {
+            color: var(--text-muted);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--glass-border);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            color: #f87171;
+            margin-top: 1rem;
+        }
+
+        /* Opening hand card images */
+        .hand-cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 0.5rem;
+        }
+
+        .hand-card {
+            width: 60px;
+            height: 88px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .hand-card:hover {
+            transform: scale(1.15);
+            z-index: 10;
+        }
+
+        .hand-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hand-card.hand-trap {
+            box-shadow: 0 0 8px 2px rgba(244, 114, 182, 0.6);
+        }
+
+        /* Card Loader Popup Styles (Simulating Tailwind classes used in card-loader.js) */
+        #card-popup {
+            background: rgba(17, 24, 39, 0.85) !important;
+            /* bg-gray-900 with opacity */
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(59, 130, 246, 0.4) !important;
+            /* border-blue-500/40 */
+            color: #e2e8f0 !important;
+            padding: 1.25rem !important;
+            border-radius: 1rem !important;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2), 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+            opacity: 0;
+            transition: opacity 200ms ease-in-out, transform 200ms ease-in-out;
+            pointer-events: none;
+            z-index: 50;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            max-width: 380px !important;
+        }
+
+        #card-popup h3 {
+            color: #60a5fa !important;
+            /* blue-400 */
+            font-size: 1.25rem !important;
+            margin-bottom: 0.5rem !important;
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+        }
+
+        #card-popup p {
+            line-height: 1.6;
+            color: #cbd5e1 !important;
+            /* slate-300 */
+        }
+
+        #card-popup .text-gray-300 {
+            color: #94a3b8 !important;
+            /* slate-400 */
+        }
+
+        #card-popup .text-blue-500 {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0), rgba(59, 130, 246, 0.5), rgba(59, 130, 246, 0));
+            height: 1px !important;
+            margin: 1rem 0 !important;
+            opacity: 0.5;
+        }
+
+        /* Material icons and text */
+        #card-popup .text-purple-300 {
+            color: #d8b4fe !important;
+            text-shadow: 0 0 5px rgba(216, 180, 254, 0.3);
+        }
+
+        #card-popup .border-purple-500 {
+            border-color: rgba(168, 85, 247, 0.5) !important;
+        }
+
+        #card-popup .text-blue-300 {
+            color: #93c5fd !important;
+        }
+
+        #card-popup .border-blue-500 {
+            border-color: rgba(59, 130, 246, 0.5) !important;
+        }
+
+        #card-popup .text-green-300 {
+            color: #86efac !important;
+        }
+
+        #card-popup .border-green-500 {
+            border-color: rgba(34, 197, 94, 0.5) !important;
+        }
+
+        #card-popup .text-yellow-400 {
+            color: #facc15 !important;
+            font-family: 'Roboto Mono', monospace;
+            background: rgba(250, 204, 21, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            display: inline-block;
+            border: 1px solid rgba(250, 204, 21, 0.2);
+        }
+
+        #card-popup.show {
+            opacity: 1;
+        }
+
+        /* Adjust hand card styles to work with CardLoader's injections */
+        .hand-card {
+            width: 60px;
+            height: 88px;
+            border-radius: 4px;
+            /* overflow: hidden;  <-- Removed to allow badges to overflow if needed */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            /* Context for absolute badges */
+        }
+
+        .hand-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        /* Banlist Badges (copied from card-loader logic essentially, but making sure they render right) */
+        .banned-badge,
+        .limited-badge,
+        .semilimited-badge {
+            font-size: 0.5rem !important;
+            padding: 2px 4px !important;
+            z-index: 20 !important;
+        }
+
+        /* Download button */
+        .btn {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px -5px rgba(56, 189, 248, 0.5);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Deck List Cards */
+        .deck-cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            /* max-height: 400px;  <-- Removed per user request */
+            /* overflow-y: auto;   <-- Removed per user request */
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .deck-card {
+            width: 70px;
+            height: 102px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .deck-card:hover {
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .deck-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Deck Tabs */
+        .deck-tab-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .deck-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .deck-tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .deck-tab-btn.active {
+            color: var(--accent-red);
+            border-bottom-color: var(--accent-red);
+        }
+
+        .deck-tab-btn.active-p2 {
+            color: var(--accent-amber);
+            border-bottom-color: var(--accent-amber);
+        }
+
+        /* Overrides for Card Popup to ensure content fits */
+        #card-popup>div {
+            max-height: 550px !important;
+        }
+
+        #card-popup .overflow-y-auto {
+            padding-bottom: 2rem !important;
+            /* Ensure space for prices at bottom */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Home Button -->
+    <a href="../index.html" class="home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line mr-3"></i>Replay Analyzer</h1>
+            <p class="subtitle">Upload your .yrpX replay for deep strategic insights<br>
+                <span style="font-size: 0.85rem; opacity: 0.8;">(Commonly found at:
+                    <code>C:\ProjectIgnis\replay</code>)</span>
+            </p>
+        </header>
+
+        <!-- What are YRPX files (Collapsible or just a card) -->
+        <details class="info-card">
+            <summary style="cursor: pointer; color: var(--accent-color); font-weight: 600; list-style: none;">
+                <h2 style="display: inline-flex; margin: 0; font-size: 1rem;"><i class="fas fa-info-circle"
+                        style="margin-right: 8px;"></i> What are .yrpx Files?</h2>
+                <i class="fas fa-chevron-down" style="float: right; margin-top: 4px;"></i>
+            </summary>
+            <div style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                <p>
+                    <strong style="color: var(--accent-secondary);">.yrpx files</strong> are replay files generated by
+                    the <strong>EDOPro</strong> simulator.
+                    They contain a complete record of gameplay, tracking every move, phase, and card interaction.
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    Unlike standard .yrp files, the .yrpx format is specific to EDOPro and often contains richer data
+                    for modern interactions.
+                    This analyzer reads that data to provide:
+                </p>
+                <ul style="color: var(--text-muted); margin-bottom: 0;">
+                    <li>Resource advantage graphs</li>
+                    <li>Chain depth and negation statistics</li>
+                    <li>Opening hand "Brick" analysis</li>
+                    <li>Tempo and action speed metrics</li>
+                </ul>
+            </div>
+        </details>
+
+        <!-- Contribution Opt-in -->
+        <div class="contribution-option">
+            <label class="contribution-label">
+                <input type="checkbox" id="contribute-checkbox" checked>
+                <span>
+                    <strong><i class="fas fa-heart" style="margin-right: 4px;"></i>Share with the community</strong><br>
+                    Help other players learn combos by contributing this replay to our library.
+                    <span style="color: var(--text-muted); font-size: 0.8rem;">(Uncheck to opt out)</span>
+                </span>
+            </label>
+            <details class="contribution-details">
+                <summary>What gets shared?</summary>
+                <p>
+                    Only the card sequences from your replay are used to enhance our
+                    <strong style="color: var(--accent-color);">Combo Visualizer</strong>. Your data is fully
+                    anonymized.
+                    Unchecking this box ensures your replay is processed but not saved.
+                </p>
+            </details>
+        </div>
+
+        <div class="drop-zone" id="dropZone">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+            </svg>
+            <p>Drop your .yrpx replay file here or click to upload</p>
+            <input type="file" id="fileInput" accept=".yrpx,.yrpX">
+        </div>
+
+        <div class="loading" id="loadingState" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analyzing replay strategies...</p>
+        </div>
+
+        <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+        <div class="analysis-container" id="analysisContainer">
+            <!-- Summary Stats -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-value" id="peakAdvantage">+0</div>
+                    <div class="stat-label">Peak Advantage</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="finalDelta">0</div>
+                    <div class="stat-label">Final Delta</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value neutral" id="totalTurns">0</div>
+                    <div class="stat-label">Total Phases Tracked</div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Card Advantage Over Time</h2>
+                    <div class="player-names" id="playerNames">
+                        <span class="player-badge">
+                            <span class="player-dot p1"></span>
+                            <span id="player1Name">Player 1</span>
+                        </span>
+                        <span class="player-badge">
+                            <span class="player-dot p2"></span>
+                            <span id="player2Name">Player 2</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="advantageChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chain Efficiency Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-link"></i> Chain & Interaction Efficiency</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value neutral" id="negateRate">0%</div>
+                        <div class="stat-label">Negate Success Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value neutral" id="avgChainDepth">0</div>
+                        <div class="stat-label">Avg Chain Depth</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value neutral" id="maxChainDepth">0</div>
+                        <div class="stat-label">Max Chain Depth</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value neutral" id="baitsForced">0</div>
+                        <div class="stat-label">Baits Forced (Pre-NS)</div>
+                    </div>
+                </div>
+
+                <!-- Per-Player Chain Stats -->
+                <div class="card-header"
+                    style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                    <h3 class="card-title" style="font-size: 1rem;">Per-Player Breakdown</h3>
+                </div>
+                <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="stat-card" style="text-align: left;">
+                        <div style="color: var(--player1-color); font-weight: 600; margin-bottom: 0.5rem;"
+                            id="p1ChainName">Player 1</div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span style="color: var(--text-muted);">Effects Activated:</span>
+                            <span id="p1EffectsActivated">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span style="color: var(--text-muted);">Effects Negated:</span>
+                            <span id="p1EffectsNegated">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-muted);">Chains Started:</span>
+                            <span id="p1ChainsInitiated">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="text-align: left;">
+                        <div style="color: var(--player2-color); font-weight: 600; margin-bottom: 0.5rem;"
+                            id="p2ChainName">Player 2</div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span style="color: var(--text-muted);">Effects Activated:</span>
+                            <span id="p2EffectsActivated">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span style="color: var(--text-muted);">Effects Negated:</span>
+                            <span id="p2EffectsNegated">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-muted);">Chains Started:</span>
+                            <span id="p2ChainsInitiated">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Opening Hand Analysis (Brick Meter) -->
+            <div class="card" id="handAnalysisCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">🎲 Opening Hand Analysis (Brick Meter)</h2>
+                </div>
+                <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                    <!-- Player 1 Hand -->
+                    <div class="stat-card" style="text-align: center;">
+                        <div style="color: var(--player1-color); font-weight: 600; margin-bottom: 0.5rem;">
+                            <span id="p1HandName">Player 1</span>
+                            <span id="p1TurnLabel"
+                                style="font-size: 0.7rem; background: rgba(255,255,255,0.1); padding: 0.1rem 0.4rem; border-radius: 0.25rem; margin-left: 0.25rem; vertical-align: middle; display: none;"></span>
+                        </div>
+                        <div class="stat-value" id="p1Verdict" style="font-size: 1.2rem;">-</div>
+                        <div class="stat-label" id="p1VerdictText" style="margin-top: 0.25rem;">No deck data</div>
+                        <div
+                            style="margin-top: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem; padding: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Quality Score:</span>
+                                <span id="p1QualityScore">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Hand Traps:</span>
+                                <span id="p1HandTraps">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Archetype Cards:</span>
+                                <span id="p1ArchetypeCards">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Archetype Density:</span>
+                                <span id="p1ArchetypeDensity">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Draw Chance:</span>
+                                <span id="p1Percentile">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Garnets Drawn:</span>
+                                <span id="p1Garnets">-</span>
+                            </div>
+                            <!-- Archetypes identified -->
+                            <div id="p1Archetypes"
+                                style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);"></div>
+                        </div>
+                        <!-- Player 1 Opening Hand Cards -->
+                        <div style="margin-top: 1rem;">
+                            <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem;">Opening
+                                Hand:</div>
+                            <div id="p1HandCards" class="hand-cards-container"></div>
+                        </div>
+                    </div>
+                    <!-- Player 2 Hand -->
+                    <div class="stat-card" style="text-align: center;">
+                        <div style="color: var(--player2-color); font-weight: 600; margin-bottom: 0.5rem;">
+                            <span id="p2HandName">Player 2</span>
+                            <span id="p2TurnLabel"
+                                style="font-size: 0.7rem; background: rgba(255,255,255,0.1); padding: 0.1rem 0.4rem; border-radius: 0.25rem; margin-left: 0.25rem; vertical-align: middle; display: none;"></span>
+                        </div>
+                        <div class="stat-value" id="p2Verdict" style="font-size: 1.2rem;">-</div>
+                        <div class="stat-label" id="p2VerdictText" style="margin-top: 0.25rem;">No deck data</div>
+                        <div
+                            style="margin-top: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem; padding: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Quality Score:</span>
+                                <span id="p2QualityScore">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Hand Traps:</span>
+                                <span id="p2HandTraps">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Archetype Cards:</span>
+                                <span id="p2ArchetypeCards">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Archetype Density:</span>
+                                <span id="p2ArchetypeDensity">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Draw Chance:</span>
+                                <span id="p2Percentile">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Garnets Drawn:</span>
+                                <span id="p2Garnets">-</span>
+                            </div>
+                            <!-- Archetypes identified -->
+                            <div id="p2Archetypes"
+                                style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);"></div>
+                        </div>
+                        <!-- Player 2 Opening Hand Cards -->
+                        <div style="margin-top: 1rem;">
+                            <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem;">Opening
+                                Hand:</div>
+                            <div id="p2HandCards" class="hand-cards-container"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Hand Analysis Footer -->
+                <div
+                    style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong style="color: var(--text-primary);">How to read:</strong> The verdict shows if the hand
+                        was
+                        statistically favorable (God Hand) or unfavorable (Brick).
+                        A "Brick" with a loss suggests bad luck. A "God Hand" with a loss suggests misplay.
+                    </div>
+                    <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+                        <strong style="color: var(--text-primary);">Draw Chance:</strong> Measures your hand trap
+                        "luck". <strong>80%</strong> means
+                        80% of possible hands would have <em>fewer</em> hand traps than yours. A high percentage
+                        indicates a
+                        very defensive draw.
+                    </div>
+                    <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; margin-top: 0.5rem;">
+                        <strong style="color: var(--text-primary);">Turn Factor:</strong> Scoring is adjusted by turn
+                        order. <strong>1st player</strong>
+                        wants engine access (0-1 hand traps is ideal). <strong>2nd player</strong> needs interruption
+                        (2+
+                        hand traps is ideal).
+                    </div>
+                    <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; margin-top: 0.5rem;">
+                        <strong style="color: var(--text-primary);">Garnets:</strong> 1-off archetype cards you want to
+                        stay in the deck. Drawing
+                        them incurs a <strong>-15 point</strong> penalty. Powerful 1-offs restricted by the
+                        <strong>Banlist</strong> are NOT penalized.
+                    </div>
+                    <div
+                        style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                        <strong>How to read:</strong> The verdict shows if the hand was statistically favorable (God
+                        Hand)
+                        or unfavorable (Brick).
+                        A "Brick" with a loss suggests bad luck. A "God Hand" with a loss suggests misplay.
+                    </div>
+                </div>
+
+                <!-- Tempo & Speed Metrics -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-tachometer-alt"></i> Tempo & Speed Metrics</h2>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value neutral" id="avgActionsPerTurn">0</div>
+                            <div class="stat-label">Avg Actions/Turn</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value neutral" id="maxActionsPerTurn">0</div>
+                            <div class="stat-label">Max Actions (Turn)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value neutral" id="totalSpecialSummons">0</div>
+                            <div class="stat-label">Special Summons</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value neutral" id="totalEffectActivations">0</div>
+                            <div class="stat-label">Effect Activations</div>
+                        </div>
+                    </div>
+
+                    <!-- Per-Player Tempo Stats -->
+                    <div class="card-header"
+                        style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                        <h3 class="card-title" style="font-size: 1rem;">Per-Player Activity</h3>
+                    </div>
+                    <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                        <div class="stat-card" style="text-align: left;">
+                            <div style="color: var(--player1-color); font-weight: 600; margin-bottom: 0.5rem;"
+                                id="p1TempoName">Player 1</div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted);">Special Summons:</span>
+                                <span id="p1SpecialSummons">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted);">Normal Summons:</span>
+                                <span id="p1NormalSummons">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted);">Effects:</span>
+                                <span id="p1EffectActivations">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-muted); font-weight:600">Total Actions:</span>
+                                <span id="p1TotalActions" style="font-weight:600">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="text-align: left;">
+                            <div style="color: var(--player2-color); font-weight: 600; margin-bottom: 0.5rem;"
+                                id="p2TempoName">Player 2</div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted);">Special Summons:</span>
+                                <span id="p2SpecialSummons">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted);">Normal Summons:</span>
+                                <span id="p2NormalSummons">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted);">Effects:</span>
+                                <span id="p2EffectActivations">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-muted); font-weight:600">Total Actions:</span>
+                                <span id="p2TotalActions" style="font-weight:600">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Winner Info (if available) -->
+                    <div id="winnerInfo"
+                        style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(56, 189, 248, 0.1); border-radius: 0.75rem; border: 1px solid rgba(56, 189, 248, 0.3);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 1.1rem; font-weight: 600; color: var(--accent-color);"
+                                    id="winnerName">Winner</div>
+                                <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem;"
+                                    id="winnerDetails">Won in X turns</div>
+                            </div>
+                            <div id="otkBadge"
+                                style="display: none; background: linear-gradient(135deg, #f59e0b, #f97316); padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.9rem;">
+                                🔥 OTK!
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions Per Turn Chart -->
+                    <div style="margin-top: 1.5rem;">
+                        <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-muted);">Actions Per Turn
+                            Breakdown</h3>
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="tempoChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Play Tags -->
+                <div class="card" id="technicalTagsCard" style="display: none;">
+                    <div class="card-header">
+                        <h2 class="card-title">🏷️ Technical Play Tags</h2>
+                    </div>
+                    <div id="technicalTagsContainer"
+                        style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem;">
+                        <!-- Tags will be dynamically inserted here -->
+                    </div>
+                    <div
+                        style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                        <div style="margin-bottom: 0.75rem;">
+                            <strong style="color: var(--text-primary); font-size: 0.9rem;">About Technical Tags</strong>
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            These tags automatically detect notable gameplay patterns and strategic decisions. Hover
+                            over
+                            any tag to see detailed information including turn number and player.
+                        </div>
+                        <!-- Dynamic explanation appended here -->
+                    </div>
+                </div>
+
+                <!-- Full Deck Lists -->
+                <div class="card" id="deckListsCard" style="display: none;">
+                    <div class="card-header">
+                        <h2 class="card-title">📚 Full Deck Lists</h2>
+                    </div>
+                    <!-- Tabs -->
+                    <div class="deck-tab-container">
+                        <button class="deck-tab-btn active" id="tabP1" onclick="switchDeckTab(0)">Player 1</button>
+                        <button class="deck-tab-btn" id="tabP2" onclick="switchDeckTab(1)">Player 2</button>
+                    </div>
+
+                    <!-- Player 1 Deck Container -->
+                    <div id="p1DeckContainer">
+                        <h3 id="p1DeckTitle"
+                            style="color: var(--player1-color); font-size: 1rem; margin-bottom: 0.75rem;">Player 1's
+                            Deck</h3>
+                        <div style="margin-bottom: 1.5rem;">
+                            <div
+                                style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                Main Deck (<span id="p1MainDeckCount">0</span>)</div>
+                            <div id="p1MainDeck" class="deck-cards-container"></div>
+                        </div>
+                        <div>
+                            <div
+                                style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                Extra Deck (<span id="p1ExtraDeckCount">0</span>)</div>
+                            <div id="p1ExtraDeck" class="deck-cards-container"></div>
+                        </div>
+                    </div>
+
+                    <!-- Player 2 Deck Container -->
+                    <div id="p2DeckContainer" style="display: none;">
+                        <h3 id="p2DeckTitle"
+                            style="color: var(--player2-color); font-size: 1rem; margin-bottom: 0.75rem;">Player 2's
+                            Deck</h3>
+                        <div style="margin-bottom: 1.5rem;">
+                            <div
+                                style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                Main Deck (<span id="p2MainDeckCount">0</span>)</div>
+                            <div id="p2MainDeck" class="deck-cards-container"></div>
+                        </div>
+                        <div>
+                            <div
+                                style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                Extra Deck (<span id="p2ExtraDeckCount">0</span>)</div>
+                            <div id="p2ExtraDeck" class="deck-cards-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="btn-group">
+                    <button class="btn" id="downloadBtn">Download Analysis JSON</button>
+                    <button class="btn btn-secondary" id="resetBtn">Analyze Another Replay</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Loader -->
+        <script src="../assets/js/card-loader.js"></script>
+
+        <!-- Cookie Consent Scripts -->
+        <script src="../assets/js/cookie-consent.js"></script>
+        <script src="../assets/js/cookie-consent-config.js"></script>
+
+        <script>
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const loadingState = document.getElementById('loadingState');
+            const errorMessage = document.getElementById('errorMessage');
+            const analysisContainer = document.getElementById('analysisContainer');
+
+            let chartInstance = null;
+            let tempoChartInstance = null;
+            let currentAnalysisData = null;
+
+            // Initialize CardLoader
+            document.addEventListener('DOMContentLoaded', () => {
+                if (window.CardLoader) {
+                    window.CardLoader.init();
+                }
+            });
+
+            // Drag and drop handlers
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    handleFile(fileInput.files[0]);
+                }
+            });
+
+            // Reset button
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                analysisContainer.classList.remove('visible');
+                dropZone.style.display = 'block';
+                errorMessage.style.display = 'none';
+                if (chartInstance) {
+                    chartInstance.destroy();
+                    chartInstance = null;
+                }
+                if (tempoChartInstance) {
+                    tempoChartInstance.destroy();
+                    tempoChartInstance = null;
+                }
+                fileInput.value = '';
+            });
+
+            // Download button
+            document.getElementById('downloadBtn').addEventListener('click', () => {
+                if (!currentAnalysisData) return;
+                const blob = new Blob([JSON.stringify(currentAnalysisData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'replay-analysis.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            async function handleFile(file) {
+                const lowerName = file.name.toLowerCase();
+                if (!lowerName.endsWith('.yrpx')) {
+                    showError('Please upload a valid .yrpx or .yrpX replay file');
+                    return;
+                }
+
+                // Show loading state
+                dropZone.style.display = 'none';
+                loadingState.style.display = 'block';
+                errorMessage.style.display = 'none';
+                analysisContainer.classList.remove('visible');
+
+                try {
+                    // Prepare headers based on contribution opt-in
+                    const headers = { 'Content-Type': 'application/octet-stream' };
+                    const contributeCheckbox = document.getElementById('contribute-checkbox');
+
+                    if (contributeCheckbox && contributeCheckbox.checked) {
+                        headers['x-save-replay'] = 'true';
+                        // Sanitize filename just in case, though backend usually handles it
+                        headers['x-filename'] = file.name;
+                    }
+
+                    // Using the specific API endpoint
+                    const response = await fetch('https://yrp-10714964039.europe-west1.run.app/analyze', {
+                        method: 'POST',
+                        headers: headers,
+                        body: file
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text().catch(() => 'Analysis failed');
+                        throw new Error(errorText || 'Analysis failed');
+                    }
+
+                    const data = await response.json();
+                    console.log('Analysis data:', data);
+                    currentAnalysisData = data;
+                    await displayAnalysis(data);
+                } catch (error) {
+                    console.error('Analysis error:', error);
+
+                    let msg = error.message;
+                    // "Failed to fetch" is the generic browser error for network/CORS issues
+                    // This happens if the backend doesn't whitelist x-save-replay header
+                    if (msg === 'Failed to fetch' || msg.includes('NetworkError')) {
+                        msg = 'Network or Server Error.<br><br>' +
+                            '<span style="font-size:0.9em; color:var(--text-muted)">' +
+                            'If "Share with community" is checked, unchecking it might fix CORS/Permission issues.<br>' +
+                            'Your backend may not allow the custom headers yet.</span>';
+                    }
+
+                    showError(msg);
+                    dropZone.style.display = 'block';
+                } finally {
+                    loadingState.style.display = 'none';
+                }
+            }
+
+            function showError(message) {
+                errorMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+                errorMessage.style.display = 'block';
+            }
+
+            async function displayAnalysis(data) {
+                const { resourceAnalysis, chainAnalysis, playerNames } = data;
+
+                // Safety check for resourceAnalysis
+                if (!resourceAnalysis || !resourceAnalysis.summary) {
+                    showError("Invalid analysis data returned from server (missing resource analysis).");
+                    return;
+                }
+
+                const { snapshots, summary } = resourceAnalysis;
+
+                // Update player names
+                const p1Name = playerNames?.[0] || 'Player 1';
+                const p2Name = playerNames?.[1] || 'Player 2';
+
+                if (playerNames && playerNames.length >= 2) {
+                    document.getElementById('player1Name').textContent = p1Name;
+                    document.getElementById('player2Name').textContent = p2Name;
+                }
+
+                // Update resource stats
+                const peakAdvEl = document.getElementById('peakAdvantage');
+                const peakValue = summary.peakAdvantagePlayer === 1 ? summary.maxDelta : summary.minDelta;
+                peakAdvEl.textContent = peakValue >= 0 ? `+${peakValue}` : peakValue;
+                peakAdvEl.className = `stat-value ${peakValue > 0 ? 'positive' : peakValue < 0 ? 'negative' : 'neutral'}`;
+
+                const finalDeltaEl = document.getElementById('finalDelta');
+                finalDeltaEl.textContent = summary.finalDelta >= 0 ? `+${summary.finalDelta}` : summary.finalDelta;
+                finalDeltaEl.className = `stat-value ${summary.finalDelta > 0 ? 'positive' : summary.finalDelta < 0 ? 'negative' : 'neutral'}`;
+
+                document.getElementById('totalTurns').textContent = snapshots ? snapshots.length : 0;
+
+                if (chainAnalysis && chainAnalysis.summary) {
+                    const chainSummary = chainAnalysis.summary;
+
+                    // Fixed: Backend apparently returns percentage (e.g. 6.0), so don't multiply by 100 again.
+                    document.getElementById('negateRate').textContent = `${chainSummary.negateSuccessRate.toFixed(1)}%`;
+                    document.getElementById('avgChainDepth').textContent = chainSummary.averageChainDepth.toFixed(1);
+                    document.getElementById('maxChainDepth').textContent = chainSummary.maxChainDepth;
+                    document.getElementById('baitsForced').textContent = chainSummary.baitsForced;
+
+                    // Per-player chain stats
+                    document.getElementById('p1ChainName').textContent = p1Name;
+                    document.getElementById('p2ChainName').textContent = p2Name;
+
+                    if (chainSummary.player1Stats) {
+                        document.getElementById('p1EffectsActivated').textContent = chainSummary.player1Stats.effectsActivated;
+                        document.getElementById('p1EffectsNegated').textContent = chainSummary.player1Stats.effectsNegated;
+                        document.getElementById('p1ChainsInitiated').textContent = chainSummary.player1Stats.chainsInitiated;
+                    }
+
+                    if (chainSummary.player2Stats) {
+                        document.getElementById('p2EffectsActivated').textContent = chainSummary.player2Stats.effectsActivated;
+                        document.getElementById('p2EffectsNegated').textContent = chainSummary.player2Stats.effectsNegated;
+                        document.getElementById('p2ChainsInitiated').textContent = chainSummary.player2Stats.chainsInitiated;
+                    }
+                }
+
+                // Update hand analysis (Brick Meter)
+                if (data.handAnalysis) {
+                    const handCard = document.getElementById('handAnalysisCard');
+                    const { player1Hand, player2Hand } = data.handAnalysis;
+
+                    if (player1Hand || player2Hand) {
+                        handCard.style.display = 'block';
+
+                        // Helper to get verdict styling
+                        const getVerdictClass = (verdict) => {
+                            switch (verdict) {
+                                case 'god_hand': return 'positive';
+                                case 'good': return 'positive';
+                                case 'average': return 'neutral';
+                                case 'brick': return 'negative';
+                                case 'unplayable': return 'negative';
+                                default: return 'neutral';
+                            }
+                        };
+
+                        const getVerdictEmoji = (verdict) => {
+                            switch (verdict) {
+                                case 'god_hand': return '🌟 GOD HAND';
+                                case 'good': return '✅ Good';
+                                case 'average': return '➖ Average';
+                                case 'brick': return '🧱 BRICK';
+                                case 'unplayable': return '❌ Unplayable';
+                                default: return verdict;
+                            }
+                        };
+
+                        // Player 1 hand
+                        document.getElementById('p1HandName').textContent = p1Name;
+                        if (player1Hand) {
+                            const p1VerdictEl = document.getElementById('p1Verdict');
+                            p1VerdictEl.textContent = getVerdictEmoji(player1Hand.verdict);
+                            p1VerdictEl.className = `stat-value ${getVerdictClass(player1Hand.verdict)}`;
+                            document.getElementById('p1VerdictText').textContent = player1Hand.verdictExplanation || 'No explanation';
+                            document.getElementById('p1QualityScore').textContent = `${player1Hand.handQualityScore}/100`;
+                            document.getElementById('p1HandTraps').textContent = player1Hand.handTrapsInHand;
+                            document.getElementById('p1Percentile').textContent = `${player1Hand.percentile}%`;
+
+                            // New Fields
+                            document.getElementById('p1Garnets').textContent = player1Hand.garnetsInHand || 0;
+                            document.getElementById('p1ArchetypeCards').textContent = player1Hand.archetypeCardsInHand ?? '-';
+                            document.getElementById('p1ArchetypeDensity').textContent = player1Hand.archetypeDensity !== undefined ? `${player1Hand.archetypeDensity}%` : '-';
+
+                            // Turn Order Label
+                            const p1TurnEl = document.getElementById('p1TurnLabel');
+                            p1TurnEl.textContent = player1Hand.isGoingFirst ? '1st' : '2nd';
+                            p1TurnEl.style.display = 'inline-block';
+
+                            // Archetypes List
+                            const p1Archetypes = player1Hand.archetypesIdentified;
+                            document.getElementById('p1Archetypes').textContent = p1Archetypes?.length > 0 ? `Deck: ${p1Archetypes.join(', ')}` : '';
+
+                            // Render opening hand card images
+                            renderHandCards('p1HandCards', player1Hand.openingHand);
+                        } else {
+                            // Clear if no data but card is shown
+                            document.getElementById('p1Verdict').textContent = '-';
+                            document.getElementById('p1HandCards').innerHTML = '';
+                        }
+
+                        // Player 2 hand
+                        document.getElementById('p2HandName').textContent = p2Name;
+                        if (player2Hand) {
+                            const p2VerdictEl = document.getElementById('p2Verdict');
+                            p2VerdictEl.textContent = getVerdictEmoji(player2Hand.verdict);
+                            p2VerdictEl.className = `stat-value ${getVerdictClass(player2Hand.verdict)}`;
+                            document.getElementById('p2VerdictText').textContent = player2Hand.verdictExplanation || 'No explanation';
+                            document.getElementById('p2QualityScore').textContent = `${player2Hand.handQualityScore}/100`;
+                            document.getElementById('p2HandTraps').textContent = player2Hand.handTrapsInHand;
+                            document.getElementById('p2Percentile').textContent = `${player2Hand.percentile}%`;
+
+                            // New Fields
+                            document.getElementById('p2Garnets').textContent = player2Hand.garnetsInHand || 0;
+                            document.getElementById('p2ArchetypeCards').textContent = player2Hand.archetypeCardsInHand ?? '-';
+                            document.getElementById('p2ArchetypeDensity').textContent = player2Hand.archetypeDensity !== undefined ? `${player2Hand.archetypeDensity}%` : '-';
+
+                            // Turn Order Label
+                            const p2TurnEl = document.getElementById('p2TurnLabel');
+                            p2TurnEl.textContent = player2Hand.isGoingFirst ? '1st' : '2nd';
+                            p2TurnEl.style.display = 'inline-block';
+
+                            // Archetypes List
+                            const p2Archetypes = player2Hand.archetypesIdentified;
+                            document.getElementById('p2Archetypes').textContent = p2Archetypes?.length > 0 ? `Deck: ${p2Archetypes.join(', ')}` : '';
+
+                            // Render opening hand card images
+                            renderHandCards('p2HandCards', player2Hand.openingHand);
+                        } else {
+                            document.getElementById('p2Verdict').textContent = '-';
+                            document.getElementById('p2HandCards').innerHTML = '';
+                        }
+                    } else {
+                        handCard.style.display = 'none';
+                    }
+                }
+
+                // Update tempo & speed metrics
+                if (data.tempoAnalysis) {
+                    const { summary, perTurnMetrics, winner } = data.tempoAnalysis;
+
+                    if (summary) {
+                        // Update summary stats
+                        document.getElementById('avgActionsPerTurn').textContent = summary.averageActionsPerTurn.toFixed(1);
+                        document.getElementById('maxActionsPerTurn').textContent = summary.maxActionsInSingleTurn;
+                        document.getElementById('totalSpecialSummons').textContent = summary.totalSpecialSummons;
+                        document.getElementById('totalEffectActivations').textContent = summary.totalEffectActivations;
+
+                        // Update Per-Player Tempo Stats
+                        if (summary.player1) {
+                            document.getElementById('p1TempoName').textContent = p1Name;
+                            document.getElementById('p1SpecialSummons').textContent = summary.player1.specialSummons || 0;
+                            document.getElementById('p1NormalSummons').textContent = summary.player1.normalSummons || 0;
+                            document.getElementById('p1EffectActivations').textContent = summary.player1.effectActivations || 0;
+                            document.getElementById('p1TotalActions').textContent = summary.player1.totalActions || 0;
+                        }
+                        if (summary.player2) {
+                            document.getElementById('p2TempoName').textContent = p2Name;
+                            document.getElementById('p2SpecialSummons').textContent = summary.player2.specialSummons || 0;
+                            document.getElementById('p2NormalSummons').textContent = summary.player2.normalSummons || 0;
+                            document.getElementById('p2EffectActivations').textContent = summary.player2.effectActivations || 0;
+                            document.getElementById('p2TotalActions').textContent = summary.player2.totalActions || 0;
+                        }
+                    }
+
+                    // Show winner info if available
+                    if (winner && winner.turnsToWin) {
+                        const winnerInfoEl = document.getElementById('winnerInfo');
+                        winnerInfoEl.style.display = 'block';
+                        document.getElementById('winnerName').textContent = winner.playerName;
+                        document.getElementById('winnerDetails').textContent = `Won in ${winner.turnsToWin} turn${winner.turnsToWin > 1 ? 's' : ''}`;
+
+                        if (winner.isOTK) {
+                            document.getElementById('otkBadge').style.display = 'block';
+                        } else {
+                            document.getElementById('otkBadge').style.display = 'none';
+                        }
+                    }
+
+                    // Create tempo chart
+                    createTempoChart(perTurnMetrics, playerNames);
+                }
+
+                // Display technical tags
+                if (data.technicalTags && data.technicalTags.length > 0) {
+                    displayTechnicalTags(data.technicalTags);
+                } else {
+                    document.getElementById('technicalTagsCard').style.display = 'none';
+                }
+
+                // Display deck lists
+                // Display deck lists
+                if (data.decks && data.decks.length >= 2) {
+                    const deckListsCard = document.getElementById('deckListsCard');
+                    deckListsCard.style.display = 'block';
+
+                    document.getElementById('p1DeckTitle').textContent = `${p1Name}'s Deck`;
+                    document.getElementById('p2DeckTitle').textContent = `${p2Name}'s Deck`;
+
+                    const deck1 = data.decks[0];
+                    const deck2 = data.decks[1];
+
+                    // 1. Gather all unique IDs to fetch metadata for sorting
+                    const allCardIds = [
+                        ...(deck1.main || []),
+                        ...(deck1.extra || []),
+                        ...(deck2.main || []),
+                        ...(deck2.extra || [])
+                    ];
+
+                    // 2. Fetch metadata (async)
+                    if (allCardIds.length > 0) {
+                        await fetchCardMetadata(allCardIds);
+                    }
+
+                    // 3. Sort decks
+                    const p1MainSorted = sortCardsByType(deck1.main || [], false);
+                    const p1ExtraSorted = sortCardsByType(deck1.extra || [], true);
+                    const p2MainSorted = sortCardsByType(deck2.main || [], false);
+                    const p2ExtraSorted = sortCardsByType(deck2.extra || [], true);
+
+                    // Player 1 deck
+                    document.getElementById('p1MainDeckCount').textContent = deck1.main?.length || 0;
+                    document.getElementById('p1ExtraDeckCount').textContent = deck1.extra?.length || 0;
+                    renderDeckCards('p1MainDeck', p1MainSorted);
+                    renderDeckCards('p1ExtraDeck', p1ExtraSorted);
+
+                    // Player 2 deck
+                    document.getElementById('p2MainDeckCount').textContent = deck2.main?.length || 0;
+                    document.getElementById('p2ExtraDeckCount').textContent = deck2.extra?.length || 0;
+                    renderDeckCards('p2MainDeck', p2MainSorted);
+                    renderDeckCards('p2ExtraDeck', p2ExtraSorted);
+                } else {
+                    document.getElementById('deckListsCard').style.display = 'none';
+                }
+
+                // Create Advantage chart
+                createChart(snapshots, playerNames);
+
+                // Show analysis container
+                analysisContainer.classList.add('visible');
+            }
+
+            // Enhanced Technical Tags Display with Explanation
+            function displayTechnicalTags(tags) {
+                const container = document.getElementById('technicalTagsContainer');
+                const card = document.getElementById('technicalTagsCard');
+
+                if (!tags || tags.length === 0) {
+                    card.style.display = 'none';
+                    return;
+                }
+
+                container.innerHTML = '';
+                card.style.display = 'block';
+
+                tags.forEach(tag => {
+                    const badge = document.createElement('div');
+                    badge.style.cssText = `
+                        display: inline-flex;
+                        align-items: center;
+                        padding: 0.5rem 0.75rem;
+                        border-radius: 0.5rem;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: help;
+                        background: ${getSeverityColor(tag.severity)};
+                        border: 1px solid ${getSeverityBorderColor(tag.severity)};
+                        transition: transform 0.2s;
+                    `;
+                    badge.onmouseenter = () => badge.style.transform = 'scale(1.05)';
+                    badge.onmouseleave = () => badge.style.transform = 'scale(1)';
+                    badge.title = `${tag.description}\nTurn ${tag.turn} - ${tag.playerName}`;
+
+                    const icon = getSeverityIcon(tag.severity);
+                    badge.innerHTML = `
+                        <span style="margin-right: 0.5rem;">${icon}</span>
+                        <span>${tag.name}</span>
+                        <span style="margin-left: 0.5rem; opacity: 0.7; font-size: 0.75rem;">T${tag.turn}</span>
+                    `;
+
+                    container.appendChild(badge);
+                });
+
+                // Dynamically build explanation
+                buildTagExplanation(tags);
+            }
+
+            function buildTagExplanation(tags) {
+                // Tag definitions with severity and description
+                const tagDefinitions = {
+                    'Full Combo': { severity: 'info', description: '15+ uninterrupted actions' },
+                    'Turn 1 End Board': { severity: 'info', description: 'Strong opening setup (3+ monsters, 2+ set cards)' },
+                    'Resource Commitment': { severity: 'info', description: 'Heavy investment (10+ cards used)' },
+                    'Grind Game': { severity: 'info', description: 'Match lasted 10+ turns' },
+                    'Nibiru Check': { severity: 'warning', description: '5+ summons before Battle Phase (Nibiru vulnerable)' },
+                    'Overextension': { severity: 'warning', description: '8+ summons while opponent holds 3+ cards (board wipe risk)' },
+                    'Missed Lethal': { severity: 'critical', description: "Had enough ATK to win but didn't attack (game-losing mistake)" }
+                };
+
+                // Group tags by severity to only show relevant explanations
+                const tagsBySeverity = {
+                    info: new Set(),
+                    warning: new Set(),
+                    critical: new Set()
+                };
+
+                tags.forEach(tag => {
+                    if (tagsBySeverity[tag.severity]) {
+                        tagsBySeverity[tag.severity].add(tag.name);
+                    }
+                });
+
+                // Build explanation HTML
+                let explanationHTML = `
+                    <div style="margin-bottom: 0.75rem;">
+                        <strong style="color: var(--text-primary); font-size: 0.9rem;">About Technical Tags</strong>
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        These tags automatically detect notable gameplay patterns. Hover to see specifics.
+                    </div>
+                    <div style="display: grid; gap: 0.5rem; margin-top: 1rem;">
+                `;
+
+                // Add Info tags if any found
+                if (tagsBySeverity.info.size > 0) {
+                    explanationHTML += `
+                        <div>
+                            <span style="color: #38bdf8; font-weight: 600;">ℹ️ Info Tags</span> — Notable plays:
+                            <div style="margin-left: 1.5rem; margin-top: 0.25rem; line-height: 1.6;">
+                    `;
+                    tagsBySeverity.info.forEach(tagName => {
+                        const def = tagDefinitions[tagName];
+                        if (def) explanationHTML += `• <strong>${tagName}</strong>: ${def.description}<br>`;
+                    });
+                    explanationHTML += `</div></div>`;
+                }
+
+                // Add Warning tags if any found
+                if (tagsBySeverity.warning.size > 0) {
+                    explanationHTML += `
+                        <div>
+                            <span style="color: #fbbf24; font-weight: 600;">⚠️ Warning Tags</span> — Risky plays:
+                            <div style="margin-left: 1.5rem; margin-top: 0.25rem; line-height: 1.6;">
+                    `;
+                    tagsBySeverity.warning.forEach(tagName => {
+                        const def = tagDefinitions[tagName];
+                        if (def) explanationHTML += `• <strong>${tagName}</strong>: ${def.description}<br>`;
+                    });
+                    explanationHTML += `</div></div>`;
+                }
+
+                // Add Critical tags if any found
+                if (tagsBySeverity.critical.size > 0) {
+                    explanationHTML += `
+                        <div>
+                            <span style="color: #f87171; font-weight: 600;">🔥 Critical Tags</span> — Potential mistakes:
+                            <div style="margin-left: 1.5rem; margin-top: 0.25rem; line-height: 1.6;">
+                    `;
+                    tagsBySeverity.critical.forEach(tagName => {
+                        const def = tagDefinitions[tagName];
+                        if (def) explanationHTML += `• <strong>${tagName}</strong>: ${def.description}<br>`;
+                    });
+                    explanationHTML += `</div></div>`;
+                }
+
+                explanationHTML += `</div>`;
+
+                // Update the explanation section
+                const explanationSection = document.querySelector('#technicalTagsCard > div:last-child');
+                if (explanationSection) {
+                    explanationSection.innerHTML = explanationHTML;
+                }
+            }
+
+            function switchDeckTab(playerIndex) {
+                const tabP1 = document.getElementById('tabP1');
+                const tabP2 = document.getElementById('tabP2');
+                const p1Container = document.getElementById('p1DeckContainer');
+                const p2Container = document.getElementById('p2DeckContainer');
+
+                if (playerIndex === 0) {
+                    // Show P1
+                    tabP1.classList.add('active');
+                    tabP2.classList.remove('active', 'active-p2');
+                    p1Container.style.display = 'block';
+                    p2Container.style.display = 'none';
+                } else {
+                    // Show P2
+                    tabP1.classList.remove('active');
+                    tabP2.classList.add('active-p2'); // Use amber accent for P2
+                    p1Container.style.display = 'none';
+                    p2Container.style.display = 'block';
+                }
+            }
+
+            // Cache for card metadata (type, race, level, etc.) to avoid repeated fetches
+            const cardMetadataCache = {};
+
+            async function fetchCardMetadata(cardIds) {
+                // Filter out IDs we already have
+                const uniqueIds = [...new Set(cardIds)].filter(id => id > 0 && !cardMetadataCache[id]);
+
+                if (uniqueIds.length === 0) return;
+
+                // API supports multiple IDs: ?id=id1,id2,id3
+                // Limit is usually around 20 chars per ID, URL max length ~2000. 
+                // 50-100 IDs is generally safe.
+
+                // Chunk IDs if too many. Reduced to 20 for safety.
+                const chunkSize = 20;
+                console.log(`[DeckSort] Fetching metadata for ${uniqueIds.length} cards...`);
+
+                for (let i = 0; i < uniqueIds.length; i += chunkSize) {
+                    const chunk = uniqueIds.slice(i, i + chunkSize);
+                    try {
+                        const url = `https://db.ygoprodeck.com/api/v7/cardinfo.php?id=${chunk.join(',')}`;
+                        const response = await fetch(url);
+
+                        if (!response.ok) {
+                            console.warn(`[DeckSort] API Error ${response.status} for chunk`, chunk);
+                            continue;
+                        }
+                        const data = await response.json();
+
+                        if (data && data.data) {
+                            data.data.forEach(card => {
+                                // 1. Store in local cache for sorting/rendering logic
+                                cardMetadataCache[card.id] = {
+                                    id: card.id,
+                                    name: card.name,
+                                    type: card.type,
+                                    race: card.race,
+                                    level: card.level,
+                                    rank: card.rank,
+                                    linkval: card.linkval,
+                                    atk: card.atk,
+                                    def: card.def,
+                                    desc: card.desc || "", // Ensure not undefined
+                                    card_prices: card.card_prices
+                                };
+
+                                // 2. Store in global CardLoader cache for Popups
+                                // CardLoader expects key to be 'Name' usually, or we can look it up.
+                                // My override for showPopup expects cardDataCache[name].
+                                if (window.CardLoader && window.CardLoader.cardDataCache) {
+                                    window.CardLoader.cardDataCache[card.name] = cardMetadataCache[card.id];
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Failed to fetch card metadata chunk", e);
+                    }
+                }
+            }
+
+            function sortCardsByType(cardCodes, isExtraDeck = false) {
+                // Return a sorted copy of the card codes
+                return [...cardCodes].sort((a, b) => {
+                    const cardA = cardMetadataCache[a];
+                    const cardB = cardMetadataCache[b];
+
+                    // Move unknown cards to the end
+                    if (!cardA && !cardB) return a - b;
+                    if (!cardA) return 1;
+                    if (!cardB) return -1;
+
+                    if (isExtraDeck) {
+                        // Extra Deck Sort Order: Fusion > Synchro > Xyz > Link
+                        const typePriority = {
+                            'Fusion Monster': 1,
+                            'Synchro Monster': 2,
+                            'Synchro Tuner Monster': 2,
+                            'XYZ Monster': 3,
+                            'XYZ Pendulum Effect Monster': 3,
+                            'Link Monster': 4
+                        };
+
+                        const typeA = typePriority[cardA.type] || 99;
+                        const typeB = typePriority[cardB.type] || 99;
+
+                        if (typeA !== typeB) return typeA - typeB;
+
+                        // Secondary sort: Level/Rank/Link (High to Low)
+                        const levelA = cardA.level || cardA.rank || cardA.linkval || 0;
+                        const levelB = cardB.level || cardB.rank || cardB.linkval || 0;
+                        if (levelA !== levelB) return levelB - levelA;
+
+                    } else {
+                        // Main Deck Sort Order: Monster > Spell > Trap
+                        const getCategory = (type) => {
+                            if (type.includes('Spell')) return 2;
+                            if (type.includes('Trap')) return 3;
+                            if (type.includes('Monster')) return 1;
+                            return 4; // Unknown
+                        };
+
+                        const catA = getCategory(cardA.type);
+                        const catB = getCategory(cardB.type);
+
+                        if (catA !== catB) return catA - catB;
+
+                        // Within Monsters: Level High to Low
+                        if (catA === 1) {
+                            const levelA = cardA.level || 0;
+                            const levelB = cardB.level || 0;
+                            if (levelA !== levelB) return levelB - levelA;
+                        }
+                        // Within Spells/Traps: Type/Race (Normal, Continuous, etc.)? 
+                        // Or just name. Let's do Name for all.
+                    }
+
+                    // Tiebreaker: Name
+                    return cardA.name.localeCompare(cardB.name);
+                });
+            }
+
+            function renderDeckCards(containerId, cardCodes) {
+                const container = document.getElementById(containerId);
+                if (!container || !cardCodes || cardCodes.length === 0) {
+                    if (container) container.innerHTML = '<span style="color: var(--text-muted); font-size: 0.7rem;">No cards</span>';
+                    return;
+                }
+                container.innerHTML = '';
+
+                // NO: This was the old way! We already passed SORTED cardCodes.
+                // const sortedCodes = [...cardCodes].sort((a, b) => a - b);
+                const sortedCodes = cardCodes;
+
+                sortedCodes.forEach((code, index) => {
+                    if (!code || code <= 0) return;
+
+                    const uniqueId = `${containerId}-card-${index}-${code}`;
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'deck-card';
+                    cardDiv.id = uniqueId;
+
+                    // Use fetched metadata if available
+                    const cardData = cardMetadataCache[code];
+
+                    if (cardData && window.CardLoader) {
+                        // Optimized: Render directly using cached data
+                        const img = document.createElement('img');
+                        img.className = 'yugioh-card';
+                        img.src = `https://images.ygoprodeck.com/images/cards/${code}.jpg`;
+                        img.alt = cardData.name;
+                        img.loading = 'lazy';
+
+                        // Fallback error handler
+                        img.onerror = function () {
+                            this.onerror = null;
+                            this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 421 614'%3E%3Crect width='100%25' height='100%25' fill='%231a1a1a'/%3E%3Ctext x='50%25' y='50%25' fill='%23666' font-family='Arial' font-size='30' text-anchor='middle' dy='.3em'%3EIMG ERROR%3C/text%3E%3C/svg%3E";
+                        };
+
+                        cardDiv.appendChild(img);
+
+                        // Attach CardLoader popup events robustly
+                        cardDiv.style.cursor = 'pointer';
+
+                        // Use addEventListener instead of onclick execution
+                        const triggerPopup = (e) => {
+                            e.stopPropagation();
+                            // console.log('[DeckCard] Clicked:', cardData.name);
+
+                            // Ensure data exists in CardLoader cache
+                            if (window.CardLoader && window.CardLoader.cardDataCache) {
+                                if (!window.CardLoader.cardDataCache[cardData.name]) {
+                                    // console.warn('[DeckCard] Cache miss in CardLoader. Refilling:', cardData.name);
+                                    window.CardLoader.cardDataCache[cardData.name] = cardData;
+                                }
+                                window.CardLoader.showPopup(e, cardData.name);
+                            }
+                        };
+
+                        cardDiv.addEventListener('click', triggerPopup);
+                        // cardDiv.addEventListener('mouseenter', triggerPopup); // Removed per user request (Click only)
+                        // cardDiv.addEventListener('mouseleave', () => window.CardLoader.hidePopup()); // Optional, CardLoader might handle auto-hide
+
+                    } else {
+                        // Fallback: simple image
+                        const img = document.createElement('img');
+                        img.src = `https://images.ygoprodeck.com/images/cards/${code}.jpg`;
+                        img.alt = `Card ${code}`;
+                        img.loading = 'lazy';
+
+                        img.onerror = function () {
+                            if (!this.dataset.fallback) {
+                                this.dataset.fallback = 'true';
+                                // Fallback to YGOProDeck
+                                this.src = `https://images.ygoprodeck.com/images/cards/${code}.jpg`;
+                            } else if (this.dataset.fallback === 'true') {
+                                this.dataset.fallback = 'retry';
+                                // Fallback to placeholder
+                                this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 421 614"><rect fill="%23222" width="421" height="614"/><text x="50%" y="50%" fill="%23555" text-anchor="middle" font-size="40">?</text></svg>';
+                            }
+                        };
+                        cardDiv.appendChild(img);
+                    }
+
+                    // Critical Fix: Append the card to the container!
+                    container.appendChild(cardDiv);
+                });
+            }
+
+            function createTempoChart(perTurnMetrics, playerNames) {
+                const ctx = document.getElementById('tempoChart').getContext('2d');
+                if (tempoChartInstance) {
+                    tempoChartInstance.destroy();
+                }
+                if (!perTurnMetrics || perTurnMetrics.length === 0) return;
+
+                const p1Name = playerNames?.[0] || 'Player 1';
+                const p2Name = playerNames?.[1] || 'Player 2';
+                const labels = perTurnMetrics.map(t => `Turn ${t.turn}`);
+                const p1TotalActions = perTurnMetrics.map(t => t.player1?.totalActions || 0);
+                const p2TotalActions = perTurnMetrics.map(t => t.player2?.totalActions || 0);
+
+                tempoChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: p1Name,
+                                data: p1TotalActions,
+                                backgroundColor: 'rgba(239, 68, 68, 0.8)', // Red-500
+                                borderColor: 'rgb(239, 68, 68)',
+                                borderWidth: 2
+                            },
+                            {
+                                label: p2Name,
+                                data: p2TotalActions,
+                                backgroundColor: 'rgba(245, 158, 11, 0.8)', // Amber-500
+                                borderColor: 'rgb(245, 158, 11)',
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                ticks: { color: '#a3a3a3' }
+                            },
+                            y: {
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                ticks: { color: '#a3a3a3' },
+                                beginAtZero: true,
+                                title: { display: true, text: 'Actions', color: '#a3a3a3' }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: { color: '#f5f5f5' },
+                                position: 'top'
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(23, 23, 23, 0.95)',
+                                titleColor: '#f5f5f5',
+                                bodyColor: '#f5f5f5',
+                                borderColor: 'rgba(64, 64, 64, 0.5)',
+                                borderWidth: 1,
+                                callbacks: {
+                                    afterLabel: function (context) {
+                                        const index = context.dataIndex;
+                                        const turn = perTurnMetrics[index];
+                                        const isPlayer1 = context.datasetIndex === 0;
+                                        const playerData = isPlayer1 ? turn.player1 : turn.player2;
+                                        if (!playerData) return '';
+                                        const lines = [];
+                                        if (playerData.normalSummons > 0) lines.push(`NS: ${playerData.normalSummons}`);
+                                        if (playerData.specialSummons > 0) lines.push(`SS: ${playerData.specialSummons}`);
+                                        if (playerData.effectActivations > 0) lines.push(`FX: ${playerData.effectActivations}`);
+                                        return lines.join(', ');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            // Create Advantage chart
+
+
+            function getSeverityColor(severity) {
+                switch (severity) {
+                    case 'info': return 'rgba(56, 189, 248, 0.15)';
+                    case 'warning': return 'rgba(251, 191, 36, 0.15)';
+                    case 'critical': return 'rgba(248, 113, 113, 0.15)';
+                    default: return 'rgba(148, 163, 184, 0.15)';
+                }
+            }
+
+            function getSeverityBorderColor(severity) {
+                switch (severity) {
+                    case 'info': return 'rgba(56, 189, 248, 0.3)';
+                    case 'warning': return 'rgba(251, 191, 36, 0.3)';
+                    case 'critical': return 'rgba(248, 113, 113, 0.3)';
+                    default: return 'rgba(148, 163, 184, 0.3)';
+                }
+            }
+
+            function getSeverityIcon(severity) {
+                switch (severity) {
+                    case 'info': return 'ℹ️';
+                    case 'warning': return '⚠️';
+                    case 'critical': return '🔥';
+                    default: return '❓';
+                }
+            }
+
+            // Known hand traps for visual highlighting
+            const KNOWN_HAND_TRAPS = new Set([
+                23434538,   // Ash Blossom & Joyous Spring
+                14558127,   // Maxx "C"
+                10045474,   // Infinite Impermanence
+                59438930,   // Ghost Belle & Haunted Mansion
+                73642296,   // Ghost Ogre & Snow Rabbit
+                52038441,   // Effect Veiler
+                15693423,   // Droll & Lock Bird
+                94145021,   // D.D. Crow
+                97268402,   // Nibiru, the Primal Being
+                43898403,   // PSY-Framegear Gamma
+                49036338,   // Artifact Lancea
+                50078509,   // Ghost Mourner & Moonlit Chill
+            ]);
+
+            function renderHandCards(containerId, cardCodes) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                if (!cardCodes || cardCodes.length === 0) {
+                    container.innerHTML = '<span style="color: var(--text-muted); font-size: 0.75rem;">No hand data available</span>';
+                    return;
+                }
+
+                // Slice to max 7 cards just in case
+                cardCodes.slice(0, 7).forEach((code, index) => {
+                    if (!code || code <= 0) return;
+
+                    const uniqueId = `${containerId}-card-${index}-${code}`;
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'hand-card';
+                    cardDiv.id = uniqueId;
+
+                    // Add hand-trap class for visual highlighting
+                    if (KNOWN_HAND_TRAPS.has(code)) {
+                        cardDiv.classList.add('hand-trap');
+                    }
+
+                    container.appendChild(cardDiv);
+
+                    // Manual rendering to ensure consistent popup style (using window.CardLoader.showPopup override)
+                    const img = document.createElement('img');
+                    img.src = `https://images.ygoprodeck.com/images/cards/${code}.jpg`;
+                    img.alt = `Card ${code}`;
+                    img.loading = 'lazy';
+
+                    // Fallback for image
+                    img.onerror = function () {
+                        this.src = 'https://images.ygoprodeck.com/images/cards/back_high.jpg';
+                    };
+                    cardDiv.appendChild(img);
+
+                    // Attach popup listener
+                    cardDiv.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Close any existing popup first
+                        const existingPopup = document.getElementById('card-popup');
+                        if (existingPopup) {
+                            existingPopup.style.display = 'none';
+                            existingPopup.style.opacity = 0;
+                        }
+
+                        if (window.CardLoader && window.CardLoader.showPopup) {
+                            // We need the card NAME for showPopup.
+                            // Try to find it in the cache by Code
+                            let cardName = null;
+                            const cache = window.CardLoader.cardDataCache || {};
+
+                            // Reverse lookup: Find name by ID (code)
+                            for (const [name, data] of Object.entries(cache)) {
+                                // Start checking if ID matches (data.id is usually number)
+                                if (data.id == code) {
+                                    cardName = name;
+                                    break;
+                                }
+                            }
+
+                            // If not found in cache, we try to use the placeholder name if possible or just log warn
+                            if (cardName) {
+                                window.CardLoader.showPopup(e, cardName);
+                            } else {
+                                // Fallback: If we don't have name, we can't use the name-based popup easily.
+                                // Try to use loadCardById behavior? No, that breaks style.
+                                // Just minimal fallback?
+                                console.warn('Card name not found for ID:', code);
+                            }
+                        }
+                    });
+                });
+            }
+
+            function createTempoChart(perTurnMetrics, playerNames) {
+                const ctx = document.getElementById('tempoChart').getContext('2d');
+
+                if (tempoChartInstance) {
+                    tempoChartInstance.destroy();
+                }
+
+                if (!perTurnMetrics || perTurnMetrics.length === 0) {
+                    return;
+                }
+
+                const p1Name = playerNames?.[0] || 'Player 1';
+                const p2Name = playerNames?.[1] || 'Player 2';
+
+                const labels = perTurnMetrics.map(t => `Turn ${t.turn}`);
+
+                // Player 1 data
+                const p1TotalActions = perTurnMetrics.map(t => t.player1?.totalActions || 0);
+
+                // Player 2 data
+                const p2TotalActions = perTurnMetrics.map(t => t.player2?.totalActions || 0);
+
+                tempoChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: p1Name,
+                                data: p1TotalActions,
+                                backgroundColor: 'rgba(56, 189, 248, 0.8)',
+                                borderColor: 'rgb(56, 189, 248)',
+                                borderWidth: 2
+                            },
+                            {
+                                label: p2Name,
+                                data: p2TotalActions,
+                                backgroundColor: 'rgba(244, 114, 182, 0.8)',
+                                borderColor: 'rgb(244, 114, 182)',
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                ticks: { color: '#94a3b8' }
+                            },
+                            y: {
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                ticks: { color: '#94a3b8' },
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Actions',
+                                    color: '#94a3b8'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: { color: '#e2e8f0' },
+                                position: 'top'
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleColor: '#e2e8f0',
+                                bodyColor: '#e2e8f0',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderWidth: 1,
+                                callbacks: {
+                                    afterLabel: function (context) {
+                                        const index = context.dataIndex;
+                                        const turn = perTurnMetrics[index];
+                                        const isPlayer1 = context.datasetIndex === 0;
+                                        const playerData = isPlayer1 ? turn.player1 : turn.player2;
+
+                                        if (!playerData) return '';
+
+                                        const lines = [];
+                                        if (playerData.normalSummons > 0) {
+                                            lines.push(`NS: ${playerData.normalSummons}`);
+                                        }
+                                        if (playerData.specialSummons > 0) {
+                                            lines.push(`SS: ${playerData.specialSummons}`);
+                                        }
+                                        if (playerData.effectActivations > 0) {
+                                            lines.push(`FX: ${playerData.effectActivations}`);
+                                        }
+                                        return lines.join(', ');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function createChart(snapshots, playerNames) {
+                const ctx = document.getElementById('advantageChart').getContext('2d');
+
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+
+                if (!snapshots || snapshots.length === 0) return;
+
+                // Prepare data
+                const labels = snapshots.map(s => `T${s.turn} ${s.phase}`);
+                const player1Data = snapshots.map(s => s.player1.total);
+                const player2Data = snapshots.map(s => s.player2.total);
+                const deltaData = snapshots.map(s => s.delta);
+
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: playerNames?.[0] || 'Player 1',
+                                data: player1Data,
+                                borderColor: '#38bdf8',
+                                backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            },
+                            {
+                                label: playerNames?.[1] || 'Player 2',
+                                data: player2Data,
+                                borderColor: '#f472b6',
+                                backgroundColor: 'rgba(244, 114, 182, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            },
+                            {
+                                label: 'Delta (P1 - P2)',
+                                data: deltaData,
+                                borderColor: '#a78bfa',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                tension: 0.3,
+                                pointRadius: 0,
+                                yAxisID: 'delta'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    color: '#94a3b8',
+                                    usePointStyle: true,
+                                    padding: 20
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleColor: '#e2e8f0',
+                                bodyColor: '#94a3b8',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderWidth: 1,
+                                padding: 12,
+                                callbacks: {
+                                    label: function (context) {
+                                        const label = context.dataset.label || '';
+                                        const value = context.parsed.y;
+                                        if (context.datasetIndex === 2) {
+                                            return `${label}: ${value >= 0 ? '+' : ''}${value}`;
+                                        }
+                                        return `${label}: ${value} cards`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)'
+                                },
+                                ticks: {
+                                    color: '#64748b',
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            },
+                            y: {
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Total Resources (Hand + Field)',
+                                    color: '#94a3b8'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)'
+                                },
+                                ticks: {
+                                    color: '#64748b'
+                                },
+                                beginAtZero: true
+                            },
+                            delta: {
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Advantage Delta',
+                                    color: '#a78bfa'
+                                },
+                                grid: {
+                                    drawOnChartArea: false
+                                },
+                                ticks: {
+                                    color: '#a78bfa'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        </script>
+
+        <!-- Custom Popup Override for Replay Analyzer -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Override showPopup strictly for this page to fix layout/style
+                if (window.CardLoader) {
+                    window.CardLoader.showPopup = function (event, cardName) {
+                        event.stopPropagation();
+
+                        const popup = document.getElementById('card-popup');
+                        if (!popup) return;
+
+                        // Hide previous
+                        popup.style.display = 'none';
+                        popup.style.opacity = 0;
+
+                        const cardInfo = window.CardLoader.cardDataCache[cardName];
+                        if (!cardInfo) return;
+
+                        // --- Custom HTML Generation ---
+                        let stats = '';
+                        let atkDef = [];
+                        if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
+                        if (cardInfo.def !== undefined && !cardInfo.linkval) atkDef.push(`DEF/${cardInfo.def}`);
+                        if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
+                        if (atkDef.length > 0) {
+                            stats = `<p class="mt-2 text-yellow-400 font-bold">${atkDef.join(' ')}</p>`;
+                        }
+
+                        let cardType = '[Card]';
+                        if (cardInfo.type) {
+                            if (cardInfo.type.includes('Monster')) {
+                                cardType = `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]`;
+                            } else {
+                                cardType = `[${cardInfo.race} ${cardInfo.type.replace('Card', '').trim()}]`;
+                            }
+                        }
+
+                        // Format Description
+                        let description = cardInfo.desc || "";
+                        if (description.includes('[ Pendulum Effect ]')) {
+                            description = description.replace('[ Pendulum Effect ]', '<div class="text-blue-300 font-bold text-xs mt-1 mb-1">Pendulum Effect</div>');
+                            description = description.replace('[ Monster Effect ]', '<div class="text-green-300 font-bold text-xs mt-2 mb-1">Monster Effect</div>');
+                        }
+                        description = description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
+
+                        // Custom Price Section (Robust Inline Styles)
+                        let priceHtml = '';
+                        if (cardInfo.card_prices && cardInfo.card_prices.length > 0) {
+                            const prices = cardInfo.card_prices[0];
+                            priceHtml = '<div style="margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #4b5563;">';
+                            priceHtml += '<div style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 0.25rem; display: flex; align-items: center;"><span style="margin-right: 0.25rem">💰</span> Prices</div>';
+                            priceHtml += '<div style="display: flex; gap: 1rem; font-size: 0.75rem;">';
+
+                            if (prices.tcgplayer_price) {
+                                const tcgUrl = `https://www.tcgplayer.com/search/yugioh/product?productLineName=yugioh&q=${encodeURIComponent(cardInfo.name)}`;
+                                priceHtml += `
+                                <a href="${tcgUrl}" target="_blank" style="display: flex; align-items: center; gap: 0.25rem; text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                                    <span style="color: #4ade80; font-weight: bold;">$${prices.tcgplayer_price}</span>
+                                    <span style="color: #9ca3af;">TCGplayer</span>
+                                    <i class="fas fa-external-link-alt" style="font-size: 10px; color: #6b7280;"></i>
+                                </a>`;
+                            }
+                            if (prices.cardmarket_price) {
+                                const cmUrl = `https://www.cardmarket.com/en/YuGiOh/Products/Singles?searchString=${encodeURIComponent(cardInfo.name)}`;
+                                priceHtml += `
+                                <a href="${cmUrl}" target="_blank" style="display: flex; align-items: center; gap: 0.25rem; text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                                    <span style="color: #4ade80; font-weight: bold;">€${prices.cardmarket_price}</span>
+                                    <span style="color: #9ca3af;">Cardmarket</span>
+                                    <i class="fas fa-external-link-alt" style="font-size: 10px; color: #6b7280;"></i>
+                                </a>`;
+                            }
+                            priceHtml += '</div></div>';
+                        }
+
+                        // Stats stying - Larger Yellow Text
+                        if (stats) {
+                            stats = stats.replace('class="mt-2 text-yellow-400 font-bold"', 'class="mt-3 mb-1 text-yellow-400 font-bold text-sm tracking-wide"');
+                        }
+
+                        popup.innerHTML = `
+                        <div class="flex flex-col" style="max-height: 550px;">
+                            <div class="flex-shrink-0">
+                                <h3 class="text-blue-400 font-bold text-lg mb-1 leading-tight">${cardInfo.name}</h3>
+                                <p class="text-xs text-gray-400 mb-2">${cardType}</p>
+                                <div class="w-full h-px bg-blue-500 mb-2"></div>
+                            </div>
+                            <div class="flex-1 overflow-y-auto pr-1 custom-scrollbar" style="min-height: 0;">
+                                <div class="text-xs leading-relaxed text-gray-200">${description}</div>
+                                ${stats}
+                                ${priceHtml}
+                            </div>
+                        </div>
+                    `;
+
+                        popup.dataset.card = cardName;
+                        popup.style.display = 'block';
+                        popup.style.zIndex = '10000';
+
+                        // Positioning
+                        const rect = event.target.getBoundingClientRect();
+                        const popupWidth = 320;
+                        let left = rect.right + 10;
+                        if (left + popupWidth > window.innerWidth) {
+                            left = rect.left - popupWidth - 10;
+                        }
+                        if (left < 0) left = 10;
+
+                        let top = rect.top;
+                        // Adjust vertical position to stay on screen (Popup max-height is ~550px)
+                        if (top + 560 > window.innerHeight) {
+                            top = window.innerHeight - 570; // 550px + 20px padding
+                        }
+                        if (top < 10) top = 10;
+
+                        popup.style.left = `${left}px`;
+                        popup.style.top = `${top}px`;
+                        popup.style.width = '320px';
+
+                        setTimeout(() => { popup.style.opacity = 1; }, 10);
+                    };
+                }
+
+                // Close popup when clicking outside
+                document.addEventListener('click', (e) => {
+                    const popup = document.getElementById('card-popup');
+                    if (popup && popup.style.display === 'block') {
+                        // If click is NOT inside the popup, close it
+                        if (!popup.contains(e.target)) {
+                            popup.style.opacity = 0;
+                            setTimeout(() => { popup.style.display = 'none'; }, 200);
+                        }
+                    }
+                });
+            });
+        </script>
+</body>
+
+</html>

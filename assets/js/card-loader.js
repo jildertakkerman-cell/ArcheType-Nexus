@@ -382,6 +382,43 @@ window.CardLoader = (function () {
     }
 
     /**
+     * Load a single card by ID into a container
+     */
+    async function loadCardById(cardId, containerId) {
+        console.log('[CardLoader] loadCardById called for:', cardId, 'container:', containerId);
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        try {
+            // Check cache first (by ID if possible, or we might need a separate id cache)
+            // But cardDataCache is keyed by name.
+            // Let's optimize: fetch data, then cache by Name AND ID?
+            // For now, just fetch.
+
+            const cardInfo = await fetchCardDataById(cardId);
+
+            if (cardInfo) {
+                cardInfo.hosted_image_url = `${CONFIG.IMAGE_BASE_URL}/${cardInfo.id}.png`;
+                // Cache by name for future lookups
+                cardDataCache[cardInfo.name] = cardInfo;
+
+                // Add click listener for popup (uses name)
+                container.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showPopup(event, cardInfo.name);
+                });
+
+                displayCardImage(cardInfo, container);
+            } else {
+                throw new Error('Card data not found');
+            }
+        } catch (error) {
+            console.error(`Failed to load card ID "${cardId}":`, error);
+            container.innerHTML = `<div class="card-placeholder">ID: ${cardId}</div>`;
+        }
+    }
+
+    /**
      * Fetch card data from API
      */
     async function fetchCardData(cardName) {
@@ -395,6 +432,22 @@ window.CardLoader = (function () {
 
         const data = await response.json();
         return data?.data?.[0];
+    }
+
+    /**
+     * Fetch card data from API by ID
+     */
+    async function fetchCardDataById(cardId) {
+        const apiUrl = `${CONFIG.API_URL}?id=${cardId}`;
+        console.log("[CardLoader] fetchCardDataById called for:", cardId, "URL:", apiUrl);
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data?.data?.[0]; // API returns array even for single ID
     }
 
     /**
@@ -2253,6 +2306,8 @@ window.CardLoader = (function () {
         init,
         loadCard,
         loadCards,
+        loadCardById, // Added this
+        fetchCardDataById, // Added this
         getCardImageUrl,
         preloadCards,
         getCachedCard,
