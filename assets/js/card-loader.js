@@ -21,7 +21,12 @@ window.CardLoader = (function () {
         IMAGE_EXTENSIONS: ['.png', '.jpg'],
         CARD_BACK_URL: 'https://images.ygoprodeck.com/images/cards/back_high.jpg',
         // TCGplayer affiliate tag for price links (leave empty if not using affiliate program)
-        TCGPLAYER_AFFILIATE_TAG: ''
+        TCGPLAYER_AFFILIATE_TAG: '',
+        // Supabase configuration for gameplay tags (optional)
+        // Set these values to enable tag display in card popups
+        // Get your credentials from: https://supabase.com/dashboard/project/_/settings/api
+        SUPABASE_URL: window.SUPABASE_CONFIG?.url || '',
+        SUPABASE_ANON_KEY: window.SUPABASE_CONFIG?.anonKey || ''
     };
 
     // Banlist format display names and icons
@@ -58,6 +63,8 @@ window.CardLoader = (function () {
         masterduel: {}
     };
     const discordLinksCache = {};
+    const cardTagsCache = {}; // Cache for gameplay tags by passcode
+    let supabaseClient = null; // Lazy-initialized Supabase client
     let banlistData = null;
     let currentBanlistFormat = 'tcg'; // Default format
     let popup = null;
@@ -67,6 +74,135 @@ window.CardLoader = (function () {
     // Debug toggle for development — when true, material extraction steps are logged
     let debugMaterials = false;
     let initialized = false;
+
+    // Tag category color mapping for visual styling
+    // Categories: Combat, Consistency, Disruption, Mechanics, Protection, Removal
+    const TAG_CATEGORY_COLORS = {
+        // Combat (Red/Orange)
+        combat: { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
+        // Consistency (Blue)
+        consistency: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
+        // Disruption (Rose/Pink)
+        disruption: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' },
+        // Mechanics (Indigo)
+        mechanics: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20' },
+        // Protection (Teal)
+        protection: { bg: 'bg-teal-500/10', text: 'text-teal-400', border: 'border-teal-500/20' },
+        // Removal (Amber)
+        removal: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
+        // Timing (Purple) - For Quick Effect, etc.
+        timing: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
+        // Default
+        default: { bg: 'bg-slate-700/50', text: 'text-slate-400', border: 'border-slate-600/30' }
+    };
+
+    /**
+     * Initialize Supabase client (lazy initialization)
+     * @returns {Object|null} Supabase client or null if not configured
+     */
+    function getSupabaseClient() {
+        if (supabaseClient) return supabaseClient;
+
+        if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) {
+            return null; // Supabase not configured, silently skip
+        }
+
+        if (typeof supabase === 'undefined' || !supabase.createClient) {
+            console.warn('[CardLoader] Supabase CDN not loaded. Tags feature unavailable.');
+            return null;
+        }
+
+        try {
+            supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+            console.log('[CardLoader] Supabase client initialized');
+            return supabaseClient;
+        } catch (error) {
+            console.error('[CardLoader] Failed to initialize Supabase:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch gameplay tags for a card by passcode
+     * @param {number} passcode - Card passcode (ID)
+     * @returns {Promise<Array>} Array of {tag_name, tag_category} objects
+     */
+    async function fetchCardTags(passcode) {
+        if (!passcode) return [];
+
+        // Check cache first
+        if (cardTagsCache[passcode]) {
+            return cardTagsCache[passcode];
+        }
+
+        const client = getSupabaseClient();
+        if (!client) return []; // Supabase not configured
+
+        try {
+            const { data, error } = await client.rpc('get_tags_by_passcode', {
+                card_passcode: parseInt(passcode)
+            });
+
+            if (error) {
+                console.error('[CardLoader] Error fetching tags:', error);
+                return [];
+            }
+
+            // Cache the results
+            cardTagsCache[passcode] = data || [];
+            return cardTagsCache[passcode];
+        } catch (error) {
+            console.error('[CardLoader] Failed to fetch card tags:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Format tags section HTML for card popup
+     * @param {Array} tags - Array of {tag_name, tag_category} objects
+     * @param {string} cardType - Optional card type string to check for Extra Deck exclusion
+     * @returns {string} HTML string for tags section
+     */
+    function formatTagsSection(tags, cardType = '') {
+        if (!tags || tags.length === 0) return '';
+
+        // Extract tag names for hand trap detection
+        const tagNames = tags.map(t => t.tag_name);
+
+        // Extra Deck monster types that should never be hand traps
+        const extraDeckTypes = ['Fusion', 'Synchro', 'Xyz', 'Link', 'Pendulum'];
+        const isExtraDeck = extraDeckTypes.some(type => cardType.includes(type));
+
+        // Detect true hand traps: Hand Activation + (Negate OR Banishment OR Floodgate)
+        // BUT exclude Extra Deck monsters
+        const isHandTrap = !isExtraDeck && tagNames.includes('Hand Activation') &&
+            (tagNames.includes('Negate') ||
+                tagNames.includes('Banishment') ||
+                tagNames.includes('Floodgate'));
+
+        const tagPills = tags.map(tag => {
+            const category = (tag.tag_category || 'default').toLowerCase();
+            const colors = TAG_CATEGORY_COLORS[category] || TAG_CATEGORY_COLORS.default;
+
+            return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text} border ${colors.border}">
+                ${tag.tag_name}
+            </span>`;
+        }).join('');
+
+        // Add special Hand Trap indicator if detected
+        const handTrapBadge = isHandTrap
+            ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-500/90 text-yellow-900 border border-yellow-400 shadow-sm shadow-yellow-500/30">
+                ✋ Hand Trap
+            </span>`
+            : '';
+
+        return `
+            <div class="mt-3 pt-2 border-t border-gray-700">
+                <div class="text-xs text-gray-400 mb-1">🏷️ Gameplay Tags${isHandTrap ? ' <span class="text-yellow-400">(Hand Trap)</span>' : ''}</div>
+                <div class="flex flex-wrap gap-1">${handTrapBadge}${tagPills}</div>
+            </div>
+        `;
+    }
 
     /**
      * Initialize the card loader system
@@ -422,7 +558,7 @@ window.CardLoader = (function () {
      * Fetch card data from API
      */
     async function fetchCardData(cardName) {
-        const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}`;
+        const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}&misc=yes`;
         console.log("[CardLoader] fetchCardData called for:", cardName, "URL:", apiUrl);
         const response = await fetch(apiUrl);
 
@@ -438,7 +574,7 @@ window.CardLoader = (function () {
      * Fetch card data from API by ID
      */
     async function fetchCardDataById(cardId) {
-        const apiUrl = `${CONFIG.API_URL}?id=${cardId}`;
+        const apiUrl = `${CONFIG.API_URL}?id=${cardId}&misc=yes`;
         console.log("[CardLoader] fetchCardDataById called for:", cardId, "URL:", apiUrl);
         const response = await fetch(apiUrl);
 
@@ -520,6 +656,17 @@ window.CardLoader = (function () {
         };
 
         cardWrapper.appendChild(img);
+
+        // Add Release Date Badge
+        let dateDisplay = '';
+        if (cardInfo.misc_info && cardInfo.misc_info[0]) {
+            dateDisplay = cardInfo.misc_info[0].tcg_date || cardInfo.misc_info[0].ocg_date || '';
+        } else if (cardInfo.tcg_date || cardInfo.ocg_date) {
+            dateDisplay = cardInfo.tcg_date || cardInfo.ocg_date;
+        }
+
+        // Date badge is now handled in the card template (renderBrowserCardSection)
+        // to allow for better positioning and styling control
 
         // If banned, add visual indication
         if (banStatus === 'Forbidden') {
@@ -1028,7 +1175,7 @@ window.CardLoader = (function () {
     /**
      * Show popup with card details
      */
-    function showPopup(event, cardName) {
+    async function showPopup(event, cardName) {
         // Stop event propagation to prevent immediate hide
         event.stopPropagation();
 
@@ -1051,6 +1198,40 @@ window.CardLoader = (function () {
         const cardInfo = cardDataCache[cardName];
         if (!cardInfo) return;
 
+        // Lazy load description/data if missing or if release date (misc_info) is missing
+        // This ensures we get the release date for cards loaded from Supabase
+        const needsFetch = (!cardInfo.desc || cardInfo.desc === '' || !cardInfo.misc_info);
+
+        if (needsFetch && !cardInfo.is_dummy && !cardInfo._fetching) {
+            cardInfo._fetching = true;
+            console.log('[CardLoader] Lazy loading details for:', cardName);
+            fetchCardData(cardName).then(data => {
+                cardInfo._fetching = false;
+                if (data) {
+                    Object.assign(cardInfo, data);
+                    if (activePopup && currentCard === cardName) {
+                        const descArea = document.getElementById('popup-desc-area');
+                        if (descArea) descArea.innerHTML = formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name);
+
+                        // Update price
+                        const priceArea = document.getElementById('popup-price-area');
+                        if (priceArea) priceArea.innerHTML = formatPriceSection(cardInfo); // innerHTML of the wrapper
+
+                        // Update release date
+                        const misc = cardInfo.misc_info ? cardInfo.misc_info[0] : null;
+                        if (misc && (misc.tcg_date || misc.ocg_date)) {
+                            const dateStr = misc.tcg_date || misc.ocg_date;
+                            const dateHeader = document.getElementById('popup-release-date');
+                            if (dateHeader) {
+                                dateHeader.textContent = `Release: ${dateStr}`;
+                                dateHeader.classList.remove('hidden');
+                            }
+                        }
+                    }
+                }
+            }).catch(e => { console.warn(e); cardInfo._fetching = false; });
+        }
+
         let stats = '';
         let atkDef = [];
         if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
@@ -1061,29 +1242,51 @@ window.CardLoader = (function () {
         }
 
         let cardType;
+        const race = cardInfo.race || 'Unknown'; // Fallback for missing race
+
         if (cardInfo.type.includes('Monster')) {
-            cardType = `[${cardInfo.race} / ${cardInfo.type.replace(' Monster', '')}]`;
+            cardType = `[${race} / ${cardInfo.type.replace(' Monster', '')}]`;
         } else if (cardInfo.type.includes('Spell')) {
-            const icon = getCardTypeIcon(cardInfo.race, cardInfo.type);
-            cardType = `${icon} [${cardInfo.race} Spell]`;
+            const icon = getCardTypeIcon(race, cardInfo.type);
+            cardType = `${icon} [${race} Spell]`;
         } else if (cardInfo.type.includes('Trap')) {
-            const icon = getCardTypeIcon(cardInfo.race, cardInfo.type);
-            cardType = `${icon} [${cardInfo.race} Trap]`;
+            const icon = getCardTypeIcon(race, cardInfo.type);
+            cardType = `${icon} [${race} Trap]`;
         } else {
-            cardType = `[${cardInfo.race} Card]`;
+            cardType = `[${race} Card]`;
+        }
+
+        // Use card ID as passcode for tag lookup
+        const cardPasscode = cardInfo.id;
+
+        // Release Date extraction
+        let releaseDateHtml = '';
+        const misc = cardInfo.misc_info ? cardInfo.misc_info[0] : null;
+        if (misc && (misc.tcg_date || misc.ocg_date)) {
+            releaseDateHtml = `Release: ${misc.tcg_date || misc.ocg_date}`;
         }
 
         popup.innerHTML = `
-            <div class="flex flex-col" style="max-height: 450px;">
+            <div class="flex flex-col">
                 <div class="flex-shrink-0">
-                    <h3 class="text-blue-400 font-bold text-lg mb-2">${cardInfo.name}</h3>
-                    <p class="text-xs text-gray-300">${cardType}</p>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-blue-400 font-bold text-lg mb-1">${cardInfo.name}</h3>
+                            <p class="text-xs text-gray-300">${cardType}</p>
+                        </div>
+                        <span id="popup-release-date" class="text-[10px] text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded border border-gray-700 whitespace-nowrap ${releaseDateHtml ? '' : 'hidden'}">
+                            ${releaseDateHtml}
+                        </span>
+                    </div>
                     <div class="w-full h-px bg-blue-500 my-2"></div>
                 </div>
-                <div class="flex-1 overflow-y-auto" style="min-height: 0;">
-                    ${formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name)}
+                <div class="flex-1 overflow-hidden">
+                    <div id="popup-desc-area">
+                        ${cardInfo.desc ? formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name) : '<p class="text-gray-400 italic text-xs p-2">Loading details...</p>'}
+                    </div>
                     ${stats}
-                    ${formatPriceSection(cardInfo)}
+                    <div id="card-tags-container"></div>
+                    <div id="popup-price-area">${formatPriceSection(cardInfo)}</div>
                 </div>
             </div>
         `;
@@ -1091,11 +1294,21 @@ window.CardLoader = (function () {
         popup.style.display = 'block';
         popup.style.zIndex = '10000';
         movePopup(event);
-        popup.style.pointerEvents = 'auto'; // Enable pointer events for scrolling
+        popup.style.pointerEvents = 'none'; // Disable pointer events - no scrolling needed
         setTimeout(() => { popup.style.opacity = 1; }, 10);
         activePopup = popup;
         lastShown = Date.now();
         currentCard = cardName;
+
+        // Fetch and display tags asynchronously (non-blocking)
+        if (cardPasscode && getSupabaseClient()) {
+            fetchCardTags(cardPasscode).then(tags => {
+                const tagsContainer = popup.querySelector('#card-tags-container');
+                if (tagsContainer && tags.length > 0) {
+                    tagsContainer.innerHTML = formatTagsSection(tags, cardInfo.type || '');
+                }
+            });
+        }
     }
 
     function hidePopup() {
@@ -2152,6 +2365,784 @@ window.CardLoader = (function () {
         container.innerHTML = html;
     }
 
+    // ========================================
+    // ARCHETYPE CARDS BROWSER (Supabase)
+    // ========================================
+
+    let archetypeCardsModal = null;
+
+    /**
+     * Fetch all cards for an archetype from Supabase
+     * @param {string} archetypeName - Name of the archetype
+     * @returns {Promise<Array>} Array of card objects with type info
+     */
+    async function fetchArchetypeCardsFromSupabase(archetypeName) {
+        const client = getSupabaseClient();
+        if (!client) return null;
+
+        try {
+            const { data, error } = await client.rpc('get_archetype_cards', {
+                archetype_name: archetypeName
+            });
+
+            if (error) {
+                console.error('[CardLoader] Error fetching archetype cards:', error);
+                return null;
+            }
+
+            return data || [];
+        } catch (error) {
+            console.error('[CardLoader] Failed to fetch archetype cards:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Sort cards into categories: Main Deck Monsters, Spells, Traps, Extra Deck
+     * @param {Array} cards - Array of card objects
+     * @returns {Object} Sorted cards by category
+     */
+    function sortCardsByType(cards) {
+        const extraDeckTypes = ['Fusion', 'Synchro', 'Xyz', 'Link'];
+
+        const sorted = {
+            monsters: [],
+            spells: [],
+            traps: [],
+            extraDeck: []
+        };
+
+        cards.forEach(card => {
+            const cardType = (card.cardtype || card.card_type || '').toLowerCase();
+
+            // Check if it's an Extra Deck monster
+            const isExtraDeck = extraDeckTypes.some(type => cardType.includes(type.toLowerCase()));
+
+            if (isExtraDeck) {
+                sorted.extraDeck.push(card);
+            } else if (cardType.includes('monster')) {
+                sorted.monsters.push(card);
+            } else if (cardType.includes('spell')) {
+                sorted.spells.push(card);
+            } else if (cardType.includes('trap')) {
+                sorted.traps.push(card);
+            } else {
+                // Default to monsters if type is unclear
+                sorted.monsters.push(card);
+            }
+        });
+
+        // Sort each category alphabetically by name
+        Object.keys(sorted).forEach(key => {
+            sorted[key].sort((a, b) => (a.cardname || a.card_name || '').localeCompare(b.cardname || b.card_name || ''));
+        });
+
+        return sorted;
+    }
+
+    /**
+     * Create and show the archetype cards modal
+     * @param {string} archetypeName - Name of the archetype
+     * @param {Object} sortedCards - Cards sorted by type
+     */
+    function showArchetypeCardsModal(archetypeName, sortedCards) {
+        // Remove existing modal if present
+        if (archetypeCardsModal) {
+            archetypeCardsModal.remove();
+        }
+
+        const totalCards = sortedCards.monsters.length + sortedCards.spells.length +
+            sortedCards.traps.length + sortedCards.extraDeck.length;
+
+        // Create modal HTML
+        const modalHtml = `
+            <div id="archetype-cards-modal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);">
+                <div class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">${archetypeName} Cards</h2>
+                            <p class="text-sm text-gray-400">${totalCards} cards in archetype</p>
+                        </div>
+                        <button id="close-archetype-modal" class="text-gray-400 hover:text-white text-2xl font-bold px-3 py-1 rounded hover:bg-gray-700 transition-colors">
+                            ×
+                        </button>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="flex-1 overflow-y-auto p-4 space-y-6">
+                        ${renderCardSection('Main Deck Monsters', sortedCards.monsters, 'bg-yellow-600', '👹')}
+                        ${renderCardSection('Spell Cards', sortedCards.spells, 'bg-green-600', '✨')}
+                        ${renderCardSection('Trap Cards', sortedCards.traps, 'bg-purple-600', '🪤')}
+                        ${renderCardSection('Extra Deck', sortedCards.extraDeck, 'bg-blue-600', '⭐')}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Create and append modal
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHtml;
+        archetypeCardsModal = modalContainer.firstElementChild;
+        document.body.appendChild(archetypeCardsModal);
+
+        // Close handlers
+        document.getElementById('close-archetype-modal').addEventListener('click', closeArchetypeCardsModal);
+        archetypeCardsModal.addEventListener('click', (e) => {
+            if (e.target === archetypeCardsModal) closeArchetypeCardsModal();
+        });
+
+        // Escape key handler
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                closeArchetypeCardsModal();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+    }
+
+    /**
+     * Render a section of cards
+     */
+    function renderCardSection(title, cards, bgColor, icon) {
+        if (cards.length === 0) return '';
+
+        const cardItems = cards.map(card => {
+            const name = card.cardname || card.card_name || 'Unknown';
+            const passcode = card.passcode || card.id || '';
+            const imageUrl = passcode ? `${CONFIG.IMAGE_BASE_URL}/${passcode}.jpg` : '';
+
+            // Extract date
+            let dateDisplay = '';
+            if (card.misc_info && card.misc_info[0]) {
+                dateDisplay = card.misc_info[0].tcg_date || card.misc_info[0].ocg_date || '';
+            } else if (card.tcg_date || card.ocg_date) {
+                dateDisplay = card.tcg_date || card.ocg_date || '';
+            }
+
+            return `
+                <div class="flex flex-col items-center group cursor-pointer card-item" 
+                     data-card-name="${name}" data-passcode="${passcode}">
+                    <div class="w-20 h-28 rounded overflow-hidden border border-gray-600 group-hover:border-blue-400 transition-all shadow-md group-hover:shadow-lg group-hover:shadow-blue-500/20 relative">
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${name}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'h-full flex items-center justify-center bg-gray-800 text-xs text-gray-400 p-1 text-center\\'>${name}</div>'">`
+                    : `<div class="h-full flex items-center justify-center bg-gray-800 text-xs text-gray-400 p-1 text-center">${name}</div>`}
+                        ${dateDisplay ? `<div class="absolute top-0 right-0 bg-black/60 backdrop-blur-[2px] text-slate-200 text-[8px] px-1 py-0.5 rounded-bl font-mono z-10 pointer-events-none leading-none">${dateDisplay}</div>` : ''}
+                    </div>
+                    <span class="text-xs text-gray-300 mt-1 text-center line-clamp-2 max-w-20 group-hover:text-white transition-colors">${name}</span>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="${bgColor} text-white px-3 py-1 rounded-full text-sm font-semibold">${icon} ${title}</span>
+                    <span class="text-gray-500 text-sm">(${cards.length})</span>
+                </div>
+                <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3">
+                    ${cardItems}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Close the archetype cards modal
+     */
+    function closeArchetypeCardsModal() {
+        if (archetypeCardsModal) {
+            archetypeCardsModal.remove();
+            archetypeCardsModal = null;
+            document.body.style.overflow = '';
+        }
+    }
+
+    /**
+     * Initialize the standalone Card Browser page
+     * @param {string} archetypeName
+     */
+    async function initCardBrowserPage(archetypeName) {
+        document.title = `${archetypeName} - Card Browser`;
+        const titleEl = document.getElementById('archetype-title');
+        if (titleEl) titleEl.textContent = archetypeName;
+
+        const container = document.getElementById('browser-content');
+        if (!container) return;
+
+        if (!getSupabaseClient()) {
+            container.innerHTML = `
+                <div class="text-center text-slate-500 py-10">
+                    <i class="fas fa-database mb-4 text-4xl"></i>
+                    <p class="text-xl">Database not configured.</p>
+                </div>
+             `;
+            return;
+        }
+
+        try {
+            const cards = await fetchArchetypeCardsFromSupabase(archetypeName);
+            if (!cards || cards.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-slate-500 py-10">
+                        <p class="text-xl">No cards found for "${archetypeName}".</p>
+                        <a href="../index.html" class="inline-block mt-4 text-indigo-400 hover:text-indigo-300">Return Home</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Pre-populate cache with fetched data to avoid redundant API calls
+            cards.forEach(card => {
+                const name = card.cardname || card.card_name;
+                const id = card.passcode || card.id;
+                if (name && id) {
+                    cardDataCache[name] = {
+                        name: name,
+                        id: id,
+                        desc: card.desc || '',
+                        type: card.cardtype || card.card_type,
+                        race: card.race,
+                        attribute: card.attribute,
+                        atk: card.atk,
+                        def: card.def,
+                        level: card.level,
+                        hosted_image_url: `${CONFIG.IMAGE_BASE_URL}/${id}.png` // Pre-construct URL
+                    };
+                }
+            });
+
+            // Categorize cards
+            const standardCards = [];
+            const animeCards = [];
+
+            cards.forEach(card => {
+                // Check format/set info to determine if it's Anime-only
+                // Assume if format is 'Anime' or similar, it goes to animeCards
+                // Also check for OCG tag
+                const format = (card.format || '').toUpperCase();
+
+                if (format === 'ANIME' || (format !== 'TCG' && format !== 'OCG' && !card.passcode)) {
+                    // Treat as Anime/Unofficial if specifically Anime OR (not TCG/OCG AND no passcode)
+                    animeCards.push(card);
+                } else {
+                    standardCards.push(card);
+                }
+            });
+
+            const sortedCards = sortCardsByType(standardCards);
+
+            // --- Tag Filtering Logic ---
+            const allPasscodes = standardCards.map(c => c.passcode || c.id).filter(id => id);
+            const tagsByCardId = {};
+            const uniqueTags = new Set();
+            const tagCategories = {};
+            const uniqueYears = new Set();  // For year filtering
+            const yearsByCardId = {};  // Store year per card
+
+            // Fetch all tags for these cards if Supabase is available
+            if (getSupabaseClient() && allPasscodes.length > 0) {
+                try {
+                    // Fetch tags for all cards using the working RPC endpoint
+                    const tagPromises = allPasscodes.map(async (passcode) => {
+                        const tags = await fetchCardTags(passcode);
+                        return { passcode, tags };
+                    });
+
+                    const results = await Promise.all(tagPromises);
+
+                    results.forEach(({ passcode, tags }) => {
+                        if (tags && tags.length > 0) {
+                            tagsByCardId[passcode] = tags;
+                            tags.forEach(tag => {
+                                uniqueTags.add(tag.tag_name);
+                                tagCategories[tag.tag_name] = tag.tag_category;
+                            });
+                        }
+                    });
+
+                    console.log(`[CardLoader] Loaded tags for ${Object.keys(tagsByCardId).length} cards, ${uniqueTags.size} unique tags found`);
+                } catch (err) {
+                    console.warn('[CardLoader] Batch tag fetch failed, filtering may be limited:', err);
+                }
+            }
+
+            // Populate year filter with common Yu-Gi-Oh release years (no API calls)
+            // This avoids API rate limiting while still providing year filtering
+            const currentYear = new Date().getFullYear();
+            for (let year = 2002; year <= currentYear; year++) {
+                uniqueYears.add(year.toString());
+            }
+            console.log(`[CardLoader] Year filter populated with years 2002-${currentYear}`);
+
+            const activeFilters = new Set();
+
+            // Render Filter UI
+            if (uniqueTags.size > 0) {
+                const filterContainer = document.createElement('div');
+                filterContainer.className = 'w-full mb-6 p-4 bg-slate-800/50 rounded-xl border border-slate-700/50';
+
+                const sortedUniqueTags = Array.from(uniqueTags).sort();
+
+                // Group tags by category for cleaner display? Or just alphabetic. Alphabetic is easier for findability.
+                const tagButtons = sortedUniqueTags.map(tagName => {
+                    const category = (tagCategories[tagName] || 'default').toLowerCase();
+                    const colors = TAG_CATEGORY_COLORS[category] || TAG_CATEGORY_COLORS.default;
+                    // Use a neutral style for unchecked, colored for checked
+                    return `
+                        <button class="filter-tag-btn px-2 py-1 rounded text-xs font-medium border border-slate-600/50 bg-slate-900/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all m-0.5"
+                                data-tag="${tagName}"
+                                onclick="this.classList.toggle('active'); this.classList.toggle('ring-1'); this.classList.toggle('ring-indigo-500'); this.classList.toggle('bg-slate-700'); toggleFilter('${tagName}')">
+                            ${tagName}
+                        </button>
+                    `;
+                }).join('');
+
+                filterContainer.innerHTML = `
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-filter text-slate-400 text-sm"></i>
+                        <span class="text-sm font-bold text-slate-200">Filter by Tags</span>
+                        <span class="text-xs text-slate-500 ml-auto cursor-pointer hover:text-white" onclick="document.querySelectorAll('.filter-tag-btn.active').forEach(b => b.click())">Clear All</span>
+                    </div>
+                    <div class="flex flex-wrap max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent p-1">
+                        ${tagButtons}
+                    </div>
+                    <script>
+                        window.activeTagFilters = new Set();
+                        window.toggleFilter = function(tagName) {
+                            if (window.activeTagFilters.has(tagName)) {
+                                window.activeTagFilters.delete(tagName);
+                            } else {
+                                window.activeTagFilters.add(tagName);
+                            }
+                            applyTagFilters();
+                        };
+                        
+                        window.applyTagFilters = function() {
+                            const cards = document.querySelectorAll('.card-item-container'); // Need to add this class to wrapper
+                            cards.forEach(card => {
+                                const cardTagsStr = card.dataset.tags || ''; // Need to add this data attr
+                                const cardTags = cardTagsStr.split(',');
+                                const matches = Array.from(window.activeTagFilters).every(filter => cardTags.includes(filter));
+                                
+                                if (matches) {
+                                    card.style.display = '';
+                                } else {
+                                    card.style.display = 'none';
+                                }
+                            });
+                        };
+                    </script>
+                `;
+                // Filter container will be inserted after grid is rendered
+            }
+
+            const cardsToLoad = {};
+
+            // Helper for responsive grid rendering with dynamic containers
+            const renderBrowserCardSection = (title, cards, bgColor, icon) => {
+                if (cards.length === 0) return '';
+
+                const cardItems = cards.map(card => {
+                    const name = card.cardname || card.card_name || 'Unknown';
+                    const passcode = card.passcode || card.id || '';
+                    const containerId = `browser-card-${passcode || Math.random().toString(36).substr(2, 9)}`;
+                    const format = (card.format || '').toUpperCase();
+                    const isOCG = format === 'OCG';
+                    const tagContainerId = `tags-${containerId}`;
+                    const dateContainerId = `date-${containerId}`;
+
+                    if (name) {
+                        cardsToLoad[containerId] = name;
+                    }
+
+                    // Pre-fetched tags usage
+                    const tags = tagsByCardId[passcode] || [];
+                    const tagsAttribute = tags.map(t => t.tag_name).join(',');
+                    const tagDisplayHtml = (() => {
+                        if (tags.length > 0) {
+                            const listItems = tags.map(tag => {
+                                const category = (tag.tag_category || 'default').toLowerCase();
+                                const colors = TAG_CATEGORY_COLORS[category] || TAG_CATEGORY_COLORS.default;
+                                return `
+                                    <div class="flex items-start w-full text-[10px] leading-tight text-slate-300 group/tag">
+                                        <span class="mr-1.5 opacity-60 ${colors.text}">•</span>
+                                        <span class="flex-1 opacity-90 group-hover/tag:opacity-100 transition-opacity">${tag.tag_name}</span>
+                                    </div>`;
+                            }).join('');
+                            return `<div class="flex flex-col w-full mt-1 px-1 space-y-0.5 text-left">${listItems}</div>`;
+                        }
+                        return '';
+                    })();
+
+                    // Pre-calculate date if available (extract year only)
+                    let dateDisplay = '';
+                    let rawDate = '';
+                    if (card.misc_info && card.misc_info[0]) {
+                        rawDate = card.misc_info[0].tcg_date || card.misc_info[0].ocg_date || '';
+                    } else if (card.tcg_date || card.ocg_date) {
+                        rawDate = card.tcg_date || card.ocg_date;
+                    }
+                    if (rawDate) {
+                        dateDisplay = rawDate.substring(0, 4); // Just the year
+                    }
+                    // Use pre-fetched year if available
+                    if (!dateDisplay && yearsByCardId[passcode]) {
+                        dateDisplay = yearsByCardId[passcode];
+                    }
+
+                    // Lazy fetch Release Date if not present
+                    // We check if we have misc_info. If not, we fetch the card data.
+                    // Note: 'card' here comes from Supabase/local list, it might NOT have misc_info
+                    if (name && !dateDisplay) {
+                        setTimeout(() => {
+                            const dateEl = document.getElementById(dateContainerId);
+                            if (!dateEl) {
+                                // This can happen if the user navigates away or filter changes quickly
+                                return;
+                            }
+
+                            // Find the parent card container to update data-year
+                            const cardContainer = dateEl.closest('.card-item-container');
+
+                            // Check cache first
+                            if (cardDataCache[name] && (cardDataCache[name].misc_info || cardDataCache[name].tcg_date || cardDataCache[name].ocg_date)) {
+                                const info = cardDataCache[name];
+                                const date = (info.misc_info && info.misc_info[0] && (info.misc_info[0].tcg_date || info.misc_info[0].ocg_date)) || info.tcg_date || info.ocg_date;
+                                if (date) {
+                                    const year = date.substring(0, 4);
+                                    dateEl.textContent = year;
+                                    dateEl.classList.remove('hidden');
+                                    if (cardContainer) cardContainer.dataset.year = year;
+                                }
+                            } else {
+                                // Fetch
+                                fetchCardData(name).then(data => {
+                                    if (data) {
+                                        // Update cache
+                                        cardDataCache[name] = data;
+                                        const misc = data.misc_info ? data.misc_info[0] : null;
+                                        const date = (misc && (misc.tcg_date || misc.ocg_date));
+                                        if (dateEl && date) {
+                                            const year = date.substring(0, 4);
+                                            dateEl.textContent = year;
+                                            dateEl.classList.remove('hidden');
+                                            if (cardContainer) cardContainer.dataset.year = year;
+                                        }
+                                    }
+                                }).catch(err => console.warn('Date fetch failed for', name));
+                            }
+                        }, 800 + Math.random() * 1500); // Stagger to avoid rate limits
+                    }
+
+
+
+                    return `
+                        <div class="card-item-container" data-tags="${tagsAttribute}" data-year="${dateDisplay || ''}">
+                        <div class="card-item group relative flex flex-col h-full bg-slate-800/40 rounded-xl p-2 border border-slate-700/50 hover:border-indigo-500/50 transition-all hover:bg-slate-800/80 hover:shadow-xl hover:-translate-y-1">
+                            
+                            <div id="${containerId}" class="aspect-[59/86] w-full rounded-lg overflow-hidden border border-slate-700 shadow-md relative bg-slate-900 group-hover:shadow-indigo-500/20 transition-all">
+                                <div class="flex items-center justify-center h-full text-center text-slate-600 text-xs p-2">
+                                    <div class="animate-pulse bg-slate-800 w-full h-full rounded"></div>
+                                </div>
+                                ${isOCG ? `<div class="absolute top-0 left-0 bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br shadow-sm z-10 tracking-wider">OCG</div>` : ''}
+                            </div>
+                            
+                            <div class="mt-2 flex-1 flex flex-col items-center w-full min-h-0">
+                                <span class="text-xs font-bold text-slate-300 group-hover:text-white transition-colors text-center leading-tight line-clamp-2 h-8 flex items-center justify-center w-full px-0.5" title="${name}">
+                                    ${name}
+                                </span>
+                                
+                                <!-- Year (inline, below name) -->
+                                <div id="${dateContainerId}" class="text-[8px] text-slate-500 bg-slate-900/60 px-1.5 rounded mt-0.5 ${dateDisplay ? '' : 'hidden'}">${dateDisplay || ''}</div>
+                                
+                                <div id="${tagContainerId}" class="w-full flex-col mt-1 empty:hidden max-h-[4.5rem] overflow-y-auto pr-0.5" style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
+                                    ${tagDisplayHtml}
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="mb-16 animate-fadeIn">
+                        <div class="flex items-center gap-4 mb-8 pb-4 border-b border-slate-700/50">
+                            <span class="flex items-center justify-center w-12 h-12 rounded-2xl ${bgColor} text-white shadow-lg bg-gradient-to-br from-white/20 to-transparent backdrop-blur-sm border border-white/10">
+                                ${icon}
+                            </span>
+                            <div>
+                                <h2 class="text-2xl font-bold text-white tracking-wide">${title}</h2>
+                                <p class="text-sm text-slate-400">${cards.length} Cards</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 px-4">
+                            ${cardItems}
+                        </div>
+                    </div>
+                `;
+            };
+
+            // Helper for Anime cards text list
+            const renderAnimeSection = (cards) => {
+                if (cards.length === 0) return '';
+
+                // Sort by name
+                cards.sort((a, b) => (a.cardname || a.card_name || '').localeCompare(b.cardname || b.card_name || ''));
+
+                const listItems = cards.map(card => {
+                    const name = card.cardname || card.card_name || 'Unknown';
+                    const desc = card.desc || 'No description available.';
+                    const type = card.cardtype || card.card_type || 'Unknown Type';
+
+                    return `
+                <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-4 hover:bg-slate-800 transition-colors">
+                            <div class="flex flex-col md:flex-row md:items-baseline gap-2 mb-2">
+                                <h3 class="text-lg font-bold text-pink-300">${name}</h3>
+                                <span class="text-xs text-slate-400 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-700">${type}</span>
+                            </div>
+                            <p class="text-sm text-slate-300 leading-relaxed italic">"${desc}"</p>
+                        </div>
+                `;
+                }).join('');
+
+                return `
+                <div class="mt-12 mb-16 animate-fadeIn">
+                        <div class="flex items-center gap-4 mb-8 pb-4 border-b border-pink-900/50">
+                            <span class="flex items-center justify-center w-12 h-12 rounded-2xl bg-pink-600 text-white shadow-lg bg-gradient-to-br from-white/20 to-transparent backdrop-blur-sm border border-white/10">
+                                <i class="fas fa-tv"></i>
+                            </span>
+                            <div>
+                                <h2 class="text-2xl font-bold text-white tracking-wide">Anime / Unofficial Support</h2>
+                                <p class="text-sm text-slate-400">${cards.length} Cards (No Official Prints)</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 gap-4">
+                            ${listItems}
+                        </div>
+                    </div>
+                `;
+            };
+
+            let html = '<div class="pb-12">';
+            html += renderBrowserCardSection('Main Deck Monsters', sortedCards.monsters, 'bg-orange-600', '<i class="fas fa-dragon"></i>');
+            html += renderBrowserCardSection('Spells', sortedCards.spells, 'bg-emerald-600', '<i class="fas fa-magic"></i>');
+            html += renderBrowserCardSection('Traps', sortedCards.traps, 'bg-rose-600', '<i class="fas fa-scroll"></i>');
+            html += renderBrowserCardSection('Extra Deck', sortedCards.extraDeck, 'bg-purple-600', '<i class="fas fa-dna"></i>');
+
+            // Append Anime section
+            html += renderAnimeSection(animeCards);
+
+            html += '</div>';
+
+            container.innerHTML = html;
+
+            // Now insert the filter at the top (after innerHTML is set)
+            if (uniqueTags.size > 0) {
+                const filterContainer = document.createElement('div');
+                filterContainer.className = 'filter-section w-full mb-8 p-5 rounded-2xl shadow-xl animate-fadeIn';
+
+                const sortedUniqueTags = Array.from(uniqueTags).sort();
+
+                const tagButtons = sortedUniqueTags.map(tagName => {
+                    const category = (tagCategories[tagName] || 'default').toLowerCase();
+                    const colors = TAG_CATEGORY_COLORS[category] || TAG_CATEGORY_COLORS.default;
+                    return `
+                        <button class="filter-tag-btn px-4 py-2 rounded-full text-sm font-medium border-2 border-slate-600/40 bg-slate-800/60 text-slate-300 hover:bg-indigo-600/20 hover:border-indigo-500/50 hover:text-white transition-all duration-200 shadow-md hover:shadow-indigo-500/20"
+                                data-tag="${tagName}"
+                                onclick="this.classList.toggle('active'); window.toggleFilter('${tagName}')">
+                            ${tagName}
+                        </button>
+                    `;
+                }).join('');
+
+                const totalCards = Object.keys(cardsToLoad).length;
+
+                filterContainer.innerHTML = `
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+                            <i class="fas fa-filter text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Filter by Tags</h3>
+                            <p class="text-xs text-slate-400">${sortedUniqueTags.length} tags across ${totalCards} cards</p>
+                        </div>
+                        <button class="ml-auto px-4 py-1.5 text-sm text-slate-400 hover:text-white border border-slate-600/50 rounded-full hover:bg-red-500/20 hover:border-red-500/50 transition-all" 
+                                onclick="document.querySelectorAll('.filter-tag-btn.active').forEach(b => b.click()); document.querySelectorAll('.filter-year-btn.active').forEach(b => b.click());">
+                            <i class="fas fa-times mr-1.5"></i>Clear All
+                        </button>
+                    </div>
+                    <div class="flex flex-wrap gap-3 max-h-48 overflow-y-auto p-3 bg-slate-900/40 rounded-xl mb-4" style="scrollbar-width: thin; scrollbar-color: #4f46e5 transparent;">
+                        ${tagButtons}
+                    </div>
+                    
+                    <!-- Year Range Filter -->
+                    <div class="flex items-center gap-3 mt-4 pt-4 border-t border-slate-700/50">
+                        <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 shadow-md">
+                            <i class="fas fa-calendar-alt text-white"></i>
+                        </div>
+                        <div class="flex items-center gap-3 flex-1 flex-wrap">
+                            <h4 class="text-sm font-bold text-white">Year Range</h4>
+                            <div class="flex items-center gap-2 ml-auto">
+                                <select id="year-filter-from" 
+                                        onchange="window.applyYearRangeFilter()"
+                                        class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-600/50 text-slate-200 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none transition-all cursor-pointer">
+                                    <option value="">From</option>
+                                    ${Array.from(uniqueYears).sort().map(year => `
+                                        <option value="${year}">${year}</option>
+                                    `).join('')}
+                                </select>
+                                <span class="text-slate-500 text-sm">to</span>
+                                <select id="year-filter-to" 
+                                        onchange="window.applyYearRangeFilter()"
+                                        class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-600/50 text-slate-200 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none transition-all cursor-pointer">
+                                    <option value="">To</option>
+                                    ${Array.from(uniqueYears).sort().reverse().map(year => `
+                                        <option value="${year}">${year}</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Define filter functions globally
+                window.activeTagFilters = new Set();
+                window.yearRangeFrom = '';
+                window.yearRangeTo = '';
+
+                window.toggleFilter = function (tagName) {
+                    if (window.activeTagFilters.has(tagName)) {
+                        window.activeTagFilters.delete(tagName);
+                    } else {
+                        window.activeTagFilters.add(tagName);
+                    }
+                    window.applyFilters();
+                };
+
+                window.applyYearRangeFilter = function () {
+                    const fromSelect = document.getElementById('year-filter-from');
+                    const toSelect = document.getElementById('year-filter-to');
+                    window.yearRangeFrom = fromSelect ? fromSelect.value : '';
+                    window.yearRangeTo = toSelect ? toSelect.value : '';
+                    window.applyFilters();
+                };
+
+                window.applyFilters = function () {
+                    const cards = document.querySelectorAll('.card-item-container');
+                    const tagFilterCount = window.activeTagFilters.size;
+                    const hasYearFilter = window.yearRangeFrom !== '' || window.yearRangeTo !== '';
+
+                    cards.forEach(card => {
+                        // If no filters active, show all
+                        if (tagFilterCount === 0 && !hasYearFilter) {
+                            card.style.display = '';
+                            return;
+                        }
+
+                        // Check tag match (AND logic - must match ALL selected tags)
+                        let tagMatch = true;
+                        if (tagFilterCount > 0) {
+                            const cardTagsStr = card.dataset.tags || '';
+                            const cardTags = cardTagsStr.split(',');
+                            tagMatch = Array.from(window.activeTagFilters).every(filter => cardTags.includes(filter));
+                        }
+
+                        // Check year range match
+                        let yearMatch = true;
+                        if (hasYearFilter) {
+                            const cardYear = parseInt(card.dataset.year || '0', 10);
+                            const fromYear = window.yearRangeFrom ? parseInt(window.yearRangeFrom, 10) : 0;
+                            const toYear = window.yearRangeTo ? parseInt(window.yearRangeTo, 10) : 9999;
+
+                            if (cardYear === 0) {
+                                // Card has no year data yet, hide it if year filter is active
+                                yearMatch = false;
+                            } else {
+                                yearMatch = cardYear >= fromYear && cardYear <= toYear;
+                            }
+                        }
+
+                        // Card must pass both filters
+                        card.style.display = (tagMatch && yearMatch) ? '' : 'none';
+                    });
+                };
+
+                // Keep old function name for backward compatibility
+                window.applyTagFilters = window.applyFilters;
+
+                container.insertBefore(filterContainer, container.firstChild);
+            }
+
+            // Trigger the bulk load
+            if (Object.keys(cardsToLoad).length > 0) {
+                // Use a small timeout to allow DOM to settle
+                setTimeout(() => {
+                    loadCards(cardsToLoad).catch(err => console.error('[CardLoader] Browser load error:', err));
+                }, 50);
+            }
+
+        } catch (error) {
+            console.error('[CardLoader] Error loading page cards:', error);
+            container.innerHTML = `
+                <div class="text-center text-red-400 py-10">
+                    <p class="text-xl">Error loading cards.</p>
+                    <p class="text-sm mt-2">${error.message}</p>
+                </div>
+                `;
+        }
+    }
+
+    /**
+     * Render archetype cards browser button (Link to standalone page)
+     * @param {string} containerId - ID of container element
+     * @param {string} archetypeName - Name of the archetype
+     * @param {Object} options - Configuration options
+     */
+    async function renderArchetypeCardsBrowser(containerId, archetypeName, options = {}) {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`[CardLoader] Container with ID "${containerId}" not found`);
+            return;
+        }
+
+        // Check if Supabase is configured
+        if (!getSupabaseClient()) {
+            container.innerHTML = `
+                <div class="text-center text-gray-500 p-4">
+                    <i class="fas fa-database mr-2"></i>Database not configured
+                </div>
+                `;
+            return;
+        }
+
+        // Create button
+        const buttonColor = options.buttonColor || 'from-indigo-500 to-purple-600';
+        const buttonHoverColor = options.buttonHoverColor || 'from-indigo-600 to-purple-700';
+        const isCompact = options.compact === true;
+
+        // Button classes
+        const buttonClasses = isCompact
+            ? `px-5 py-2 rounded-full shadow-lg text-sm font-bold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-xl bg-gradient-to-r ${buttonColor} hover:${buttonHoverColor} flex items-center justify-center gap-2 border border-white/20 no-underline`
+            : `w-full p-4 rounded-xl shadow-lg text-center font-bold text-white transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl bg-gradient-to-r ${buttonColor} hover:${buttonHoverColor} flex items-center justify-center gap-3 no-underline`;
+
+        const iconSize = isCompact ? 'text-base' : 'text-xl';
+        const targetUrl = `../pages/Card-Browser.html?archetype=${encodeURIComponent(archetypeName)}`;
+
+        container.innerHTML = `
+                <a href="${targetUrl}"
+            class="${buttonClasses}"
+            target="_blank">
+                <i class="fas fa-layer-group ${iconSize}"></i>
+                <span>${options.buttonText || `View All ${archetypeName} Cards`}</span>
+                ${isCompact ? '' : '<i class="fas fa-external-link-alt text-sm opacity-70"></i>'}
+            </a>
+                `;
+    }
+
     /**
      * Inject AI-generated content warnings into combo sections
      * Automatically detects combo sections and adds warning banners
@@ -2195,16 +3186,16 @@ window.CardLoader = (function () {
             const warning = document.createElement('div');
             warning.className = 'ai-combo-warning';
             warning.style.cssText = `
-                display: flex;
-                align-items: flex-start;
-                gap: 12px;
-                padding: 16px 20px;
-                margin: 16px 0;
-                border-radius: 12px;
-                background: ${theme.isDark ? 'rgba(251, 191, 36, 0.1)' : 'rgba(251, 191, 36, 0.15)'};
-                border: 1px solid ${theme.isDark ? 'rgba(251, 191, 36, 0.3)' : 'rgba(251, 191, 36, 0.5)'};
-                font-size: 0.875rem;
-                line-height: 1.5;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px 20px;
+            margin: 16px 0;
+            border-radius: 12px;
+            background: ${theme.isDark ? 'rgba(251, 191, 36, 0.1)' : 'rgba(251, 191, 36, 0.15)'};
+            border: 1px solid ${theme.isDark ? 'rgba(251, 191, 36, 0.3)' : 'rgba(251, 191, 36, 0.5)'};
+            font-size: 0.875rem;
+            line-height: 1.5;
             `;
 
             warning.innerHTML = `
@@ -2219,9 +3210,9 @@ window.CardLoader = (function () {
                         This combo line is AI-generated and may contain errors or illegal plays (e.g., banned cards).
                     </div>
                     <a href="Replay-Converter.html" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1f2937; font-weight: 600; font-size: 0.75rem; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);"><i class="fas fa-video"></i> Know the correct line? Submit a Replay to fix this guide <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></a>
-                    </div>
                 </div>
-            `;
+                </div>
+                `;
 
             return warning;
         };
@@ -2332,6 +3323,12 @@ window.CardLoader = (function () {
         linkifyMaterials,
         // AI content warning injection
         injectComboWarnings,
+        // Gameplay tags (Supabase integration)
+        getTagsForCard: fetchCardTags,
+        isSupabaseConfigured: () => !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY),
+        // Archetype cards browser
+        renderArchetypeCardsBrowser,
+        initCardBrowserPage,
     };
 })();
 
