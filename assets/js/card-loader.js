@@ -228,10 +228,21 @@ window.CardLoader = (function () {
 
         // Helper to apply responsive constraints
         const applyConstraints = (el) => {
-            // Use less margin on mobile to prevent unneeded scrolling
-            // 16px total margin (8px each side) for mobile, 400px max width for desktop
-            el.style.maxWidth = 'min(400px, calc(100vw - 16px))';
-            el.style.maxHeight = 'min(600px, calc(100vh - 20px))';
+            // Mobile: 90vw width (almost full screen), Desktop: 420px max
+            // Check if mobile (< 768px)
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                el.style.maxWidth = '90vw';
+                el.style.width = '90vw';
+            } else {
+                el.style.maxWidth = '420px';
+                el.style.width = '100%';
+            }
+            // Max height with some margin for viewport
+            el.style.maxHeight = 'calc(100vh - 40px)';
+            // Allow text to wrap and handle overflow
+            el.style.wordWrap = 'break-word';
+            el.style.overflowWrap = 'break-word';
         };
 
         if (popup) {
@@ -244,10 +255,13 @@ window.CardLoader = (function () {
         popup.className = 'z-50 bg-gray-900 border-2 border-blue-500 text-white p-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none';
         popup.style.position = 'fixed';
         popup.style.display = 'none';
-        // Use 100% width so it expands to fill the maxWidth constraint
-        // This ensures it uses the full available space on mobile
-        popup.style.width = '100%';
         applyConstraints(popup);
+
+        // Re-apply constraints on resize
+        window.addEventListener('resize', () => {
+            if (popup) applyConstraints(popup);
+        });
+
         document.body.appendChild(popup);
     }
 
