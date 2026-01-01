@@ -24944,38 +24944,54 @@ const archetypes = [
         filepath: 'pages/Performage Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="performageAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#f97316" stop-opacity="0.7"/>
-                                <stop offset="50%" stop-color="#ea580c" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#c2410c" stop-opacity="0.8"/>
+                            <radialGradient id="performageBg" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#fef3c7"/>
+                                <stop offset="100%" stop-color="#f97316"/>
                             </radialGradient>
-                            <linearGradient id="performageGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#f97316"/>
-                                <stop offset="100%" stop-color="#c2410c"/>
+                            <linearGradient id="hatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#8b5cf6"/>
+                                <stop offset="50%" stop-color="#ec4899"/>
+                                <stop offset="100%" stop-color="#f97316"/>
                             </linearGradient>
-                            <filter id="performageShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#performageAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#performageShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#performageGlow)" stroke="#c2410c" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#f97316" stroke="#ea580c" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#ea580c" stroke="#c2410c" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="75" r="2" fill="#ea580c">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        <!-- Stage spotlight background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#performageBg)" stroke="#f97316" stroke-width="2"/>
+                        <!-- Sparkles -->
+                        <circle cx="18" cy="25" r="2" fill="#fbbf24">
+                            <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#c2410c">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        <circle cx="82" cy="30" r="2" fill="#ec4899">
+                            <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite"/>
                         </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#c2410c" font-weight="bold">Performage</text>
+                        <circle cx="15" cy="70" r="1.5" fill="#8b5cf6">
+                            <animate attributeName="opacity" values="0.5;1;0.5" dur="0.8s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="85" cy="65" r="1.5" fill="#22c55e">
+                            <animate attributeName="opacity" values="1;0.5;1" dur="0.9s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Jester Hat -->
+                        <path d="M30 45 Q35 25 50 20 Q65 25 70 45 L50 50 Z" fill="url(#hatGrad)" stroke="#7c3aed" stroke-width="2"/>
+                        <!-- Hat bells -->
+                        <circle cx="30" cy="45" r="5" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <circle cx="70" cy="45" r="5" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <circle cx="50" cy="20" r="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        <!-- Performage Face -->
+                        <circle cx="50" cy="58" r="18" fill="#fef3c7" stroke="#ea580c" stroke-width="2"/>
+                        <!-- Eyes (star-shaped for flair) -->
+                        <path d="M42 55 L43 52 L44 55 L47 54 L44 56 L45 59 L42 57 L39 59 L40 56 L37 54 Z" fill="#7c3aed"/>
+                        <path d="M58 55 L59 52 L60 55 L63 54 L60 56 L61 59 L58 57 L55 59 L56 56 L53 54 Z" fill="#7c3aed"/>
+                        <!-- Smile -->
+                        <path d="M42 63 Q50 70 58 63" stroke="#ea580c" stroke-width="2" fill="none"/>
+                        <!-- Juggling Balls -->
+                        <circle cx="25" cy="75" r="6" fill="#ef4444" stroke="#b91c1c" stroke-width="1">
+                            <animate attributeName="cy" values="75;72;75" dur="0.6s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="50" cy="82" r="6" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1">
+                            <animate attributeName="cy" values="82;78;82" dur="0.6s" begin="0.2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="75" cy="75" r="6" fill="#22c55e" stroke="#15803d" stroke-width="1">
+                            <animate attributeName="cy" values="75;72;75" dur="0.6s" begin="0.4s" repeatCount="indefinite"/>
+                        </circle>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,

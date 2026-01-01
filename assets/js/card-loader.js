@@ -97,6 +97,103 @@ window.CardLoader = (function () {
     };
 
     /**
+     * Mapping of specific tags to broad categories
+     */
+    const KNOWN_TAG_CATEGORIES = {
+        // Combat
+        "ATK/DEF Modification": "combat",
+        "Battle Phase Control": "combat",
+        "Burn": "combat",
+        "Direct Attack": "combat",
+        "Multiple Attacks": "combat",
+        "Control Change": "combat",
+        "Flip Control": "combat",
+        "Self-Burn": "combat", // Assigned from null, fits burn logic or mechanics
+
+        // Consistency
+        "Draw Power": "consistency",
+        "Extender": "consistency",
+        "Miller": "consistency",
+        "Recur": "consistency",
+        "Searcher": "consistency",
+
+        // Disruption
+        "Discard": "disruption",
+        "Floodgate": "disruption",
+        "Hand Activation": "disruption",
+        "Negate": "disruption",
+
+        // Mechanics
+        "Pendulum Support": "mechanics",
+        "Quick Effect": "mechanics", // User moved this from Timing
+        "Tribute Effects": "mechanics",
+        "Xyz Support": "mechanics",
+        "LP Gain": "mechanics", // Assigned from null
+
+        // Protection
+        "Battle Protection": "protection",
+        "Cannot Be Banished": "protection",
+        "Cannot Be Tributed": "protection",
+        "Destruction Protection": "protection",
+        "Effect Protection": "protection",
+        "Targeting Protection": "protection",
+        "Damage Protection": "protection", // Assigned from null
+
+        // Removal
+        "Banishment": "removal",
+        "Bounce": "removal",
+        "Destruction": "removal",
+        "Send to GY": "removal",
+        "Spin": "removal",
+        "Monster Destruction": "removal",
+        "Spell Destruction": "removal",
+        "Trap Destruction": "removal"
+    };
+
+    /**
+     * Priority order for sorting categories
+     */
+    const CATEGORY_PRIORITY = {
+        combat: 1,
+        disruption: 2,
+        removal: 3,
+        protection: 4,
+        consistency: 5,
+        mechanics: 6,
+        timing: 7,
+        default: 99
+    };
+
+    /**
+     * Helper to group tags by their category
+     * @param {Array} tags - Array of tag objects
+     * @returns {Object} Grouped tags { CategoryName: [TagName, ...], ... }
+     */
+    function groupTagsByCategory(tags) {
+        const groups = {};
+
+        tags.forEach(tag => {
+            // First check KNOWN_TAG_CATEGORIES, then fallback to database category, then default
+            const categoryKey = KNOWN_TAG_CATEGORIES[tag.tag_name] ||
+                (tag.tag_category ? tag.tag_category.toLowerCase() : 'default');
+
+            // Normalize category name for display (capitalize first letter)
+            const displayCategory = categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1);
+
+            if (!groups[categoryKey]) {
+                groups[categoryKey] = {
+                    key: categoryKey,
+                    display: displayCategory,
+                    tags: []
+                };
+            }
+            groups[categoryKey].tags.push(tag.tag_name);
+        });
+
+        return groups;
+    }
+
+    /**
      * Initialize Supabase client (lazy initialization)
      * @returns {Object|null} Supabase client or null if not configured
      */
@@ -180,26 +277,50 @@ window.CardLoader = (function () {
                 tagNames.includes('Banishment') ||
                 tagNames.includes('Floodgate'));
 
-        const tagPills = tags.map(tag => {
-            const category = (tag.tag_category || 'default').toLowerCase();
-            const colors = TAG_CATEGORY_COLORS[category] || TAG_CATEGORY_COLORS.default;
+        // Group tags by category
+        const groups = groupTagsByCategory(tags);
+        const sortedKeys = Object.keys(groups).sort((a, b) => {
+            const prioA = CATEGORY_PRIORITY[groups[a].key] || 99;
+            const prioB = CATEGORY_PRIORITY[groups[b].key] || 99;
+            return prioA - prioB;
+        });
 
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text} border ${colors.border}">
-                ${tag.tag_name}
-            </span>`;
+        const tagGroupsHtml = sortedKeys.map(key => {
+            const group = groups[key];
+            // Use lighter/closer to white text for the headers if desired, or keep category color
+            // User asked for minimal/cleaner. Category color header is good for organization.
+            const colors = TAG_CATEGORY_COLORS[group.key] || TAG_CATEGORY_COLORS.default;
+
+            // Join tags with a subtle bullet
+            const tagsList = group.tags.map(t => `<span class="hover:text-white transition-colors cursor-default">${t}</span>`).join('<span class="mx-1.5 opacity-40">•</span>');
+
+            return `
+                <div class="mb-1.5 last:mb-0">
+                    <div style="font-size: 9px; letter-spacing: 0.05em;" class="uppercase font-bold ${colors.text} opacity-90 mb-0.5 flex items-center gap-1.5">
+                        ${group.display}
+                    </div>
+                    <div style="font-size: 11px;" class="text-slate-300 pl-0 leading-tight">
+                        ${tagsList}
+                    </div>
+                </div>`;
         }).join('');
 
         // Add special Hand Trap indicator if detected
         const handTrapBadge = isHandTrap
-            ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-500/90 text-yellow-900 border border-yellow-400 shadow-sm shadow-yellow-500/30">
+            ? `<div class="mb-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-500/90 text-yellow-900 border border-yellow-400 shadow-sm shadow-yellow-500/30">
                 ✋ Hand Trap
-            </span>`
+                </span>
+               </div>`
             : '';
+
+        if (!tagGroupsHtml && !handTrapBadge) return '';
 
         return `
             <div class="mt-3 pt-2 border-t border-gray-700">
-                <div class="text-xs text-gray-400 mb-1">🏷️ Gameplay Tags${isHandTrap ? ' <span class="text-yellow-400">(Hand Trap)</span>' : ''}</div>
-                <div class="flex flex-wrap gap-1">${handTrapBadge}${tagPills}</div>
+                <div class="text-xs text-gray-400 mb-2">🏷️ Gameplay Tags</div>
+                ${handTrapBadge}
+                <div class="flex flex-col gap-1">${tagGroupsHtml}</div>
             </div>
         `;
     }
@@ -252,7 +373,11 @@ window.CardLoader = (function () {
 
         popup = document.createElement('div');
         popup.id = 'card-popup';
-        popup.className = 'z-50 bg-gray-900 border-2 border-blue-500 text-white p-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none';
+        popup.className = 'z-50 text-white p-4 rounded-lg shadow-2xl opacity-0 transition-opacity duration-200 pointer-events-none';
+        popup.style.position = 'fixed';
+        popup.style.backgroundColor = '#0f172a'; // Solid dark slate background
+        popup.style.border = '2px solid #3b82f6'; // Blue border
+        popup.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 0, 0, 0.5)'; // Strong shadow for depth
         popup.style.position = 'fixed';
         popup.style.display = 'none';
         applyConstraints(popup);
@@ -1128,6 +1253,56 @@ window.CardLoader = (function () {
     }
 
     /**
+     * Format sets section HTML for card popup
+     * Uses card_sets from YGOProDeck API
+     * @param {Object} cardInfo - Card data object from API
+     * @returns {string} HTML string for sets section
+     */
+    function formatSetsSection(cardInfo) {
+        if (!cardInfo || !cardInfo.card_sets || cardInfo.card_sets.length === 0) {
+            return '<p class="text-gray-500 text-xs italic">No set data available.</p>';
+        }
+
+        const sets = cardInfo.card_sets;
+
+        // Sort by set name alphabetically
+        const sortedSets = [...sets].sort((a, b) => a.set_name.localeCompare(b.set_name));
+
+        const setItems = sortedSets.map(set => {
+            const rarity = set.set_rarity || 'Unknown';
+            const rarityShort = set.set_rarity_code || '';
+            const setCode = set.set_code || '';
+            const priceVal = set.set_price ? parseFloat(set.set_price) : 0;
+            const price = priceVal > 0 ? `$${priceVal.toFixed(2)}` : '';
+
+            // Rarity color coding
+            let rarityColor = 'text-gray-400';
+            if (rarity.includes('Secret')) rarityColor = 'text-yellow-300';
+            else if (rarity.includes('Ultra')) rarityColor = 'text-amber-400';
+            else if (rarity.includes('Super')) rarityColor = 'text-blue-400';
+            else if (rarity.includes('Rare')) rarityColor = 'text-cyan-400';
+            else if (rarity.includes('Common')) rarityColor = 'text-slate-400';
+
+            return `
+                <div class="flex items-start gap-2 py-1.5 border-b border-slate-700/50 last:border-0">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-slate-200 truncate" title="${set.set_name}">${set.set_name}</div>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="text-[10px] text-slate-500 font-mono">${setCode}</span>
+                            <span class="text-[10px] ${rarityColor} font-medium">${rarityShort || rarity}</span>
+                        </div>
+                    </div>
+                    ${price ? `<span class="text-[10px] text-green-400 font-medium whitespace-nowrap">${price}</span>` : ''}
+                </div>`;
+        }).join('');
+
+        return `
+            <div class="text-xs text-gray-400 mb-2">📦 ${sets.length} Set${sets.length > 1 ? 's' : ''}</div>
+            <div class="space-y-0">${setItems}</div>
+        `;
+    }
+
+    /**
      * Format price section HTML for card popup
      * Uses prices from YGOProDeck API (card_prices array)
      * @param {Object} cardInfo - Card data object from API
@@ -1159,37 +1334,125 @@ window.CardLoader = (function () {
         const cmUrl = `https://www.cardmarket.com/en/YuGiOh/Products/Search?searchString=${encodedName}`;
 
         let priceHtml = '<div class="mt-3 pt-2 border-t border-gray-700">';
-        priceHtml += '<div class="text-xs text-gray-400 mb-1">💰 Prices</div>';
-        priceHtml += '<div class="flex flex-wrap gap-3 text-xs">';
+        priceHtml += '<div class="text-xs text-gray-400 mb-2">💰 Market Prices</div>';
 
-        // TCGplayer price
-        if (tcgPrice && tcgPrice > 0) {
-            priceHtml += `<a href="${tcgUrl}" target="_blank" rel="noopener noreferrer" 
-                class="text-blue-400 hover:text-blue-300 hover:underline transition-colors flex items-center gap-1">
-                <span class="text-green-400">$${tcgPrice.toFixed(2)}</span>
-                <span class="text-gray-500">TCGplayer</span>
-                <i class="fas fa-external-link-alt text-[10px] opacity-60"></i>
-            </a>`;
+        // Main price comparison bar
+        const maxPrice = Math.max(tcgPrice || 0, cmPrice || 0);
+        if (maxPrice > 0) {
+            priceHtml += '<div class="mb-3">';
+
+            if (tcgPrice && tcgPrice > 0) {
+                const tcgWidth = (tcgPrice / maxPrice) * 100;
+                priceHtml += `
+                    <a href="${tcgUrl}" target="_blank" rel="noopener noreferrer" class="block mb-2 group">
+                        <div class="flex items-center justify-between text-[10px] mb-0.5">
+                            <span class="text-gray-400 group-hover:text-gray-200">TCGplayer</span>
+                            <span class="text-green-400 font-bold">$${tcgPrice.toFixed(2)}</span>
+                        </div>
+                        <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all" style="width: ${tcgWidth}%"></div>
+                        </div>
+                    </a>`;
+            }
+
+            if (cmPrice && cmPrice > 0) {
+                const cmWidth = (cmPrice / maxPrice) * 100;
+                priceHtml += `
+                    <a href="${cmUrl}" target="_blank" rel="noopener noreferrer" class="block group">
+                        <div class="flex items-center justify-between text-[10px] mb-0.5">
+                            <span class="text-gray-400 group-hover:text-gray-200">Cardmarket</span>
+                            <span class="text-green-400 font-bold">€${cmPrice.toFixed(2)}</span>
+                        </div>
+                        <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all" style="width: ${cmWidth}%"></div>
+                        </div>
+                    </a>`;
+            }
+
+            priceHtml += '</div>';
         }
 
-        // Cardmarket price
-        if (cmPrice && cmPrice > 0) {
-            priceHtml += `<a href="${cmUrl}" target="_blank" rel="noopener noreferrer" 
-                class="text-blue-400 hover:text-blue-300 hover:underline transition-colors flex items-center gap-1">
-                <span class="text-green-400">€${cmPrice.toFixed(2)}</span>
-                <span class="text-gray-500">Cardmarket</span>
-                <i class="fas fa-external-link-alt text-[10px] opacity-60"></i>
-            </a>`;
+        // Price by printing chart (if card_sets available)
+        if (cardInfo.card_sets && cardInfo.card_sets.length > 0) {
+            const setsWithPrices = cardInfo.card_sets
+                .filter(s => s.set_price && parseFloat(s.set_price) > 0)
+                .map(s => ({ ...s, price: parseFloat(s.set_price) }))
+                .sort((a, b) => b.price - a.price)
+                .slice(0, 6); // Top 6 most expensive
+
+            if (setsWithPrices.length > 0) {
+                const maxSetPrice = setsWithPrices[0].price;
+
+                priceHtml += '<div class="mt-3 pt-2 border-t border-slate-700">';
+                priceHtml += '<div style="font-size: 10px; color: #9ca3af; margin-bottom: 6px;">📊 Price by Printing (Top 6)</div>';
+
+                setsWithPrices.forEach(set => {
+                    const width = (set.price / maxSetPrice) * 100;
+                    const rarity = set.set_rarity || '';
+
+                    // Color by rarity (using inline styles)
+                    let barBg = 'linear-gradient(to right, #64748b, #94a3b8)'; // default slate
+                    if (rarity.includes('Secret')) barBg = 'linear-gradient(to right, #eab308, #fde047)';
+                    else if (rarity.includes('Ultra')) barBg = 'linear-gradient(to right, #f59e0b, #fbbf24)';
+                    else if (rarity.includes('Super')) barBg = 'linear-gradient(to right, #3b82f6, #60a5fa)';
+                    else if (rarity.includes('Rare')) barBg = 'linear-gradient(to right, #06b6d4, #22d3ee)';
+
+                    priceHtml += `
+                        <div style="margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10px; margin-bottom: 2px;">
+                                <span style="color: #9ca3af; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${set.set_name}">${set.set_code || set.set_name}</span>
+                                <span style="color: #4ade80; font-weight: bold;">$${set.price.toFixed(2)}</span>
+                            </div>
+                            <div style="height: 6px; background-color: #1e293b; border-radius: 9999px; overflow: hidden;">
+                                <div style="height: 100%; width: ${width}%; background: ${barBg}; border-radius: 9999px;"></div>
+                            </div>
+                        </div>`;
+                });
+
+                priceHtml += '</div>';
+            }
         }
 
-        priceHtml += '</div></div>';
+        priceHtml += '</div>';
         return priceHtml;
     }
 
     /**
      * Show popup with card details
      */
-    async function showPopup(event, cardName) {
+    /**
+     * Switch popup tab
+     */
+    window.switchPopupTab = function (tabName) {
+        const popup = document.getElementById('card-popup');
+        if (!popup) return;
+
+        // Update tab buttons
+        const tabs = popup.querySelectorAll('.tab-btn');
+        tabs.forEach(btn => {
+            if (btn.dataset.tab === tabName) {
+                btn.classList.add('text-blue-400', 'border-blue-500');
+                btn.classList.remove('text-slate-200', 'border-transparent');
+                btn.style.backgroundColor = '#334155'; // Active tab background
+            } else {
+                btn.classList.remove('text-blue-400', 'border-blue-500');
+                btn.classList.add('text-slate-200', 'border-transparent');
+                btn.style.backgroundColor = ''; // Reset to default
+            }
+        });
+
+        // Update tab content
+        const contents = popup.querySelectorAll('.tab-content');
+        contents.forEach(content => {
+            if (content.id === `tab-${tabName}`) {
+                content.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+            }
+        });
+    };
+
+    function showPopup(event, cardName) {
         // Stop event propagation to prevent immediate hide
         event.stopPropagation();
 
@@ -1213,7 +1476,6 @@ window.CardLoader = (function () {
         if (!cardInfo) return;
 
         // Lazy load description/data if missing or if release date (misc_info) is missing
-        // This ensures we get the release date for cards loaded from Supabase
         const needsFetch = (!cardInfo.desc || cardInfo.desc === '' || !cardInfo.misc_info);
 
         if (needsFetch && !cardInfo.is_dummy && !cardInfo._fetching) {
@@ -1229,7 +1491,7 @@ window.CardLoader = (function () {
 
                         // Update price
                         const priceArea = document.getElementById('popup-price-area');
-                        if (priceArea) priceArea.innerHTML = formatPriceSection(cardInfo); // innerHTML of the wrapper
+                        if (priceArea) priceArea.innerHTML = formatPriceSection(cardInfo).replace('<div class="mt-3 pt-2 border-t border-gray-700">', '').replace('<div class="text-xs text-gray-400 mb-1">💰 Prices</div>', '');
 
                         // Update release date
                         const misc = cardInfo.misc_info ? cardInfo.misc_info[0] : null;
@@ -1256,7 +1518,7 @@ window.CardLoader = (function () {
         }
 
         let cardType;
-        const race = cardInfo.race || 'Unknown'; // Fallback for missing race
+        const race = cardInfo.race || 'Unknown';
 
         if (cardInfo.type.includes('Monster')) {
             cardType = `[${race} / ${cardInfo.type.replace(' Monster', '')}]`;
@@ -1280,27 +1542,60 @@ window.CardLoader = (function () {
             releaseDateHtml = `Release: ${misc.tcg_date || misc.ocg_date}`;
         }
 
+        // Prepare Price HTML separately to strip container divs if needed
+        const priceHtml = formatPriceSection(cardInfo).replace('<div class="mt-3 pt-2 border-t border-gray-700">', '').replace('<div class="text-xs text-gray-400 mb-1">💰 Prices</div>', '');
+
         popup.innerHTML = `
-            <div class="flex flex-col">
-                <div class="flex-shrink-0">
+            <div class="flex flex-col h-full" style="background-color: #0f172a;">
+                <div class="flex-shrink-0" style="background-color: #0f172a;">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-blue-400 font-bold text-lg mb-1">${cardInfo.name}</h3>
-                            <p class="text-xs text-gray-300">${cardType}</p>
-                        </div>
+                        <h3 class="text-blue-400 font-bold text-lg">${cardInfo.name}</h3>
                         <span id="popup-release-date" class="text-[10px] text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded border border-gray-700 whitespace-nowrap ${releaseDateHtml ? '' : 'hidden'}">
                             ${releaseDateHtml}
                         </span>
                     </div>
-                    <div class="w-full h-px bg-blue-500 my-2"></div>
-                </div>
-                <div class="flex-1 overflow-hidden">
-                    <div id="popup-desc-area">
-                        ${cardInfo.desc ? formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name) : '<p class="text-gray-400 italic text-xs p-2">Loading details...</p>'}
+                    
+                    <!-- Tab Navigation -->
+                    <div class="flex border-b border-slate-600 mt-1" style="background-color: #1e293b;">
+                        <button onclick="window.switchPopupTab('details')" data-tab="details" class="tab-btn flex-1 py-1.5 text-xs font-medium text-blue-400 border-b-2 border-blue-500 transition-colors" style="background-color: #334155;">Details</button>
+                        <button onclick="window.switchPopupTab('tags')" data-tab="tags" class="tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Tags</button>
+                        <button onclick="window.switchPopupTab('sets')" data-tab="sets" class="tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Sets</button>
+                        <button onclick="window.switchPopupTab('prices')" data-tab="prices" class="tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Prices</button>
                     </div>
-                    ${stats}
-                    <div id="card-tags-container"></div>
-                    <div id="popup-price-area">${formatPriceSection(cardInfo)}</div>
+                    
+                    <!-- Card Type (below tabs) -->
+                    <p class="text-xs text-gray-300 mt-2">${cardType}</p>
+                </div>
+
+                <div class="flex-1 overflow-y-auto mt-2 pr-1 custom-scrollbar" style="max-height: 300px; background-color: #0f172a;">
+                    <!-- Details Tab -->
+                    <div id="tab-details" class="tab-content" style="background-color: #0f172a;">
+                        <div id="popup-desc-area">
+                            ${cardInfo.desc ? formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name) : '<p class="text-gray-400 italic text-xs p-2">Loading details...</p>'}
+                        </div>
+                        ${stats}
+                    </div>
+
+                    <!-- Tags Tab -->
+                    <div id="tab-tags" class="tab-content hidden" style="background-color: #0f172a;">
+                         <div id="card-tags-container" class="pt-1">
+                            <p class="text-gray-500 italic text-xs">Loading tags...</p>
+                         </div>
+                    </div>
+
+                    <!-- Prices Tab -->
+                    <div id="tab-prices" class="tab-content hidden" style="background-color: #0f172a;">
+                        <div id="popup-price-area" class="pt-2">
+                            ${priceHtml || '<p class="text-gray-500 text-xs italic">No price data available.</p>'}
+                        </div>
+                    </div>
+
+                    <!-- Sets Tab -->
+                    <div id="tab-sets" class="tab-content hidden" style="background-color: #0f172a;">
+                        <div id="popup-sets-area" style="max-height: 250px; overflow-y: auto; padding-top: 4px; -webkit-overflow-scrolling: touch;">
+                            ${formatSetsSection(cardInfo)}
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -1308,18 +1603,27 @@ window.CardLoader = (function () {
         popup.style.display = 'block';
         popup.style.zIndex = '10000';
         movePopup(event);
-        popup.style.pointerEvents = 'none'; // Disable pointer events - no scrolling needed
+        popup.style.pointerEvents = 'auto'; // Enable pointer events for clicks inside
         setTimeout(() => { popup.style.opacity = 1; }, 10);
         activePopup = popup;
         lastShown = Date.now();
         currentCard = cardName;
 
-        // Fetch and display tags asynchronously (non-blocking)
+        // Fetch and display tags asynchronously
         if (cardPasscode && getSupabaseClient()) {
             fetchCardTags(cardPasscode).then(tags => {
                 const tagsContainer = popup.querySelector('#card-tags-container');
-                if (tagsContainer && tags.length > 0) {
-                    tagsContainer.innerHTML = formatTagsSection(tags, cardInfo.type || '');
+                if (tagsContainer) {
+                    if (tags.length > 0) {
+                        // Use formatTagsSection but strip the outer container/header as we are in a tab
+                        let content = formatTagsSection(tags, cardInfo.type || '');
+                        // Simple clean up to remove the "Gameplay Tags" header from the helper output
+                        content = content.replace(/<div class="text-xs text-gray-400 mb-2">🏷️ Gameplay Tags<\/div>/, '');
+                        content = content.replace(/<div class="mt-3 pt-2 border-t border-gray-700">/, '<div>'); // Remove top border
+                        tagsContainer.innerHTML = content;
+                    } else {
+                        tagsContainer.innerHTML = '<p class="text-gray-500 text-xs italic">No tags found for this card.</p>';
+                    }
                 }
             });
         }
@@ -2673,7 +2977,9 @@ window.CardLoader = (function () {
                             tagsByCardId[passcode] = tags;
                             tags.forEach(tag => {
                                 uniqueTags.add(tag.tag_name);
-                                tagCategories[tag.tag_name] = tag.tag_category;
+                                // Use mapped category if available, otherwise original
+                                const mappedCategory = KNOWN_TAG_CATEGORIES[tag.tag_name];
+                                tagCategories[tag.tag_name] = mappedCategory || tag.tag_category;
                             });
                         }
                     });
@@ -2778,13 +3084,23 @@ window.CardLoader = (function () {
                     const tagsAttribute = tags.map(t => t.tag_name).join(',');
                     const tagDisplayHtml = (() => {
                         if (tags.length > 0) {
-                            const listItems = tags.map(tag => {
-                                const category = (tag.tag_category || 'default').toLowerCase();
-                                const colors = TAG_CATEGORY_COLORS[category] || TAG_CATEGORY_COLORS.default;
+                            // Sort tags by category priority
+                            const sortedTags = [...tags].sort((a, b) => {
+                                const catA = (KNOWN_TAG_CATEGORIES[a.tag_name] || a.tag_category || 'default').toLowerCase();
+                                const catB = (KNOWN_TAG_CATEGORIES[b.tag_name] || b.tag_category || 'default').toLowerCase();
+                                const prioA = CATEGORY_PRIORITY[catA] || 99;
+                                const prioB = CATEGORY_PRIORITY[catB] || 99;
+                                return prioA - prioB || a.tag_name.localeCompare(b.tag_name);
+                            });
+
+                            const listItems = sortedTags.map(tag => {
+                                const categoryKey = (KNOWN_TAG_CATEGORIES[tag.tag_name] || tag.tag_category || 'default').toLowerCase();
+                                const colors = TAG_CATEGORY_COLORS[categoryKey] || TAG_CATEGORY_COLORS.default;
+
                                 return `
                                     <div class="flex items-start w-full text-[10px] leading-tight text-slate-300 group/tag">
-                                        <span class="mr-1.5 opacity-60 ${colors.text}">•</span>
-                                        <span class="flex-1 opacity-90 group-hover/tag:opacity-100 transition-opacity">${tag.tag_name}</span>
+                                        <span class="mr-1.5 opacity-80 ${colors.text}">•</span>
+                                        <span class="flex-1 opacity-90 hover:text-white transition-colors">${tag.tag_name}</span>
                                     </div>`;
                             }).join('');
                             return `<div class="flex flex-col w-full mt-1 px-1 space-y-0.5 text-left">${listItems}</div>`;
