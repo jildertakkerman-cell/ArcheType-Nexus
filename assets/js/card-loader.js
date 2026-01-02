@@ -1558,7 +1558,6 @@ window.CardLoader = (function () {
                     <!-- Tab Navigation -->
                     <div class="flex border-b border-slate-600 mt-1" style="background-color: #1e293b;">
                         <button onclick="window.switchPopupTab('details')" data-tab="details" class="tab-btn flex-1 py-1.5 text-xs font-medium text-blue-400 border-b-2 border-blue-500 transition-colors" style="background-color: #334155;">Details</button>
-                        <button onclick="window.switchPopupTab('tags')" data-tab="tags" class="tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Tags</button>
                         <button onclick="window.switchPopupTab('sets')" data-tab="sets" class="tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Sets</button>
                         <button onclick="window.switchPopupTab('prices')" data-tab="prices" class="tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Prices</button>
                     </div>
@@ -1567,20 +1566,17 @@ window.CardLoader = (function () {
                     <p class="text-xs text-gray-300 mt-2">${cardType}</p>
                 </div>
 
-                <div class="flex-1 overflow-y-auto mt-2 pr-1 custom-scrollbar" style="max-height: 300px; background-color: #0f172a;">
+                <div class="flex-1 mt-2 pr-1" style="background-color: #0f172a;">
                     <!-- Details Tab -->
                     <div id="tab-details" class="tab-content" style="background-color: #0f172a;">
                         <div id="popup-desc-area">
                             ${cardInfo.desc ? formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name) : '<p class="text-gray-400 italic text-xs p-2">Loading details...</p>'}
                         </div>
                         ${stats}
-                    </div>
-
-                    <!-- Tags Tab -->
-                    <div id="tab-tags" class="tab-content hidden" style="background-color: #0f172a;">
-                         <div id="card-tags-container" class="pt-1">
+                        <!-- Tags Section (below details) -->
+                        <div id="card-tags-container" class="mt-3 pt-2 border-t border-slate-700">
                             <p class="text-gray-500 italic text-xs">Loading tags...</p>
-                         </div>
+                        </div>
                     </div>
 
                     <!-- Prices Tab -->
@@ -1592,7 +1588,7 @@ window.CardLoader = (function () {
 
                     <!-- Sets Tab -->
                     <div id="tab-sets" class="tab-content hidden" style="background-color: #0f172a;">
-                        <div id="popup-sets-area" style="max-height: 250px; overflow-y: auto; padding-top: 4px; -webkit-overflow-scrolling: touch;">
+                        <div id="popup-sets-area" style="padding-top: 4px;">
                             ${formatSetsSection(cardInfo)}
                         </div>
                     </div>
@@ -1657,33 +1653,68 @@ window.CardLoader = (function () {
             popup.style.top = '50%';
             popup.style.transform = 'translate(-50%, -50%)';
             popup.style.margin = '0';
+            popup.style.maxHeight = 'calc(100vh - 40px)';
+            popup.style.overflowY = 'auto';
         } else {
             // Desktop: position near cursor
             popup.style.transform = 'none';
 
-            const popupWidth = popup.offsetWidth || 400;
-            const popupHeight = popup.offsetHeight || 500;
             const cushion = 20;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
 
-            let x = event.clientX + cushion;
-            let y = event.clientY + cushion;
+            // Use requestAnimationFrame to get accurate dimensions after render
+            requestAnimationFrame(() => {
+                const popupWidth = popup.offsetWidth || 400;
+                const popupHeight = popup.offsetHeight || 500;
 
-            // Keep popup within viewport bounds
-            if (x + popupWidth > window.innerWidth) {
-                x = event.clientX - popupWidth - cushion;
-            }
-            if (y + popupHeight > window.innerHeight) {
-                y = event.clientY - popupHeight - cushion;
-            }
+                // Calculate available space in each direction from cursor
+                const spaceRight = viewportWidth - event.clientX - cushion;
+                const spaceLeft = event.clientX - cushion;
+                const spaceBelow = viewportHeight - event.clientY - cushion;
+                const spaceAbove = event.clientY - cushion;
 
-            // Ensure popup doesn't go off-screen to the left or top
-            if (x < cushion) x = cushion;
-            if (y < cushion) y = cushion;
+                let x, y;
 
-            // Use fixed positioning (stays in viewport, doesn't scroll with page)
-            popup.style.position = 'fixed';
-            popup.style.left = `${x}px`;
-            popup.style.top = `${y}px`;
+                // Horizontal positioning: prefer right, fallback to left, then clamp
+                if (spaceRight >= popupWidth) {
+                    x = event.clientX + cushion;
+                } else if (spaceLeft >= popupWidth) {
+                    x = event.clientX - popupWidth - cushion;
+                } else {
+                    // Not enough space on either side, center horizontally and clamp
+                    x = Math.max(cushion, Math.min(event.clientX - popupWidth / 2, viewportWidth - popupWidth - cushion));
+                }
+
+                // Vertical positioning: prefer below, fallback to above, then clamp
+                if (spaceBelow >= popupHeight) {
+                    y = event.clientY + cushion;
+                } else if (spaceAbove >= popupHeight) {
+                    y = event.clientY - popupHeight - cushion;
+                } else {
+                    // Not enough space above or below, position to fit in viewport
+                    y = Math.max(cushion, Math.min(viewportHeight - popupHeight - cushion, cushion));
+                }
+
+                // Final bounds check to ensure popup is always fully visible
+                if (x < cushion) x = cushion;
+                if (x + popupWidth > viewportWidth - cushion) x = viewportWidth - popupWidth - cushion;
+                if (y < cushion) y = cushion;
+                if (y + popupHeight > viewportHeight - cushion) {
+                    y = cushion;
+                    // If popup is taller than viewport, enable scrolling
+                    popup.style.maxHeight = `${viewportHeight - cushion * 2}px`;
+                    popup.style.overflowY = 'auto';
+                } else {
+                    popup.style.maxHeight = '';
+                    popup.style.overflowY = '';
+                }
+
+                // Use fixed positioning (stays in viewport, doesn't scroll with page)
+                popup.style.position = 'fixed';
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+            });
         }
     }
 
