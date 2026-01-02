@@ -3362,11 +3362,13 @@ window.CardLoader = (function () {
             container.innerHTML = html;
 
             // Now insert the filter at the top (after innerHTML is set)
-            if (uniqueTags.size > 0) {
+            // Always show filter section (for New Cards and Year filters even if no tags)
+            {
                 const filterContainer = document.createElement('div');
                 filterContainer.className = 'filter-section w-full mb-8 p-5 rounded-2xl shadow-xl animate-fadeIn';
 
                 const sortedUniqueTags = Array.from(uniqueTags).sort();
+                const hasTags = uniqueTags.size > 0;
 
                 const tagButtons = sortedUniqueTags.map(tagName => {
                     const category = (tagCategories[tagName] || 'default').toLowerCase();
@@ -3395,6 +3397,7 @@ window.CardLoader = (function () {
                         </button>
                     </div>
                     
+                    ${hasTags ? `
                     <div class="flex items-center gap-3 mb-5">
                         <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
                             <i class="fas fa-filter text-white text-lg"></i>
@@ -3411,6 +3414,7 @@ window.CardLoader = (function () {
                     <div class="flex flex-wrap gap-3 max-h-48 overflow-y-auto p-3 bg-slate-900/40 rounded-xl mb-4" style="scrollbar-width: thin; scrollbar-color: #4f46e5 transparent;">
                         ${tagButtons}
                     </div>
+                    ` : ''}
                     
                     <!-- Year Range Filter -->
                     <div class="flex items-center gap-3 mt-4 pt-4 border-t border-slate-700/50">
