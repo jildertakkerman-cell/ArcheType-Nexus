@@ -3053,6 +3053,19 @@ window.CardLoader = (function () {
                 }).join('');
 
                 filterContainer.innerHTML = `
+                    <!-- New Cards Filter Toggle -->
+                    <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700/50">
+                        <button id="new-cards-filter-btn" 
+                                onclick="toggleNewCardsFilter()" 
+                                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all"
+                                style="background-color: #1e293b; color: #94a3b8; border-color: #475569;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background-color: #10b981; border-radius: 50%;"></span>
+                            New Cards Only
+                            <span class="text-xs opacity-60">(Last 6 months)</span>
+                        </button>
+                        <span id="new-cards-count" class="text-xs text-slate-500"></span>
+                    </div>
+                    
                     <div class="flex items-center gap-2 mb-2">
                         <i class="fas fa-filter text-slate-400 text-sm"></i>
                         <span class="text-sm font-bold text-slate-200">Filter by Tags</span>
@@ -3063,6 +3076,25 @@ window.CardLoader = (function () {
                     </div>
                     <script>
                         window.activeTagFilters = new Set();
+                        window.newCardsFilterActive = false;
+                        
+                        window.toggleNewCardsFilter = function() {
+                            window.newCardsFilterActive = !window.newCardsFilterActive;
+                            const btn = document.getElementById('new-cards-filter-btn');
+                            if (window.newCardsFilterActive) {
+                                btn.style.backgroundColor = '#10b981';
+                                btn.style.color = 'white';
+                                btn.style.borderColor = '#059669';
+                                btn.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.4)';
+                            } else {
+                                btn.style.backgroundColor = '#1e293b';
+                                btn.style.color = '#94a3b8';
+                                btn.style.borderColor = '#475569';
+                                btn.style.boxShadow = 'none';
+                            }
+                            applyFilters();
+                        };
+                        
                         window.toggleFilter = function(tagName) {
                             if (window.activeTagFilters.has(tagName)) {
                                 window.activeTagFilters.delete(tagName);
@@ -3155,6 +3187,15 @@ window.CardLoader = (function () {
                         dateDisplay = yearsByCardId[passcode];
                     }
 
+                    // Check if card is a new release (within the last 6 months)
+                    let isNewRelease = false;
+                    if (rawDate) {
+                        const releaseDate = new Date(rawDate);
+                        const sixMonthsAgo = new Date();
+                        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                        isNewRelease = releaseDate >= sixMonthsAgo;
+                    }
+
                     // Lazy fetch Release Date if not present
                     // We check if we have misc_info. If not, we fetch the card data.
                     // Note: 'card' here comes from Supabase/local list, it might NOT have misc_info
@@ -3168,6 +3209,22 @@ window.CardLoader = (function () {
 
                             // Find the parent card container to update data-year
                             const cardContainer = dateEl.closest('.card-item-container');
+                            const cardImageContainer = cardContainer ? cardContainer.querySelector('[id^="browser-card-"]') : null;
+
+                            // Helper to add NEW badge if card is recently released
+                            const addNewBadgeIfRecent = (fullDate) => {
+                                if (!fullDate || !cardImageContainer) return;
+                                const releaseDate = new Date(fullDate);
+                                const sixMonthsAgo = new Date();
+                                sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                                if (releaseDate >= sixMonthsAgo && !cardImageContainer.querySelector('.new-badge')) {
+                                    const badge = document.createElement('div');
+                                    badge.className = 'new-badge';
+                                    badge.style.cssText = 'position: absolute; top: 0; right: 0; background-color: #10b981; color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); z-index: 10; letter-spacing: 0.05em;';
+                                    badge.textContent = 'NEW';
+                                    cardImageContainer.insertBefore(badge, cardImageContainer.firstChild);
+                                }
+                            };
 
                             // Check cache first
                             if (cardDataCache[name] && (cardDataCache[name].misc_info || cardDataCache[name].tcg_date || cardDataCache[name].ocg_date)) {
@@ -3178,6 +3235,7 @@ window.CardLoader = (function () {
                                     dateEl.textContent = year;
                                     dateEl.classList.remove('hidden');
                                     if (cardContainer) cardContainer.dataset.year = year;
+                                    addNewBadgeIfRecent(date);
                                 }
                             } else {
                                 // Fetch
@@ -3192,6 +3250,7 @@ window.CardLoader = (function () {
                                             dateEl.textContent = year;
                                             dateEl.classList.remove('hidden');
                                             if (cardContainer) cardContainer.dataset.year = year;
+                                            addNewBadgeIfRecent(date);
                                         }
                                     }
                                 }).catch(err => console.warn('Date fetch failed for', name));
@@ -3210,6 +3269,7 @@ window.CardLoader = (function () {
                                     <div class="animate-pulse bg-slate-800 w-full h-full rounded"></div>
                                 </div>
                                 ${isOCG ? `<div class="absolute top-0 left-0 bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br shadow-sm z-10 tracking-wider">OCG</div>` : ''}
+                                ${isNewRelease ? `<div style="position: absolute; top: 0; right: 0; background-color: #10b981; color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); z-index: 10; letter-spacing: 0.05em;">NEW</div>` : ''}
                             </div>
                             
                             <div class="mt-2 flex-1 flex flex-col items-center w-full min-h-0">
@@ -3323,6 +3383,18 @@ window.CardLoader = (function () {
                 const totalCards = Object.keys(cardsToLoad).length;
 
                 filterContainer.innerHTML = `
+                    <!-- New Cards Filter Toggle -->
+                    <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-700/50">
+                        <button id="new-cards-filter-btn" 
+                                onclick="window.toggleNewCardsFilter()" 
+                                class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold border-2 transition-all"
+                                style="background-color: #1e293b; color: #94a3b8; border-color: #475569;">
+                            <span style="display: inline-block; width: 10px; height: 10px; background-color: #10b981; border-radius: 50%;"></span>
+                            New Cards Only
+                            <span class="text-xs opacity-60">(Last 6 months)</span>
+                        </button>
+                    </div>
+                    
                     <div class="flex items-center gap-3 mb-5">
                         <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
                             <i class="fas fa-filter text-white text-lg"></i>
@@ -3332,7 +3404,7 @@ window.CardLoader = (function () {
                             <p class="text-xs text-slate-400">${sortedUniqueTags.length} tags across ${totalCards} cards</p>
                         </div>
                         <button class="ml-auto px-4 py-1.5 text-sm text-slate-400 hover:text-white border border-slate-600/50 rounded-full hover:bg-red-500/20 hover:border-red-500/50 transition-all" 
-                                onclick="document.querySelectorAll('.filter-tag-btn.active').forEach(b => b.click()); document.querySelectorAll('.filter-year-btn.active').forEach(b => b.click());">
+                                onclick="document.querySelectorAll('.filter-tag-btn.active').forEach(b => b.click()); document.querySelectorAll('.filter-year-btn.active').forEach(b => b.click()); if(window.newCardsFilterActive) window.toggleNewCardsFilter();">
                             <i class="fas fa-times mr-1.5"></i>Clear All
                         </button>
                     </div>
@@ -3374,6 +3446,26 @@ window.CardLoader = (function () {
                 window.activeTagFilters = new Set();
                 window.yearRangeFrom = '';
                 window.yearRangeTo = '';
+                window.newCardsFilterActive = false;
+
+                window.toggleNewCardsFilter = function () {
+                    window.newCardsFilterActive = !window.newCardsFilterActive;
+                    const btn = document.getElementById('new-cards-filter-btn');
+                    if (btn) {
+                        if (window.newCardsFilterActive) {
+                            btn.style.backgroundColor = '#10b981';
+                            btn.style.color = 'white';
+                            btn.style.borderColor = '#059669';
+                            btn.style.boxShadow = '0 0 12px rgba(16, 185, 129, 0.5)';
+                        } else {
+                            btn.style.backgroundColor = '#1e293b';
+                            btn.style.color = '#94a3b8';
+                            btn.style.borderColor = '#475569';
+                            btn.style.boxShadow = 'none';
+                        }
+                    }
+                    window.applyFilters();
+                };
 
                 window.toggleFilter = function (tagName) {
                     if (window.activeTagFilters.has(tagName)) {
@@ -3396,10 +3488,11 @@ window.CardLoader = (function () {
                     const cards = document.querySelectorAll('.card-item-container');
                     const tagFilterCount = window.activeTagFilters.size;
                     const hasYearFilter = window.yearRangeFrom !== '' || window.yearRangeTo !== '';
+                    const newCardsFilterActive = window.newCardsFilterActive || false;
 
                     cards.forEach(card => {
                         // If no filters active, show all
-                        if (tagFilterCount === 0 && !hasYearFilter) {
+                        if (tagFilterCount === 0 && !hasYearFilter && !newCardsFilterActive) {
                             card.style.display = '';
                             return;
                         }
@@ -3427,8 +3520,17 @@ window.CardLoader = (function () {
                             }
                         }
 
-                        // Card must pass both filters
-                        card.style.display = (tagMatch && yearMatch) ? '' : 'none';
+                        // Check new cards filter
+                        let newCardsMatch = true;
+                        if (newCardsFilterActive) {
+                            // Check if card has the NEW badge
+                            const hasNewBadge = card.querySelector('.new-badge') !== null ||
+                                card.querySelector('[style*="background-color: #10b981"]') !== null;
+                            newCardsMatch = hasNewBadge;
+                        }
+
+                        // Card must pass all active filters
+                        card.style.display = (tagMatch && yearMatch && newCardsMatch) ? '' : 'none';
                     });
                 };
 
