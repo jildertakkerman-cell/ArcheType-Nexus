@@ -798,7 +798,7 @@ window.CardLoader = (function () {
             const cardInfo = await fetchCardData(cardName);
 
             if (cardInfo) {
-                cardInfo.hosted_image_url = `${CONFIG.IMAGE_BASE_URL}/${cardInfo.id}.png`;
+                cardInfo.hosted_image_url = `${CONFIG.IMAGE_BASE_URL}/${encodeURIComponent(cardInfo.id)}.png`;
                 cardDataCache[cardName] = cardInfo;
                 displayCardImage(cardInfo, container);
             } else {
@@ -829,7 +829,7 @@ window.CardLoader = (function () {
             const cardInfo = await fetchCardData(cardName);
             if (!cardInfo) return null;
             // Construct and return the hosted image URL using the same format as loadCard()
-            return `${CONFIG.IMAGE_BASE_URL}/${cardInfo.id}.png`;
+            return `${CONFIG.IMAGE_BASE_URL}/${encodeURIComponent(cardInfo.id)}.png`;
         } catch (error) {
             console.error(`Failed to get image URL for "${cardName}":`, error);
             return null;
@@ -853,7 +853,7 @@ window.CardLoader = (function () {
             const cardInfo = await fetchCardDataById(cardId);
 
             if (cardInfo) {
-                cardInfo.hosted_image_url = `${CONFIG.IMAGE_BASE_URL}/${cardInfo.id}.png`;
+                cardInfo.hosted_image_url = `${CONFIG.IMAGE_BASE_URL}/${encodeURIComponent(cardInfo.id)}.png`;
                 // Cache by name for future lookups
                 cardDataCache[cardInfo.name] = cardInfo;
 
