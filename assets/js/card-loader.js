@@ -92,6 +92,12 @@ window.CardLoader = (function () {
         removal: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
         // Timing (Purple) - For Quick Effect, etc.
         timing: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
+        // Cost (Cyan) - For discard/send costs
+        cost: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20' },
+        // Economy (Emerald)
+        economy: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+        // Interaction (Fuchsia)
+        interaction: { bg: 'bg-fuchsia-500/10', text: 'text-fuchsia-400', border: 'border-fuchsia-500/20' },
         // Default
         default: { bg: 'bg-slate-700/50', text: 'text-slate-400', border: 'border-slate-600/30' }
     };
@@ -147,7 +153,38 @@ window.CardLoader = (function () {
         "Spin": "removal",
         "Monster Destruction": "removal",
         "Spell Destruction": "removal",
-        "Trap Destruction": "removal"
+        "Trap Destruction": "removal",
+
+        // Cost
+        "Discard Cost": "cost",
+        "Discard for Cost": "cost",
+        "Banish for Cost": "cost",
+        "LP for Cost": "cost",
+
+        // Economy
+        "Foolish": "economy",
+
+        // Interaction
+        "Banish": "interaction",
+        "Removal": "interaction",
+
+        // Mechanics Updates
+        "Activation Condition": "mechanics",
+        "Activation Requirement": "mechanics",
+        "Battle Trigger": "mechanics",
+        "Cost": "mechanics",
+        "Counter": "mechanics",
+        "Effect Trigger": "mechanics",
+        "Equip": "mechanics",
+        "Graveyard Trigger": "mechanics",
+        "Hand Trigger": "mechanics",
+        "Material Trigger": "mechanics",
+        "Position Change": "mechanics",
+        "Special Summon": "mechanics",
+        "Stacking": "mechanics",
+        "Summoning Trigger": "mechanics",
+        "Trap interaction": "mechanics",
+        "Tribute": "mechanics"
     };
 
     /**
@@ -157,10 +194,13 @@ window.CardLoader = (function () {
         combat: 1,
         disruption: 2,
         removal: 3,
-        protection: 4,
-        consistency: 5,
-        mechanics: 6,
-        timing: 7,
+        interaction: 4,
+        protection: 5,
+        consistency: 6,
+        economy: 7,
+        mechanics: 8,
+        timing: 9,
+        cost: 10,
         default: 99
     };
 
@@ -255,12 +295,147 @@ window.CardLoader = (function () {
     }
 
     /**
+     * Fetch actions for a specific card+tag combination
+     * @param {number} passcode - Card passcode (ID)
+     * @param {string} tagName - Tag name to get actions for
+     * @returns {Promise<Array>} Array of action names
+     */
+    async function fetchActionsForTag(passcode, tagName) {
+        const client = getSupabaseClient();
+        if (!client) return [];
+
+        try {
+            const { data, error } = await client.rpc('get_actions_for_card_tag', {
+                p_passcode: parseInt(passcode),
+                p_tag_name: tagName
+            });
+
+            if (error) {
+                console.error('[CardLoader] Error fetching tag actions:', error);
+                return [];
+            }
+
+            return (data || []).map(row => row.action_name);
+        } catch (error) {
+            console.error('[CardLoader] Failed to fetch tag actions:', error);
+            return [];
+        }
+    }
+
+    // Tag action popup element and state
+    let tagActionsPopup = null;
+
+    /**
+     * Show popup with actions for a clicked tag
+     * @param {Event} event - Click event
+     * @param {number} passcode - Card passcode
+     * @param {string} tagName - Tag name
+     */
+    async function showTagActionsPopup(event, passcode, tagName) {
+        event.stopPropagation();
+
+        // Create popup if not exists
+        if (!tagActionsPopup) {
+            tagActionsPopup = document.createElement('div');
+            tagActionsPopup.id = 'tag-actions-popup';
+            tagActionsPopup.style.cssText = `
+                position: fixed;
+                z-index: 10001;
+                background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+                border: 1px solid #3b82f6;
+                border-radius: 8px;
+                padding: 10px 14px;
+                max-width: 260px;
+                min-width: 160px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(59, 130, 246, 0.2);
+                display: none;
+                font-size: 11px;
+                color: #e2e8f0;
+                line-height: 1.4;
+            `;
+            document.body.appendChild(tagActionsPopup);
+        }
+
+        // Show loading state
+        tagActionsPopup.innerHTML = `
+            <div class="flex items-center gap-2 text-slate-400 text-[11px]">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading actions...</span>
+            </div>
+        `;
+        tagActionsPopup.style.display = 'block';
+
+        // Position near clicked element
+        const rect = event.target.getBoundingClientRect();
+        const popupX = Math.min(rect.left, window.innerWidth - 300);
+        const popupY = rect.bottom + 8;
+        tagActionsPopup.style.left = `${Math.max(10, popupX)}px`;
+        tagActionsPopup.style.top = `${popupY}px`;
+
+        // Fetch actions
+        const actions = await fetchActionsForTag(passcode, tagName);
+
+        // Get tag category color
+        const category = (KNOWN_TAG_CATEGORIES[tagName] || 'default').toLowerCase();
+        const colors = TAG_CATEGORY_COLORS[category] || TAG_CATEGORY_COLORS.default;
+
+        if (actions.length === 0) {
+            tagActionsPopup.innerHTML = `
+                <div class="text-slate-400 italic text-[10px]">No actions found for this tag.</div>
+            `;
+        } else {
+            tagActionsPopup.innerHTML = `
+                <div class="mb-1.5 pb-1.5 border-b border-slate-600/30">
+                    <span style="font-size: 9px;" class="uppercase font-bold ${colors.text} tracking-wider opacity-80">${tagName}</span>
+                </div>
+                <ul class="space-y-1.5">
+                    ${actions.map(action => `
+                        <li class="flex items-start gap-2.5">
+                            <div class="w-1 h-1 rounded-full bg-blue-500/50 mt-[6px] shrink-0"></div>
+                            <span class="text-slate-300 leading-tight">${action}</span>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        }
+
+        // Reposition if goes off-screen
+        const popupRect = tagActionsPopup.getBoundingClientRect();
+        if (popupRect.bottom > window.innerHeight - 10) {
+            tagActionsPopup.style.top = `${rect.top - popupRect.height - 8}px`;
+        }
+        if (popupRect.right > window.innerWidth - 10) {
+            tagActionsPopup.style.left = `${window.innerWidth - popupRect.width - 10}px`;
+        }
+    }
+
+    /**
+     * Hide the tag actions popup
+     */
+    function hideTagActionsPopup() {
+        if (tagActionsPopup) {
+            tagActionsPopup.style.display = 'none';
+        }
+    }
+
+    // Global click listener to close tag popup
+    document.addEventListener('click', (e) => {
+        if (tagActionsPopup && !tagActionsPopup.contains(e.target) && !e.target.classList.contains('tag-action-trigger')) {
+            hideTagActionsPopup();
+        }
+    });
+
+    // Expose function globally for onclick handlers
+    window.showTagActionsPopup = showTagActionsPopup;
+
+    /**
      * Format tags section HTML for card popup
      * @param {Array} tags - Array of {tag_name, tag_category} objects
      * @param {string} cardType - Optional card type string to check for Extra Deck exclusion
+     * @param {number} passcode - Optional card passcode for action lookups
      * @returns {string} HTML string for tags section
      */
-    function formatTagsSection(tags, cardType = '') {
+    function formatTagsSection(tags, cardType = '', passcode = null) {
         if (!tags || tags.length === 0) return '';
 
         // Extract tag names for hand trap detection
@@ -291,8 +466,13 @@ window.CardLoader = (function () {
             // User asked for minimal/cleaner. Category color header is good for organization.
             const colors = TAG_CATEGORY_COLORS[group.key] || TAG_CATEGORY_COLORS.default;
 
-            // Join tags with a subtle bullet
-            const tagsList = group.tags.map(t => `<span class="hover:text-white transition-colors cursor-default">${t}</span>`).join('<span class="mx-1.5 opacity-40">•</span>');
+            // Join tags with a subtle bullet - make clickable if passcode provided
+            const tagsList = group.tags.map(t => {
+                if (passcode) {
+                    return `<span class="tag-action-trigger hover:text-white hover:underline transition-colors cursor-pointer" onclick="window.showTagActionsPopup(event, ${passcode}, '${t.replace(/'/g, "\\'")}')">${t}</span>`;
+                }
+                return `<span class="hover:text-white transition-colors cursor-default">${t}</span>`;
+            }).join('<span class="mx-1.5 opacity-40">•</span>');
 
             return `
                 <div class="mb-1.5 last:mb-0">
@@ -1598,6 +1778,11 @@ window.CardLoader = (function () {
 
         popup.style.display = 'block';
         popup.style.zIndex = '10000';
+        // Ensure popup width is enforced
+        if (window.innerWidth >= 768) {
+            popup.style.maxWidth = '420px';
+            popup.style.width = '420px';
+        }
         movePopup(event);
         popup.style.pointerEvents = 'auto'; // Enable pointer events for clicks inside
         setTimeout(() => { popup.style.opacity = 1; }, 10);
@@ -1612,7 +1797,7 @@ window.CardLoader = (function () {
                 if (tagsContainer) {
                     if (tags.length > 0) {
                         // Use formatTagsSection but strip the outer container/header as we are in a tab
-                        let content = formatTagsSection(tags, cardInfo.type || '');
+                        let content = formatTagsSection(tags, cardInfo.type || '', cardPasscode);
                         // Simple clean up to remove the "Gameplay Tags" header from the helper output
                         content = content.replace(/<div class="text-xs text-gray-400 mb-2">🏷️ Gameplay Tags<\/div>/, '');
                         content = content.replace(/<div class="mt-3 pt-2 border-t border-gray-700">/, '<div>'); // Remove top border
@@ -2751,7 +2936,7 @@ window.CardLoader = (function () {
      * @param {Array} cards - Array of card objects
      * @returns {Object} Sorted cards by category
      */
-    function sortCardsByType(cards) {
+    function sortCardsByType(cards, autoSort = true) {
         const extraDeckTypes = ['Fusion', 'Synchro', 'Xyz', 'Link'];
 
         const sorted = {
@@ -2781,10 +2966,12 @@ window.CardLoader = (function () {
             }
         });
 
-        // Sort each category alphabetically by name
-        Object.keys(sorted).forEach(key => {
-            sorted[key].sort((a, b) => (a.cardname || a.card_name || '').localeCompare(b.cardname || b.card_name || ''));
-        });
+        // Sort each category alphabetically by name if requested
+        if (autoSort) {
+            Object.keys(sorted).forEach(key => {
+                sorted[key].sort((a, b) => (a.cardname || a.card_name || '').localeCompare(b.cardname || b.card_name || ''));
+            });
+        }
 
         return sorted;
     }
@@ -2910,658 +3097,11 @@ window.CardLoader = (function () {
         }
     }
 
-    /**
-     * Initialize the standalone Card Browser page
-     * @param {string} archetypeName
-     */
-    async function initCardBrowserPage(archetypeName) {
-        document.title = `${archetypeName} - Card Browser`;
-        const titleEl = document.getElementById('archetype-title');
-        if (titleEl) titleEl.textContent = archetypeName;
 
-        const container = document.getElementById('browser-content');
-        if (!container) return;
-
-        if (!getSupabaseClient()) {
-            container.innerHTML = `
-                <div class="text-center text-slate-500 py-10">
-                    <i class="fas fa-database mb-4 text-4xl"></i>
-                    <p class="text-xl">Database not configured.</p>
-                </div>
-             `;
-            return;
-        }
-
-        try {
-            const cards = await fetchArchetypeCardsFromSupabase(archetypeName);
-            if (!cards || cards.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center text-slate-500 py-10">
-                        <p class="text-xl">No cards found for "${archetypeName}".</p>
-                        <a href="../index.html" class="inline-block mt-4 text-indigo-400 hover:text-indigo-300">Return Home</a>
-                    </div>
-                `;
-                return;
-            }
-
-            // Pre-populate cache with fetched data to avoid redundant API calls
-            cards.forEach(card => {
-                const name = card.cardname || card.card_name;
-                const id = card.passcode || card.id;
-                if (name && id) {
-                    cardDataCache[name] = {
-                        name: name,
-                        id: id,
-                        desc: card.desc || '',
-                        type: card.cardtype || card.card_type,
-                        race: card.race,
-                        attribute: card.attribute,
-                        atk: card.atk,
-                        def: card.def,
-                        level: card.level,
-                        hosted_image_url: `${CONFIG.IMAGE_BASE_URL}/${id}.png` // Pre-construct URL
-                    };
-                }
-            });
-
-            // Categorize cards
-            const standardCards = [];
-            const animeCards = [];
-
-            cards.forEach(card => {
-                // Check format/set info to determine if it's Anime-only
-                // Assume if format is 'Anime' or similar, it goes to animeCards
-                // Also check for OCG tag
-                const format = (card.format || '').toUpperCase();
-
-                if (format === 'ANIME' || (format !== 'TCG' && format !== 'OCG' && !card.passcode)) {
-                    // Treat as Anime/Unofficial if specifically Anime OR (not TCG/OCG AND no passcode)
-                    animeCards.push(card);
-                } else {
-                    standardCards.push(card);
-                }
-            });
-
-            const sortedCards = sortCardsByType(standardCards);
-
-            // --- Tag Filtering Logic ---
-            const allPasscodes = standardCards.map(c => c.passcode || c.id).filter(id => id);
-            const tagsByCardId = {};
-            const uniqueTags = new Set();
-            const tagCategories = {};
-            const uniqueYears = new Set();  // For year filtering
-            const yearsByCardId = {};  // Store year per card
-
-            // Fetch all tags for these cards if Supabase is available
-            if (getSupabaseClient() && allPasscodes.length > 0) {
-                try {
-                    // Fetch tags for all cards using the working RPC endpoint
-                    const tagPromises = allPasscodes.map(async (passcode) => {
-                        const tags = await fetchCardTags(passcode);
-                        return { passcode, tags };
-                    });
-
-                    const results = await Promise.all(tagPromises);
-
-                    results.forEach(({ passcode, tags }) => {
-                        if (tags && tags.length > 0) {
-                            tagsByCardId[passcode] = tags;
-                            tags.forEach(tag => {
-                                uniqueTags.add(tag.tag_name);
-                                // Use mapped category if available, otherwise original
-                                const mappedCategory = KNOWN_TAG_CATEGORIES[tag.tag_name];
-                                tagCategories[tag.tag_name] = mappedCategory || tag.tag_category;
-                            });
-                        }
-                    });
-
-                    console.log(`[CardLoader] Loaded tags for ${Object.keys(tagsByCardId).length} cards, ${uniqueTags.size} unique tags found`);
-                } catch (err) {
-                    console.warn('[CardLoader] Batch tag fetch failed, filtering may be limited:', err);
-                }
-            }
-
-            // Populate year filter with common Yu-Gi-Oh release years (no API calls)
-            // This avoids API rate limiting while still providing year filtering
-            const currentYear = new Date().getFullYear();
-            for (let year = 2002; year <= currentYear; year++) {
-                uniqueYears.add(year.toString());
-            }
-            console.log(`[CardLoader] Year filter populated with years 2002-${currentYear}`);
-
-            const activeFilters = new Set();
-
-            // Render Filter UI
-            if (uniqueTags.size > 0) {
-                const filterContainer = document.createElement('div');
-                filterContainer.className = 'w-full mb-6 p-4 bg-slate-800/50 rounded-xl border border-slate-700/50';
-
-                const sortedUniqueTags = Array.from(uniqueTags).sort();
-
-                // Group tags by category for cleaner display? Or just alphabetic. Alphabetic is easier for findability.
-                const tagButtons = sortedUniqueTags.map(tagName => {
-                    const category = (tagCategories[tagName] || 'default').toLowerCase();
-                    const colors = TAG_CATEGORY_COLORS[category] || TAG_CATEGORY_COLORS.default;
-                    // Use a neutral style for unchecked, colored for checked
-                    return `
-                        <button class="filter-tag-btn px-2 py-1 rounded text-xs font-medium border border-slate-600/50 bg-slate-900/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all m-0.5"
-                                data-tag="${tagName}"
-                                onclick="this.classList.toggle('active'); this.classList.toggle('ring-1'); this.classList.toggle('ring-indigo-500'); this.classList.toggle('bg-slate-700'); toggleFilter('${tagName}')">
-                            ${tagName}
-                        </button>
-                    `;
-                }).join('');
-
-                filterContainer.innerHTML = `
-                    <!-- New Cards Filter Toggle -->
-                    <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700/50">
-                        <button id="new-cards-filter-btn" 
-                                onclick="toggleNewCardsFilter()" 
-                                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all"
-                                style="background-color: #1e293b; color: #94a3b8; border-color: #475569;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background-color: #10b981; border-radius: 50%;"></span>
-                            New Cards Only
-                            <span class="text-xs opacity-60">(Last 6 months)</span>
-                        </button>
-                        <span id="new-cards-count" class="text-xs text-slate-500"></span>
-                    </div>
-                    
-                    <div class="flex items-center gap-2 mb-2">
-                        <i class="fas fa-filter text-slate-400 text-sm"></i>
-                        <span class="text-sm font-bold text-slate-200">Filter by Tags</span>
-                        <span class="text-xs text-slate-500 ml-auto cursor-pointer hover:text-white" onclick="document.querySelectorAll('.filter-tag-btn.active').forEach(b => b.click())">Clear All</span>
-                    </div>
-                    <div class="flex flex-wrap max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent p-1">
-                        ${tagButtons}
-                    </div>
-                    <script>
-                        window.activeTagFilters = new Set();
-                        window.newCardsFilterActive = false;
-                        
-                        window.toggleNewCardsFilter = function() {
-                            window.newCardsFilterActive = !window.newCardsFilterActive;
-                            const btn = document.getElementById('new-cards-filter-btn');
-                            if (window.newCardsFilterActive) {
-                                btn.style.backgroundColor = '#10b981';
-                                btn.style.color = 'white';
-                                btn.style.borderColor = '#059669';
-                                btn.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.4)';
-                            } else {
-                                btn.style.backgroundColor = '#1e293b';
-                                btn.style.color = '#94a3b8';
-                                btn.style.borderColor = '#475569';
-                                btn.style.boxShadow = 'none';
-                            }
-                            applyFilters();
-                        };
-                        
-                        window.toggleFilter = function(tagName) {
-                            if (window.activeTagFilters.has(tagName)) {
-                                window.activeTagFilters.delete(tagName);
-                            } else {
-                                window.activeTagFilters.add(tagName);
-                            }
-                            applyTagFilters();
-                        };
-                        
-                        window.applyTagFilters = function() {
-                            const cards = document.querySelectorAll('.card-item-container'); // Need to add this class to wrapper
-                            cards.forEach(card => {
-                                const cardTagsStr = card.dataset.tags || ''; // Need to add this data attr
-                                const cardTags = cardTagsStr.split(',');
-                                const matches = Array.from(window.activeTagFilters).every(filter => cardTags.includes(filter));
-                                
-                                if (matches) {
-                                    card.style.display = '';
-                                } else {
-                                    card.style.display = 'none';
-                                }
-                            });
-                        };
-                    </script>
-                `;
-                // Filter container will be inserted after grid is rendered
-            }
-
-            const cardsToLoad = {};
-
-            // Helper for responsive grid rendering with dynamic containers
-            const renderBrowserCardSection = (title, cards, bgColor, icon) => {
-                if (cards.length === 0) return '';
-
-                const cardItems = cards.map(card => {
-                    const name = card.cardname || card.card_name || 'Unknown';
-                    const passcode = card.passcode || card.id || '';
-                    const containerId = `browser-card-${passcode || Math.random().toString(36).substr(2, 9)}`;
-                    const format = (card.format || '').toUpperCase();
-                    const isOCG = format === 'OCG';
-                    const tagContainerId = `tags-${containerId}`;
-                    const dateContainerId = `date-${containerId}`;
-
-                    if (name) {
-                        cardsToLoad[containerId] = name;
-                    }
-
-                    // Pre-fetched tags usage
-                    const tags = tagsByCardId[passcode] || [];
-                    const tagsAttribute = tags.map(t => t.tag_name).join(',');
-                    const tagDisplayHtml = (() => {
-                        if (tags.length > 0) {
-                            // Sort tags by category priority
-                            const sortedTags = [...tags].sort((a, b) => {
-                                const catA = (KNOWN_TAG_CATEGORIES[a.tag_name] || a.tag_category || 'default').toLowerCase();
-                                const catB = (KNOWN_TAG_CATEGORIES[b.tag_name] || b.tag_category || 'default').toLowerCase();
-                                const prioA = CATEGORY_PRIORITY[catA] || 99;
-                                const prioB = CATEGORY_PRIORITY[catB] || 99;
-                                return prioA - prioB || a.tag_name.localeCompare(b.tag_name);
-                            });
-
-                            const listItems = sortedTags.map(tag => {
-                                const categoryKey = (KNOWN_TAG_CATEGORIES[tag.tag_name] || tag.tag_category || 'default').toLowerCase();
-                                const colors = TAG_CATEGORY_COLORS[categoryKey] || TAG_CATEGORY_COLORS.default;
-
-                                return `
-                                    <div class="flex items-start w-full text-[10px] leading-tight text-slate-300 group/tag">
-                                        <span class="mr-1.5 opacity-80 ${colors.text}">•</span>
-                                        <span class="flex-1 opacity-90 hover:text-white transition-colors">${tag.tag_name}</span>
-                                    </div>`;
-                            }).join('');
-                            return `<div class="flex flex-col w-full mt-1 px-1 space-y-0.5 text-left">${listItems}</div>`;
-                        }
-                        return '';
-                    })();
-
-                    // Pre-calculate date if available (extract year only)
-                    let dateDisplay = '';
-                    let rawDate = '';
-                    if (card.misc_info && card.misc_info[0]) {
-                        rawDate = card.misc_info[0].tcg_date || card.misc_info[0].ocg_date || '';
-                    } else if (card.tcg_date || card.ocg_date) {
-                        rawDate = card.tcg_date || card.ocg_date;
-                    }
-                    if (rawDate) {
-                        dateDisplay = rawDate.substring(0, 4); // Just the year
-                    }
-                    // Use pre-fetched year if available
-                    if (!dateDisplay && yearsByCardId[passcode]) {
-                        dateDisplay = yearsByCardId[passcode];
-                    }
-
-                    // Check if card is a new release (within the last 6 months)
-                    let isNewRelease = false;
-                    if (rawDate) {
-                        const releaseDate = new Date(rawDate);
-                        const sixMonthsAgo = new Date();
-                        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-                        isNewRelease = releaseDate >= sixMonthsAgo;
-                    }
-
-                    // Lazy fetch Release Date if not present
-                    // We check if we have misc_info. If not, we fetch the card data.
-                    // Note: 'card' here comes from Supabase/local list, it might NOT have misc_info
-                    if (name && !dateDisplay) {
-                        setTimeout(() => {
-                            const dateEl = document.getElementById(dateContainerId);
-                            if (!dateEl) {
-                                // This can happen if the user navigates away or filter changes quickly
-                                return;
-                            }
-
-                            // Find the parent card container to update data-year
-                            const cardContainer = dateEl.closest('.card-item-container');
-                            const cardImageContainer = cardContainer ? cardContainer.querySelector('[id^="browser-card-"]') : null;
-
-                            // Helper to add NEW badge if card is recently released
-                            const addNewBadgeIfRecent = (fullDate) => {
-                                if (!fullDate || !cardImageContainer) return;
-                                const releaseDate = new Date(fullDate);
-                                const sixMonthsAgo = new Date();
-                                sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-                                if (releaseDate >= sixMonthsAgo && !cardImageContainer.querySelector('.new-badge')) {
-                                    const badge = document.createElement('div');
-                                    badge.className = 'new-badge';
-                                    badge.style.cssText = 'position: absolute; top: 0; right: 0; background-color: #10b981; color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); z-index: 10; letter-spacing: 0.05em;';
-                                    badge.textContent = 'NEW';
-                                    cardImageContainer.insertBefore(badge, cardImageContainer.firstChild);
-                                }
-                            };
-
-                            // Check cache first
-                            if (cardDataCache[name] && (cardDataCache[name].misc_info || cardDataCache[name].tcg_date || cardDataCache[name].ocg_date)) {
-                                const info = cardDataCache[name];
-                                const date = (info.misc_info && info.misc_info[0] && (info.misc_info[0].tcg_date || info.misc_info[0].ocg_date)) || info.tcg_date || info.ocg_date;
-                                if (date) {
-                                    const year = date.substring(0, 4);
-                                    dateEl.textContent = year;
-                                    dateEl.classList.remove('hidden');
-                                    if (cardContainer) cardContainer.dataset.year = year;
-                                    addNewBadgeIfRecent(date);
-                                }
-                            } else {
-                                // Fetch
-                                fetchCardData(name).then(data => {
-                                    if (data) {
-                                        // Update cache
-                                        cardDataCache[name] = data;
-                                        const misc = data.misc_info ? data.misc_info[0] : null;
-                                        const date = (misc && (misc.tcg_date || misc.ocg_date));
-                                        if (dateEl && date) {
-                                            const year = date.substring(0, 4);
-                                            dateEl.textContent = year;
-                                            dateEl.classList.remove('hidden');
-                                            if (cardContainer) cardContainer.dataset.year = year;
-                                            addNewBadgeIfRecent(date);
-                                        }
-                                    }
-                                }).catch(err => console.warn('Date fetch failed for', name));
-                            }
-                        }, 800 + Math.random() * 1500); // Stagger to avoid rate limits
-                    }
-
-
-
-                    return `
-                        <div class="card-item-container" data-tags="${tagsAttribute}" data-year="${dateDisplay || ''}">
-                        <div class="card-item group relative flex flex-col h-full bg-slate-800/40 rounded-xl p-2 border border-slate-700/50 hover:border-indigo-500/50 transition-all hover:bg-slate-800/80 hover:shadow-xl hover:-translate-y-1">
-                            
-                            <div id="${containerId}" class="aspect-[59/86] w-full rounded-lg overflow-hidden border border-slate-700 shadow-md relative bg-slate-900 group-hover:shadow-indigo-500/20 transition-all">
-                                <div class="flex items-center justify-center h-full text-center text-slate-600 text-xs p-2">
-                                    <div class="animate-pulse bg-slate-800 w-full h-full rounded"></div>
-                                </div>
-                                ${isOCG ? `<div class="absolute top-0 left-0 bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br shadow-sm z-10 tracking-wider">OCG</div>` : ''}
-                                ${isNewRelease ? `<div style="position: absolute; top: 0; right: 0; background-color: #10b981; color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); z-index: 10; letter-spacing: 0.05em;">NEW</div>` : ''}
-                            </div>
-                            
-                            <div class="mt-2 flex-1 flex flex-col items-center w-full min-h-0">
-                                <span class="text-xs font-bold text-slate-300 group-hover:text-white transition-colors text-center leading-tight line-clamp-2 h-8 flex items-center justify-center w-full px-0.5" title="${name}">
-                                    ${name}
-                                </span>
-                                
-                                <!-- Year (inline, below name) -->
-                                <div id="${dateContainerId}" class="text-[8px] text-slate-500 bg-slate-900/60 px-1.5 rounded mt-0.5 ${dateDisplay ? '' : 'hidden'}">${dateDisplay || ''}</div>
-                                
-                                <div id="${tagContainerId}" class="w-full flex-col mt-1 empty:hidden max-h-[4.5rem] overflow-y-auto pr-0.5" style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
-                                    ${tagDisplayHtml}
-                                </div>
-                            </div>
-                        </div>
-                        </div>
-                    `;
-                }).join('');
-
-                return `
-                    <div class="mb-16 animate-fadeIn">
-                        <div class="flex items-center gap-4 mb-8 pb-4 border-b border-slate-700/50">
-                            <span class="flex items-center justify-center w-12 h-12 rounded-2xl ${bgColor} text-white shadow-lg bg-gradient-to-br from-white/20 to-transparent backdrop-blur-sm border border-white/10">
-                                ${icon}
-                            </span>
-                            <div>
-                                <h2 class="text-2xl font-bold text-white tracking-wide">${title}</h2>
-                                <p class="text-sm text-slate-400">${cards.length} Cards</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 px-4">
-                            ${cardItems}
-                        </div>
-                    </div>
-                `;
-            };
-
-            // Helper for Anime cards text list
-            const renderAnimeSection = (cards) => {
-                if (cards.length === 0) return '';
-
-                // Sort by name
-                cards.sort((a, b) => (a.cardname || a.card_name || '').localeCompare(b.cardname || b.card_name || ''));
-
-                const listItems = cards.map(card => {
-                    const name = card.cardname || card.card_name || 'Unknown';
-                    const desc = card.desc || 'No description available.';
-                    const type = card.cardtype || card.card_type || 'Unknown Type';
-
-                    return `
-                <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-4 hover:bg-slate-800 transition-colors">
-                            <div class="flex flex-col md:flex-row md:items-baseline gap-2 mb-2">
-                                <h3 class="text-lg font-bold text-pink-300">${name}</h3>
-                                <span class="text-xs text-slate-400 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-700">${type}</span>
-                            </div>
-                            <p class="text-sm text-slate-300 leading-relaxed italic">"${desc}"</p>
-                        </div>
-                `;
-                }).join('');
-
-                return `
-                <div class="mt-12 mb-16 animate-fadeIn">
-                        <div class="flex items-center gap-4 mb-8 pb-4 border-b border-pink-900/50">
-                            <span class="flex items-center justify-center w-12 h-12 rounded-2xl bg-pink-600 text-white shadow-lg bg-gradient-to-br from-white/20 to-transparent backdrop-blur-sm border border-white/10">
-                                <i class="fas fa-tv"></i>
-                            </span>
-                            <div>
-                                <h2 class="text-2xl font-bold text-white tracking-wide">Anime / Unofficial Support</h2>
-                                <p class="text-sm text-slate-400">${cards.length} Cards (No Official Prints)</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 gap-4">
-                            ${listItems}
-                        </div>
-                    </div>
-                `;
-            };
-
-            let html = '<div class="pb-12">';
-            html += renderBrowserCardSection('Main Deck Monsters', sortedCards.monsters, 'bg-orange-600', '<i class="fas fa-dragon"></i>');
-            html += renderBrowserCardSection('Spells', sortedCards.spells, 'bg-emerald-600', '<i class="fas fa-magic"></i>');
-            html += renderBrowserCardSection('Traps', sortedCards.traps, 'bg-rose-600', '<i class="fas fa-scroll"></i>');
-            html += renderBrowserCardSection('Extra Deck', sortedCards.extraDeck, 'bg-purple-600', '<i class="fas fa-dna"></i>');
-
-            // Append Anime section
-            html += renderAnimeSection(animeCards);
-
-            html += '</div>';
-
-            container.innerHTML = html;
-
-            // Now insert the filter at the top (after innerHTML is set)
-            // Always show filter section (for New Cards and Year filters even if no tags)
-            {
-                const filterContainer = document.createElement('div');
-                filterContainer.className = 'filter-section w-full mb-8 p-5 rounded-2xl shadow-xl animate-fadeIn';
-
-                const sortedUniqueTags = Array.from(uniqueTags).sort();
-                const hasTags = uniqueTags.size > 0;
-
-                const tagButtons = sortedUniqueTags.map(tagName => {
-                    const category = (tagCategories[tagName] || 'default').toLowerCase();
-                    const colors = TAG_CATEGORY_COLORS[category] || TAG_CATEGORY_COLORS.default;
-                    return `
-                        <button class="filter-tag-btn px-4 py-2 rounded-full text-sm font-medium border-2 border-slate-600/40 bg-slate-800/60 text-slate-300 hover:bg-indigo-600/20 hover:border-indigo-500/50 hover:text-white transition-all duration-200 shadow-md hover:shadow-indigo-500/20"
-                                data-tag="${tagName}"
-                                onclick="this.classList.toggle('active'); window.toggleFilter('${tagName}')">
-                            ${tagName}
-                        </button>
-                    `;
-                }).join('');
-
-                const totalCards = Object.keys(cardsToLoad).length;
-
-                filterContainer.innerHTML = `
-                    <!-- New Cards Filter Toggle -->
-                    <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-700/50">
-                        <button id="new-cards-filter-btn" 
-                                onclick="window.toggleNewCardsFilter()" 
-                                class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold border-2 transition-all"
-                                style="background-color: #1e293b; color: #94a3b8; border-color: #475569;">
-                            <span style="display: inline-block; width: 10px; height: 10px; background-color: #10b981; border-radius: 50%;"></span>
-                            New Cards Only
-                            <span class="text-xs opacity-60">(Last 6 months)</span>
-                        </button>
-                    </div>
-                    
-                    ${hasTags ? `
-                    <div class="flex items-center gap-3 mb-5">
-                        <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
-                            <i class="fas fa-filter text-white text-lg"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-white">Filter by Tags</h3>
-                            <p class="text-xs text-slate-400">${sortedUniqueTags.length} tags across ${totalCards} cards</p>
-                        </div>
-                        <button class="ml-auto px-4 py-1.5 text-sm text-slate-400 hover:text-white border border-slate-600/50 rounded-full hover:bg-red-500/20 hover:border-red-500/50 transition-all" 
-                                onclick="document.querySelectorAll('.filter-tag-btn.active').forEach(b => b.click()); document.querySelectorAll('.filter-year-btn.active').forEach(b => b.click()); if(window.newCardsFilterActive) window.toggleNewCardsFilter();">
-                            <i class="fas fa-times mr-1.5"></i>Clear All
-                        </button>
-                    </div>
-                    <div class="flex flex-wrap gap-3 max-h-48 overflow-y-auto p-3 bg-slate-900/40 rounded-xl mb-4" style="scrollbar-width: thin; scrollbar-color: #4f46e5 transparent;">
-                        ${tagButtons}
-                    </div>
-                    ` : ''}
-                    
-                    <!-- Year Range Filter -->
-                    <div class="flex items-center gap-3 mt-4 pt-4 border-t border-slate-700/50">
-                        <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 shadow-md">
-                            <i class="fas fa-calendar-alt text-white"></i>
-                        </div>
-                        <div class="flex items-center gap-3 flex-1 flex-wrap">
-                            <h4 class="text-sm font-bold text-white">Year Range</h4>
-                            <div class="flex items-center gap-2 ml-auto">
-                                <select id="year-filter-from" 
-                                        onchange="window.applyYearRangeFilter()"
-                                        class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-600/50 text-slate-200 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none transition-all cursor-pointer">
-                                    <option value="">From</option>
-                                    ${Array.from(uniqueYears).sort().map(year => `
-                                        <option value="${year}">${year}</option>
-                                    `).join('')}
-                                </select>
-                                <span class="text-slate-500 text-sm">to</span>
-                                <select id="year-filter-to" 
-                                        onchange="window.applyYearRangeFilter()"
-                                        class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-600/50 text-slate-200 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none transition-all cursor-pointer">
-                                    <option value="">To</option>
-                                    ${Array.from(uniqueYears).sort().reverse().map(year => `
-                                        <option value="${year}">${year}</option>
-                                    `).join('')}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                // Define filter functions globally
-                window.activeTagFilters = new Set();
-                window.yearRangeFrom = '';
-                window.yearRangeTo = '';
-                window.newCardsFilterActive = false;
-
-                window.toggleNewCardsFilter = function () {
-                    window.newCardsFilterActive = !window.newCardsFilterActive;
-                    const btn = document.getElementById('new-cards-filter-btn');
-                    if (btn) {
-                        if (window.newCardsFilterActive) {
-                            btn.style.backgroundColor = '#10b981';
-                            btn.style.color = 'white';
-                            btn.style.borderColor = '#059669';
-                            btn.style.boxShadow = '0 0 12px rgba(16, 185, 129, 0.5)';
-                        } else {
-                            btn.style.backgroundColor = '#1e293b';
-                            btn.style.color = '#94a3b8';
-                            btn.style.borderColor = '#475569';
-                            btn.style.boxShadow = 'none';
-                        }
-                    }
-                    window.applyFilters();
-                };
-
-                window.toggleFilter = function (tagName) {
-                    if (window.activeTagFilters.has(tagName)) {
-                        window.activeTagFilters.delete(tagName);
-                    } else {
-                        window.activeTagFilters.add(tagName);
-                    }
-                    window.applyFilters();
-                };
-
-                window.applyYearRangeFilter = function () {
-                    const fromSelect = document.getElementById('year-filter-from');
-                    const toSelect = document.getElementById('year-filter-to');
-                    window.yearRangeFrom = fromSelect ? fromSelect.value : '';
-                    window.yearRangeTo = toSelect ? toSelect.value : '';
-                    window.applyFilters();
-                };
-
-                window.applyFilters = function () {
-                    const cards = document.querySelectorAll('.card-item-container');
-                    const tagFilterCount = window.activeTagFilters.size;
-                    const hasYearFilter = window.yearRangeFrom !== '' || window.yearRangeTo !== '';
-                    const newCardsFilterActive = window.newCardsFilterActive || false;
-
-                    cards.forEach(card => {
-                        // If no filters active, show all
-                        if (tagFilterCount === 0 && !hasYearFilter && !newCardsFilterActive) {
-                            card.style.display = '';
-                            return;
-                        }
-
-                        // Check tag match (AND logic - must match ALL selected tags)
-                        let tagMatch = true;
-                        if (tagFilterCount > 0) {
-                            const cardTagsStr = card.dataset.tags || '';
-                            const cardTags = cardTagsStr.split(',');
-                            tagMatch = Array.from(window.activeTagFilters).every(filter => cardTags.includes(filter));
-                        }
-
-                        // Check year range match
-                        let yearMatch = true;
-                        if (hasYearFilter) {
-                            const cardYear = parseInt(card.dataset.year || '0', 10);
-                            const fromYear = window.yearRangeFrom ? parseInt(window.yearRangeFrom, 10) : 0;
-                            const toYear = window.yearRangeTo ? parseInt(window.yearRangeTo, 10) : 9999;
-
-                            if (cardYear === 0) {
-                                // Card has no year data yet, hide it if year filter is active
-                                yearMatch = false;
-                            } else {
-                                yearMatch = cardYear >= fromYear && cardYear <= toYear;
-                            }
-                        }
-
-                        // Check new cards filter
-                        let newCardsMatch = true;
-                        if (newCardsFilterActive) {
-                            // Check if card has the NEW badge
-                            const hasNewBadge = card.querySelector('.new-badge') !== null ||
-                                card.querySelector('[style*="background-color: #10b981"]') !== null;
-                            newCardsMatch = hasNewBadge;
-                        }
-
-                        // Card must pass all active filters
-                        card.style.display = (tagMatch && yearMatch && newCardsMatch) ? '' : 'none';
-                    });
-                };
-
-                // Keep old function name for backward compatibility
-                window.applyTagFilters = window.applyFilters;
-
-                container.insertBefore(filterContainer, container.firstChild);
-            }
-
-            // Trigger the bulk load
-            if (Object.keys(cardsToLoad).length > 0) {
-                // Use a small timeout to allow DOM to settle
-                setTimeout(() => {
-                    loadCards(cardsToLoad).catch(err => console.error('[CardLoader] Browser load error:', err));
-                }, 50);
-            }
-
-        } catch (error) {
-            console.error('[CardLoader] Error loading page cards:', error);
-            container.innerHTML = `
-                <div class="text-center text-red-400 py-10">
-                    <p class="text-xl">Error loading cards.</p>
-                    <p class="text-sm mt-2">${error.message}</p>
-                </div>
-                `;
-        }
-    }
+    // ============================================================================
+    // Card Browser Page Logic has been moved to card-browser.js
+    // The initCardBrowserPage function is now in the CardBrowser module.
+    // ============================================================================
 
     /**
      * Render archetype cards browser button (Link to standalone page)
@@ -3593,21 +3133,25 @@ window.CardLoader = (function () {
 
         // Button classes
         const buttonClasses = isCompact
-            ? `px-5 py-2 rounded-full shadow-lg text-sm font-bold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-xl bg-gradient-to-r ${buttonColor} hover:${buttonHoverColor} flex items-center justify-center gap-2 border border-white/20 no-underline`
-            : `w-full p-4 rounded-xl shadow-lg text-center font-bold text-white transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl bg-gradient-to-r ${buttonColor} hover:${buttonHoverColor} flex items-center justify-center gap-3 no-underline`;
+            ? `relative group px-6 py-2.5 rounded-full shadow-lg text-sm font-bold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(99,102,241,0.5)] bg-gradient-to-r ${buttonColor} hover:${buttonHoverColor} flex items-center justify-center gap-2 border border-white/20 no-underline overflow-hidden`
+            : `relative group w-full p-4 rounded-xl shadow-lg text-center font-bold text-white transition-all duration-300 transform hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(99,102,241,0.4)] bg-gradient-to-r ${buttonColor} hover:${buttonHoverColor} flex items-center justify-center gap-3 no-underline overflow-hidden`;
 
         const iconSize = isCompact ? 'text-base' : 'text-xl';
         const targetUrl = `../pages/Card-Browser.html?archetype=${encodeURIComponent(archetypeName)}`;
 
         container.innerHTML = `
-                <a href="${targetUrl}"
-            class="${buttonClasses}"
-            target="_blank">
-                <i class="fas fa-layer-group ${iconSize}"></i>
-                <span>${options.buttonText || `View All ${archetypeName} Cards`}</span>
-                ${isCompact ? '' : '<i class="fas fa-external-link-alt text-sm opacity-70"></i>'}
+            <a href="${targetUrl}" class="${buttonClasses}" target="_blank">
+                <!-- Inner Glow Effect -->
+                <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                
+                <!-- Border Pulse for extra attention (only if it matches the vibe) -->
+                ${isCompact ? '<div class="absolute -inset-0.5 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>' : ''}
+                
+                <i class="fas fa-layer-group ${iconSize} relative z-10 group-hover:rotate-6 transition-transform"></i>
+                <span class="relative z-10 tracking-wide">${options.buttonText || `View All ${archetypeName} Cards`}</span>
+                ${isCompact ? '' : '<i class="fas fa-external-link-alt text-sm opacity-70 relative z-10"></i>'}
             </a>
-                `;
+        `;
     }
 
     /**
@@ -3778,7 +3322,7 @@ window.CardLoader = (function () {
         fetchBanlistData,
         checkBanlistStatus,
         renderBanlistSection,
-        fetchArchetypeCards,
+        fetchArchetypeCards: fetchArchetypeCardsFromSupabase,
         renderBanlistSectionByArchetype,
         extractRelatedCardsFromCache,
         // Expose a couple of helpers for testing
@@ -3793,9 +3337,22 @@ window.CardLoader = (function () {
         // Gameplay tags (Supabase integration)
         getTagsForCard: fetchCardTags,
         isSupabaseConfigured: () => !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY),
-        // Archetype cards browser
+        // Archetype cards browser button (still in CardLoader)
         renderArchetypeCardsBrowser,
-        initCardBrowserPage,
+        // Card Browser page init - delegate to CardBrowser module if available
+        initCardBrowserPage: (archetypeName) => {
+            if (window.CardBrowser && window.CardBrowser.initCardBrowserPage) {
+                return window.CardBrowser.initCardBrowserPage(archetypeName);
+            }
+            console.error('[CardLoader] CardBrowser module not loaded. Include card-browser.js before calling initCardBrowserPage.');
+        },
+        // Expose internal utilities for CardBrowser module
+        _getUtils: () => ({
+            TAG_CATEGORY_COLORS,
+            KNOWN_TAG_CATEGORIES,
+            CATEGORY_PRIORITY,
+            CONFIG
+        }),
     };
 })();
 
