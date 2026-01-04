@@ -31,18 +31,18 @@ class ArchetypeLoader {
     }
 
     setupEventListeners() {
-        document.getElementById('search-input').addEventListener('keyup', 
+        document.getElementById('search-input').addEventListener('keyup',
             this.debounce(() => this.handleSearch(), 300));
         document.getElementById('sort-by').addEventListener('change', () => this.handleSort());
         document.getElementById('category-filter').addEventListener('change', () => this.handleCategoryFilter());
         document.getElementById('load-more-btn').addEventListener('click', () => this.loadMore());
-        
+
         document.querySelectorAll('.alphabet-btn').forEach(btn => {
             btn.addEventListener('click', () => this.handleAlphabetFilter(btn.dataset.letter));
         });
-        
+
         this.setupInfiniteScroll();
-        
+
         document.addEventListener('click', (e) => {
             const archetypeCard = e.target.closest('a[href$=".html"]');
             if (archetypeCard) {
@@ -56,12 +56,12 @@ class ArchetypeLoader {
     async loadArchetypes() {
         try {
             this.showLoading();
-            
+
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = 'assets/js/archetypes-data.js';
                 script.defer = true;
-                
+
                 script.onload = () => {
                     if (typeof archetypes !== 'undefined' && Array.isArray(archetypes)) {
                         this.archetypes = archetypes;
@@ -71,7 +71,7 @@ class ArchetypeLoader {
                         reject(new Error('Archetype data not loaded properly'));
                     }
                 };
-                
+
                 script.onerror = () => reject(new Error('Failed to load archetype data'));
                 document.head.appendChild(script);
             });
@@ -100,7 +100,7 @@ class ArchetypeLoader {
             const cacheExpiryKey = 'archetype-dates-cache-expiry';
             const now = Date.now();
             const cacheExpiry = localStorage.getItem(cacheExpiryKey);
-            
+
             if (cacheExpiry && now < parseInt(cacheExpiry)) {
                 const cached = localStorage.getItem(cacheKey);
                 if (cached) {
@@ -125,8 +125,8 @@ class ArchetypeLoader {
                 }
             }
 
-            // Fetch all card info
-            const cardResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php');
+            // Fetch all card info (with misc=yes to get tcg_date for cards without card_sets)
+            const cardResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?misc=yes');
             if (!cardResponse.ok) {
                 throw new Error(`Failed to fetch card info: ${cardResponse.statusText}`);
             }
@@ -137,8 +137,10 @@ class ArchetypeLoader {
             const archetypeDates = new Map();
             const archetypeCardDates = {};
 
+            const today = new Date();
+
             for (const card of allCards) {
-                if (!card.archetype || !card.card_sets) continue;
+                if (!card.archetype) continue;
 
                 const normalizedArchetype = this.normalizeArchetypeName(card.archetype);
                 const actualName = nameMapping.get(normalizedArchetype);
@@ -146,19 +148,32 @@ class ArchetypeLoader {
 
                 // Find the earliest set release date for this card (its original release)
                 let cardEarliestDate = null;
-                for (const cardSet of card.card_sets) {
-                    const tcgDate = setReleaseDates.get(cardSet.set_name);
-                    if (!tcgDate) continue;
-                    
-                    // Only consider dates up to today to avoid future reprints
-                    const setDate = new Date(tcgDate);
-                    const today = new Date();
-                    if (setDate > today) continue;
-                    
-                    if (!cardEarliestDate || tcgDate < cardEarliestDate) {
-                        cardEarliestDate = tcgDate;
+
+                // First, try to get date from card_sets
+                if (card.card_sets && Array.isArray(card.card_sets)) {
+                    for (const cardSet of card.card_sets) {
+                        const tcgDate = setReleaseDates.get(cardSet.set_name);
+                        if (!tcgDate) continue;
+
+                        // Only consider dates up to today to avoid future dates
+                        const setDate = new Date(tcgDate);
+                        if (setDate > today) continue;
+
+                        if (!cardEarliestDate || tcgDate < cardEarliestDate) {
+                            cardEarliestDate = tcgDate;
+                        }
                     }
                 }
+
+                // Fallback: use misc_info.tcg_date if no valid date from card_sets
+                if (!cardEarliestDate && card.misc_info && card.misc_info[0] && card.misc_info[0].tcg_date) {
+                    const miscDate = card.misc_info[0].tcg_date;
+                    const parsedMiscDate = new Date(miscDate);
+                    if (parsedMiscDate <= today) {
+                        cardEarliestDate = miscDate;
+                    }
+                }
+
                 if (!cardEarliestDate) continue;
 
                 if (!archetypeCardDates[actualName]) archetypeCardDates[actualName] = [];
@@ -170,17 +185,11 @@ class ArchetypeLoader {
             // - Latest support = latest card's original release (most recent new card)
             for (const [archetypeName, cardDates] of Object.entries(archetypeCardDates)) {
                 if (cardDates.length === 0) continue;
-                
+
                 const earliest = cardDates.reduce((a, b) => a < b ? a : b);
                 const latest = cardDates.reduce((a, b) => a > b ? a : b);
-                
+
                 archetypeDates.set(archetypeName, { earliest, latest });
-                
-                // Debug log for Bamboo Sword
-                if (archetypeName.toLowerCase().includes('bamboo')) {
-                    console.log(`${archetypeName} dates:`, cardDates);
-                    console.log(`Earliest: ${earliest}, Latest: ${latest}`);
-                }
             }
 
             // Cache the results for 24 hours
@@ -217,11 +226,11 @@ class ArchetypeLoader {
     filterAndSort() {
         let filtered = this.archetypes.filter(archetype => {
             const matchesSearch = archetype.name.toLowerCase().includes(this.searchQuery.toLowerCase());
-            const matchesAlphabet = this.alphabetFilter === 'all' || 
-                                  archetype.name.toLowerCase().startsWith(this.alphabetFilter.toLowerCase());
+            const matchesAlphabet = this.alphabetFilter === 'all' ||
+                archetype.name.toLowerCase().startsWith(this.alphabetFilter.toLowerCase());
             const matchesCategory = this.categoryFilter === 'all' ||
-                                  (this.categoryFilter === 'archetypes' && archetype.fromAPI) ||
-                                  (this.categoryFilter === 'series' && !archetype.fromAPI);
+                (this.categoryFilter === 'archetypes' && archetype.fromAPI) ||
+                (this.categoryFilter === 'series' && !archetype.fromAPI);
             return matchesSearch && matchesAlphabet && matchesCategory;
         });
 
@@ -257,7 +266,7 @@ class ArchetypeLoader {
         if (reset) {
             this.currentPage = 0;
         }
-        
+
         const grid = document.getElementById('archetype-grid');
         const loadMoreContainer = document.getElementById('load-more-container');
 
@@ -290,7 +299,7 @@ class ArchetypeLoader {
 
         grid.classList.remove('hidden');
         this.currentPage++;
-        
+
         this.lazyLoadIcons();
     }
 
@@ -299,11 +308,11 @@ class ArchetypeLoader {
         card.href = archetype.filepath;
         card.className = 'card p-6 text-center block';
         card.setAttribute('data-index', index);
-        
+
         const iconContainer = document.createElement('div');
         iconContainer.className = 'card-image';
         iconContainer.setAttribute('data-archetype-name', archetype.name);
-        
+
         iconContainer.innerHTML = `
             <div class="icon-loading bg-gray-700 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
@@ -348,12 +357,12 @@ class ArchetypeLoader {
 
     lazyLoadIcons() {
         const iconContainers = document.querySelectorAll('.card-image .icon-loading');
-        
+
         iconContainers.forEach(container => {
             const iconContainer = container.parentElement;
             const archetypeName = iconContainer.getAttribute('data-archetype-name');
             const archetype = this.archetypes.find(a => a.name === archetypeName);
-            
+
             if (archetype && archetype.icon) {
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
@@ -364,11 +373,11 @@ class ArchetypeLoader {
                             observer.unobserve(entry.target);
                         }
                     });
-                }, { 
+                }, {
                     threshold: 0.1,
                     rootMargin: '50px'
                 });
-                
+
                 observer.observe(iconContainer);
             }
         });
@@ -376,7 +385,7 @@ class ArchetypeLoader {
 
     setupInfiniteScroll() {
         const loadMoreContainer = document.getElementById('load-more-container');
-        
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !this.isLoading && !loadMoreContainer.classList.contains('hidden')) {
@@ -390,14 +399,14 @@ class ArchetypeLoader {
 
     loadMore() {
         if (this.isLoading) return;
-        
+
         this.isLoading = true;
-        
+
         const loadBtn = document.getElementById('load-more-btn');
         const originalText = loadBtn.textContent;
         loadBtn.textContent = 'Loading...';
         loadBtn.disabled = true;
-        
+
         setTimeout(() => {
             this.displayArchetypes(false);
             loadBtn.textContent = originalText;
@@ -409,17 +418,17 @@ class ArchetypeLoader {
     handleSearch() {
         this.searchQuery = document.getElementById('search-input').value;
         this.saveSearchQuery(this.searchQuery);
-        
+
         if (this.searchQuery.trim() !== '' && this.alphabetFilter !== 'all') {
             this.alphabetFilter = 'all';
             this.saveAlphabetFilter('all');
-            
+
             document.querySelectorAll('.alphabet-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.querySelector('[data-letter="all"]').classList.add('active');
         }
-        
+
         this.filterAndSort();
         this.displayArchetypes(true);
     }
@@ -439,7 +448,7 @@ class ArchetypeLoader {
     updateCounter() {
         const counter = document.getElementById('archetype-counter');
         const totalDisplayed = Math.min(this.currentPage * this.pageSize, this.displayedArchetypes.length);
-        
+
         if (this.currentPage === 0) {
             counter.textContent = `Found ${this.displayedArchetypes.length} of ${this.archetypes.length} archetypes`;
         } else {
@@ -542,7 +551,7 @@ class ArchetypeLoader {
     clearScrollPosition() {
         try {
             localStorage.removeItem(this.scrollRestoreKey);
-        } catch (e) {}
+        } catch (e) { }
         this.scrollPosition = 0;
     }
 
@@ -551,12 +560,12 @@ class ArchetypeLoader {
         this.saveAlphabetFilter(letter);
         this.filterAndSort();
         this.displayArchetypes(true);
-        
+
         document.querySelectorAll('.alphabet-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         document.querySelector(`[data-letter="${letter}"]`).classList.add('active');
-        
+
         if (letter !== 'all') {
             document.getElementById('search-input').value = '';
             this.searchQuery = '';
@@ -576,7 +585,7 @@ class ArchetypeLoader {
                 btn.classList.remove('disabled');
                 return;
             }
-            
+
             if (availableLetters.has(letter)) {
                 btn.classList.remove('disabled');
             } else {
@@ -588,7 +597,7 @@ class ArchetypeLoader {
     saveAlphabetFilter(letter) {
         try {
             localStorage.setItem(this.alphabetRestoreKey, letter);
-        } catch (e) {}
+        } catch (e) { }
     }
 
     restoreAlphabetFilter() {
@@ -596,7 +605,7 @@ class ArchetypeLoader {
             const savedLetter = localStorage.getItem(this.alphabetRestoreKey);
             if (savedLetter !== null) {
                 this.alphabetFilter = savedLetter;
-                
+
                 requestAnimationFrame(() => {
                     document.querySelectorAll('.alphabet-btn').forEach(btn => {
                         btn.classList.remove('active');
@@ -606,7 +615,7 @@ class ArchetypeLoader {
                         targetBtn.classList.add('active');
                     }
                 });
-                
+
                 this.filterAndSort();
             }
         } catch (e) {
@@ -617,7 +626,7 @@ class ArchetypeLoader {
     saveSearchQuery(query) {
         try {
             localStorage.setItem(this.searchRestoreKey, query);
-        } catch (e) {}
+        } catch (e) { }
     }
 
     restoreSearchQuery() {
@@ -625,12 +634,12 @@ class ArchetypeLoader {
             const savedQuery = localStorage.getItem(this.searchRestoreKey);
             if (savedQuery !== null) {
                 this.searchQuery = savedQuery;
-                
+
                 const searchInput = document.getElementById('search-input');
                 if (searchInput) {
                     searchInput.value = savedQuery;
                 }
-                
+
                 this.filterAndSort();
             }
         } catch (e) {
@@ -641,7 +650,7 @@ class ArchetypeLoader {
     clearSearchQuery() {
         try {
             localStorage.removeItem(this.searchRestoreKey);
-        } catch (e) {}
+        } catch (e) { }
         this.searchQuery = '';
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
@@ -652,7 +661,7 @@ class ArchetypeLoader {
     clearAlphabetFilter() {
         try {
             localStorage.removeItem(this.alphabetRestoreKey);
-        } catch (e) {}
+        } catch (e) { }
         this.alphabetFilter = 'all';
     }
 }

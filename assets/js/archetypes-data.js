@@ -32600,7 +32600,7 @@ const archetypes = [
                         <text x="50" y="85" text-anchor="middle" font-size="8" fill="#e0e0e0" font-weight="bold" font-family="monospace">HECAHANDS</text>
                     </svg>`,
         firstReleaseDate: '2025-10-25',
-        latestReleaseDate: null,
+        latestReleaseDate: '2025-10-25',
 
     },
     {
@@ -32637,7 +32637,7 @@ const archetypes = [
                         <text x="50" y="92" text-anchor="middle" font-size="8" fill="#06b6d4" font-weight="bold" font-family="monospace">ENNEACRAFT</text>
                     </svg>`,
         firstReleaseDate: '2025-11-15',
-        latestReleaseDate: null,
+        latestReleaseDate: '2025-11-15',
 
     },
     {
@@ -32684,7 +32684,7 @@ const archetypes = [
                         <text x="50" y="88" text-anchor="middle" font-size="7" fill="#e0e0e0" font-weight="bold" font-family="Orbitron, sans-serif" letter-spacing="1">KEWL TUNE</text>
                     </svg>`,
         firstReleaseDate: '2025-11-20',
-        latestReleaseDate: null,
+        latestReleaseDate: '2025-11-20',
 
     }
 ];// Export for use in main script
