@@ -85,15 +85,98 @@ class ArchetypeLoader {
         return name.replace(/-/g, '');
     }
 
+    /**
+     * Get Supabase client (lazy initialization)
+     * @returns {Object|null} Supabase client or null if not configured
+     */
+    getSupabaseClient() {
+        if (this.supabaseClient) return this.supabaseClient;
+
+        const config = window.SUPABASE_CONFIG;
+        if (!config?.url || !config?.anonKey) {
+            return null; // Supabase not configured
+        }
+
+        if (typeof supabase === 'undefined' || !supabase.createClient) {
+            console.warn('[ArchetypeLoader] Supabase CDN not loaded');
+            return null;
+        }
+
+        try {
+            this.supabaseClient = supabase.createClient(config.url, config.anonKey);
+            console.log('[ArchetypeLoader] Supabase client initialized');
+            return this.supabaseClient;
+        } catch (error) {
+            console.error('[ArchetypeLoader] Failed to initialize Supabase:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch archetype dates from Supabase database using RPC function
+     * @returns {Promise<Map|null>} Map of archetype names to {earliest, latest} or null on failure
+     */
+    async fetchArchetypeDatesFromSupabase() {
+        const client = this.getSupabaseClient();
+        if (!client) {
+            console.log('[ArchetypeLoader] Supabase client not available, skipping');
+            return null;
+        }
+
+        try {
+            console.log('[ArchetypeLoader] Fetching archetype dates from Supabase RPC...');
+
+            // Call the RPC function that returns aggregated archetype dates
+            const { data, error } = await client.rpc('get_archetype_dates');
+
+            if (error) {
+                console.error('[ArchetypeLoader] Supabase RPC error:', error);
+                return null;
+            }
+
+            if (!data || data.length === 0) {
+                console.warn('[ArchetypeLoader] No archetype dates returned from Supabase');
+                return null;
+            }
+
+            console.log(`[ArchetypeLoader] Supabase RPC returned ${data.length} archetypes with dates`);
+
+            // Build the result map with lowercase keys for case-insensitive matching
+            const archetypeDates = new Map();
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+            for (const row of data) {
+                const archetypeName = row.archetype_name;
+                const firstRelease = row.first_release;
+                let latestRelease = row.latest_release;
+
+                if (!archetypeName) continue;
+
+                // Skip future dates for latest release (use today as max)
+                if (latestRelease && latestRelease > today) {
+                    latestRelease = today;
+                }
+
+                // Use lowercase key for case-insensitive matching
+                const nameKey = archetypeName.toLowerCase();
+                archetypeDates.set(nameKey, {
+                    earliest: firstRelease,
+                    latest: latestRelease
+                });
+            }
+
+            console.log(`[ArchetypeLoader] Processed dates for ${archetypeDates.size} archetypes`);
+            return archetypeDates;
+
+        } catch (error) {
+            console.error('[ArchetypeLoader] Supabase fetch error:', error);
+            return null;
+        }
+    }
+
     async fetchArchetypeDates() {
         try {
             console.log('Fetching archetype release dates...');
-
-            const nameMapping = new Map();
-            for (const archetype of this.archetypes) {
-                const normalized = this.normalizeArchetypeName(archetype.name);
-                nameMapping.set(normalized, archetype.name);
-            }
 
             // Check cache first
             const cacheKey = 'archetype-dates-cache';
@@ -111,103 +194,129 @@ class ArchetypeLoader {
                 }
             }
 
-            // Fetch all card sets
-            const setResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardsets.php');
-            if (!setResponse.ok) {
-                throw new Error(`Failed to fetch card sets: ${setResponse.statusText}`);
-            }
-            const allSets = await setResponse.json();
+            // Try Supabase first
+            let archetypeDates = await this.fetchArchetypeDatesFromSupabase();
 
-            const setReleaseDates = new Map();
-            for (const set of allSets) {
-                if (set.set_name && set.tcg_date) {
-                    setReleaseDates.set(set.set_name, set.tcg_date);
-                }
+            // Fall back to YGOPRODECK API if Supabase fails
+            if (!archetypeDates) {
+                console.log('[ArchetypeLoader] Falling back to YGOPRODECK API...');
+                archetypeDates = await this.fetchArchetypeDatesFromAPI();
             }
 
-            // Fetch all card info (with misc=yes to get tcg_date for cards without card_sets)
-            const cardResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?misc=yes');
-            if (!cardResponse.ok) {
-                throw new Error(`Failed to fetch card info: ${cardResponse.statusText}`);
+            if (archetypeDates && archetypeDates.size > 0) {
+                // Cache the results for 24 hours
+                localStorage.setItem(cacheKey, JSON.stringify([...archetypeDates]));
+                localStorage.setItem(cacheExpiryKey, (now + 24 * 60 * 60 * 1000).toString());
+
+                this.updateArchetypesWithDates(archetypeDates);
+                console.log('Archetype dates fetched and cached');
             }
-            const allCardsData = await cardResponse.json();
-            const allCards = allCardsData.data;
-
-            // Process cards to find dates for each archetype
-            const archetypeDates = new Map();
-            const archetypeCardDates = {};
-
-            const today = new Date();
-
-            for (const card of allCards) {
-                if (!card.archetype) continue;
-
-                const normalizedArchetype = this.normalizeArchetypeName(card.archetype);
-                const actualName = nameMapping.get(normalizedArchetype);
-                if (!actualName) continue;
-
-                // Find the earliest set release date for this card (its original release)
-                let cardEarliestDate = null;
-
-                // First, try to get date from card_sets
-                if (card.card_sets && Array.isArray(card.card_sets)) {
-                    for (const cardSet of card.card_sets) {
-                        const tcgDate = setReleaseDates.get(cardSet.set_name);
-                        if (!tcgDate) continue;
-
-                        // Only consider dates up to today to avoid future dates
-                        const setDate = new Date(tcgDate);
-                        if (setDate > today) continue;
-
-                        if (!cardEarliestDate || tcgDate < cardEarliestDate) {
-                            cardEarliestDate = tcgDate;
-                        }
-                    }
-                }
-
-                // Fallback: use misc_info.tcg_date if no valid date from card_sets
-                if (!cardEarliestDate && card.misc_info && card.misc_info[0] && card.misc_info[0].tcg_date) {
-                    const miscDate = card.misc_info[0].tcg_date;
-                    const parsedMiscDate = new Date(miscDate);
-                    if (parsedMiscDate <= today) {
-                        cardEarliestDate = miscDate;
-                    }
-                }
-
-                if (!cardEarliestDate) continue;
-
-                if (!archetypeCardDates[actualName]) archetypeCardDates[actualName] = [];
-                archetypeCardDates[actualName].push(cardEarliestDate);
-            }
-
-            // For each archetype:
-            // - First release = earliest card release (when archetype began)
-            // - Latest support = latest card's original release (most recent new card)
-            for (const [archetypeName, cardDates] of Object.entries(archetypeCardDates)) {
-                if (cardDates.length === 0) continue;
-
-                const earliest = cardDates.reduce((a, b) => a < b ? a : b);
-                const latest = cardDates.reduce((a, b) => a > b ? a : b);
-
-                archetypeDates.set(archetypeName, { earliest, latest });
-            }
-
-            // Cache the results for 24 hours
-            localStorage.setItem(cacheKey, JSON.stringify([...archetypeDates]));
-            localStorage.setItem(cacheExpiryKey, (now + 24 * 60 * 60 * 1000).toString());
-
-            this.updateArchetypesWithDates(archetypeDates);
-
-            console.log('Archetype dates fetched and cached');
         } catch (error) {
             console.error('Error fetching archetype dates:', error);
         }
     }
 
+    /**
+     * Fetch archetype dates from YGOPRODECK API (fallback method)
+     * @returns {Promise<Map>} Map of archetype names to {earliest, latest}
+     */
+    async fetchArchetypeDatesFromAPI() {
+        const nameMapping = new Map();
+        for (const archetype of this.archetypes) {
+            const normalized = this.normalizeArchetypeName(archetype.name);
+            nameMapping.set(normalized, archetype.name);
+        }
+
+        // Fetch all card sets
+        const setResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardsets.php');
+        if (!setResponse.ok) {
+            throw new Error(`Failed to fetch card sets: ${setResponse.statusText} `);
+        }
+        const allSets = await setResponse.json();
+
+        const setReleaseDates = new Map();
+        for (const set of allSets) {
+            if (set.set_name && set.tcg_date) {
+                setReleaseDates.set(set.set_name, set.tcg_date);
+            }
+        }
+
+        // Fetch all card info (with misc=yes to get tcg_date for cards without card_sets)
+        const cardResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?misc=yes');
+        if (!cardResponse.ok) {
+            throw new Error(`Failed to fetch card info: ${cardResponse.statusText} `);
+        }
+        const allCardsData = await cardResponse.json();
+        const allCards = allCardsData.data;
+
+        // Process cards to find dates for each archetype
+        const archetypeDates = new Map();
+        const archetypeCardDates = {};
+
+        const today = new Date();
+
+        for (const card of allCards) {
+            if (!card.archetype) continue;
+
+            const normalizedArchetype = this.normalizeArchetypeName(card.archetype);
+            const actualName = nameMapping.get(normalizedArchetype);
+            if (!actualName) continue;
+
+            // Find the earliest set release date for this card (its original release)
+            let cardEarliestDate = null;
+
+            // First, try to get date from card_sets
+            if (card.card_sets && Array.isArray(card.card_sets)) {
+                for (const cardSet of card.card_sets) {
+                    const tcgDate = setReleaseDates.get(cardSet.set_name);
+                    if (!tcgDate) continue;
+
+                    // Only consider dates up to today to avoid future dates
+                    const setDate = new Date(tcgDate);
+                    if (setDate > today) continue;
+
+                    if (!cardEarliestDate || tcgDate < cardEarliestDate) {
+                        cardEarliestDate = tcgDate;
+                    }
+                }
+            }
+
+            // Fallback: use misc_info.tcg_date if no valid date from card_sets
+            if (!cardEarliestDate && card.misc_info && card.misc_info[0] && card.misc_info[0].tcg_date) {
+                const miscDate = card.misc_info[0].tcg_date;
+                const parsedMiscDate = new Date(miscDate);
+                if (parsedMiscDate <= today) {
+                    cardEarliestDate = miscDate;
+                }
+            }
+
+            if (!cardEarliestDate) continue;
+
+            if (!archetypeCardDates[actualName]) archetypeCardDates[actualName] = [];
+            archetypeCardDates[actualName].push(cardEarliestDate);
+        }
+
+        // For each archetype:
+        // - First release = earliest card release (when archetype began)
+        // - Latest support = latest card's original release (most recent new card)
+        for (const [archetypeName, cardDates] of Object.entries(archetypeCardDates)) {
+            if (cardDates.length === 0) continue;
+
+            const earliest = cardDates.reduce((a, b) => a < b ? a : b);
+            const latest = cardDates.reduce((a, b) => a > b ? a : b);
+
+            // Use lowercase key for case-insensitive matching
+            archetypeDates.set(archetypeName.toLowerCase(), { earliest, latest });
+        }
+
+        return archetypeDates;
+    }
+
     updateArchetypesWithDates(archetypeDates) {
         for (const archetype of this.archetypes) {
             if (archetype.firstReleaseDate === null || archetype.firstReleaseDate === undefined) {
-                const dates = archetypeDates.get(archetype.name);
+                // Case-insensitive lookup: try lowercase version of archetype name
+                const dates = archetypeDates.get(archetype.name.toLowerCase());
                 if (dates) {
                     archetype.firstReleaseDate = dates.earliest;
                     archetype.latestReleaseDate = dates.latest;
@@ -335,6 +444,21 @@ class ArchetypeLoader {
         card.appendChild(title);
         card.appendChild(categoryDiv);
 
+        // Check if archetype received support in the last 6 months
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        const hasRecentSupport = archetype.latestReleaseDate &&
+            new Date(archetype.latestReleaseDate) >= sixMonthsAgo;
+
+        if (hasRecentSupport) {
+            const recentBadge = document.createElement('span');
+            recentBadge.className = 'inline-block px-2 py-1 text-xs font-semibold rounded-full mb-2';
+            recentBadge.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            recentBadge.style.color = 'white';
+            recentBadge.textContent = 'Recent Support';
+            card.appendChild(recentBadge);
+        }
+
         if (archetype.firstReleaseDate || archetype.latestReleaseDate) {
             const datesDiv = document.createElement('div');
             datesDiv.className = 'text-sm text-gray-500 mb-2';
@@ -452,7 +576,7 @@ class ArchetypeLoader {
         if (this.currentPage === 0) {
             counter.textContent = `Found ${this.displayedArchetypes.length} of ${this.archetypes.length} archetypes`;
         } else {
-            counter.textContent = `Showing ${totalDisplayed} of ${this.displayedArchetypes.length} archetypes (${this.archetypes.length} total)`;
+            counter.textContent = `Showing ${totalDisplayed} of ${this.displayedArchetypes.length} archetypes(${this.archetypes.length} total)`;
         }
     }
 
@@ -468,9 +592,9 @@ class ArchetypeLoader {
 
     showError(message) {
         const grid = document.getElementById('archetype-grid');
-        grid.innerHTML = `<p class="text-center text-xl col-span-full text-red-400">
-            <i class="fas fa-exclamation-triangle mr-2"></i>${message}
-        </p>`;
+        grid.innerHTML = `< p class="text-center text-xl col-span-full text-red-400" >
+    <i class="fas fa-exclamation-triangle mr-2"></i>${message}
+        </p > `;
         this.hideLoading();
     }
 
@@ -564,7 +688,7 @@ class ArchetypeLoader {
         document.querySelectorAll('.alphabet-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        document.querySelector(`[data-letter="${letter}"]`).classList.add('active');
+        document.querySelector(`[data - letter="${letter}"]`).classList.add('active');
 
         if (letter !== 'all') {
             document.getElementById('search-input').value = '';
@@ -610,7 +734,7 @@ class ArchetypeLoader {
                     document.querySelectorAll('.alphabet-btn').forEach(btn => {
                         btn.classList.remove('active');
                     });
-                    const targetBtn = document.querySelector(`[data-letter="${savedLetter}"]`);
+                    const targetBtn = document.querySelector(`[data - letter= "${savedLetter}"]`);
                     if (targetBtn) {
                         targetBtn.classList.add('active');
                     }

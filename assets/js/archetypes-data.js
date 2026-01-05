@@ -27356,34 +27356,92 @@ const archetypes = [
         name: 'Scrap',
         description: 'A Machine archetype that recycles and repurposes monsters for explosive comebacks.',
         filepath: 'pages/Scrap Deck Analysis.html',
-        icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="scrapGradient" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#c0c0c0;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#696969;stop-opacity:1" />
+                            <linearGradient id="scrapMetalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#b8b8b8;stop-opacity:1" />
+                                <stop offset="40%" style="stop-color:#808080;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#4a4a4a;stop-opacity:1" />
+                            </linearGradient>
+                            <radialGradient id="scrapSpark" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#ffd700;stop-opacity:1" />
+                                <stop offset="60%" style="stop-color:#ff8c00;stop-opacity:0.8" />
+                                <stop offset="100%" style="stop-color:#ff4500;stop-opacity:0" />
                             </radialGradient>
-                            <filter id="scrapShadow" x="-50%" y="-50%" width="200%" height="200%">
-                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+                            <linearGradient id="scrapRust" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#8b4513;stop-opacity:0.6" />
+                                <stop offset="100%" style="stop-color:#a0522d;stop-opacity:0.4" />
+                            </linearGradient>
+                            <filter id="scrapGlow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2" result="glow"/>
+                                <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#scrapGradient)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#scrapShadow)">
-                            <polygon points="40,30 50,20 60,30 55,40 45,40" fill="#c0c0c0" stroke="#696969" stroke-width="2"/>
-                            <rect x="35" y="45" width="10" height="15" fill="#a9a9a9" stroke="#696969" stroke-width="2"/>
-                            <rect x="55" y="45" width="10" height="15" fill="#a9a9a9" stroke="#696969" stroke-width="2"/>
-                            <circle cx="50" cy="50" r="5" fill="#696969" stroke="#2f4f4f" stroke-width="2">
-                                <animate attributeName="r" values="5;8;5" dur="2s" repeatCount="indefinite"/>
+                        
+                        <!-- Background scrap pile -->
+                        <ellipse cx="50" cy="70" rx="35" ry="15" fill="url(#scrapMetalGrad)" opacity="0.5"/>
+                        
+                        <!-- Large gear (left) -->
+                        <g transform="translate(25, 55)">
+                            <circle cx="0" cy="0" r="12" fill="none" stroke="#666" stroke-width="4"/>
+                            <circle cx="0" cy="0" r="5" fill="#555"/>
+                            <g>
+                                <rect x="-2" y="-14" width="4" height="6" fill="#666"/>
+                                <rect x="-2" y="8" width="4" height="6" fill="#666"/>
+                                <rect x="-14" y="-2" width="6" height="4" fill="#666"/>
+                                <rect x="8" y="-2" width="6" height="4" fill="#666"/>
+                                <animateTransform attributeName="transform" type="rotate" values="0;360" dur="8s" repeatCount="indefinite"/>
+                            </g>
+                        </g>
+                        
+                        <!-- Small gear (right) -->
+                        <g transform="translate(75, 60)">
+                            <circle cx="0" cy="0" r="8" fill="none" stroke="#777" stroke-width="3"/>
+                            <circle cx="0" cy="0" r="3" fill="#666"/>
+                            <g>
+                                <rect x="-1.5" y="-10" width="3" height="4" fill="#777"/>
+                                <rect x="-1.5" y="6" width="3" height="4" fill="#777"/>
+                                <rect x="-10" y="-1.5" width="4" height="3" fill="#777"/>
+                                <rect x="6" y="-1.5" width="4" height="3" fill="#777"/>
+                                <animateTransform attributeName="transform" type="rotate" values="360;0" dur="6s" repeatCount="indefinite"/>
+                            </g>
+                        </g>
+                        
+                        <!-- Scrap Dragon silhouette -->
+                        <g filter="url(#scrapGlow)">
+                            <path d="M50 20 L55 28 L65 25 L60 35 L70 40 L58 42 L55 55 L50 45 L45 55 L42 42 L30 40 L40 35 L35 25 L45 28 Z" 
+                                  fill="url(#scrapMetalGrad)" stroke="#999" stroke-width="1.5"/>
+                            <!-- Dragon eye -->
+                            <circle cx="50" cy="35" r="3" fill="url(#scrapSpark)">
+                                <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
                             </circle>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#696969">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        
+                        <!-- Recycling arrows -->
+                        <g transform="translate(50, 65)" opacity="0.7">
+                            <path d="M-8 0 A8 8 0 0 1 8 0" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round">
+                                <animate attributeName="stroke-opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+                            </path>
+                            <polygon points="6,-2 10,0 6,2" fill="#4ade80"/>
+                            <path d="M8 0 A8 8 0 0 1 -8 0" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" transform="translate(0,6)">
+                                <animate attributeName="stroke-opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+                            </path>
+                            <polygon points="-6,4 -10,6 -6,8" fill="#4ade80"/>
+                        </g>
+                        
+                        <!-- Sparks -->
+                        <circle cx="35" cy="30" r="2" fill="url(#scrapSpark)" opacity="0">
+                            <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="30;25;30" dur="1.5s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#696969">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        <circle cx="68" cy="35" r="1.5" fill="url(#scrapSpark)" opacity="0">
+                            <animate attributeName="opacity" values="0;1;0" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="35;30;35" dur="2s" begin="0.5s" repeatCount="indefinite"/>
                         </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#696969" font-weight="bold">Scrap</text>
+                        
+                        <!-- Rust patches -->
+                        <ellipse cx="30" cy="68" rx="5" ry="3" fill="url(#scrapRust)" opacity="0.5"/>
+                        <ellipse cx="70" cy="65" rx="4" ry="2" fill="url(#scrapRust)" opacity="0.4"/>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -28030,35 +28088,92 @@ const archetypes = [
         name: 'Synchron',
         description: 'A pioneering Machine archetype that synchronizes Tuner and non-Tuner monsters for Synchro summons.',
         filepath: 'pages/Synchron Deck Analysis.html',
-        icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="synchronGradient" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color="#4682b4;stop-opacity:1" />
+                            <linearGradient id="syncBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#ff8c00;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#ff6600;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#cc5500;stop-opacity:1" />
+                            </linearGradient>
+                            <radialGradient id="syncGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#fffacd;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#ffd700;stop-opacity:0.6" />
+                                <stop offset="100%" style="stop-color:#ff8c00;stop-opacity:0" />
                             </radialGradient>
-                            <filter id="synchronShadow" x="-50%" y="-50%" width="200%" height="200%">
-                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+                            <linearGradient id="syncRing" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#90ee90;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#32cd32;stop-opacity:0.8" />
+                                <stop offset="100%" style="stop-color:#228b22;stop-opacity:0.6" />
+                            </linearGradient>
+                            <filter id="syncGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="3" result="glow"/>
+                                <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#synchronGradient)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#synchronShadow)">
-                            <circle cx="50" cy="45" r="12" fill="#4682b4" stroke="#ffffff" stroke-width="2"/>
-                            <circle cx="50" cy="45" r="8" fill="#ffffff" stroke="#4682b4" stroke-width="2"/>
-                            <path d="M 35 45 L 45 35 L 45 55 Z" fill="#4682b4" stroke="#ffffff" stroke-width="2"/>
-                            <path d="M 65 45 L 55 35 L 55 55 Z" fill="#4682b4" stroke="#ffffff" stroke-width="2"/>
-                            <circle cx="50" cy="45" r="5" fill="#4682b4" stroke="#ffffff" stroke-width="2">
-                                <animate attributeName="r" values="5;8;5" dur="2s" repeatCount="indefinite"/>
+                        
+                        <!-- Background synchro aura -->
+                        <circle cx="50" cy="50" r="45" fill="url(#syncGlow)" opacity="0.3">
+                            <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        
+                        <!-- Outer tuning ring -->
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="url(#syncRing)" stroke-width="3" stroke-dasharray="15,5" opacity="0.8">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="10s" repeatCount="indefinite"/>
+                        </circle>
+                        
+                        <!-- Inner tuning ring -->
+                        <circle cx="50" cy="50" r="32" fill="none" stroke="url(#syncRing)" stroke-width="2" stroke-dasharray="8,4" opacity="0.6">
+                            <animateTransform attributeName="transform" type="rotate" values="360 50 50;0 50 50" dur="8s" repeatCount="indefinite"/>
+                        </circle>
+                        
+                        <!-- Junk Synchron body -->
+                        <g filter="url(#syncGlowFilter)">
+                            <!-- Body -->
+                            <ellipse cx="50" cy="55" rx="12" ry="15" fill="url(#syncBodyGrad)" stroke="#fff" stroke-width="1.5"/>
+                            
+                            <!-- Head (scrap helmet) -->
+                            <circle cx="50" cy="38" r="10" fill="url(#syncBodyGrad)" stroke="#fff" stroke-width="1.5"/>
+                            <ellipse cx="50" cy="35" rx="8" ry="4" fill="#333" opacity="0.7"/>
+                            
+                            <!-- Eyes (visor) -->
+                            <ellipse cx="47" cy="38" rx="3" ry="2" fill="#7fffd4">
+                                <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/>
+                            </ellipse>
+                            <ellipse cx="53" cy="38" rx="3" ry="2" fill="#7fffd4">
+                                <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/>
+                            </ellipse>
+                            
+                            <!-- Arms -->
+                            <line x1="38" y1="50" x2="28" y2="45" stroke="#ff6600" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="62" y1="50" x2="72" y2="45" stroke="#ff6600" stroke-width="4" stroke-linecap="round"/>
+                            
+                            <!-- Hands (claws) -->
+                            <circle cx="26" cy="44" r="4" fill="#fff" stroke="#ff6600" stroke-width="1"/>
+                            <circle cx="74" cy="44" r="4" fill="#fff" stroke="#ff6600" stroke-width="1"/>
+                        </g>
+                        
+                        <!-- Synchro stars -->
+                        <g opacity="0.8">
+                            <circle cx="25" cy="25" r="2" fill="#fffacd">
+                                <animate attributeName="opacity" values="0;1;0" dur="2s" begin="0s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="75" cy="30" r="1.5" fill="#fffacd">
+                                <animate attributeName="opacity" values="0;1;0" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="30" cy="75" r="1.5" fill="#fffacd">
+                                <animate attributeName="opacity" values="0;1;0" dur="2.2s" begin="1s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="70" cy="70" r="2" fill="#fffacd">
+                                <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="0.3s" repeatCount="indefinite"/>
                             </circle>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#4682b4">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#4682b4">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4682b4" font-weight="bold">Synchron</text>
+                        
+                        <!-- Level stars indicator -->
+                        <g transform="translate(50, 82)">
+                            <polygon points="0,-4 1,-1 4,-1 2,1 3,4 0,2 -3,4 -2,1 -4,-1 -1,-1" fill="#ffd700" opacity="0.9">
+                                <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
+                            </polygon>
+                        </g>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -31903,18 +32018,48 @@ const archetypes = [
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialGradient id="brandedGrad" cx="50%" cy="50%" r="50%">
-<stop offset="0%" style="stop-color:#4f3a6a;stop-opacity:1" />
-<stop offset="100%" style="stop-color:#1a1122;stop-opacity:1" />
+<stop offset="0%" style="stop-color:#2d1b4e;stop-opacity:1" />
+<stop offset="50%" style="stop-color:#1a0d2e;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#0a0510;stop-opacity:1" />
 </radialGradient>
+<linearGradient id="brandedFusion" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" style="stop-color:#f43f5e;stop-opacity:1" />
+<stop offset="50%" style="stop-color:#a855f7;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+</linearGradient>
+<filter id="brandedGlow" x="-50%" y="-50%" width="200%" height="200%">
+<feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+<feMerge>
+<feMergeNode in="coloredBlur"/>
+<feMergeNode in="SourceGraphic"/>
+</feMerge>
+</filter>
 </defs>
-<circle cx="50" cy="50" r="45" fill="url(#brandedGrad)" stroke="#f43f5e" stroke-width="2"/>
-<path d="M25 50 L50 25 L75 50 L50 75 Z" fill="none" stroke="#fde047" stroke-width="3" opacity="0.8">
-<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+<circle cx="50" cy="50" r="45" fill="url(#brandedGrad)" stroke="#5b21b6" stroke-width="2"/>
+<!-- Dragon Wing Silhouette Left -->
+<path d="M15 55 Q20 35 35 30 Q28 40 30 50 Q25 45 22 55 Q18 48 15 55 Z" fill="#1a0d2e" stroke="#a855f7" stroke-width="1" opacity="0.8"/>
+<!-- Dragon Wing Silhouette Right -->
+<path d="M85 55 Q80 35 65 30 Q72 40 70 50 Q75 45 78 55 Q82 48 85 55 Z" fill="#1a0d2e" stroke="#a855f7" stroke-width="1" opacity="0.8"/>
+<!-- Central Fusion Core -->
+<circle cx="50" cy="45" r="15" fill="none" stroke="url(#brandedFusion)" stroke-width="2" filter="url(#brandedGlow)">
+<animate attributeName="r" values="15;17;15" dur="2s" repeatCount="indefinite"/>
+</circle>
+<!-- Fusion Swirl -->
+<path d="M35 45 Q40 30 50 30 Q60 30 65 45 Q60 35 50 38 Q40 35 35 45" fill="none" stroke="#f43f5e" stroke-width="2" filter="url(#brandedGlow)">
+<animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
 </path>
-<path d="M35 50 L50 35 L65 50 L50 65 Z" fill="none" stroke="#f43f5e" stroke-width="2" opacity="0.6">
-<animate attributeName="opacity" values="0.6;0.9;0.6" dur="1.5s" repeatCount="indefinite"/>
+<path d="M35 45 Q40 60 50 60 Q60 60 65 45 Q60 55 50 52 Q40 55 35 45" fill="none" stroke="#6366f1" stroke-width="2" filter="url(#brandedGlow)">
+<animate attributeName="opacity" values="1;0.7;1" dur="1.5s" repeatCount="indefinite"/>
 </path>
-<text x="50" y="85" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="bold">BRANDED</text>
+<!-- Energy Core Center -->
+<circle cx="50" cy="45" r="5" fill="#a855f7" filter="url(#brandedGlow)">
+<animate attributeName="fill" values="#a855f7;#f43f5e;#6366f1;#a855f7" dur="3s" repeatCount="indefinite"/>
+</circle>
+<!-- Branded Mark -->
+<path d="M45 42 L50 37 L55 42 L50 47 Z" fill="#fde047" opacity="0.9">
+<animate attributeName="opacity" values="0.9;1;0.9" dur="1s" repeatCount="indefinite"/>
+</path>
+<text x="50" y="78" text-anchor="middle" font-size="10" fill="#e0e7ff" font-weight="bold" letter-spacing="1">BRANDED</text>
 </svg>`
     },
     {
