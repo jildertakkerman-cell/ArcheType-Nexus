@@ -468,18 +468,31 @@ window.CardLoader = (function () {
 
             // Join tags with a subtle bullet - make clickable if passcode provided
             const tagsList = group.tags.map(t => {
+                // Escape single quotes for the onclick handler
+                const escapedTag = t.replace(/'/g, "\\'");
+
                 if (passcode) {
-                    return `<span class="tag-action-trigger hover:text-white hover:underline transition-colors cursor-pointer" onclick="window.showTagActionsPopup(event, ${passcode}, '${t.replace(/'/g, "\\'")}')">${t}</span>`;
+                    // Clickable pill style
+                    return `
+                        <button 
+                            class="tag-action-trigger inline-flex items-center px-2.5 py-1 rounded text-[10px] font-medium bg-slate-800/80 border border-slate-700/60 transition-all cursor-pointer hover:bg-slate-700 hover:border-slate-500 hover:text-white group relative"
+                            onclick="window.showTagActionsPopup(event, ${passcode}, '${escapedTag}')"
+                            title="Click to view actions for ${t}"
+                        >
+                            <span class="${colors.text} opacity-90 group-hover:opacity-100 group-hover:text-white transition-opacity text-shadow-sm">${t}</span>
+                            <span class="ml-1.5 text-slate-500 group-hover:text-slate-300 text-[8px]"><i class="fas fa-search"></i></span>
+                        </button>`;
                 }
-                return `<span class="hover:text-white transition-colors cursor-default">${t}</span>`;
-            }).join('<span class="mx-1.5 opacity-40">•</span>');
+                // Non-clickable pill style
+                return `<span class="inline-flex items-center px-2 py-1 rounded text-[10px] font-medium bg-slate-800/40 border border-slate-700/20 text-slate-500 cursor-default">${t}</span>`;
+            }).join('');
 
             return `
-                <div class="mb-1.5 last:mb-0">
-                    <div style="font-size: 9px; letter-spacing: 0.05em;" class="uppercase font-bold ${colors.text} opacity-90 mb-0.5 flex items-center gap-1.5">
+                <div class="mb-2 last:mb-0">
+                    <div style="font-size: 9px; letter-spacing: 0.05em;" class="uppercase font-bold ${colors.text} opacity-80 mb-1 flex items-center gap-1.5 ml-1">
                         ${group.display}
                     </div>
-                    <div style="font-size: 11px;" class="text-slate-300 pl-0 leading-tight">
+                    <div class="flex flex-wrap gap-1.5">
                         ${tagsList}
                     </div>
                 </div>`;
@@ -1131,8 +1144,11 @@ window.CardLoader = (function () {
 
             /^("[^"]*"(?:\s*\+\s*"[^"]*")+(?:\s*\+\s*"[^"]*")*)/,
             /^(\d+(?:\s*\+\s*\d+)?\s*[\w \t"]+monsters?)/i,
+            // Specific catch-all for "Tuners" (e.g. 2+ Tuners)
+            /^(\d+\+?\s+Tuners(?:\r?\n(?!\s*(?:Monsters|[A-Z])).*)*)/im,
             // Generic catch-all for materials ending with "monsters" - include the following clause until next capitalized sentence
-            /^([^\r\n]*?monsters?(?:\r?\n(?!\s*(?:Monsters|[A-Z])).*)*)/im
+            // Updated to avoid matching sentence starts like "Other Tuners you control..." by requiring digit or quote start, OR unlikely starting words
+            /^((?:\d+|"[^"]+")[^\r\n]*?monsters?(?:\r?\n(?!\s*(?:Monsters|[A-Z])).*)*)/im
         ];
 
         for (const pattern of patterns) {
@@ -1166,51 +1182,56 @@ window.CardLoader = (function () {
                         // Trim off the effect start and continue with the shortened materials
                         materials = materials.slice(0, inlineEffectStart.index).trim();
                     }
-                    // If the materials only captured something like "1 DARK monster" but the next line
-                    // contains a + "Quoted Card" (e.g., + "Fallen of Albaz"), include it too.
-                    const lookaheadStart = description.indexOf(match[1]) + match[1].length;
-                    const lookahead = description.slice(lookaheadStart);
-                    // If what's after the materials looks like the start of a sentence
-                    // (You/If/When/Once/During/etc), do not include it as part of the materials
-                    // — these are generally effect text and not part of materials list.
+
+                    // Determine where the main match ended to look ahead
+                    let currentEndIndex = match.index + match[0].length;
+                    let lookahead = description.slice(currentEndIndex);
+
+                    // 1. Check for Trailing Noun types (e.g. 1 "Name" Tuner)
+                    // This must be done BEFORE + checks because the + might follow the tuner type
+                    const trailingMonster = lookahead.match(/^[ \t]*((?:(?!Monster|Tuner)[ \t\w"'\-])+?(?:Monster|Tuner)(?:s)?)/i);
+                    if (trailingMonster && trailingMonster[0]) {
+                        // Validate it's not a false positive
+                        const currentEnd = materials.trim().match(/monsters?$/i);
+                        const nextStart = trailingMonster[1].trim().match(/^monsters?$/i);
+                        let validTrailing = true;
+
+                        // Don't duplicate "monster"
+                        if (currentEnd && nextStart) validTrailing = false;
+                        // Only accept short phrases, avoid sentences
+                        if (trailingMonster[0].length >= 50 || /^(?:A|The)\s/i.test(trailingMonster[1])) validTrailing = false;
+
+                        if (validTrailing) {
+                            materials += trailingMonster[0];
+                            // Advance the lookahead past this trailing noun
+                            currentEndIndex += trailingMonster[0].length;
+                            lookahead = description.slice(currentEndIndex);
+                        }
+                    }
+
+                    // 2. Check for sentence starts - if the lookahead is effect text, stop here
                     if (/^\s*(?:You|If|When|Once|During|For|Unless|While|Then|In the|When your|If that|If this|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains)\b/i.test(lookahead)) {
                         return materials;
                     }
+
+                    // 3. Check for quoted continuations (e.g. + "Card Name")
                     const plusQuoted = lookahead.match(/^\s*\+\s*"[^"]+"(?:\s*\+\s*"[^"]+")*/m);
                     if (plusQuoted && plusQuoted[0]) {
-                        // Return the exact substring from the original description so it can be
-                        // removed exactly (including newline/plus sign) when formatting the description.
-                        const combined = match[1] + plusQuoted[0];
-                        if (combined.length < 200) return combined; // longer but still acceptable
+                        return materials + plusQuoted[0];
                     }
 
-                    // Also capture continuation lines that begin with a comma or common conjunctions
-                    // For example: "2 monsters, including a Fiend monster"
+                    // 4. Check for unquoted generic continuations (e.g., "+ 1+ Tuners")
+                    // Matches: + (qty) (optional adjectives) (type)
+                    const plusGeneric = lookahead.match(/^\s*\+\s*(?:1\+|1 or more|\d+)\s+(?:[\w\s"-]*?)(?:Monsters?|Tuners?)(?:\s+or\s+more)?(?:\s+(?!If|When|You|Once|During|For|In the)[^.\r\n]*)?/im);
+                    if (plusGeneric && plusGeneric[0]) {
+                        return materials + plusGeneric[0];
+                    }
+
+                    // 5. Check for comma continuations (e.g., ", including...")
                     const commaCont = lookahead.match(/^\s*(?:,|\u2013|\u2014|\*|\u2022|•|-)?\s*(?:including|including a|such as|or|and|excluding|except|with|without|but|among|specifically)\b[^\r\n]*/im);
                     if (commaCont && commaCont[0]) {
-                        const combined = match[1] + commaCont[0];
+                        const combined = materials + commaCont[0];
                         if (combined.length < 200) return combined;
-                    }
-
-                    // Capture trailing noun types like "Pendulum Monster", "Tuner", or other descriptive
-                    // words that directly follow a quoted name (e.g., 1 "Abyss Actor" Pendulum Monster)
-                    // Ensure we don't cross a newline to find this.
-                    // Also ensure we don't capture a full sentence like "A Fusion Summon of this card..."
-                    const trailingMonster = lookahead.match(/^[ \t]*((?:(?!Monster)[ \t\w"'\-])+?Monster(?:s)?)/i);
-
-                    if (trailingMonster && trailingMonster[0]) {
-                        // Check if we are just duplicating the word "monster(s)"
-                        const currentEnd = match[1].trim().match(/monsters?$/i);
-                        const nextStart = trailingMonster[1].trim().match(/^monsters?$/i);
-                        if (currentEnd && nextStart) {
-                            // Don't append if it's just "monsters" again
-                            return materials;
-                        }
-                        // Only accept if it's a short noun phrase, not a long sentence
-                        if (trailingMonster[0].length < 50 && !/^(?:A|The)\s/i.test(trailingMonster[1])) {
-                            const combined = match[1] + trailingMonster[0];
-                            if (combined.length < 200) return combined;
-                        }
                     }
 
                     return materials;
