@@ -1140,7 +1140,7 @@ window.CardLoader = (function () {
 
             // Fusion patterns - specific card names first
             // Capture situations like: 1 DARK monster + "Fallen of Albaz" (quoted card name after a +)
-            /^(?!If|When|You|Once|During|For|Unless|While|Then|In the)([^\r\n]*?"[^"]+"(?:\s*\+\s*"[^"]+")*(?:\s*\+\s*[^A-Z][^.]*)?)/im,
+            /^(?!If|When|You|Once|During|For|Unless|While|Then|In the)(?=(?:\d+|"[^"]+"))([^\r\n]*?"[^"]+"(?:\s*\+\s*"[^"]+")*(?:\s*\+\s*(?:(?!(?:If|When|You|Once|During|For|Unless|While|Then|In the|Gains)\b)[^.\r\n])*)?)/im,
 
             /^("[^"]*"(?:\s*\+\s*"[^"]*")+(?:\s*\+\s*"[^"]*")*)/,
             /^(\d+(?:\s*\+\s*\d+)?\s*[\w \t"]+monsters?)/i,
@@ -1154,6 +1154,7 @@ window.CardLoader = (function () {
         for (const pattern of patterns) {
             const match = description.match(pattern);
             if (match && match[1]) {
+                console.log(`[MaterialDebug] Pattern: ${pattern} matched: ${match[1]}`);
                 let materials = match[1].trim();
                 // Skip obvious non-material lines such as name override lines
                 // (eg. This card's name becomes "Summoned Skull")
@@ -1222,9 +1223,13 @@ window.CardLoader = (function () {
 
                     // 4. Check for unquoted generic continuations (e.g., "+ 1+ Tuners")
                     // Matches: + (qty) (optional adjectives) (type)
-                    const plusGeneric = lookahead.match(/^\s*\+\s*(?:1\+|1 or more|\d+)\s+(?:[\w\s"-]*?)(?:Monsters?|Tuners?)(?:\s+or\s+more)?(?:\s+(?!If|When|You|Once|During|For|In the)[^.\r\n]*)?/im);
+                    const plusGeneric = lookahead.match(/^\s*\+\s*(?:1\+|1 or more|\d+)\s+(?:[\w\s"-]*?)(?:Monsters?|Tuners?)(?:\s+or\s+more)?(?:\s+(?!If|When|You|Once|During|For|In the|Gains)[^.\r\n]*)?/im);
                     if (plusGeneric && plusGeneric[0]) {
-                        return materials + plusGeneric[0];
+                        // Ensure we don't accidentally grab a sentence start
+                        if (!/^\s*\+\s*(?:If|When|You|Once|During|For|In the|Gains)\b/i.test(plusGeneric[0])) {
+                            const combined = materials + plusGeneric[0];
+                            if (combined.length < 200) return combined;
+                        }
                     }
 
                     // 5. Check for comma continuations (e.g., ", including...")
