@@ -4531,70 +4531,96 @@ const archetypes = [
         filepath: 'pages/Argostars Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="argostarsBg" cx="50%" cy="50%" r="55%">
-                                <stop offset="0%" stop-color="#1e3a5f"/>
-                                <stop offset="60%" stop-color="#0c1929"/>
+                            <radialGradient id="argostarsCyberBg" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#1e1b4b"/>
+                                <stop offset="50%" stop-color="#0c0a2c"/>
                                 <stop offset="100%" stop-color="#020617"/>
                             </radialGradient>
+                            <linearGradient id="argostarsCircuit" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#a78bfa"/>
+                                <stop offset="50%" stop-color="#7c3aed"/>
+                                <stop offset="100%" stop-color="#5b21b6"/>
+                            </linearGradient>
                             <linearGradient id="argostarsStar" x1="0%" y1="0%" x2="100%" y2="100%">
                                 <stop offset="0%" stop-color="#fef3c7"/>
                                 <stop offset="50%" stop-color="#fbbf24"/>
                                 <stop offset="100%" stop-color="#f59e0b"/>
                             </linearGradient>
-                            <linearGradient id="argostarsTrap" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stop-color="#c084fc"/>
-                                <stop offset="100%" stop-color="#7c3aed"/>
-                            </linearGradient>
                             <filter id="argostarsGlow">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                            <filter id="argostarsStarGlow">
                                 <feGaussianBlur stdDeviation="1.5" result="blur"/>
                                 <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
                             </filter>
                         </defs>
-                        <!-- Night sky background -->
-                        <circle cx="50" cy="50" r="46" fill="url(#argostarsBg)" stroke="#3b82f6" stroke-width="2"/>
-                        <!-- Constellation pattern (Argo Navis ship) -->
-                        <g filter="url(#argostarsGlow)">
-                            <!-- Main stars -->
-                            <circle cx="25" cy="35" r="3" fill="url(#argostarsStar)"/>
-                            <circle cx="40" cy="28" r="2.5" fill="url(#argostarsStar)"/>
-                            <circle cx="55" cy="25" r="3" fill="url(#argostarsStar)"/>
-                            <circle cx="70" cy="32" r="2.5" fill="url(#argostarsStar)"/>
-                            <circle cx="80" cy="45" r="3" fill="url(#argostarsStar)"/>
-                            <circle cx="75" cy="60" r="2.5" fill="url(#argostarsStar)"/>
-                            <circle cx="60" cy="70" r="3" fill="url(#argostarsStar)"/>
-                            <circle cx="45" cy="68" r="2.5" fill="url(#argostarsStar)"/>
-                            <circle cx="30" cy="55" r="3" fill="url(#argostarsStar)"/>
-                            <!-- Central star -->
-                            <circle cx="50" cy="50" r="4" fill="url(#argostarsStar)">
-                                <animate attributeName="r" values="3.5;4.5;3.5" dur="2s" repeatCount="indefinite"/>
+                        <!-- Dark cyber background -->
+                        <circle cx="50" cy="50" r="46" fill="url(#argostarsCyberBg)" stroke="#7c3aed" stroke-width="2"/>
+                        <!-- Outer trap card diamond frame -->
+                        <path d="M50 5 L95 50 L50 95 L5 50 Z" fill="none" stroke="url(#argostarsCircuit)" stroke-width="2" opacity="0.6"/>
+                        <path d="M50 12 L88 50 L50 88 L12 50 Z" fill="none" stroke="#a78bfa" stroke-width="1" opacity="0.4" stroke-dasharray="3 2"/>
+                        <!-- Circuit board paths connecting stars -->
+                        <g stroke="#7c3aed" stroke-width="1.5" fill="none" opacity="0.7">
+                            <path d="M30 25 L35 30 L40 30"/>
+                            <path d="M60 30 L65 30 L70 25"/>
+                            <path d="M70 35 L75 40 L75 45"/>
+                            <path d="M75 55 L75 60 L70 65"/>
+                            <path d="M60 70 L55 70 L50 75"/>
+                            <path d="M40 70 L35 70 L30 65"/>
+                            <path d="M25 55 L25 50 L25 45"/>
+                            <path d="M25 35 L30 30 L30 25"/>
+                        </g>
+                        <!-- Digital constellation nodes (Cyberse stars) -->
+                        <g filter="url(#argostarsStarGlow)">
+                            <!-- Outer constellation ring -->
+                            <circle cx="30" cy="25" r="3.5" fill="url(#argostarsStar)" stroke="#f59e0b" stroke-width="0.5">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="70" cy="25" r="3.5" fill="url(#argostarsStar)" stroke="#f59e0b" stroke-width="0.5">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" begin="0.4s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="85" cy="50" r="3" fill="url(#argostarsStar)" stroke="#f59e0b" stroke-width="0.5">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" begin="0.8s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="70" cy="75" r="3.5" fill="url(#argostarsStar)" stroke="#f59e0b" stroke-width="0.5">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" begin="1.2s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="30" cy="75" r="3.5" fill="url(#argostarsStar)" stroke="#f59e0b" stroke-width="0.5">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" begin="1.6s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="15" cy="50" r="3" fill="url(#argostarsStar)" stroke="#f59e0b" stroke-width="0.5">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" begin="2s" repeatCount="indefinite"/>
+                            </circle>
+                            <!-- Central cyber core -->
+                            <circle cx="50" cy="50" r="5" fill="url(#argostarsStar)" stroke="#f59e0b" stroke-width="1">
+                                <animate attributeName="r" values="4.5;5.5;4.5" dur="3s" repeatCount="indefinite"/>
                             </circle>
                         </g>
-                        <!-- Constellation lines -->
-                        <path d="M25 35 L40 28 L55 25 L70 32 L80 45 L75 60 L60 70 L45 68 L30 55 L25 35" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.6"/>
-                        <path d="M40 28 L50 50 L60 70" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
-                        <path d="M70 32 L50 50 L30 55" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
-                        <!-- Trap card border design -->
-                        <path d="M50 8 L92 50 L50 92 L8 50 Z" fill="none" stroke="url(#argostarsTrap)" stroke-width="2" opacity="0.7"/>
-                        <path d="M50 15 L85 50 L50 85 L15 50 Z" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
-                        <!-- Banishment portal effect -->
-                        <circle cx="50" cy="50" r="18" fill="none" stroke="#c084fc" stroke-width="1.5" opacity="0.5" stroke-dasharray="4 4">
-                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="10s" repeatCount="indefinite"/>
-                        </circle>
-                        <!-- Loop arrows (resource loop) -->
-                        <path d="M35 80 Q25 75 30 65" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.6"/>
-                        <path d="M32 67 L30 65 L28 68" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.6"/>
-                        <path d="M65 80 Q75 75 70 65" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.6"/>
-                        <path d="M72 67 L70 65 L68 68" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.6"/>
-                        <!-- Distant stars -->
-                        <circle cx="15" cy="20" r="1" fill="#fbbf24" opacity="0.5">
-                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="85" cy="22" r="0.8" fill="#fbbf24" opacity="0.4">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="18" cy="78" r="0.8" fill="#fbbf24" opacity="0.4"/>
-                        <circle cx="82" cy="80" r="1" fill="#fbbf24" opacity="0.5"/>
-                        <circle cx="50" cy="5" r="1" fill="#fbbf24" opacity="0.6"/>
+                        <!-- Circuit nodes (trap activation points) -->
+                        <g fill="#a78bfa" opacity="0.8">
+                            <rect x="28" y="23" width="4" height="4" rx="1" transform="rotate(45 30 25)"/>
+                            <rect x="68" y="23" width="4" height="4" rx="1" transform="rotate(45 70 25)"/>
+                            <rect x="83" y="48" width="4" height="4" rx="1" transform="rotate(45 85 50)"/>
+                            <rect x="68" y="73" width="4" height="4" rx="1" transform="rotate(45 70 75)"/>
+                            <rect x="28" y="73" width="4" height="4" rx="1" transform="rotate(45 30 75)"/>
+                            <rect x="13" y="48" width="4" height="4" rx="1" transform="rotate(45 15 50)"/>
+                        </g>
+                        <!-- Banish loop indicator (rotating hexagon) -->
+                        <path d="M50 35 L60 42.5 L60 57.5 L50 65 L40 57.5 L40 42.5 Z" fill="none" stroke="#a78bfa" stroke-width="1.5" opacity="0.5" stroke-dasharray="4 2">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="12s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Digital particles (data streams) -->
+                        <g opacity="0.6">
+                            <circle cx="20" cy="15" r="1" fill="#fbbf24">
+                                <animate attributeName="cy" values="15;85;15" dur="4s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="80" cy="85" r="1" fill="#fbbf24">
+                                <animate attributeName="cy" values="85;15;85" dur="5s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0;1;0" dur="5s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,

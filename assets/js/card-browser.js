@@ -118,7 +118,8 @@ window.CardBrowser = (function () {
 
                     results.forEach(({ passcode, tags }) => {
                         if (tags && tags.length > 0) {
-                            tagsByCardId[passcode] = tags;
+                            // Convert passcode to string to match lookup at line 243
+                            tagsByCardId[String(passcode)] = tags;
                             tags.forEach(tag => {
                                 uniqueTags.add(tag.tag_name);
                                 const mappedCategory = KNOWN_TAG_CATEGORIES[tag.tag_name];
