@@ -138,7 +138,7 @@ window.CardBrowser = (function () {
 
             // HYDRATION: Check if we have date info. If not, batch fetch from YGOProDeck API.
             // This fixes the issue where Supabase RPC might return limited columns.
-            const needsHydration = standardCards.some(c => !c.misc_info && !c.tcg_date && !c.ocg_date && !c.release_date);
+            const needsHydration = standardCards.some(c => !c.misc_info && !c.tcg_date && !c.ocg_date && !c.tcgreleasedate && !c.ocgreleasedate && !c.release_date);
 
             if (needsHydration && allPasscodes.length > 0) {
                 console.log('[CardBrowser] Missing date info detected. Hydrating data from API...');
@@ -197,8 +197,15 @@ window.CardBrowser = (function () {
                 }
 
                 // Priority 2: Direct top-level properties (Supabase/Internal)
-                if (!releaseDate && (card.tcg_date || card.ocg_date)) {
-                    releaseDate = card.tcg_date || card.ocg_date;
+                if (!releaseDate) {
+                    // Check Supabase specific fields first as requested
+                    if (card.tcgreleasedate || card.ocgreleasedate) {
+                        releaseDate = card.tcgreleasedate || card.ocgreleasedate;
+                    }
+                    // Fallback to other known properties
+                    else if (card.tcg_date || card.ocg_date) {
+                        releaseDate = card.tcg_date || card.ocg_date;
+                    }
                 }
 
                 // Priority 3: release_date (Custom/Fallback)
@@ -249,27 +256,54 @@ window.CardBrowser = (function () {
                     const tagsAttribute = tags.map(t => t.tag_name).join(',');
                     const tagDisplayHtml = (() => {
                         if (tags.length > 0) {
-                            const sortedTags = [...tags].sort((a, b) => {
-                                const catA = (KNOWN_TAG_CATEGORIES[a.tag_name] || a.tag_category || 'default').toLowerCase();
-                                const catB = (KNOWN_TAG_CATEGORIES[b.tag_name] || b.tag_category || 'default').toLowerCase();
-                                const prioA = CATEGORY_PRIORITY[catA] || 99;
-                                const prioB = CATEGORY_PRIORITY[catB] || 99;
-                                return prioA - prioB || a.tag_name.localeCompare(b.tag_name);
+                            // Group tags by category
+                            const groups = {};
+                            tags.forEach(tag => {
+                                const catKey = (KNOWN_TAG_CATEGORIES[tag.tag_name] || tag.tag_category || 'default').toLowerCase();
+                                if (!groups[catKey]) {
+                                    groups[catKey] = {
+                                        key: catKey,
+                                        display: catKey.charAt(0).toUpperCase() + catKey.slice(1),
+                                        tags: []
+                                    };
+                                }
+                                groups[catKey].tags.push(tag.tag_name);
                             });
 
-                            const listItems = sortedTags.map(tag => {
-                                const categoryKey = (KNOWN_TAG_CATEGORIES[tag.tag_name] || tag.tag_category || 'default').toLowerCase();
-                                const colors = TAG_CATEGORY_COLORS[categoryKey] || TAG_CATEGORY_COLORS.default || {};
-                                const escapedTagName = tag.tag_name.replace(/'/g, "\\'");
+                            const sortedKeys = Object.keys(groups).sort((a, b) => {
+                                const prioA = CATEGORY_PRIORITY[groups[a].key] || 99;
+                                const prioB = CATEGORY_PRIORITY[groups[b].key] || 99;
+                                return prioA - prioB;
+                            });
+
+                            // Generate unique IDs for this card instance
+                            const instanceId = stableId;
+
+                            const tagGroupsHtml = sortedKeys.map((key) => {
+                                const group = groups[key];
+                                const colors = TAG_CATEGORY_COLORS[group.key] || TAG_CATEGORY_COLORS.default || {};
+
+                                // Encode tags for passing to function
+                                const encodedTags = encodeURIComponent(JSON.stringify(group.tags));
+                                const encodedColorKey = encodeURIComponent(group.key);
 
                                 return `
-                                    <div class="flex items-start w-full text-[10px] leading-tight text-slate-300 group/tag">
-                                        <span class="mr-1.5 opacity-80 ${colors.text || 'text-slate-400'}">•</span>
-                                        <span class="tag-action-trigger flex-1 opacity-90 hover:text-white hover:underline transition-colors cursor-pointer" 
-                                              onclick="event.stopPropagation(); window.showTagActionsPopup && window.showTagActionsPopup(event, ${passcode}, '${escapedTagName}')">${tag.tag_name}</span>
+                                    <div class="mb-1 last:mb-0">
+                                        <button 
+                                            type="button"
+                                            class="w-full text-left uppercase font-bold ${colors.text || 'text-slate-400'} opacity-80 hover:opacity-100 flex items-center gap-1.5 cursor-pointer transition-all hover:bg-slate-800/50 rounded py-0.5"
+                                            style="font-size: 9px; letter-spacing: 0.05em;"
+                                            onclick="event.stopPropagation(); window.showCategoryPopup(event, '${group.display}', '${encodedTags}', '${encodedColorKey}', ${passcode})"
+                                            title="Click to view ${group.tags.length} ${group.display} tags"
+                                        >
+                                            <i class="fas fa-tags text-[8px] opacity-60 ml-0.5"></i>
+                                            ${group.display}
+                                            <span class="text-slate-500 font-normal ml-auto mr-1 text-[8px] bg-slate-800 px-1 rounded-full border border-slate-700/50 min-w-[14px] text-center">${group.tags.length}</span>
+                                        </button>
                                     </div>`;
                             }).join('');
-                            return `<div class="flex flex-col w-full mt-1 px-1 space-y-0.5 text-left">${listItems}</div>`;
+
+                            return `<div class="flex flex-col w-full mt-2 px-1 text-left select-none">${tagGroupsHtml}</div>`;
                         }
                         return '';
                     })();
@@ -283,8 +317,15 @@ window.CardBrowser = (function () {
                     }
 
                     // Priority 2: Direct top-level properties (Supabase/Internal)
-                    if (!rawDate && (card.tcg_date || card.ocg_date)) {
-                        rawDate = card.tcg_date || card.ocg_date;
+                    if (!rawDate) {
+                        // Check Supabase specific fields first
+                        if (card.tcgreleasedate || card.ocgreleasedate) {
+                            rawDate = card.tcgreleasedate || card.ocgreleasedate;
+                        }
+                        // Fallback to other known properties
+                        else if (card.tcg_date || card.ocg_date) {
+                            rawDate = card.tcg_date || card.ocg_date;
+                        }
                     }
 
                     // Priority 3: release_date (Custom/Fallback)
@@ -351,7 +392,7 @@ window.CardBrowser = (function () {
                                 
                                 <div id="${dateContainerId}" class="text-[8px] text-slate-500 bg-slate-900/60 px-1.5 rounded mt-0.5 ${dateDisplay ? '' : 'hidden'}">${dateDisplay || ''}</div>
                                 
-                                <div id="${tagContainerId}" class="w-full flex-col mt-1 empty:hidden max-h-[4.5rem] overflow-y-auto pr-0.5" style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
+                                <div id="${tagContainerId}" class="w-full flex-col mt-1 empty:hidden max-h-[14rem] overflow-y-auto pr-0.5" style="scrollbar-width: thin; scrollbar-color: #334155 transparent;">
                                     ${tagDisplayHtml}
                                 </div>
                             </div>
@@ -954,6 +995,178 @@ window.CardBrowser = (function () {
 
                     card.style.display = (tagMatch && yearMatch && newCardsMatch) ? '' : 'none';
                 });
+            };
+
+            window.showCategoryPopup = function (event, categoryName, encodedTags, encodedColorKey, passcode) {
+                // Remove existing popup
+                const existing = document.getElementById('category-tags-popup');
+                if (existing) existing.remove();
+
+                const tags = JSON.parse(decodeURIComponent(encodedTags));
+                const colorKey = decodeURIComponent(encodedColorKey);
+                const colors = TAG_CATEGORY_COLORS[colorKey] || TAG_CATEGORY_COLORS.default || {};
+
+                // Create popup
+                const popup = document.createElement('div');
+                popup.id = 'category-tags-popup';
+                popup.className = 'fixed z-[9999] bg-slate-900 border border-slate-600 rounded-lg shadow-2xl p-3 min-w-[220px] max-w-[280px] animate-fadeIn';
+
+                // Header
+                const headerHtml = `
+                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold uppercase tracking-wider ${colors.text || 'text-slate-300'}">${categoryName}</span>
+                            <span class="text-[10px] text-slate-500 bg-slate-800 px-1.5 rounded-full">${tags.length}</span>
+                        </div>
+                        <button onclick="this.closest('#category-tags-popup').remove()" class="text-slate-500 hover:text-white transition-colors">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                `;
+
+                // Tags List with Accordion Logic
+                const tagsListHtml = tags.map((tagName, index) => {
+                    const safeTagName = tagName.replace(/'/g, "\\'");
+                    const actionContainerId = `actions-${passcode}-${index}`;
+
+                    return `
+                        <div class="tag-item-container mb-0.5">
+                            <div class="flex items-center w-full text-[11px] leading-tight text-slate-300 py-1 hover:bg-slate-800/50 rounded px-1 transition-colors cursor-pointer select-none"
+                                 onclick="event.stopPropagation(); window.toggleTagActions(this, ${passcode}, '${safeTagName}', '${actionContainerId}')">
+                                <span class="mr-2 opacity-60 ${colors.text || 'text-slate-400'} tag-bullet">•</span>
+                                <span class="flex-1 opacity-90 group-hover/tag:text-white font-medium">${tagName}</span>
+                                <i class="fas fa-chevron-right text-[9px] text-slate-600 transition-transform ml-1 chevron-icon"></i>
+                            </div>
+                            <div id="${actionContainerId}" class="hidden pl-3 pr-1 py-1 mt-0.5 border-l border-slate-700/50 ml-1.5">
+                                <div class="text-[10px] text-slate-500 italic flex items-center gap-1">
+                                    <i class="fas fa-spinner fa-spin text-[9px]"></i> Loading...
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+
+                popup.innerHTML = `
+                    ${headerHtml}
+                    <div class="flex flex-col max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                        ${tagsListHtml}
+                    </div>
+                `;
+
+                document.body.appendChild(popup);
+
+                // Position Logic
+                const rect = event.currentTarget.getBoundingClientRect();
+                const popupWidth = 260;
+
+                let left = rect.right + 8; // Default: to the right
+                let top = rect.top;
+
+                // Check right edge
+                if (left + popupWidth > window.innerWidth) {
+                    left = rect.left - popupWidth - 8; // Flip to left
+                }
+
+                // Smart vertical positioning
+                const popupHeight = Math.min(350, 60 + (tags.length * 28));
+                if (top + popupHeight > window.innerHeight) {
+                    // Try to align bottom with bottom of viewport if it overflows
+                    top = Math.max(10, window.innerHeight - popupHeight - 10);
+                }
+                // Also check top edge
+                if (top < 10) top = 10;
+
+                popup.style.left = `${left}px`;
+                popup.style.top = `${top}px`;
+
+                // Close on outside click
+                setTimeout(() => {
+                    document.addEventListener('click', function closeCatPopup(e) {
+                        if (popup && !popup.contains(e.target)) {
+                            popup.remove();
+                            document.removeEventListener('click', closeCatPopup);
+                        }
+                    });
+                }, 50);
+            };
+
+            // Helper to toggle actions accordion
+            window.toggleTagActions = async function (element, passcode, tagName, containerId) {
+                const container = document.getElementById(containerId);
+                const chevron = element.querySelector('.chevron-icon');
+                const popup = element.closest('#category-tags-popup');
+
+                // Toggle state
+                if (!container.classList.contains('hidden')) {
+                    container.classList.add('hidden');
+                    if (chevron) {
+                        chevron.classList.remove('fa-chevron-down');
+                        chevron.classList.add('fa-chevron-right');
+                    }
+                    // Auto-reposition if popup grows off-screen
+                    if (popup) {
+                        // Small delay to let DOM update (especially if innerHTML changed)
+                        requestAnimationFrame(() => {
+                            const rect = popup.getBoundingClientRect();
+                            const viewportHeight = window.innerHeight;
+                            const overflow = rect.bottom - viewportHeight;
+
+                            if (overflow > 0) {
+                                const currentTop = parseFloat(popup.style.top) || rect.top;
+                                const newTop = Math.max(10, currentTop - overflow - 20); // 20px buffer
+                                popup.style.top = `${newTop}px`;
+                            }
+                        });
+                    }
+                    return;
+                }
+
+                // Open
+                container.classList.remove('hidden');
+                if (chevron) {
+                    chevron.classList.remove('fa-chevron-right');
+                    chevron.classList.add('fa-chevron-down');
+                }
+
+                // Load content if not already loaded (check for spinner)
+                if (container.querySelector('.fa-spinner')) {
+                    try {
+                        const actions = await CardLoader.getActionsForTag(passcode, tagName);
+
+                        if (actions && actions.length > 0) {
+                            container.innerHTML = `
+                                <ul class="space-y-1 bg-slate-950/30 rounded px-2 py-1.5">
+                                    ${actions.map(action => `
+                                        <li class="flex items-start gap-2 text-[10px] text-slate-400 italic">
+                                            <span class="text-slate-600 mt-[1px] select-none">-</span>
+                                            <span class="leading-tight opacity-90">${action}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            `;
+                        } else {
+                            container.innerHTML = `<div class="text-[10px] text-slate-500 italic ml-1 bg-slate-950/30 rounded px-2 py-1">No specific actions recorded.</div>`;
+                        }
+                    } catch (err) {
+                        console.error('Failed to load actions', err);
+                        container.innerHTML = `<div class="text-[10px] text-red-400 italic ml-1">Error loading actions.</div>`;
+                    }
+                }
+
+                // Auto-reposition if popup grows off-screen
+                if (popup) {
+                    // Small delay to let DOM update (especially if innerHTML changed)
+                    requestAnimationFrame(() => {
+                        const rect = popup.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        const overflow = rect.bottom - viewportHeight;
+
+                        if (overflow > 0) {
+                            const currentTop = parseFloat(popup.style.top) || rect.top;
+                            const newTop = Math.max(10, currentTop - overflow - 20); // 20px buffer
+                            popup.style.top = `${newTop}px`;
+                        }
+                    });
+                }
             };
 
             window.applyTagFilters = window.applyFilters;

@@ -5,6 +5,7 @@
 // Total file size: 661.93 KB
 
 const archetypes = [
+
     {
         name: 'D.D.',
         description: 'A thematic series of cards that pioneered banishing mechanics, featuring powerful hand traps like D.D. Crow and recurring monsters like D.D. Survivor that interact with the Different Dimension (banish zone).',
@@ -3579,83 +3580,65 @@ const archetypes = [
     },
     {
         name: 'Altergeist',
-        description: 'A resource-based control strategy that wins by meticulously outgrinding the opponent.',
+        description: 'A cybersecurity-themed Spellcaster archetype of digital ghosts that disrupt the opponent through traps and effects that bounce cards, utilizing a unique "Multi-Faker" mechanic.',
         filepath: 'pages/Altergeist Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <radialGradient id="altergeistCoreGrad" cx="50%" cy="30%" r="70%">
-                            <stop offset="0%" stop-color="#c4b5fd"/>
-                            <stop offset="40%" stop-color="#8b5cf6"/>
-                            <stop offset="80%" stop-color="#6d28d9"/>
-                            <stop offset="100%" stop-color="#4c1d95"/>
-                        </radialGradient>
-                        <linearGradient id="digitalStreamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#34d399"/>
-                            <stop offset="50%" stop-color="#10b981"/>
-                            <stop offset="100%" stop-color="#059669"/>
-                        </linearGradient>
-                        <filter id="ghostGlow">
-                            <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                            <feMerge>
-                                <feMergeNode in="coloredBlur"/>
-                                <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                        </filter>
-                        <filter id="digitalFlicker">
-                            <feGaussianBlur stdDeviation="0.5" result="blur"/>
-                            <feMerge>
-                                <feMergeNode in="blur"/>
-                                <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                        </filter>
-                    </defs>
-                    <!-- Background cyber circuit -->
-                    <circle cx="50" cy="50" r="45" fill="#1e1b4b" stroke="#6d28d9" stroke-width="2"/>
-                    <!-- Digital circuit lines -->
-                    <g stroke="url(#digitalStreamGrad)" stroke-width="1" opacity="0.6" filter="url(#digitalFlicker)">
-                        <path d="M10 50 L25 50 L30 40 L40 40"/>
-                        <path d="M90 50 L75 50 L70 60 L60 60"/>
-                        <path d="M50 10 L50 25 L40 30 L40 40"/>
-                        <path d="M50 90 L50 75 L60 70 L60 60"/>
-                    </g>
-                    <!-- Ghostly spirit form -->
-                    <g filter="url(#ghostGlow)">
-                        <!-- Spirit body -->
-                        <path d="M50 15 Q70 25 65 50 Q70 75 50 85 Q30 75 35 50 Q30 25 50 15" 
-                              fill="url(#altergeistCoreGrad)" stroke="#c4b5fd" stroke-width="1.5" opacity="0.9">
-                            <animate attributeName="d" 
-                                     values="M50 15 Q70 25 65 50 Q70 75 50 85 Q30 75 35 50 Q30 25 50 15;
-                                             M50 17 Q68 27 63 50 Q68 73 50 83 Q32 73 37 50 Q32 27 50 17;
-                                             M50 15 Q70 25 65 50 Q70 75 50 85 Q30 75 35 50 Q30 25 50 15" 
-                                     dur="3s" repeatCount="indefinite"/>
-                        </path>
-                        <!-- Spirit eyes -->
-                        <ellipse cx="40" cy="40" rx="6" ry="8" fill="#dbeafe"/>
-                        <ellipse cx="60" cy="40" rx="6" ry="8" fill="#dbeafe"/>
-                        <circle cx="40" cy="40" r="3" fill="#1e1b4b"/>
-                        <circle cx="60" cy="40" r="3" fill="#1e1b4b"/>
-                    </g>
-                    <!-- Digital data streams -->
-                    <g fill="#34d399" opacity="0.8">
-                        <rect x="20" y="30" width="2" height="4" rx="1">
-                            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="1s" repeatCount="indefinite"/>
-                        </rect>
-                        <rect x="78" y="45" width="2" height="4" rx="1">
-                            <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.2s" repeatCount="indefinite"/>
-                        </rect>
-                        <rect x="25" y="65" width="2" height="4" rx="1">
-                            <animate attributeName="opacity" values="0.5;1;0.5" dur="0.8s" repeatCount="indefinite"/>
-                        </rect>
-                        <rect x="73" y="70" width="2" height="4" rx="1">
-                            <animate attributeName="opacity" values="1;0.5;1" dur="1.5s" repeatCount="indefinite"/>
-                        </rect>
-                    </g>
-                    <!-- Trap card symbol at base -->
-                    <path d="M42 70 L50 62 L58 70 L50 78 Z" fill="#c4b5fd" stroke="#8b5cf6" stroke-width="1"/>
-                </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
+            <defs>
+                <radialGradient id="altergeistGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color:#4a044e;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+                </radialGradient>
+                <linearGradient id="circuitStream" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#d946ef"/>
+                    <stop offset="100%" stop-color="#22d3ee"/>
+                </linearGradient>
+                <filter id="altergeistGlow">
+                    <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            <!-- Background -->
+            <circle cx="50" cy="50" r="46" fill="url(#altergeistGrad)" stroke="#d946ef" stroke-width="1.5"/>
+            
+            <!-- Circuit Board Pattern Background -->
+            <path d="M20 50 L35 50 L35 40 M65 50 L80 50 L80 60 M50 20 L50 35 L60 35 M50 65 L50 80 L40 80" 
+                  stroke="#22d3ee" stroke-width="1" opacity="0.3" fill="none"/>
+            <circle cx="35" cy="40" r="1.5" fill="#22d3ee" opacity="0.4"/>
+            <circle cx="65" cy="60" r="1.5" fill="#22d3ee" opacity="0.4"/>
+            
+            <!-- Ghost Silhouette -->
+            <path d="M50 25 Q30 25 30 50 Q30 75 40 85 Q50 90 60 85 Q70 75 70 50 Q70 25 50 25 Z" 
+                  fill="none" stroke="url(#circuitStream)" stroke-width="2" filter="url(#altergeistGlow)"/>
+            
+            <!-- Digital Eyes -->
+            <ellipse cx="43" cy="45" rx="3" ry="5" fill="#22d3ee" filter="url(#altergeistGlow)">
+                <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="57" cy="45" rx="3" ry="5" fill="#22d3ee" filter="url(#altergeistGlow)">
+                <animate attributeName="opacity" values="1;0.5;1" dur="2s" begin="1s" repeatCount="indefinite"/>
+            </ellipse>
+            
+            <!-- Internal Circuits/Data Flow -->
+            <path d="M50 25 L50 45" stroke="#d946ef" stroke-width="1.5"/>
+            <path d="M43 45 L57 45" stroke="#d946ef" stroke-width="1.5"/>
+            <circle cx="50" cy="45" r="2" fill="#22d3ee"/>
+            
+            <!-- Floating Data Particles -->
+            <circle cx="35" cy="65" r="2" fill="#d946ef" opacity="0.8">
+                <animate attributeName="cy" values="65;60;65" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="65" cy="35" r="2" fill="#d946ef" opacity="0.8">
+                 <animate attributeName="cy" values="35;30;35" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+            </circle>
 
+            <!-- Text -->
+            <text x="50" y="80" text-anchor="middle" font-size="8" fill="#22d3ee" font-weight="bold" font-family="monospace" letter-spacing="1">ALTERGEIST</text>
+        </svg>`,
+        firstReleaseDate: '2017-08-04',
+        latestReleaseDate: '2023-07-27',
     },
     {
         name: 'Amazement',
@@ -30642,44 +30625,54 @@ const archetypes = [
         filepath: "pages/Ancient Fairy Dragon Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="ancientfairyGradient" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#dda0dd;stop-opacity:1" />
-                                <stop offset="50%" style="stop-color:#9370db;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#4b0082;stop-opacity:1" />
+                            <radialGradient id="afdBg" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#ecfccb"/> <!-- light lime -->
+                                <stop offset="60%" stop-color="#84cc16"/> <!-- lime -->
+                                <stop offset="100%" stop-color="#14532d"/> <!-- dark green -->
                             </radialGradient>
-                            <filter id="ancientfairyGlow">
-                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                <feMerge> 
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
+                            <linearGradient id="afdWing" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#ffffff"/>
+                                <stop offset="100%" stop-color="#fef08a"/> <!-- light yellow -->
+                            </linearGradient>
+                            <filter id="afdGlow">
+                                <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
                             </filter>
                         </defs>
-                        <!-- Dragon body -->
-                        <ellipse cx="50" cy="60" rx="25" ry="20" fill="url(#ancientfairyGradient)" filter="url(#ancientfairyGlow)" stroke="#ffffff" stroke-width="2"/>
-                        <!-- Dragon head -->
-                        <circle cx="50" cy="35" r="15" fill="url(#ancientfairyGradient)" stroke="#ffffff" stroke-width="1"/>
-                        <!-- Fairy wings -->
-                        <path d="M25 50 Q15 40 20 30 Q25 40 30 50" fill="#dda0dd" stroke="#9370db" stroke-width="1" opacity="0.8">
-                            <animateTransform attributeName="transform" type="scale" values="1 1;1.2 1;1 1" dur="2s" repeatCount="indefinite"/>
+                        <!-- Background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#afdBg)" stroke="#84cc16" stroke-width="2"/>
+                        
+                        <!-- Ancient Forest Auras -->
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="#ffffff" stroke-width="1" stroke-dasharray="4 4" opacity="0.4">
+                             <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="20s" repeatCount="indefinite"/>
+                        </circle>
+                        
+                        <!-- Wing Left -->
+                        <path d="M50 45 Q35 25 15 35 Q10 45 25 55 Q40 60 50 55" fill="url(#afdWing)" stroke="#eab308" stroke-width="1" filter="url(#afdGlow)">
+                            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="4s" repeatCount="indefinite"/>
                         </path>
-                        <path d="M75 50 Q85 40 80 30 Q75 40 70 50" fill="#dda0dd" stroke="#9370db" stroke-width="1" opacity="0.8">
-                            <animateTransform attributeName="transform" type="scale" values="1 1;1.2 1;1 1" dur="2s" repeatCount="indefinite"/>
+                        
+                        <!-- Wing Right -->
+                        <path d="M50 45 Q65 25 85 35 Q90 45 75 55 Q60 60 50 55" fill="url(#afdWing)" stroke="#eab308" stroke-width="1" filter="url(#afdGlow)">
+                             <animateTransform attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="4s" repeatCount="indefinite"/>
                         </path>
-                        <!-- Ancient runes -->
-                        <circle cx="40" cy="45" r="3" fill="#ffffff">
+                        
+                        <!-- Dragon Body/Neck -->
+                        <path d="M50 60 Q50 45 50 35 Q50 25 54 20 L50 16 L46 20 Q50 25 50 35 Q50 45 50 60" fill="#ffffff" stroke="#eab308" stroke-width="1"/>
+                        <circle cx="50" cy="25" r="1.5" fill="#eab308"/> <!-- Jewel -->
+                        
+                        <!-- Magic Particles -->
+                        <circle cx="30" cy="65" r="2" fill="#ffffff" opacity="0.8">
                             <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="65;60;65" dur="3s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="60" cy="45" r="3" fill="#ffffff">
-                            <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1s" repeatCount="indefinite"/>
+                        <circle cx="70" cy="65" r="2" fill="#ffffff" opacity="0.8">
+                             <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/>
+                             <animate attributeName="cy" values="65;60;65" dur="3s" begin="1s" repeatCount="indefinite"/>
                         </circle>
-                        <!-- Horns -->
-                        <path d="M45 30 L50 20 L55 30" fill="#4b0082"/>
-                        <!-- Tail -->
-                        <path d="M75 60 Q85 55 90 60 Q85 65 75 60" fill="url(#ancientfairyGradient)" stroke="#ffffff" stroke-width="1">
-                            <animate attributeName="d" values="M75 60 Q85 55 90 60 Q85 65 75 60;M75 60 Q90 50 95 60 Q90 70 75 60" dur="2s" repeatCount="indefinite"/>
-                        </path>
-                        <text x="50" y="95" text-anchor="middle" font-size="8" fill="#9370db" font-weight="bold">Ancient Fairy Dragon</text>
+                        
+                        <!-- Text -->
+                        <text x="50" y="85" text-anchor="middle" font-size="8" fill="#14532d" font-weight="bold" letter-spacing="0.5">ANCIENT FAIRY</text>
                     </svg>`
     },
     {

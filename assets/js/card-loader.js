@@ -460,11 +460,13 @@ window.CardLoader = (function () {
             return prioA - prioB;
         });
 
-        const tagGroupsHtml = sortedKeys.map(key => {
+        // Generate unique IDs for this popup instance
+        const instanceId = Date.now();
+
+        const tagGroupsHtml = sortedKeys.map((key, index) => {
             const group = groups[key];
-            // Use lighter/closer to white text for the headers if desired, or keep category color
-            // User asked for minimal/cleaner. Category color header is good for organization.
             const colors = TAG_CATEGORY_COLORS[group.key] || TAG_CATEGORY_COLORS.default;
+            const groupId = `tag-group-${instanceId}-${index}`;
 
             // Join tags with a subtle bullet - make clickable if passcode provided
             const tagsList = group.tags.map(t => {
@@ -489,10 +491,18 @@ window.CardLoader = (function () {
 
             return `
                 <div class="mb-2 last:mb-0">
-                    <div style="font-size: 9px; letter-spacing: 0.05em;" class="uppercase font-bold ${colors.text} opacity-80 mb-1 flex items-center gap-1.5 ml-1">
+                    <button 
+                        type="button"
+                        class="w-full text-left uppercase font-bold ${colors.text} opacity-80 hover:opacity-100 flex items-center gap-1.5 ml-1 cursor-pointer transition-opacity"
+                        style="font-size: 9px; letter-spacing: 0.05em;"
+                        onclick="const content = document.getElementById('${groupId}'); const icon = this.querySelector('.toggle-icon'); if (content.classList.contains('hidden')) { content.classList.remove('hidden'); icon.classList.remove('fa-chevron-right'); icon.classList.add('fa-chevron-down'); } else { content.classList.add('hidden'); icon.classList.remove('fa-chevron-down'); icon.classList.add('fa-chevron-right'); }"
+                        title="Click to expand ${group.display}"
+                    >
+                        <i class="fas fa-chevron-right toggle-icon text-[8px] opacity-60" style="width: 8px;"></i>
                         ${group.display}
-                    </div>
-                    <div class="flex flex-wrap gap-1.5">
+                        <span class="text-slate-500 font-normal ml-1">(${group.tags.length})</span>
+                    </button>
+                    <div id="${groupId}" class="flex flex-wrap gap-1.5 mt-1 hidden">
                         ${tagsList}
                     </div>
                 </div>`;
@@ -887,9 +897,116 @@ window.CardLoader = (function () {
     }
 
     /**
+     * Map Supabase card row to YGOProDeck-compatible format
+     * @param {Object} card - Raw card data from Supabase
+     * @returns {Object} Card data in YGOProDeck API format
+     */
+    function mapSupabaseCardToApiFormat(card) {
+        const mappedCard = {
+            id: card.passcode,
+            name: card.cardname,
+            type: card.cardtype || 'Unknown',
+            desc: card.description || '',
+            atk: card.atk,
+            def: card.def,
+            level: card.level,
+            race: card.types ? card.types.split(' / ')[0] : 'Unknown',
+            attribute: card.attribute,
+            linkval: card.link,
+            scale: card.pendulumscale,
+            _fromSupabase: true,
+            format: card.format
+        };
+
+        // Handle Link monsters (no DEF, use link value)
+        if (card.link) {
+            delete mappedCard.def;
+            mappedCard.linkval = card.link;
+        }
+
+        // For spell/trap property (Normal, Quick-Play, Continuous, etc.)
+        if (card.property) {
+            mappedCard.race = card.property;
+        }
+
+        return mappedCard;
+    }
+
+    /**
+     * Fetch card data from Supabase using direct table query
+     * @param {string} cardName - Card name to search for
+     * @returns {Object|null} Card data in YGOProDeck-compatible format or null if not found
+     */
+    async function fetchCardDataFromSupabase(cardName) {
+        const client = getSupabaseClient();
+        if (!client) {
+            console.log('[CardLoader] Supabase not configured, skipping database lookup');
+            return null;
+        }
+
+        try {
+            console.log('[CardLoader] Fetching card from Supabase:', cardName);
+            const { data, error } = await client
+                .from('cards')
+                .select('cardid, cardname, passcode, cardtype, attribute, property, types, level, atk, def, link, pendulumscale, description, format')
+                .ilike('cardname', cardName)
+                .limit(1);
+
+            if (error) {
+                console.warn('[CardLoader] Supabase query error:', error);
+                return null;
+            }
+
+            if (!data || data.length === 0) {
+                console.log('[CardLoader] Card not found in Supabase:', cardName);
+                return null;
+            }
+
+            const card = data[0];
+            console.log('[CardLoader] Card found in Supabase:', card.cardname);
+
+            return mapSupabaseCardToApiFormat(card);
+        } catch (err) {
+            console.warn('[CardLoader] Error fetching from Supabase:', err);
+            return null;
+        }
+    }
+
+    /**
      * Fetch card data from API
+     * Tries Supabase first, falls back to YGOProDeck API
+     */
+    /**
+     * Fetch card data from API
+     * Tries Supabase first, falls back to YGOProDeck API
      */
     async function fetchCardData(cardName) {
+        // First, try to fetch from Supabase database
+        const supabaseData = await fetchCardDataFromSupabase(cardName);
+
+        if (supabaseData) {
+            // Enriched Supabase data with Sets/Prices from API if missing
+            // This covers the case where Supabase has core data but not prices/sets yet
+            if (!supabaseData.card_sets || !supabaseData.card_prices) {
+                try {
+                    const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}&misc=yes`;
+                    const response = await fetch(apiUrl);
+                    if (response.ok) {
+                        const apiJson = await response.json();
+                        const apiData = apiJson?.data?.[0];
+                        if (apiData) {
+                            if (!supabaseData.card_sets) supabaseData.card_sets = apiData.card_sets;
+                            if (!supabaseData.card_prices) supabaseData.card_prices = apiData.card_prices;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[CardLoader] Failed to fetch enrichment data from API:', e);
+                }
+            }
+            return supabaseData;
+        }
+
+        // Fallback to YGOProDeck API
         const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}&misc=yes`;
         console.log("[CardLoader] fetchCardData called for:", cardName, "URL:", apiUrl);
         const response = await fetch(apiUrl);
@@ -903,9 +1020,68 @@ window.CardLoader = (function () {
     }
 
     /**
+     * Fetch card data from Supabase by passcode using direct table query
+     * @param {number} passcode - Card passcode (ID)
+     * @returns {Object|null} Card data in YGOProDeck-compatible format or null
+     */
+    async function fetchCardDataByIdFromSupabase(passcode) {
+        const client = getSupabaseClient();
+        if (!client) {
+            return null;
+        }
+
+        try {
+            console.log('[CardLoader] Fetching card by ID from Supabase:', passcode);
+            const { data, error } = await client
+                .from('cards')
+                .select('cardid, cardname, passcode, cardtype, attribute, property, types, level, atk, def, link, pendulumscale, description, format')
+                .eq('passcode', passcode)
+                .limit(1);
+
+            if (error || !data || data.length === 0) {
+                return null;
+            }
+
+            const card = data[0];
+            console.log('[CardLoader] Card found in Supabase by ID:', card.cardname);
+
+            return mapSupabaseCardToApiFormat(card);
+        } catch (err) {
+            console.warn('[CardLoader] Error fetching by ID from Supabase:', err);
+            return null;
+        }
+    }
+
+    /**
      * Fetch card data from API by ID
+     * Tries Supabase first, falls back to YGOProDeck API
      */
     async function fetchCardDataById(cardId) {
+        // Try Supabase first
+        const supabaseData = await fetchCardDataByIdFromSupabase(cardId);
+
+        if (supabaseData) {
+            // Enriched Supabase data with Sets/Prices from API if missing
+            if (!supabaseData.card_sets || !supabaseData.card_prices) {
+                try {
+                    const apiUrl = `${CONFIG.API_URL}?id=${cardId}&misc=yes`;
+                    const response = await fetch(apiUrl);
+                    if (response.ok) {
+                        const apiJson = await response.json();
+                        const apiData = apiJson?.data?.[0];
+                        if (apiData) {
+                            if (!supabaseData.card_sets) supabaseData.card_sets = apiData.card_sets;
+                            if (!supabaseData.card_prices) supabaseData.card_prices = apiData.card_prices;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[CardLoader] Failed to fetch enrichment data by ID from API:', e);
+                }
+            }
+            return supabaseData;
+        }
+
+        // Fallback to YGOProDeck API
         const apiUrl = `${CONFIG.API_URL}?id=${cardId}&misc=yes`;
         console.log("[CardLoader] fetchCardDataById called for:", cardId, "URL:", apiUrl);
         const response = await fetch(apiUrl);
@@ -1709,6 +1885,14 @@ window.CardLoader = (function () {
                                 dateHeader.classList.remove('hidden');
                             }
                         }
+
+                        // Re-position the popup after content update to prevent it from going off-screen
+                        // We must wait for the DOM to update with the new content
+                        requestAnimationFrame(() => {
+                            if (activePopup && currentCard === cardName) {
+                                movePopup(event);
+                            }
+                        });
                     }
                 }
             }).catch(e => { console.warn(e); cardInfo._fetching = false; });
@@ -1716,8 +1900,9 @@ window.CardLoader = (function () {
 
         let stats = '';
         let atkDef = [];
-        if (cardInfo.atk !== undefined) atkDef.push(`ATK/${cardInfo.atk}`);
-        if (cardInfo.def !== undefined && !cardInfo.linkval) atkDef.push(`DEF/${cardInfo.def}`);
+        // Check for valid ATK/DEF values (not null/undefined) - handles both API and Supabase data
+        if (cardInfo.atk !== undefined && cardInfo.atk !== null) atkDef.push(`ATK/${cardInfo.atk}`);
+        if (cardInfo.def !== undefined && cardInfo.def !== null && !cardInfo.linkval) atkDef.push(`DEF/${cardInfo.def}`);
         if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
         if (atkDef.length > 0) {
             stats = `<p class="mt-2 text-yellow-400 font-bold">${atkDef.join(' ')}</p>`;
@@ -1874,58 +2059,68 @@ window.CardLoader = (function () {
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
 
-            // Use requestAnimationFrame to get accurate dimensions after render
-            requestAnimationFrame(() => {
-                const popupWidth = popup.offsetWidth || 400;
-                const popupHeight = popup.offsetHeight || 500;
+            // Measure dimensions immediately (forces a reflow, which is consistent)
+            const popupWidth = popup.offsetWidth || 400;
+            const popupHeight = popup.offsetHeight || 500;
 
-                // Calculate available space in each direction from cursor
-                const spaceRight = viewportWidth - event.clientX - cushion;
-                const spaceLeft = event.clientX - cushion;
-                const spaceBelow = viewportHeight - event.clientY - cushion;
-                const spaceAbove = event.clientY - cushion;
+            // Calculate available space in each direction from cursor
+            const spaceRight = viewportWidth - event.clientX - cushion;
+            const spaceLeft = event.clientX - cushion;
+            const spaceBelow = viewportHeight - event.clientY - cushion;
+            const spaceAbove = event.clientY - cushion;
 
-                let x, y;
+            let x, y;
 
-                // Horizontal positioning: prefer right, fallback to left, then clamp
-                if (spaceRight >= popupWidth) {
-                    x = event.clientX + cushion;
-                } else if (spaceLeft >= popupWidth) {
-                    x = event.clientX - popupWidth - cushion;
+            // Horizontal positioning: prefer right, fallback to left, then clamp
+            if (spaceRight >= popupWidth) {
+                x = event.clientX + cushion;
+            } else if (spaceLeft >= popupWidth) {
+                x = event.clientX - popupWidth - cushion;
+            } else {
+                // Not enough space on either side, center horizontally and clamp
+                x = Math.max(cushion, Math.min(event.clientX - popupWidth / 2, viewportWidth - popupWidth - cushion));
+            }
+
+            // Vertical positioning: prefer below, fallback to above, then clamp
+            if (spaceBelow >= popupHeight) {
+                y = event.clientY + cushion;
+            } else if (spaceAbove >= popupHeight) {
+                y = event.clientY - popupHeight - cushion;
+            } else {
+                // Not enough space above or below, position to fit in viewport
+                // Try to center it vertically if it fits, otherwise pin to top/bottom with scrolling
+                if (viewportHeight > popupHeight) {
+                    y = (viewportHeight - popupHeight) / 2;
                 } else {
-                    // Not enough space on either side, center horizontally and clamp
-                    x = Math.max(cushion, Math.min(event.clientX - popupWidth / 2, viewportWidth - popupWidth - cushion));
-                }
-
-                // Vertical positioning: prefer below, fallback to above, then clamp
-                if (spaceBelow >= popupHeight) {
-                    y = event.clientY + cushion;
-                } else if (spaceAbove >= popupHeight) {
-                    y = event.clientY - popupHeight - cushion;
-                } else {
-                    // Not enough space above or below, position to fit in viewport
-                    y = Math.max(cushion, Math.min(viewportHeight - popupHeight - cushion, cushion));
-                }
-
-                // Final bounds check to ensure popup is always fully visible
-                if (x < cushion) x = cushion;
-                if (x + popupWidth > viewportWidth - cushion) x = viewportWidth - popupWidth - cushion;
-                if (y < cushion) y = cushion;
-                if (y + popupHeight > viewportHeight - cushion) {
                     y = cushion;
-                    // If popup is taller than viewport, enable scrolling
-                    popup.style.maxHeight = `${viewportHeight - cushion * 2}px`;
-                    popup.style.overflowY = 'auto';
-                } else {
-                    popup.style.maxHeight = '';
-                    popup.style.overflowY = '';
                 }
+            }
 
-                // Use fixed positioning (stays in viewport, doesn't scroll with page)
-                popup.style.position = 'fixed';
-                popup.style.left = `${x}px`;
-                popup.style.top = `${y}px`;
-            });
+            // Final bounds check to ensure popup is always fully visible
+            if (x < cushion) x = cushion;
+            if (x + popupWidth > viewportWidth - cushion) x = viewportWidth - popupWidth - cushion;
+
+            // Vertical constraints
+            if (y < cushion) y = cushion;
+            if (y + popupHeight > viewportHeight - cushion) {
+                // If it pushes off bottom, move it up
+                y = Math.max(cushion, viewportHeight - popupHeight - cushion);
+            }
+
+            // Handle case where popup is taller than viewport
+            if (popupHeight > viewportHeight - (cushion * 2)) {
+                y = cushion;
+                popup.style.maxHeight = `${viewportHeight - cushion * 2}px`;
+                popup.style.overflowY = 'auto';
+            } else {
+                popup.style.maxHeight = '';
+                popup.style.overflowY = '';
+            }
+
+            // Use fixed positioning (stays in viewport, doesn't scroll with page)
+            popup.style.position = 'fixed';
+            popup.style.left = `${x}px`;
+            popup.style.top = `${y}px`;
         }
     }
 
@@ -3362,6 +3557,7 @@ window.CardLoader = (function () {
         injectComboWarnings,
         // Gameplay tags (Supabase integration)
         getTagsForCard: fetchCardTags,
+        getActionsForTag: fetchActionsForTag,
         isSupabaseConfigured: () => !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY),
         // Archetype cards browser button (still in CardLoader)
         renderArchetypeCardsBrowser,
