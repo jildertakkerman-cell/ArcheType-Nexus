@@ -8647,122 +8647,79 @@ const archetypes = [
     },
     {
         name: 'Dracotail',
-        description: 'A counter-intuitive Fusion strategy with a conservative, resource-efficient methodology.',
+        description: 'A LIGHT Dragon Fusion archetype that contact fuses using dragons and Equip Spells, featuring serpentine Wyrm-like designs and the ability to recover Equip Spells from the GY for sustained resource loops.',
         filepath: 'pages/Dracotail Archetype Breakdown.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <radialGradient id="draco-body-grad" cx="0.3" cy="0.3">
-                            <stop offset="0%" stop-color="#fbbf24"/>
-                            <stop offset="40%" stop-color="#f59e0b"/>
+                        <radialGradient id="dracotailBg" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#1e1b4b" stop-opacity="1"/>
+                            <stop offset="100%" stop-color="#0f172a" stop-opacity="1"/>
+                        </radialGradient>
+                        <linearGradient id="dracotailBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fef3c7"/>
+                            <stop offset="30%" stop-color="#fbbf24"/>
+                            <stop offset="70%" stop-color="#f59e0b"/>
                             <stop offset="100%" stop-color="#d97706"/>
-                        </radialGradient>
-                        <radialGradient id="draco-fusion-grad" cx="0.5" cy="0.5">
-                            <stop offset="0%" stop-color="#e0e7ff"/>
-                            <stop offset="50%" stop-color="#a5b4fc"/>
-                            <stop offset="100%" stop-color="#6366f1"/>
-                        </radialGradient>
-                        <linearGradient id="draco-wing-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#fbbf24"/>
-                            <stop offset="50%" stop-color="#f59e0b"/>
-                            <stop offset="100%" stop-color="#92400e"/>
                         </linearGradient>
-                        <filter id="draco-glow">
-                            <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+                        <linearGradient id="dracotailFusion" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#a78bfa"/>
+                            <stop offset="50%" stop-color="#8b5cf6"/>
+                            <stop offset="100%" stop-color="#6366f1"/>
+                        </linearGradient>
+                        <filter id="dracotailGlow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                             <feMerge>
                                 <feMergeNode in="coloredBlur"/>
                                 <feMergeNode in="SourceGraphic"/>
                             </feMerge>
                         </filter>
-                        <filter id="draco-shadow">
-                            <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-                            <feOffset dx="1" dy="1" result="offset"/>
-                            <feFlood flood-color="#000000" flood-opacity="0.3"/>
-                            <feComposite in2="offset" operator="in"/>
-                            <feMerge>
-                                <feMergeNode/>
-                                <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                        </filter>
                     </defs>
-                    
-                    <!-- Dragon body/tail curve -->
-                    <path d="M20 80 Q30 60 40 45 Q50 30 60 35 Q70 40 80 30" 
-                          fill="none" stroke="url(#draco-body-grad)" stroke-width="8" 
-                          stroke-linecap="round" filter="url(#draco-shadow)"/>
-                    
-                    <!-- Dragon head -->
-                    <ellipse cx="78" cy="32" rx="12" ry="8" fill="url(#draco-body-grad)" 
-                             filter="url(#draco-shadow)" transform="rotate(-20 78 32)"/>
-                    
-                    <!-- Dragon eye -->
-                    <circle cx="80" cy="30" r="2" fill="#dc2626">
-                        <animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite"/>
+                    <circle cx="50" cy="50" r="45" fill="url(#dracotailBg)" stroke="#a78bfa" stroke-width="2"/>
+                    <!-- Fusion vortex behind dragon -->
+                    <circle cx="50" cy="50" r="20" fill="none" stroke="url(#dracotailFusion)" stroke-width="2" opacity="0.6">
+                        <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="8s" repeatCount="indefinite"/>
                     </circle>
-                    
-                    <!-- Wing membranes -->
-                    <path d="M65 25 Q75 15 85 20 Q80 30 70 35 Q67 30 65 25" 
-                          fill="url(#draco-wing-grad)" opacity="0.8" filter="url(#draco-shadow)"/>
-                    <path d="M55 35 Q65 25 75 30 Q70 40 60 45 Q57 40 55 35" 
-                          fill="url(#draco-wing-grad)" opacity="0.7" filter="url(#draco-shadow)"/>
-                    
-                    <!-- Fusion energy core -->
-                    <circle cx="50" cy="50" r="8" fill="url(#draco-fusion-grad)" 
-                            filter="url(#draco-glow)" opacity="0.9">
-                        <animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/>
+                    <circle cx="50" cy="50" r="15" fill="none" stroke="#c4b5fd" stroke-width="1.5" opacity="0.4" stroke-dasharray="8 4">
+                        <animateTransform attributeName="transform" type="rotate" values="0 50 50;-360 50 50" dur="6s" repeatCount="indefinite"/>
+                    </circle>
+                    <!-- Serpentine dragon body spiraling -->
+                    <g filter="url(#dracotailGlow)">
+                        <path d="M25 75 Q30 65 35 58 Q42 48 50 50 Q58 52 65 45 Q72 38 78 28" 
+                              fill="none" stroke="url(#dracotailBody)" stroke-width="7" stroke-linecap="round"/>
+                        <!-- Dragon tail tip -->
+                        <path d="M18 80 L25 75 L22 82 Z" fill="#fbbf24"/>
+                        <!-- Dragon head -->
+                        <ellipse cx="80" cy="26" rx="9" ry="6" fill="url(#dracotailBody)" transform="rotate(-25 80 26)"/>
+                        <!-- Dragon eye -->
+                        <circle cx="83" cy="24" r="2" fill="#a78bfa">
+                            <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Dragon horn -->
+                        <path d="M85 20 L90 12 L87 21" fill="#f59e0b"/>
+                        <!-- Dragon whiskers -->
+                        <line x1="86" y1="28" x2="92" y2="30" stroke="#fcd34d" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="87" y1="31" x2="93" y2="35" stroke="#fcd34d" stroke-width="1" stroke-linecap="round"/>
+                    </g>
+                    <!-- Scales along body -->
+                    <g opacity="0.8">
+                        <ellipse cx="32" cy="65" rx="2.5" ry="1.5" fill="#fef3c7" transform="rotate(-35 32 65)"/>
+                        <ellipse cx="42" cy="54" rx="2.5" ry="1.5" fill="#fef3c7" transform="rotate(-20 42 54)"/>
+                        <ellipse cx="56" cy="48" rx="2.5" ry="1.5" fill="#fef3c7" transform="rotate(10 56 48)"/>
+                        <ellipse cx="68" cy="42" rx="2.5" ry="1.5" fill="#fef3c7" transform="rotate(-15 68 42)"/>
+                    </g>
+                    <!-- Fusion core at center -->
+                    <circle cx="50" cy="50" r="6" fill="url(#dracotailFusion)" filter="url(#dracotailGlow)">
+                        <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
                         <animate attributeName="opacity" values="0.9;0.6;0.9" dur="2s" repeatCount="indefinite"/>
                     </circle>
-                    
-                    <!-- Fusion particles -->
-                    <circle cx="45" cy="45" r="2" fill="#a5b4fc" opacity="0.8">
-                        <animateTransform attributeName="transform" type="rotate" 
-                                        values="0 50 50;360 50 50" dur="4s" repeatCount="indefinite"/>
+                    <!-- Fusion sparkles -->
+                    <circle cx="42" cy="42" r="1.5" fill="#e0e7ff">
+                        <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
                     </circle>
-                    <circle cx="55" cy="55" r="2" fill="#a5b4fc" opacity="0.8">
-                        <animateTransform attributeName="transform" type="rotate" 
-                                        values="0 50 50;-360 50 50" dur="4s" repeatCount="indefinite"/>
+                    <circle cx="58" cy="58" r="1.5" fill="#e0e7ff">
+                        <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite"/>
                     </circle>
-                    <circle cx="55" cy="45" r="1.5" fill="#e0e7ff" opacity="0.9">
-                        <animateTransform attributeName="transform" type="rotate" 
-                                        values="0 50 50;360 50 50" dur="3s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="45" cy="55" r="1.5" fill="#e0e7ff" opacity="0.9">
-                        <animateTransform attributeName="transform" type="rotate" 
-                                        values="0 50 50;-360 50 50" dur="3s" repeatCount="indefinite"/>
-                    </circle>
-                    
-                    <!-- Tactical formation indicators -->
-                    <path d="M25 25 L30 20 L35 25 L30 30 Z" fill="#6366f1" opacity="0.7">
-                        <animate attributeName="opacity" values="0.7;0.3;0.7" dur="2.5s" repeatCount="indefinite"/>
-                    </path>
-                    <path d="M75 75 L80 70 L85 75 L80 80 Z" fill="#6366f1" opacity="0.7">
-                        <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite"/>
-                    </path>
-                    
-                    <!-- Conservative energy lines -->
-                    <path d="M20 50 Q35 45 50 50 Q65 55 80 50" 
-                          fill="none" stroke="#a5b4fc" stroke-width="1.5" 
-                          opacity="0.6" stroke-dasharray="3 2">
-                        <animate attributeName="stroke-dashoffset" values="0;10" dur="2s" repeatCount="indefinite"/>
-                    </path>
-                    
-                    <!-- Resource management indicator -->
-                    <rect x="15" y="70" width="20" height="4" rx="2" fill="#34d399" opacity="0.7">
-                        <animate attributeName="width" values="20;15;20" dur="3s" repeatCount="indefinite"/>
-                    </rect>
-                    <rect x="65" y="15" width="20" height="4" rx="2" fill="#34d399" opacity="0.7">
-                        <animate attributeName="width" values="15;20;15" dur="3s" repeatCount="indefinite"/>
-                    </rect>
-                    
-                    <!-- Draconic scales along tail -->
-                    <ellipse cx="35" cy="65" rx="2" ry="1" fill="#f59e0b" opacity="0.8" transform="rotate(-30 35 65)"/>
-                    <ellipse cx="45" cy="55" rx="2" ry="1" fill="#f59e0b" opacity="0.8" transform="rotate(-20 45 55)"/>
-                    <ellipse cx="55" cy="45" rx="2" ry="1" fill="#f59e0b" opacity="0.8" transform="rotate(-10 55 45)"/>
-                    
-                    <!-- Fusion symbol -->
-                    <path d="M48 48 L52 48 M50 46 L50 50" stroke="#ffffff" stroke-width="1.5" 
-                          opacity="0.9" stroke-linecap="round">
-                        <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.5s" repeatCount="indefinite"/>
-                    </path>
+                    <text x="50" y="92" text-anchor="middle" font-size="9" fill="#fbbf24" font-weight="bold">DRACOTAIL</text>
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -29130,32 +29087,65 @@ const archetypes = [
     },
     {
         name: "Tri-Brigade",
-        description: "A deck featuring Beast, Beast-Warrior, and Winged Beast monsters that excel at Link summoning and banishing cards through their tribal synergy.",
+        description: "A WIND/EARTH Beast, Beast-Warrior, and Winged Beast archetype that Link Summons by banishing monsters of those Types from field or GY, enabling powerful toolbox plays with Shuraig for banishment removal and Bearbrumm/Ferrijit for recursion.",
         filepath: "pages/Tri-Brigade Deck Analysis.html",
-        icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="triBrigadeGradient" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#8b4513;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#228b22;stop-opacity:1" />
+                            <radialGradient id="triBrigadeBg" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#365314" stop-opacity="1"/>
+                                <stop offset="100%" stop-color="#14532d" stop-opacity="1"/>
                             </radialGradient>
+                            <linearGradient id="triBrigadeGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fcd34d"/>
+                                <stop offset="100%" stop-color="#b45309"/>
+                            </linearGradient>
+                            <linearGradient id="triBrigadeGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#84cc16"/>
+                                <stop offset="100%" stop-color="#22c55e"/>
+                            </linearGradient>
                             <filter id="triBrigadeGlow">
-                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                <feMerge> 
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                <feMerge>
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
                         </defs>
-                        <circle cx="50" cy="50" r="40" fill="url(#triBrigadeGradient)" filter="url(#triBrigadeGlow)">
-                            <animate attributeName="r" values="40;42;40" dur="2s" repeatCount="indefinite"/>
+                        <circle cx="50" cy="50" r="45" fill="url(#triBrigadeBg)" stroke="#84cc16" stroke-width="2"/>
+                        <!-- Military insignia triangle -->
+                        <path d="M50 18 L78 70 L22 70 Z" fill="none" stroke="url(#triBrigadeGold)" stroke-width="3" filter="url(#triBrigadeGlow)"/>
+                        <!-- Three beast emblems -->
+                        <g filter="url(#triBrigadeGlow)">
+                            <!-- Top - Winged Beast (Shuraig) -->
+                            <circle cx="50" cy="28" r="10" fill="#1e3a1e" stroke="url(#triBrigadeGreen)" stroke-width="2"/>
+                            <path d="M45 28 L50 23 L55 28 M43 30 L50 25 L57 30" stroke="#84cc16" stroke-width="1.5" fill="none"/>
+                            <!-- Bottom Left - Beast-Warrior (Ferrijit) -->
+                            <circle cx="30" cy="62" r="10" fill="#1e3a1e" stroke="url(#triBrigadeGreen)" stroke-width="2"/>
+                            <path d="M26 62 L30 57 L34 62 L30 67 Z" fill="#84cc16"/>
+                            <line x1="30" y1="55" x2="30" y2="69" stroke="#fcd34d" stroke-width="1.5"/>
+                            <!-- Bottom Right - Beast (Bearbrumm) -->
+                            <circle cx="70" cy="62" r="10" fill="#1e3a1e" stroke="url(#triBrigadeGreen)" stroke-width="2"/>
+                            <circle cx="70" cy="60" r="4" fill="#84cc16"/>
+                            <ellipse cx="67" cy="58" rx="1.5" ry="2" fill="#fcd34d"/>
+                            <ellipse cx="73" cy="58" rx="1.5" ry="2" fill="#fcd34d"/>
+                        </g>
+                        <!-- Link arrows connecting -->
+                        <g opacity="0.7">
+                            <line x1="42" y1="35" x2="33" y2="52" stroke="#fcd34d" stroke-width="2" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+                            </line>
+                            <line x1="58" y1="35" x2="67" y2="52" stroke="#fcd34d" stroke-width="2" stroke-linecap="round">
+                                <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/>
+                            </line>
+                            <line x1="40" y1="62" x2="60" y2="62" stroke="#fcd34d" stroke-width="2" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+                            </line>
+                        </g>
+                        <!-- Center emblem -->
+                        <circle cx="50" cy="50" r="6" fill="url(#triBrigadeGold)" opacity="0.9">
+                            <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="35" cy="40" r="8" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <circle cx="50" cy="30" r="8" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <circle cx="65" cy="40" r="8" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <line x1="35" y1="40" x2="50" y2="30" stroke="#ffffff" stroke-width="2"/>
-                        <line x1="50" y1="30" x2="65" y2="40" stroke="#ffffff" stroke-width="2"/>
-                        <line x1="35" y1="40" x2="65" y2="40" stroke="#ffffff" stroke-width="2"/>
-                        <text x="50" y="85" text-anchor="middle" font-size="9" fill="#8b4513" font-weight="bold">Tri-Brigade</text>
+                        <text x="50" y="92" text-anchor="middle" font-size="8" fill="#84cc16" font-weight="bold">TRI-BRIGADE</text>
                     </svg>`
     },
     {
