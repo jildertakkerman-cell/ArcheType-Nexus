@@ -25847,42 +25847,58 @@ const archetypes = [
     },
     {
         name: 'Radiant Typhoon',
-        description: 'A Dragon archetype that unleashes stormy winds and lightning for devastating control and removal.',
+        description: 'A WIND archetype that synergizes with Mystical Space Typhoon, featuring Quick-Play Spells that recover when destroyed by MST and monsters that Special Summon or trigger powerful effects when Quick-Play Spells are activated, enabling aggressive swarming and disruption.',
         filepath: 'pages/Radiant Typhoon Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="radianTyphoonAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#0284c7" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#0369a1" stop-opacity="0.9"/>
+                            <radialGradient id="radiantTyphoonBg" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#0c4a6e" stop-opacity="1"/>
+                                <stop offset="100%" stop-color="#082f49" stop-opacity="1"/>
                             </radialGradient>
-                            <linearGradient id="radianTyphoonGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#38bdf8"/>
-                                <stop offset="100%" stop-color="#0369a1"/>
+                            <linearGradient id="radiantTyphoonWind" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#7dd3fc"/>
+                                <stop offset="50%" stop-color="#38bdf8"/>
+                                <stop offset="100%" stop-color="#0ea5e9"/>
                             </linearGradient>
-                            <filter id="radianTyphoonShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                            <filter id="radiantTyphoonGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                                 <feMerge>
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#radianTyphoonAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#radianTyphoonShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#radianTyphoonGlow)" stroke="#0369a1" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#0ea5e9" stroke="#0284c7" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#0284c7" stroke="#0369a1" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="75" r="2" fill="#0284c7">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        <circle cx="50" cy="50" r="45" fill="url(#radiantTyphoonBg)" stroke="#0ea5e9" stroke-width="2"/>
+                        <!-- Outer cyclone spiral -->
+                        <path d="M50 15 Q75 25 80 50 Q75 75 50 80 Q25 75 20 50 Q25 25 50 30" 
+                              fill="none" stroke="url(#radiantTyphoonWind)" stroke-width="3" stroke-linecap="round" filter="url(#radiantTyphoonGlow)">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="8s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Middle cyclone spiral -->
+                        <path d="M50 25 Q68 32 72 50 Q68 68 50 72 Q32 68 28 50 Q32 32 50 38" 
+                              fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" opacity="0.8">
+                            <animateTransform attributeName="transform" type="rotate" values="360 50 50;0 50 50" dur="6s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Inner cyclone spiral -->
+                        <path d="M50 35 Q60 40 63 50 Q60 60 50 63 Q40 60 37 50 Q40 40 50 45" 
+                              fill="none" stroke="#7dd3fc" stroke-width="2" stroke-linecap="round" opacity="0.9">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="4s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Eye of the storm -->
+                        <circle cx="50" cy="50" r="6" fill="#e0f2fe" opacity="0.9">
+                            <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#0369a1">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        <!-- Wind particles -->
+                        <circle cx="30" cy="35" r="2" fill="#7dd3fc" opacity="0.7">
+                            <animate attributeName="cx" values="30;70;30" dur="3s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="35;65;35" dur="3s" repeatCount="indefinite"/>
                         </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#0369a1" font-weight="bold">Radiant Typhoon</text>
+                        <circle cx="70" cy="65" r="1.5" fill="#38bdf8" opacity="0.6">
+                            <animate attributeName="cx" values="70;30;70" dur="4s" repeatCount="indefinite"/>
+                            <animate attributeName="cy" values="65;35;65" dur="4s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="95" text-anchor="middle" font-size="7" fill="#e0f2fe" font-weight="bold">RADIANT TYPHOON</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -26257,42 +26273,72 @@ const archetypes = [
     },
     {
         name: 'Ritual Beast',
-        description: 'A Beast-Warrior archetype that performs rituals to unleash powerful fusions for dominant control.',
+        description: 'A WIND Psychic/Beast archetype featuring Spirit Tamers and their Spirit Beast partners that Contact Fuse into Ritual Beast Ulti- Fusions, capable of de-fusing back to the field for resource loops, banishing, and non-targeting disruption.',
         filepath: 'pages/Ritual Beast Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="ritualBeastAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#5b21b6" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#4c1d95" stop-opacity="0.9"/>
+                            <radialGradient id="ritualBeastBg" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#064e3b" stop-opacity="1"/>
+                                <stop offset="100%" stop-color="#022c22" stop-opacity="1"/>
                             </radialGradient>
-                            <linearGradient id="ritualBeastGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#a78bfa"/>
-                                <stop offset="100%" stop-color="#4c1d95"/>
+                            <linearGradient id="ritualBeastSpirit" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#6ee7b7"/>
+                                <stop offset="50%" stop-color="#34d399"/>
+                                <stop offset="100%" stop-color="#10b981"/>
                             </linearGradient>
-                            <filter id="ritualBeastShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                            <linearGradient id="ritualBeastBond" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#a7f3d0"/>
+                                <stop offset="100%" stop-color="#059669"/>
+                            </linearGradient>
+                            <filter id="ritualBeastGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                                 <feMerge>
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#ritualBeastAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#ritualBeastShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#ritualBeastGlow)" stroke="#4c1d95" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#7c3aed" stroke="#5b21b6" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#5b21b6" stroke="#4c1d95" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="45" fill="url(#ritualBeastBg)" stroke="#10b981" stroke-width="2"/>
+                        <!-- Tamer silhouette (left) -->
+                        <g filter="url(#ritualBeastGlow)">
+                            <circle cx="32" cy="38" r="6" fill="url(#ritualBeastSpirit)" opacity="0.9"/>
+                            <path d="M32 44 L32 60 M32 48 L26 55 M32 48 L38 55 M32 60 L28 72 M32 60 L36 72" 
+                                  stroke="url(#ritualBeastSpirit)" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#5b21b6">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        <!-- Beast silhouette (right) -->
+                        <g filter="url(#ritualBeastGlow)">
+                            <ellipse cx="68" cy="50" rx="12" ry="8" fill="url(#ritualBeastSpirit)" opacity="0.85"/>
+                            <path d="M56 50 Q52 45 54 40" stroke="url(#ritualBeastSpirit)" stroke-width="2" stroke-linecap="round" fill="none"/>
+                            <path d="M80 50 L88 48 M80 52 L88 54" stroke="url(#ritualBeastSpirit)" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="62" cy="48" r="2" fill="#d1fae5"/>
+                            <path d="M68 58 L64 68 M68 58 L72 68" stroke="url(#ritualBeastSpirit)" stroke-width="2" stroke-linecap="round"/>
+                        </g>
+                        <!-- Spiritual bond connection -->
+                        <path d="M38 45 Q50 30 62 45" stroke="url(#ritualBeastBond)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8">
+                            <animate attributeName="stroke-dasharray" values="0 100;50 50;0 100" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M38 55 Q50 70 62 55" stroke="url(#ritualBeastBond)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6">
+                            <animate attributeName="stroke-dasharray" values="50 50;0 100;50 50" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Fusion energy center -->
+                        <circle cx="50" cy="50" r="8" fill="#6ee7b7" opacity="0.3">
+                            <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#4c1d95">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        <circle cx="50" cy="50" r="4" fill="#a7f3d0">
+                            <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite"/>
                         </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4c1d95" font-weight="bold">Ritual Beast</text>
+                        <!-- Spirit particles -->
+                        <circle cx="45" cy="35" r="1.5" fill="#d1fae5" opacity="0.8">
+                            <animate attributeName="opacity" values="0.4;1;0.4" dur="1.2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="55" cy="35" r="1.5" fill="#d1fae5" opacity="0.8">
+                            <animate attributeName="opacity" values="1;0.4;1" dur="1.2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="50" cy="75" r="1" fill="#6ee7b7" opacity="0.7">
+                            <animate attributeName="cy" values="75;70;75" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="92" text-anchor="middle" font-size="8" fill="#a7f3d0" font-weight="bold">RITUAL BEAST</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -26558,42 +26604,75 @@ const archetypes = [
     },
     {
         name: 'Ryzeal',
-        description: 'A Dragon archetype that harnesses celestial ryzeal energies for divine control and disruption.',
+        description: 'A LIGHT Pyro and FIRE Thunder Rank 4 Xyz archetype featuring easy self-Special Summoning monsters that lock you into Rank 4 Xyz plays, culminating in powerful boss monsters like Ryzeal Detonator for destruction and Duo Drive for searching.',
         filepath: 'pages/Ryzeal Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="ryzealAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#5b21b6" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#4c1d95" stop-opacity="0.9"/>
+                            <radialGradient id="ryzealBg" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#1c1917" stop-opacity="1"/>
+                                <stop offset="100%" stop-color="#0c0a09" stop-opacity="1"/>
                             </radialGradient>
-                            <linearGradient id="ryzealGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#a78bfa"/>
-                                <stop offset="100%" stop-color="#4c1d95"/>
+                            <linearGradient id="ryzealEnergy" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fbbf24"/>
+                                <stop offset="50%" stop-color="#f97316"/>
+                                <stop offset="100%" stop-color="#ea580c"/>
                             </linearGradient>
-                            <filter id="ryzealShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                            <linearGradient id="ryzealCircuit" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#fdba74"/>
+                                <stop offset="100%" stop-color="#fb923c"/>
+                            </linearGradient>
+                            <filter id="ryzealGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                                 <feMerge>
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#ryzealAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#ryzealShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#ryzealGlow)" stroke="#4c1d95" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#7c3aed" stroke="#5b21b6" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#5b21b6" stroke="#4c1d95" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="45" fill="url(#ryzealBg)" stroke="#ea580c" stroke-width="2"/>
+                        <!-- Central Xyz overlay unit -->
+                        <g filter="url(#ryzealGlow)">
+                            <polygon points="50,20 75,40 75,60 50,80 25,60 25,40" fill="none" stroke="url(#ryzealEnergy)" stroke-width="2.5">
+                                <animate attributeName="stroke-dasharray" values="0 200;100 100;0 200" dur="4s" repeatCount="indefinite"/>
+                            </polygon>
+                            <polygon points="50,30 65,42 65,58 50,70 35,58 35,42" fill="url(#ryzealEnergy)" opacity="0.3">
+                                <animate attributeName="opacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite"/>
+                            </polygon>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#5b21b6">
+                        <!-- Circuit connections -->
+                        <path d="M25 40 L15 35 M25 60 L15 65" stroke="url(#ryzealCircuit)" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M75 40 L85 35 M75 60 L85 65" stroke="url(#ryzealCircuit)" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M50 20 L50 10 M50 80 L50 90" stroke="url(#ryzealCircuit)" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Energy nodes -->
+                        <circle cx="15" cy="35" r="3" fill="#fbbf24" opacity="0.9">
                             <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#4c1d95">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        <circle cx="85" cy="35" r="3" fill="#fbbf24" opacity="0.9">
+                            <animate attributeName="r" values="4;2;4" dur="1.5s" repeatCount="indefinite"/>
                         </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#4c1d95" font-weight="bold">Ryzeal</text>
+                        <circle cx="15" cy="65" r="3" fill="#f97316" opacity="0.8">
+                            <animate attributeName="r" values="3;2;3" dur="1.2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="85" cy="65" r="3" fill="#f97316" opacity="0.8">
+                            <animate attributeName="r" values="2;3;2" dur="1.2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Central core -->
+                        <circle cx="50" cy="50" r="10" fill="#fbbf24" opacity="0.4">
+                            <animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="50" cy="50" r="5" fill="#fef3c7">
+                            <animate attributeName="r" values="4;6;4" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Rank 4 indicator -->
+                        <text x="50" y="53" text-anchor="middle" font-size="10" fill="#0c0a09" font-weight="bold">4</text>
+                        <!-- Electric sparks -->
+                        <path d="M40 25 L42 30 L38 32" stroke="#fef3c7" stroke-width="1.5" fill="none" opacity="0.8">
+                            <animate attributeName="opacity" values="0.3;1;0.3" dur="0.8s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M60 25 L58 30 L62 32" stroke="#fef3c7" stroke-width="1.5" fill="none" opacity="0.8">
+                            <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite"/>
+                        </path>
+                        <text x="50" y="92" text-anchor="middle" font-size="10" fill="#fdba74" font-weight="bold">RYZEAL</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -26753,43 +26832,77 @@ const archetypes = [
 
     },
     {
-        name: 'X-saber',
-        description: 'A Warrior archetype that wields sabers for swift strikes and tactical control.',
-        filepath: 'pages/X-saber Deck Analysis.html',
+        name: 'X-Saber',
+        description: 'A Warrior and Beast-Warrior archetype that specializes in Synchro Summoning, featuring swarming capabilities, hand destruction effects, and powerful boss monsters like XX-Saber Gottoms and XX-Saber Hyunlei.',
+        filepath: 'pages/X-Saber Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="xSaberAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#6b7280" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#4b5563" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#374151" stop-opacity="0.9"/>
+                            <radialGradient id="xSaberBg" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#1c1917" stop-opacity="1"/>
+                                <stop offset="100%" stop-color="#292524" stop-opacity="1"/>
                             </radialGradient>
-                            <linearGradient id="xSaberGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#9ca3af"/>
-                                <stop offset="100%" stop-color="#374151"/>
+                            <linearGradient id="xSaberBlade1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#f5f5f4"/>
+                                <stop offset="30%" stop-color="#a8a29e"/>
+                                <stop offset="70%" stop-color="#d6d3d1"/>
+                                <stop offset="100%" stop-color="#78716c"/>
                             </linearGradient>
-                            <filter id="xSaberShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                            <linearGradient id="xSaberBlade2" x1="100%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#f5f5f4"/>
+                                <stop offset="30%" stop-color="#a8a29e"/>
+                                <stop offset="70%" stop-color="#d6d3d1"/>
+                                <stop offset="100%" stop-color="#78716c"/>
+                            </linearGradient>
+                            <linearGradient id="xSaberHilt" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#92400e"/>
+                                <stop offset="50%" stop-color="#78350f"/>
+                                <stop offset="100%" stop-color="#451a03"/>
+                            </linearGradient>
+                            <filter id="xSaberGlow">
+                                <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
                                 <feMerge>
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#xSaberAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#xSaberShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#xSaberGlow)" stroke="#374151" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#6b7280" stroke="#4b5563" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#4b5563" stroke="#374151" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="45" fill="url(#xSaberBg)" stroke="#78716c" stroke-width="2"/>
+                        <!-- Saber 1 (top-left to bottom-right) -->
+                        <g filter="url(#xSaberGlow)">
+                            <!-- Blade 1 -->
+                            <path d="M20 20 L55 55" stroke="url(#xSaberBlade1)" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M20 20 L55 55" stroke="#e7e5e4" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                            <!-- Hilt 1 -->
+                            <rect x="55" y="55" width="18" height="6" rx="2" fill="url(#xSaberHilt)" transform="rotate(45 55 55)"/>
+                            <!-- Guard 1 -->
+                            <ellipse cx="55" cy="55" rx="6" ry="3" fill="#d97706" transform="rotate(45 55 55)"/>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#4b5563">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        <!-- Saber 2 (top-right to bottom-left) -->
+                        <g filter="url(#xSaberGlow)">
+                            <!-- Blade 2 -->
+                            <path d="M80 20 L45 55" stroke="url(#xSaberBlade2)" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M80 20 L45 55" stroke="#e7e5e4" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                            <!-- Hilt 2 -->
+                            <rect x="45" y="55" width="18" height="6" rx="2" fill="url(#xSaberHilt)" transform="rotate(-45 45 55)"/>
+                            <!-- Guard 2 -->
+                            <ellipse cx="45" cy="55" rx="6" ry="3" fill="#d97706" transform="rotate(-45 45 55)"/>
+                        </g>
+                        <!-- Energy core at intersection -->
+                        <circle cx="50" cy="50" r="8" fill="#fbbf24" opacity="0.3">
+                            <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#374151">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        <circle cx="50" cy="50" r="4" fill="#fcd34d">
+                            <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite"/>
                         </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#374151" font-weight="bold">X-saber</text>
+                        <!-- Spark effects -->
+                        <circle cx="35" cy="35" r="1.5" fill="#fef3c7" opacity="0.8">
+                            <animate attributeName="opacity" values="0.4;1;0.4" dur="1s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="65" cy="35" r="1.5" fill="#fef3c7" opacity="0.8">
+                            <animate attributeName="opacity" values="1;0.4;1" dur="1s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="92" text-anchor="middle" font-size="9" fill="#d6d3d1" font-weight="bold">X-SABER</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -28304,37 +28417,77 @@ const archetypes = [
 
     {
         name: 'The Weather',
-        description: 'A meteorological Aqua archetype that controls the battlefield with weather-altering effects.',
+        description: 'A LIGHT Fairy archetype featuring Weather Painters that banish themselves to activate effects granted by their Continuous Spell/Trap "Canvas" cards, returning during the next Standby Phase for resource-efficient control and recursion loops.',
         filepath: 'pages/The Weather Deck Analysis.html',
-        icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="theWeatherGradient" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color="#87ceeb;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color="#708090;stop-opacity:1" />
+                            <radialGradient id="weatherBg" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#e0f2fe" stop-opacity="1"/>
+                                <stop offset="100%" stop-color="#0284c7" stop-opacity="1"/>
                             </radialGradient>
-                            <filter id="theWeatherShadow" x="-50%" y="-50%" width="200%" height="200%">
-                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+                            <linearGradient id="weatherSun" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fef08a"/>
+                                <stop offset="100%" stop-color="#fbbf24"/>
+                            </linearGradient>
+                            <linearGradient id="weatherPalette" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fef3c7"/>
+                                <stop offset="100%" stop-color="#d4d4d8"/>
+                            </linearGradient>
+                            <filter id="weatherGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#theWeatherGradient)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#theWeatherShadow)">
-                            <ellipse cx="50" cy="40" rx="15" ry="8" fill="#708090" stroke="#87ceeb" stroke-width="2"/>
-                            <circle cx="40" cy="35" r="3" fill="#ffffff"/>
-                            <circle cx="50" cy="32" r="3" fill="#ffffff"/>
-                            <circle cx="60" cy="35" r="3" fill="#ffffff"/>
-                            <path d="M 35 50 Q 50 45 65 50 Q 50 55 35 50" stroke="#87ceeb" stroke-width="3" fill="none">
-                                <animate attributeName="d" values="M 35 50 Q 50 45 65 50 Q 50 55 35 50;M 35 55 Q 50 50 65 55 Q 50 60 35 55;M 35 50 Q 50 45 65 50 Q 50 55 35 50" dur="2s" repeatCount="indefinite"/>
-                            </path>
+                        <circle cx="50" cy="50" r="45" fill="url(#weatherBg)" stroke="#38bdf8" stroke-width="2"/>
+                        <!-- Painter's palette -->
+                        <ellipse cx="50" cy="55" rx="28" ry="20" fill="url(#weatherPalette)" stroke="#a1a1aa" stroke-width="1.5"/>
+                        <ellipse cx="30" cy="50" rx="5" ry="4" fill="#fff"/>
+                        <!-- Weather paint blobs on palette -->
+                        <g filter="url(#weatherGlow)">
+                            <!-- Sun paint -->
+                            <circle cx="35" cy="45" r="6" fill="url(#weatherSun)">
+                                <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            <!-- Rain paint -->
+                            <circle cx="50" cy="42" r="5" fill="#60a5fa"/>
+                            <!-- Cloud paint -->
+                            <circle cx="65" cy="45" r="5" fill="#e5e7eb"/>
+                            <!-- Snow paint -->
+                            <circle cx="60" cy="58" r="4" fill="#dbeafe"/>
+                            <!-- Thunder paint -->
+                            <circle cx="40" cy="60" r="4" fill="#a855f7"/>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#87ceeb">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="65" cy="75" r="2" fill="#87ceeb">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="10" fill="#87ceeb" font-weight="bold">The Weather</text>
+                        <!-- Paintbrush -->
+                        <g transform="rotate(-30 75 25)">
+                            <rect x="70" y="20" width="4" height="25" rx="1" fill="#a16207"/>
+                            <path d="M70 45 L72 55 L74 45" fill="#71717a"/>
+                            <ellipse cx="72" cy="56" rx="3" ry="4" fill="#38bdf8"/>
+                        </g>
+                        <!-- Sun rays -->
+                        <g opacity="0.6">
+                            <line x1="35" y1="38" x2="35" y2="32" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+                            </line>
+                            <line x1="29" y1="40" x2="25" y2="36" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round">
+                                <animate attributeName="opacity" values="1;0.4;1" dur="1.5s" repeatCount="indefinite"/>
+                            </line>
+                            <line x1="41" y1="40" x2="45" y2="36" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0.4;1;0.4" dur="1.2s" repeatCount="indefinite"/>
+                            </line>
+                        </g>
+                        <!-- Rain drops -->
+                        <line x1="48" y1="35" x2="46" y2="30" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round">
+                            <animate attributeName="y1" values="35;38;35" dur="0.8s" repeatCount="indefinite"/>
+                            <animate attributeName="y2" values="30;33;30" dur="0.8s" repeatCount="indefinite"/>
+                        </line>
+                        <line x1="52" y1="33" x2="50" y2="28" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round">
+                            <animate attributeName="y1" values="33;36;33" dur="0.6s" repeatCount="indefinite"/>
+                            <animate attributeName="y2" values="28;31;28" dur="0.6s" repeatCount="indefinite"/>
+                        </line>
+                        <text x="50" y="92" text-anchor="middle" font-size="9" fill="#0ea5e9" font-weight="bold">THE WEATHER</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -28700,34 +28853,73 @@ const archetypes = [
     },
     {
         name: "Time Thief",
-        description: "A deck that manipulates time through Pendulum summoning and effects that steal turns or accelerate plays, featuring thief-like monsters with time-themed abilities.",
+        description: "A DARK Machine and Psychic Rank 4 Xyz archetype featuring steampunk thieves that attach opponent's cards as Xyz Materials, with Time Thief Redoer providing non-targeting banishment and recycling while Perpetua enables loops and recovery.",
         filepath: "pages/Time Thief Deck Analysis.html",
-        icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="timeGradient" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#9370db;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#4b0082;stop-opacity:1" />
+                            <radialGradient id="timeThiefBg" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#1e1b4b" stop-opacity="1"/>
+                                <stop offset="100%" stop-color="#0f0a1e" stop-opacity="1"/>
                             </radialGradient>
-                            <filter id="timeGlow">
-                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                <feMerge> 
+                            <linearGradient id="timeThiefGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fcd34d"/>
+                                <stop offset="50%" stop-color="#d97706"/>
+                                <stop offset="100%" stop-color="#b45309"/>
+                            </linearGradient>
+                            <linearGradient id="timeThiefPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#a78bfa"/>
+                                <stop offset="100%" stop-color="#7c3aed"/>
+                            </linearGradient>
+                            <filter id="timeThiefGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                <feMerge>
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
                         </defs>
-                        <circle cx="50" cy="50" r="40" fill="url(#timeGradient)" filter="url(#timeGlow)">
-                            <animate attributeName="r" values="40;42;40" dur="2s" repeatCount="indefinite"/>
+                        <circle cx="50" cy="50" r="45" fill="url(#timeThiefBg)" stroke="#7c3aed" stroke-width="2"/>
+                        <!-- Pocket watch outer ring -->
+                        <circle cx="50" cy="48" r="28" fill="none" stroke="url(#timeThiefGold)" stroke-width="3"/>
+                        <circle cx="50" cy="48" r="24" fill="#1e1b4b" stroke="#d97706" stroke-width="1.5"/>
+                        <!-- Watch crown -->
+                        <rect x="46" y="16" width="8" height="6" rx="2" fill="url(#timeThiefGold)"/>
+                        <circle cx="50" cy="16" r="3" fill="#fcd34d"/>
+                        <!-- Clock face marks -->
+                        <line x1="50" y1="28" x2="50" y2="32" stroke="#fcd34d" stroke-width="2"/>
+                        <line x1="50" y1="64" x2="50" y2="68" stroke="#fcd34d" stroke-width="2"/>
+                        <line x1="30" y1="48" x2="34" y2="48" stroke="#fcd34d" stroke-width="2"/>
+                        <line x1="66" y1="48" x2="70" y2="48" stroke="#fcd34d" stroke-width="2"/>
+                        <!-- Clock hands -->
+                        <g filter="url(#timeThiefGlow)">
+                            <line x1="50" y1="48" x2="50" y2="34" stroke="url(#timeThiefPurple)" stroke-width="2" stroke-linecap="round">
+                                <animateTransform attributeName="transform" type="rotate" values="0 50 48;-360 50 48" dur="10s" repeatCount="indefinite"/>
+                            </line>
+                            <line x1="50" y1="48" x2="60" y2="48" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round">
+                                <animateTransform attributeName="transform" type="rotate" values="0 50 48;-360 50 48" dur="2s" repeatCount="indefinite"/>
+                            </line>
+                        </g>
+                        <circle cx="50" cy="48" r="3" fill="#fcd34d"/>
+                        <!-- Thief mask silhouette -->
+                        <path d="M35 42 Q40 38 50 38 Q60 38 65 42 L63 46 Q55 44 50 44 Q45 44 37 46 Z" 
+                              fill="url(#timeThiefPurple)" opacity="0.8"/>
+                        <!-- Gear decorations -->
+                        <g opacity="0.6">
+                            <circle cx="22" cy="70" r="8" fill="none" stroke="#d97706" stroke-width="1.5">
+                                <animateTransform attributeName="transform" type="rotate" values="0 22 70;360 22 70" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="78" cy="70" r="6" fill="none" stroke="#d97706" stroke-width="1.5">
+                                <animateTransform attributeName="transform" type="rotate" values="360 78 70;0 78 70" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        <!-- Sparkle effects -->
+                        <circle cx="35" cy="35" r="1.5" fill="#fef3c7" opacity="0.8">
+                            <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="50" cy="50" r="35" fill="none" stroke="#ffffff" stroke-width="2"/>
-                        <line x1="50" y1="50" x2="50" y2="25" stroke="#ffffff" stroke-width="2">
-                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="60s" repeatCount="indefinite"/>
-                        </line>
-                        <line x1="50" y1="50" x2="65" y2="50" stroke="#ffffff" stroke-width="2">
-                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="1s" repeatCount="indefinite"/>
-                        </line>
-                        <circle cx="50" cy="50" r="3" fill="#ffffff"/>
-                        <text x="50" y="85" text-anchor="middle" font-size="10" fill="#9370db" font-weight="bold">Time Thief</text>
+                        <circle cx="65" cy="35" r="1.5" fill="#fef3c7" opacity="0.8">
+                            <animate attributeName="opacity" values="1;0.4;1" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="92" text-anchor="middle" font-size="9" fill="#a78bfa" font-weight="bold">TIME THIEF</text>
                     </svg>`
     },
     {
@@ -28759,30 +28951,68 @@ const archetypes = [
     },
     {
         name: "Tistina",
-        description: "A deck featuring mermaid-like monsters that can manipulate the field with their water-based effects and special summoning capabilities.",
+        description: "A LIGHT Fairy and Fiend archetype featuring crystalline divine beings, centered around the Tistina monster that Special Summons itself when your Set card is destroyed, with powerful field wipes and synergy with Demise and Ruin Ritual monsters.",
         filepath: "pages/Tistina Deck Analysis.html",
-        icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="tistinaGradient" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#00bfff;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#0080ff;stop-opacity:1" />
+                            <radialGradient id="tistinaBg" cx="50%" cy="30%" r="70%">
+                                <stop offset="0%" stop-color="#fef3c7" stop-opacity="1"/>
+                                <stop offset="50%" stop-color="#a855f7" stop-opacity="0.8"/>
+                                <stop offset="100%" stop-color="#1e1b4b" stop-opacity="1"/>
                             </radialGradient>
+                            <linearGradient id="tistinaCrystal" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fef9c3"/>
+                                <stop offset="30%" stop-color="#fde047"/>
+                                <stop offset="70%" stop-color="#c084fc"/>
+                                <stop offset="100%" stop-color="#7c3aed"/>
+                            </linearGradient>
+                            <linearGradient id="tistinaWing" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.9"/>
+                                <stop offset="100%" stop-color="#a855f7" stop-opacity="0.6"/>
+                            </linearGradient>
                             <filter id="tistinaGlow">
-                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                <feMerge> 
+                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                                <feMerge>
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
                         </defs>
-                        <circle cx="50" cy="50" r="40" fill="url(#tistinaGradient)" filter="url(#tistinaGlow)">
-                            <animate attributeName="r" values="40;42;40" dur="2s" repeatCount="indefinite"/>
+                        <circle cx="50" cy="50" r="45" fill="url(#tistinaBg)" stroke="#c084fc" stroke-width="2"/>
+                        <!-- Divine wings -->
+                        <g filter="url(#tistinaGlow)" opacity="0.8">
+                            <path d="M50 45 Q30 35 15 50 Q25 55 35 50 Q40 48 50 50" fill="url(#tistinaWing)">
+                                <animate attributeName="d" values="M50 45 Q30 35 15 50 Q25 55 35 50 Q40 48 50 50;M50 45 Q28 30 12 48 Q22 55 35 48 Q40 46 50 50;M50 45 Q30 35 15 50 Q25 55 35 50 Q40 48 50 50" dur="3s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M50 45 Q70 35 85 50 Q75 55 65 50 Q60 48 50 50" fill="url(#tistinaWing)">
+                                <animate attributeName="d" values="M50 45 Q70 35 85 50 Q75 55 65 50 Q60 48 50 50;M50 45 Q72 30 88 48 Q78 55 65 48 Q60 46 50 50;M50 45 Q70 35 85 50 Q75 55 65 50 Q60 48 50 50" dur="3s" repeatCount="indefinite"/>
+                            </path>
+                        </g>
+                        <!-- Central crystal/figure -->
+                        <g filter="url(#tistinaGlow)">
+                            <path d="M50 25 L60 45 L55 70 L50 75 L45 70 L40 45 Z" fill="url(#tistinaCrystal)" stroke="#fef9c3" stroke-width="1"/>
+                            <!-- Head -->
+                            <circle cx="50" cy="32" r="8" fill="#fef9c3" stroke="#fde047" stroke-width="1"/>
+                            <!-- Halo -->
+                            <ellipse cx="50" cy="22" rx="12" ry="4" fill="none" stroke="#fde047" stroke-width="1.5" opacity="0.8">
+                                <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+                            </ellipse>
+                        </g>
+                        <!-- Light/Dark duality orbs -->
+                        <circle cx="30" cy="65" r="5" fill="#fef9c3" opacity="0.9">
+                            <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
                         </circle>
-                        <path d="M30 30 Q50 20 70 30 L70 50 Q50 60 30 50 Z" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <path d="M30 50 Q50 40 70 50 L70 70 Q50 80 30 70 Z" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <circle cx="45" cy="35" r="3" fill="#00bfff"/>
-                        <circle cx="55" cy="35" r="3" fill="#00bfff"/>
-                        <text x="50" y="90" text-anchor="middle" font-size="10" fill="#00bfff" font-weight="bold">Tistina</text>
+                        <circle cx="70" cy="65" r="5" fill="#7c3aed" opacity="0.9">
+                            <animate attributeName="opacity" values="1;0.6;1" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Sparkles -->
+                        <circle cx="25" cy="40" r="1.5" fill="#fef9c3" opacity="0.8">
+                            <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="75" cy="40" r="1.5" fill="#c084fc" opacity="0.8">
+                            <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="92" text-anchor="middle" font-size="10" fill="#fde047" font-weight="bold">TISTINA</text>
                     </svg>`
     },
     {
