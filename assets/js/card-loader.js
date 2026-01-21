@@ -695,32 +695,52 @@ window.CardLoader = (function () {
             if (localResponse.ok) {
                 const localData = await localResponse.json();
 
-                if (localData[format]) {
+                // Check if there's a scheduled next banlist and if its effective date has passed
+                let activeBanlistData = localData[format];
+                let banlistVersion = 'current';
+
+                if (localData.nextBanlist && localData.nextBanlist.effectiveDate && localData.nextBanlist[format]) {
+                    const effectiveDate = new Date(localData.nextBanlist.effectiveDate);
+                    const now = new Date();
+
+                    // Use next banlist if we've reached or passed the effective date
+                    if (now >= effectiveDate) {
+                        activeBanlistData = localData.nextBanlist[format];
+                        banlistVersion = `scheduled (effective ${localData.nextBanlist.effectiveDate})`;
+                        console.log(`[CardLoader] Using scheduled ${format.toUpperCase()} banlist effective from ${localData.nextBanlist.effectiveDate}`);
+                    } else {
+                        // Calculate days until the new banlist takes effect
+                        const daysUntil = Math.ceil((effectiveDate - now) / (1000 * 60 * 60 * 24));
+                        console.log(`[CardLoader] New ${format.toUpperCase()} banlist scheduled in ${daysUntil} day(s) (${localData.nextBanlist.effectiveDate})`);
+                    }
+                }
+
+                if (activeBanlistData) {
                     const banlistMap = {};
 
                     // Process forbidden cards
-                    if (localData[format].forbidden && Array.isArray(localData[format].forbidden)) {
-                        localData[format].forbidden.forEach(cardName => {
+                    if (activeBanlistData.forbidden && Array.isArray(activeBanlistData.forbidden)) {
+                        activeBanlistData.forbidden.forEach(cardName => {
                             banlistMap[cardName] = 'Forbidden';
                         });
                     }
 
                     // Process limited cards
-                    if (localData[format].limited && Array.isArray(localData[format].limited)) {
-                        localData[format].limited.forEach(cardName => {
+                    if (activeBanlistData.limited && Array.isArray(activeBanlistData.limited)) {
+                        activeBanlistData.limited.forEach(cardName => {
                             banlistMap[cardName] = 'Limited';
                         });
                     }
 
                     // Process semi-limited cards
-                    if (localData[format].semiLimited && Array.isArray(localData[format].semiLimited)) {
-                        localData[format].semiLimited.forEach(cardName => {
+                    if (activeBanlistData.semiLimited && Array.isArray(activeBanlistData.semiLimited)) {
+                        activeBanlistData.semiLimited.forEach(cardName => {
                             banlistMap[cardName] = 'Semi-Limited';
                         });
                     }
 
                     banlistCache[format] = banlistMap;
-                    console.log(`[CardLoader] ${format.toUpperCase()} banlist loaded from local JSON. Last updated: ${localData.lastUpdated || 'unknown'}. Total restricted cards:`, Object.keys(banlistMap).length);
+                    console.log(`[CardLoader] ${format.toUpperCase()} banlist loaded (${banlistVersion}). Total restricted cards:`, Object.keys(banlistMap).length);
                     return banlistMap;
                 }
             }
