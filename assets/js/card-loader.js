@@ -3140,6 +3140,96 @@ window.CardLoader = (function () {
         container.innerHTML = html;
     }
 
+    /**
+     * Render compact deck resource buttons (for placement under header)
+     * Creates sleek, inline pill-style buttons for YGOProDeck and Discord links
+     * @param {string} containerId - ID of container element
+     * @param {string} archetypeName - Name of the archetype
+     * @param {Object} options - Configuration options
+     * @param {boolean} [options.showAllDecks=true] - Whether to show the "All Decks" button
+     */
+    async function renderDeckResourcesCompact(containerId, archetypeName, options = {}) {
+        console.log(`[CardLoader] renderDeckResourcesCompact called for: ${archetypeName}`);
+        const container = document.getElementById(containerId);
+
+        if (!container) {
+            console.error(`[CardLoader] Deck Resources container with ID "${containerId}" not found`);
+            return;
+        }
+
+        const showAllDecks = options.showAllDecks !== false;
+
+        // Check if archetype exists by fetching cards
+        const archetypeCards = await fetchArchetypeCards(archetypeName);
+        const archetypeExists = archetypeCards.length > 0;
+
+        // Fetch Discord links
+        const discordLinks = await fetchDiscordLinks();
+        const discordUrl = discordLinks[archetypeName.toLowerCase()] || null;
+
+        let competitiveUrl, casualUrl;
+
+        if (archetypeExists) {
+            const encodedArchetypeName = encodeURIComponent(archetypeName);
+            competitiveUrl = `https://ygoprodeck.com/deck-search/?tournament=tier-2&_sft_post_tag=${encodedArchetypeName}&offset=0`;
+            casualUrl = `https://ygoprodeck.com/deck-search/?_sft_post_tag=${encodedArchetypeName}&offset=0`;
+        } else {
+            const loadedCardNames = Object.keys(cardDataCache);
+            let encodedCardName;
+
+            if (loadedCardNames.length > 0) {
+                encodedCardName = encodeURIComponent(loadedCardNames[0]);
+            } else {
+                encodedCardName = encodeURIComponent(archetypeName);
+            }
+
+            competitiveUrl = `https://ygoprodeck.com/deck-search/?tournament=tier-2&cardcode=${encodedCardName}%7C&offset=0`;
+            casualUrl = `https://ygoprodeck.com/deck-search/?cardcode=${encodedCardName}%7C&offset=0`;
+        }
+
+        // Generate compact button HTML
+        const html = `
+            <div class="deck-resources-compact flex flex-wrap justify-center gap-2 md:gap-3">
+                <!-- Competitive Decks Button -->
+                <a href="${competitiveUrl}" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white 
+                          bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700
+                          shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
+                   title="View tournament and tiered deck lists for ${archetypeName}">
+                    <i class="fas fa-trophy text-xs"></i>
+                    <span>Tournament Decks</span>
+                </a>
+                
+                ${showAllDecks ? `
+                <!-- All Decks Button -->
+                <a href="${casualUrl}" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white 
+                          bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700
+                          shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
+                   title="View all community-submitted deck lists for ${archetypeName}">
+                    <i class="fas fa-users text-xs"></i>
+                    <span>Community Decks</span>
+                </a>
+                ` : ''}
+                
+                ${discordUrl ? `
+                <!-- Discord Button -->
+                <a href="${discordUrl}" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white 
+                          bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700
+                          shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
+                   title="Join the ${archetypeName} Discord community">
+                    <i class="fab fa-discord text-xs"></i>
+                    <span>Discord</span>
+                </a>
+                ` : ''}
+            </div>
+        `;
+
+
+        container.innerHTML = html;
+    }
+
     // ========================================
     // ARCHETYPE CARDS BROWSER (Supabase)
     // ========================================
@@ -3389,7 +3479,7 @@ window.CardLoader = (function () {
                 ${isCompact ? '<div class="absolute -inset-0.5 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>' : ''}
                 
                 <i class="fas fa-layer-group ${iconSize} relative z-10 group-hover:rotate-6 transition-transform"></i>
-                <span class="relative z-10 tracking-wide">${options.buttonText || `View All ${archetypeName} Cards`}</span>
+                <span class="relative z-10 tracking-wide">${options.buttonText || `Browse ${archetypeName} Cards`}</span>
                 ${isCompact ? '' : '<i class="fas fa-external-link-alt text-sm opacity-70 relative z-10"></i>'}
             </a>
         `;
@@ -3558,6 +3648,7 @@ window.CardLoader = (function () {
         configure,
         showPopup,
         renderDeckSearchSection,
+        renderDeckResourcesCompact,
         cardDataCache,
         // Banlist methods
         fetchBanlistData,
