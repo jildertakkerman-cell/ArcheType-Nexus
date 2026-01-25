@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMX: The Bio-Fusion Paradigm</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <!-- Tailwind CSS -->
+    <link href="../output.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Teko:wght@400;600;700&family=Roboto:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- CardLoader -->
+    <!-- Supabase CDN for gameplay tags (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+    <style>
+        :root {
+            --bio-bg: #050a05;
+            --bio-panel: #0d140d;
+            --bio-green: #39ff14;
+            /* Neon Green */
+            --bio-yellow: #fff01f;
+            /* Warning Yellow */
+            --bio-red: #ff3333;
+            /* Danger Red */
+            --bio-text: #e0f0e0;
+            --bio-dim: #608060;
+            --scan-line: rgba(57, 255, 20, 0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bio-bg);
+            color: var(--bio-text);
+            background-image:
+                linear-gradient(rgba(5, 10, 5, 0.95), rgba(5, 10, 5, 0.95)),
+                url('data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M0 20 L40 20 M20 0 L20 40" stroke="%2339ff14" stroke-width="0.5" opacity="0.1"/></svg>');
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-tech {
+            font-family: 'Teko', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .font-mono-code {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* --- Panel Styling --- */
+        .lab-panel {
+            background-color: var(--bio-panel);
+            border: 1px solid #1a331a;
+            border-left: 3px solid var(--bio-green);
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .lab-panel:hover {
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.15);
+            border-color: var(--bio-green);
+        }
+
+        .lab-panel.hazard {
+            border-left-color: var(--bio-yellow);
+        }
+
+        .lab-panel.danger {
+            border-left-color: var(--bio-red);
+        }
+
+        /* Scanline Effect */
+        .lab-panel::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* --- Headers --- */
+        .section-header {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--bio-dim);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header i {
+            margin-right: 1rem;
+            color: var(--bio-green);
+        }
+
+        /* --- DNA Banner --- */
+        .dna-banner {
+            position: relative;
+            height: 300px;
+            background: #000;
+            border-radius: 8px;
+            border: 1px solid var(--bio-green);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 50px rgba(57, 255, 20, 0.1);
+        }
+
+        #dna-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.7;
+        }
+
+        .banner-overlay {
+            z-index: 2;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2rem;
+            border: 1px solid var(--bio-green);
+            backdrop-filter: blur(4px);
+        }
+
+        /* --- Buttons --- */
+        .btn-lab {
+            background: rgba(57, 255, 20, 0.05);
+            border: 1px solid var(--bio-green);
+            color: var(--bio-green);
+            font-family: 'Share Tech Mono', monospace;
+            padding: 0.5rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-lab:hover,
+        .btn-lab.active {
+            background: var(--bio-green);
+            color: #000;
+            box-shadow: 0 0 15px var(--bio-green);
+        }
+
+        /* --- Card Placeholders --- */
+        .card-placeholder {
+            background: #0a110a;
+            border: 1px dashed var(--bio-dim);
+            color: var(--bio-dim);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 180px;
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            position: relative;
+        }
+
+        /* --- Link Hints --- */
+        .gmx-link {
+            color: var(--bio-yellow);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--bio-yellow);
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .gmx-link:hover {
+            color: var(--bio-green);
+            border-color: var(--bio-green);
+            text-shadow: 0 0 8px var(--bio-green);
+        }
+
+        /* --- Matchup Bars --- */
+        .stat-bar-container {
+            background-color: #1a221a;
+            height: 6px;
+            width: 100%;
+            margin-top: 5px;
+            border-radius: 3px;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            background: var(--bio-green);
+            width: 0%;
+            transition: width 1s ease-in-out;
+            border-radius: 3px;
+            box-shadow: 0 0 5px var(--bio-green);
+        }
+
+        .stat-bar-fill.warning {
+            background: var(--bio-yellow);
+            box-shadow: 0 0 5px var(--bio-yellow);
+        }
+
+        .stat-bar-fill.danger {
+            background: var(--bio-red);
+            box-shadow: 0 0 5px var(--bio-red);
+        }
+
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--bio-green);
+            border: 1px solid var(--bio-green);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+        }
+
+        .ygo-home-button:hover {
+            box-shadow: 0 0 20px var(--bio-green);
+            transform: rotate(90deg);
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+</head>
+
+<body class="p-4 md:p-8">
+
+    <!-- Home Button -->
+    <a href="../index.html" class="ygo-home-button" title="Return to Lab">
+        <i class="fas fa-dna"></i>
+    </a>
+
+    <div class="container mx-auto max-w-7xl">
+
+        <!-- Header -->
+        <header class="dna-banner mb-12">
+            <canvas id="dna-canvas"></canvas>
+            <div class="banner-overlay">
+                <h1 class="text-5xl md:text-7xl font-bold text-white mb-2 tracking-tighter"
+                    style="text-shadow: 0 0 15px var(--bio-green);">GMX</h1>
+                <p class="text-xl md:text-2xl font-mono-code text-green-300">GENETIC MODIFICATION X // BURST PROTOCOL
+                </p>
+                <div class="mt-4 flex gap-4 justify-center text-xs font-mono-code tracking-widest text-gray-400">
+                    <span><i class="fas fa-flask mr-1"></i>PROJECT: VELOX</span>
+                    <span><i class="fas fa-exclamation-triangle mr-1 text-yellow-400"></i>VOLATILE</span>
+                    <span><i class="fas fa-database mr-1"></i>EXCAVATION</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Deck Resources & Card Browser (Dock Design) -->
+        <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                <div id="deck-resources-compact" class="flex items-center"></div>
+
+                <!-- Vertical Divider (Desktop) -->
+                <div class="hidden md:block w-px h-6 bg-indigo-500/30 mx-1"></div>
+
+                <div id="archetype-cards-browser" class="flex justify-center"></div>
+            </div>
+            <!-- Glow effect behind -->
+            <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none">
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <section class="mb-12 animate-fadeIn">
+            <div class="lab-panel p-8">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-grow">
+                        <div class="section-header border-none p-0 m-0 mb-4">
+                            <i class="fas fa-microscope text-3xl"></i>
+                            <h2 class="text-3xl font-bold text-white">Executive Summary: Controlled Chaos</h2>
+                        </div>
+                        <p class="text-gray-300 leading-relaxed text-lg mb-4">
+                            The <strong>GMX (Genetic Modification X)</strong> archetype represents a paradigm shift for
+                            Dinosaur strategies. Moving away from the linear "Go Second, Break Board" philosophy of
+                            Ultimate Conductor Tyranno, GMX introduces a sophisticated <strong
+                                class="text-green-400">Midrange Control</strong> engine driven by deck excavation and LP
+                            resource exchange.
+                        </p>
+                        <p class="text-gray-300 leading-relaxed">
+                            The core mechanic, the <em class="text-yellow-300">Excavation-Fusion Protocol</em>, treats
+                            your Life Points as a transactional currency. By paying LP to excavate materials directly
+                            from the deck, GMX achieves explosive, non-linear plays. It sacrifices stability for high
+                            ceilings, utilizing "Researchers" to initiate experiments and "Specimens" to dominate the
+                            board.
+                        </p>
+                        <div class="mt-6 p-4 bg-black/30 border border-green-500/30 rounded">
+                            <p class="font-mono-code text-sm text-green-400">
+                                <i class="fas fa-link mr-2"></i>ACCESS DATABASE:
+                                <a href="Card-Browser.html?archetype=GMX" class="gmx-link">
+                                    INITIALIZE GMX CARD INDEX &raquo;
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Key Stats -->
+                    <div class="md:w-1/3 border-l border-gray-800 pl-6 flex flex-col justify-center font-mono-code">
+                        <div class="mb-4">
+                            <span class="text-gray-500 text-xs block mb-1">COMPLEXITY</span>
+                            <div class="flex items-center gap-2">
+                                <div class="stat-bar-container bg-gray-800 h-2 w-32">
+                                    <div class="stat-bar-fill warning" style="width: 85%"></div>
+                                </div>
+                                <span class="text-yellow-400 font-bold">HIGH</span>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <span class="text-gray-500 text-xs block mb-1">RECURSION</span>
+                            <div class="flex items-center gap-2">
+                                <div class="stat-bar-container bg-gray-800 h-2 w-32">
+                                    <div class="stat-bar-fill" style="width: 90%"></div>
+                                </div>
+                                <span class="text-green-400 font-bold">S+</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 text-xs block mb-1">RISK FACTOR</span>
+                            <div class="flex items-center gap-2">
+                                <div class="stat-bar-container bg-gray-800 h-2 w-32">
+                                    <div class="stat-bar-fill danger" style="width: 75%"></div>
+                                </div>
+                                <span class="text-red-400 font-bold">VOLATILE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Personnel & Specimens -->
+        <section class="mb-16">
+            <div class="section-header">
+                <i class="fas fa-users-cog"></i>
+                <h2 class="text-2xl font-bold text-white">Lab Personnel & Specimens</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Selande -->
+                <div class="lab-panel p-4 flex flex-col group">
+                    <div id="selande-img" class="card-placeholder mb-4 group-hover:border-green-500 transition-colors">
+                        LOADING BIO-DATA...</div>
+                    <h3 class="text-xl text-white">Researcher Selande</h3>
+                    <span class="text-xs text-green-400 font-mono-code mb-2">THE STARTER (LVL 3)</span>
+                    <p class="text-sm text-gray-400 flex-grow">Summons ANY low-level Dino from Deck (including
+                        Babycerasaurus). Shuffles self to negate face-up cards.</p>
+                </div>
+
+                <!-- Kimridge -->
+                <div class="lab-panel p-4 flex flex-col group">
+                    <div id="kimridge-img" class="card-placeholder mb-4 group-hover:border-green-500 transition-colors">
+                        LOADING
+                        BIO-DATA...</div>
+                    <h3 class="text-xl text-white">Chairman Kimridge</h3>
+                    <span class="text-xs text-yellow-400 font-mono-code mb-2">CONSISTENCY (LVL 4)</span>
+                    <p class="text-sm text-gray-400 flex-grow">Searches the Fusion Spell by shuffling itself back into
+                        Deck, increasing monster density for excavation.</p>
+                </div>
+
+                <!-- Daneen -->
+                <div class="lab-panel p-4 flex flex-col group">
+                    <div id="daneen-img" class="card-placeholder mb-4 group-hover:border-green-500 transition-colors">
+                        LOADING BIO-DATA...</div>
+                    <h3 class="text-xl text-white">Returned Dino Daneen</h3>
+                    <span class="text-xs text-green-400 font-mono-code mb-2">THE CONNECTOR (LVL 1)</span>
+                    <p class="text-sm text-gray-400 flex-grow">Searches any GMX monster on Special Summon. Acts as a
+                        Polymerization on legs.</p>
+                </div>
+
+                <!-- VELOX -->
+                <div class="lab-panel danger p-4 flex flex-col group">
+                    <div id="velox-img" class="card-placeholder mb-4 group-hover:border-red-500 transition-colors">
+                        LOADING BIO-DATA...</div>
+                    <h3 class="text-xl text-white">GMX - VELOX</h3>
+                    <span class="text-xs text-red-500 font-mono-code mb-2">APEX PREDATOR (LVL 8)</span>
+                    <p class="text-sm text-gray-400 flex-grow">Quick Effect: Pop a card & Excavate. Summons monsters
+                        during opponent's turn to trigger effects.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Spell Theory -->
+        <section class="mb-16">
+            <div class="lab-panel hazard p-8">
+                <div class="flex flex-col md:flex-row gap-8 items-center">
+                    <div class="md:w-1/4">
+                        <div id="experiment-img" class="card-placeholder border-yellow-500/50">LOADING SPELL...
+                        </div>
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-2xl font-bold text-yellow-400 mb-2">Applied Experiment #55</h3>
+                        <p class="font-mono-code text-sm text-gray-500 mb-4">CLASSIFICATION: NORMAL SPELL // VOLATILE
+                        </p>
+                        <p class="text-gray-300 mb-4">
+                            The engine's combustion chamber. Unlike <em class="text-gray-500">Branded Fusion</em>, this
+                            card does not send specific targets. Instead, it <strong>Excavates</strong> until it finds
+                            valid materials.
+                        </p>
+                        <ul class="space-y-2 text-sm text-gray-400 font-mono-code">
+                            <li class="flex items-center"><i class="fas fa-caret-right text-yellow-400 mr-2"></i>COST:
+                                400 LP per excavated card.</li>
+                            <li class="flex items-center"><i class="fas fa-caret-right text-yellow-400 mr-2"></i>RISK:
+                                Vulnerable to Ash Blossom (sends from Deck).</li>
+                            <li class="flex items-center"><i class="fas fa-caret-right text-yellow-400 mr-2"></i>REWARD:
+                                Non-linear resource generation; no "Garnets" required.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Combo Operations -->
+        <section class="mb-16">
+            <div class="section-header">
+                <i class="fas fa-network-wired"></i>
+                <h2 class="text-2xl font-bold text-white">Operational Maneuvers</h2>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="flex flex-wrap gap-4 mb-6">
+                <button class="btn-lab active" onclick="showCombo('standard', this)">The Selande Standard</button>
+                <button class="btn-lab" onclick="showCombo('scrap', this)">Scrap-Dino Integration</button>
+            </div>
+
+            <!-- Selande Standard -->
+            <div id="combo-standard" class="lab-panel p-6">
+                <h3 class="text-xl text-green-400 font-bold mb-4">Protocol: 1.5 Card Starter</h3>
+                <ol class="space-y-4 font-mono-code text-sm md:text-base text-gray-300">
+                    <li class="flex gap-4">
+                        <span class="text-green-500 font-bold">01.</span>
+                        <span>Normal Summon <strong class="text-white">GMX Researcher Selande</strong>. Effect: Summon
+                            <strong class="text-white">Returned Dino Daneen</strong> from Deck.</span>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="text-green-500 font-bold">02.</span>
+                        <span><strong class="text-white">Daneen</strong> Effect: Search <strong class="text-white">GMX
+                                Chairman Kimridge</strong>.</span>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="text-green-500 font-bold">03.</span>
+                        <span>Hand Effect: Reveal <strong class="text-white">Kimridge</strong>, search <strong
+                                class="text-yellow-300">Applied Experiment #55</strong>, shuffle Kimridge back
+                            (Stacking
+                            Deck).</span>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="text-green-500 font-bold">04.</span>
+                        <span>Activate <strong class="text-yellow-300">Applied Experiment #55</strong>. Excavate until
+                            GMX + Dino found. Fusion Summon <strong class="text-red-400">GMX - VELOX</strong>.</span>
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Scrap Dino -->
+            <div id="combo-scrap" class="lab-panel p-6 hidden">
+                <h3 class="text-xl text-green-400 font-bold mb-4">Protocol: Scrap Integration</h3>
+                <p class="text-xs text-gray-500 mb-4 font-mono-code">REQUIRES: Oviraptor + Misc/Baby</p>
+                <ol class="space-y-4 font-mono-code text-sm md:text-base text-gray-300">
+                    <li class="flex gap-4">
+                        <span class="text-green-500 font-bold">01.</span>
+                        <span>Standard Scrap Line: Oviraptor -> Misc -> Archosaur -> Pill.</span>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="text-green-500 font-bold">02.</span>
+                        <span>Key Divergence: Use <strong class="text-white">Petiteranodon</strong> effect to summon
+                            <strong class="text-white">Selande</strong> from Deck.</span>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="text-green-500 font-bold">03.</span>
+                        <span>Selande -> Daneen -> Kimridge -> Search Fusion Spell.</span>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="text-green-500 font-bold">04.</span>
+                        <span>Fusion Summon <strong class="text-white">GMX - Alos</strong> (Extender). Use Alos to
+                            revive a Dino for Link plays.</span>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="text-green-500 font-bold">05.</span>
+                        <span>End Board: UCT + Apollousa + GMX Setup.</span>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- End Board Visualization -->
+        <section class="mb-16">
+            <div class="section-header">
+                <i class="fas fa-chess-board"></i>
+                <h2 class="text-2xl font-bold text-white">End Board Configuration</h2>
+            </div>
+
+            <div class="lab-panel p-8 relative min-h-[400px] flex flex-col items-center justify-center">
+                <!-- Background Grid -->
+                <div class="absolute inset-0 z-0 opacity-10"
+                    style="background-image: radial-gradient(#39ff14 1px, transparent 1px); background-size: 20px 20px;">
+                </div>
+
+                <h3 class="relative z-10 text-white font-mono-code mb-8 tracking-widest">STATE: SELANDE CONTROL</h3>
+
+                <div class="flex flex-wrap justify-center gap-6 relative z-10">
+                    <!-- VELOX -->
+                    <div class="flex flex-col items-center group">
+                        <div id="velox-board"
+                            class="w-28 h-40 card-placeholder border-red-500 shadow-[0_0_15px_rgba(255,51,51,0.3)] bg-black">
+                            VELOX</div>
+                        <span
+                            class="mt-2 text-xs font-bold text-red-400 bg-black/50 px-2 rounded border border-red-500">INTERRUPTION</span>
+                    </div>
+
+                    <!-- Selande -->
+                    <div class="flex flex-col items-center group">
+                        <div id="selande-board"
+                            class="w-28 h-40 card-placeholder border-green-500 shadow-[0_0_15px_rgba(57,255,20,0.3)] bg-black">
+                            SELANDE</div>
+                        <span
+                            class="mt-2 text-xs font-bold text-green-400 bg-black/50 px-2 rounded border border-green-500">NEGATE</span>
+                    </div>
+
+                    <!-- Daneen -->
+                    <div class="flex flex-col items-center group">
+                        <div id="daneen-board"
+                            class="w-28 h-40 card-placeholder border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.3)] bg-black">
+                            DANEEN</div>
+                        <span
+                            class="mt-2 text-xs font-bold text-blue-400 bg-black/50 px-2 rounded border border-blue-400">BODY/FUSION</span>
+                    </div>
+                </div>
+
+                <div class="mt-8 relative z-10 text-center max-w-2xl">
+                    <p class="text-sm text-gray-400 bg-black/60 p-4 border border-gray-700 rounded">
+                        <strong class="text-white">Analysis:</strong> This board provides 2 layers of interaction.
+                        <strong class="text-red-400">VELOX</strong> pops a card and excavates (potentially summoning
+                        Noma for another pop). <strong class="text-green-400">Selande</strong> shuffles itself to negate
+                        face-up cards (Floodgates/Spells).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis (New Section) -->
+        <section class="mb-16 animate-fadeIn">
+            <div class="section-header">
+                <i class="fas fa-chart-line"></i>
+                <h2 class="text-2xl font-bold text-white">Competitive Analysis</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Strengths -->
+                <div class="lab-panel p-6 border-l-4 border-l-green-500">
+                    <h3 class="text-xl font-bold text-white mb-4">System Strengths</h3>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span><strong>Midrange Flexibility:</strong> Unlike traditional "OTK or Bust" Dinos, GMX can
+                                play a resource game via Alos recursion.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span><strong>Deck Thinning:</strong> Excavation + Search chains rapidly thin the deck,
+                                increasing the odds of drawing Side Deck cards like Hand Traps.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span><strong>Dino Synergy:</strong> Selande summoning <em>Babycerasaurus</em> from Deck is
+                                a
+                                massive consistency boost for hybrid builds.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Weaknesses -->
+                <div class="lab-panel p-6 border-l-4 border-l-red-500">
+                    <h3 class="text-xl font-bold text-white mb-4">Critical Failures</h3>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li class="flex items-start">
+                            <i class="fas fa-times text-red-500 mt-1 mr-2"></i>
+                            <span><strong>Ash Blossom Vulnerability:</strong> <em>Applied Experiment #55</em> sends from
+                                Deck. A well-timed Ash can end the turn if no extenders are held.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-times text-red-500 mt-1 mr-2"></i>
+                            <span><strong>LP Management:</strong> Bad RNG on excavation can leave you within lethal
+                                range
+                                of Burn decks or Time Rules.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-times text-red-500 mt-1 mr-2"></i>
+                            <span><strong>Droll & Lock Bird:</strong> The Daneen -> Kimridge -> Spell search chain
+                                folds
+                                to Droll immediately.</span>
+                        </li>
+                    </ul>
+                </div>
+
+
+        </section>
+
+        <!-- Banlist Status -->
+        <section class="mb-12 animate-fadeIn">
+            <div class="section-header">
+                <i class="fas fa-gavel"></i>
+                <h2 class="text-2xl font-bold text-white">Regulation Status</h2>
+            </div>
+            <div id="banlist-status" class="lab-panel p-6">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- Deck Resources -->
+        <section class="mb-12 animate-fadeIn">
+            <div id="deck-resources-container" class="lab-panel p-6">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Combo Tab Logic
+        function showCombo(id, btn) {
+            document.querySelectorAll('[id^="combo-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('combo-' + id).classList.remove('hidden');
+            document.querySelectorAll('.btn-lab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // Canvas Animation: DNA Helix
+        document.addEventListener("DOMContentLoaded", function () {
+            const canvas = document.getElementById("dna-canvas");
+            const ctx = canvas.getContext("2d");
+            let t = 0;
+
+            function resize() {
+                canvas.width = canvas.parentElement.offsetWidth;
+                canvas.height = canvas.parentElement.offsetHeight;
+            }
+            window.addEventListener("resize", resize);
+            resize();
+
+            function drawDNA() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Adjust phase/speed
+                t += 0.02;
+
+                const strands = 2;
+                const amplitude = 50;
+                const period = 0.02;
+                const particleCount = 40;
+                const xSpacing = canvas.width / particleCount;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const x = i * xSpacing;
+                    // Strand 1
+                    const y1 = canvas.height / 2 + Math.sin(x * period + t) * amplitude;
+                    // Strand 2
+                    const y2 = canvas.height / 2 + Math.sin(x * period + t + Math.PI) * amplitude;
+
+                    // Draw Particles
+                    ctx.beginPath();
+                    ctx.arc(x, y1, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = "#39ff14"; // Green
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x, y2, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = "#fff01f"; // Yellow
+                    ctx.fill();
+
+                    // Draw connectors occasionally
+                    if (i % 3 === 0) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, y1);
+                        ctx.lineTo(x, y2);
+                        ctx.strokeStyle = "rgba(57, 255, 20, 0.2)";
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+                requestAnimationFrame(drawDNA);
+            }
+            drawDNA();
+        });
+
+        // Card Loader Integration
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load Card Images
+            CardLoader.loadCards({
+                'selande-img': 'GMX Researcher Selande',
+                'kimridge-img': 'GMX Chairman Kimridge',
+                'daneen-img': 'Returned Dino Daneen',
+                'velox-img': 'GMX - VELOX',
+                'experiment-img': 'GMX Applied Experiment #55',
+                'selande-board': 'GMX Researcher Selande',
+                'daneen-board': 'Returned Dino Daneen',
+                'velox-board': 'GMX - VELOX'
+            });
+
+            // Render Banlist
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'GMX Researcher Selande', 'GMX Chairman Kimridge', 'GMX - VELOX',
+                'Miscellaneousaurus', 'Souleating Oviraptor', 'Babycerasaurus',
+                'Fossil Dig', 'Ash Blossom & Joyous Spring'
+            ], {
+                archetypeName: 'GMX (Genetic Modification X)',
+                archetypeTraits: {
+                    coreMechanic: 'Excavation Fusion & LP Exchange',
+                    supportReliance: 'High (Generic Dinosaur Support)',
+                    adaptability: 'Tier 2 (Midrange Control)',
+                    resilience: 'Moderate (Vulnerable to Ash)'
+                }
+            });
+
+            // Render compact deck resources in header
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'GMX');
+
+            // Render archetype cards browser (compact mode at top)
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'GMX', {
+                compact: true,
+                buttonColor: 'from-green-600 to-lime-600',
+                buttonHoverColor: 'from-green-700 to-lime-700'
+            });
+        });
+    </script>
+    <!-- Cookie Consent Banner -->
+    <script src="../assets/js/cookie-consent.js"></script>
+    <script src="../assets/js/cookie-consent-config.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Patron: The Divine Convergence</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <!-- Tailwind CSS -->
+    <link href="../output.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600&family=Roboto+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- CardLoader -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+
+    <style>
+        :root {
+            --bg-void: #050505;
+            --bg-card: #0f1014;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+
+            /* Archetype Colors */
+            --color-divine: #ffd700;
+            /* Gold - Main */
+            --color-fusion: #a855f7;
+            /* Purple - Artmage */
+            --color-synchro: #ef4444;
+            /* Red - Elvennotes (Fire) */
+            --color-xyz: #10b981;
+            /* Green/Black - DoomZ (Wind/Machine) */
+            --color-link: #3b82f6;
+            /* Blue - Generic */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-void);
+            color: var(--text-main);
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.05), transparent 70%),
+                linear-gradient(rgba(5, 5, 5, 0.95), rgba(5, 5, 5, 0.95)),
+                url('data:image/svg+xml;utf8,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><circle cx="1" cy="1" r="1" fill="%23333" /></svg>');
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-divine {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+        }
+
+        .font-tech {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* Card Styling */
+        .patron-card {
+            background-color: var(--bg-card);
+            border: 1px solid #333;
+            border-top: 2px solid var(--color-divine);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .patron-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.1);
+            border-color: var(--color-divine);
+        }
+
+        /* Dimension Variants */
+        .patron-card.artmage {
+            border-top-color: var(--color-fusion);
+        }
+
+        .patron-card.artmage:hover {
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.15);
+            border-color: var(--color-fusion);
+        }
+
+        .patron-card.doomz {
+            border-top-color: var(--color-xyz);
+        }
+
+        .patron-card.doomz:hover {
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15);
+            border-color: var(--color-xyz);
+        }
+
+        .patron-card.elvennotes {
+            border-top-color: var(--color-synchro);
+        }
+
+        .patron-card.elvennotes:hover {
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.15);
+            border-color: var(--color-synchro);
+        }
+
+        /* Banner */
+        .banner-container {
+            position: relative;
+            height: 300px;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #333;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        #convergence-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            background: rgba(5, 5, 5, 0.6);
+            padding: 2rem;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Links */
+        .divine-link {
+            color: var(--color-divine);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--color-divine);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .divine-link:hover {
+            color: #fff;
+            text-shadow: 0 0 10px var(--color-divine);
+        }
+
+        /* Logic Blocks (AI Canvas Integration) */
+        .logic-node {
+            background: #1a1b26;
+            border-left: 4px solid #555;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            border-radius: 0 0.5rem 0.5rem 0;
+            transition: transform 0.2s ease;
+        }
+
+        .logic-node:hover {
+            transform: translateX(5px);
+            background: #20212e;
+        }
+
+        .logic-node::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 2rem;
+            width: 8px;
+            height: 8px;
+            background: #555;
+            border-radius: 50%;
+        }
+
+        .logic-node.starter {
+            border-left-color: var(--color-divine);
+        }
+
+        .logic-node.starter::before {
+            background: var(--color-divine);
+        }
+
+        .logic-node.fusion {
+            border-left-color: var(--color-fusion);
+        }
+
+        .logic-node.fusion::before {
+            background: var(--color-fusion);
+        }
+
+        .logic-node.xyz {
+            border-left-color: var(--color-xyz);
+        }
+
+        .logic-node.xyz::before {
+            background: var(--color-xyz);
+        }
+
+        .logic-node.synchro {
+            border-left-color: var(--color-synchro);
+        }
+
+        .logic-node.synchro::before {
+            background: var(--color-synchro);
+        }
+
+        .logic-node.combo {
+            border-left-color: #fff;
+            border-left-width: 6px;
+        }
+
+        .logic-node.combo::before {
+            background: #fff;
+            box-shadow: 0 0 10px #fff;
+        }
+
+        .tag-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-family: 'Roboto Mono', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            margin-right: 5px;
+        }
+
+        /* Card Placeholders */
+        .card-placeholder {
+            background: #111;
+            color: #666;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            min-height: 180px;
+            border-radius: 0.3rem;
+            border: 1px dashed #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--color-divine);
+            border: 1px solid var(--color-divine);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .ygo-home-button:hover {
+            transform: scale(1.1);
+            background: var(--color-divine);
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        #card-popup {
+            position: fixed;
+            display: none;
+            z-index: 2000;
+            max-width: 300px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--color-divine);
+            border-radius: 0.5rem;
+            padding: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+            pointer-events: none;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+</head>
+
+<body class="p-4 md:p-8">
+    <div id="card-popup"></div>
+
+    <!-- Home Button -->
+    <a href="../index.html" class="ygo-home-button" title="Return to Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto max-w-6xl">
+
+        <!-- Banner -->
+        <header class="banner-container">
+            <canvas id="convergence-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="text-4xl md:text-6xl font-divine text-white mb-2 uppercase tracking-widest"
+                    style="text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);">Power Patron</h1>
+                <p class="text-xl text-yellow-100/80 font-divine">The Divine Convergence</p>
+                <div class="mt-4 flex justify-center gap-6 text-xs md:text-sm font-tech tracking-wider">
+                    <span class="text-purple-400"><i class="fas fa-atom mr-1"></i> ARTMAGE</span>
+                    <span class="text-green-400"><i class="fas fa-cogs mr-1"></i> DOOM-Z</span>
+                    <span class="text-red-400"><i class="fas fa-music mr-1"></i> ELVENNOTES</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Deck Resources Dock -->
+        <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f1014]/90 backdrop-blur-md border border-yellow-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.6)]">
+                <div id="deck-resources-compact" class="flex items-center"></div>
+                <!-- Vertical Divider -->
+                <div class="hidden md:block w-px h-6 bg-yellow-500/30 mx-1"></div>
+                <div id="archetype-cards-browser" class="flex justify-center"></div>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <section class="mb-12 animate-fadeIn">
+            <div class="patron-card p-8">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-grow">
+                        <h2 class="text-2xl font-divine text-white mb-4"><i
+                                class="fas fa-book-open mr-2 text-yellow-500"></i>The Medius Saga</h2>
+                        <p class="text-gray-300 leading-relaxed mb-4">
+                            The <strong>Power Patron</strong> (<em>Gokushin</em>) archetype represents the pinnacle of
+                            "Tier 0" design in the 2026 cycle. Centered around the dimension-hopping protagonist <strong
+                                class="text-yellow-400">Medius the Pure</strong>, the deck does not rely on a single
+                            mechanic but rather bridges all Extra Deck methods into a cohesive "Divine Convergence."
+                        </p>
+                        <p class="text-gray-300 leading-relaxed">
+                            Through the "Shadow Patron" pendulum scales, the deck bypasses traditional summoning locks,
+                            cheating out massive boss monsters from the <a
+                                href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Power%20Patron&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=2&other=2&za_search_type="
+                                target="_blank" class="divine-link" title="Search the Official Database">Power Patron
+                                Archives</a> directly from the Extra Deck. This creates a board that wipes resources
+                            (Fusion), destroys threats (Xyz), and locks zones (Synchro) simultaneously.
+                        </p>
+                    </div>
+                    <div class="md:w-1/3 border-l border-gray-800 pl-6 flex flex-col justify-center">
+                        <h4 class="font-tech text-yellow-500 text-sm font-bold mb-3 uppercase">Strategic Core</h4>
+                        <ul class="text-sm text-gray-400 space-y-3">
+                            <li class="flex items-center"><i
+                                    class="fas fa-circle text-[8px] mr-3 text-purple-500"></i><span><strong>Fusion:</strong>
+                                    Board Wipes & Rewrites</span></li>
+                            <li class="flex items-center"><i
+                                    class="fas fa-circle text-[8px] mr-3 text-green-500"></i><span><strong>Xyz:</strong>
+                                    Equip Destruction & Floating</span></li>
+                            <li class="flex items-center"><i
+                                    class="fas fa-circle text-[8px] mr-3 text-red-500"></i><span><strong>Synchro:</strong>
+                                    Column Locks & Negates</span></li>
+                            <li class="flex items-center"><i
+                                    class="fas fa-circle text-[8px] mr-3 text-yellow-500"></i><span><strong>Pendulum:</strong>
+                                    The Bridge Mechanic</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Pantheon (Cards) -->
+        <section class="mb-16">
+            <h2 class="text-3xl text-white font-divine mb-8 text-center">The Divine Pantheon</h2>
+
+            <!-- Protagonist -->
+            <div class="mb-8">
+                <div class="patron-card p-6 border-l-4 border-l-yellow-500">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                        <div id="medius-img" class="card-placeholder md:col-span-1 h-64">Medius the Pure</div>
+                        <div class="md:col-span-3">
+                            <h3 class="text-2xl font-bold text-white mb-2">Medius the Pure</h3>
+                            <span
+                                class="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded border border-yellow-500/40 font-tech">PROTAGONIST
+                                / STARTER</span>
+                            <p class="text-gray-300 mt-4 leading-relaxed">
+                                The absolute singularity of the deck. On Normal Summon, it searches <strong>ANY</strong>
+                                Power Patron card or Special Summons one from the Deck. Its graveyard effect allows it
+                                to shuffle a card from hand/field to revive itself, granting infinite grind game
+                                potential.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Dimensions Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Artmage -->
+                <div class="patron-card artmage p-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-lg font-bold text-purple-400">Artmage (Fusion)</h4>
+                        <i class="fas fa-atom text-purple-500/50 text-2xl"></i>
+                    </div>
+                    <div id="nerva-img" class="card-placeholder mb-4">Nerva</div>
+                    <p class="text-sm text-gray-400 mb-2"><strong>Deity:</strong> Nerva, Patron of Creation</p>
+                    <p class="text-xs text-gray-500 leading-relaxed">Rewrites any Artmage effect into "Destroy all cards
+                        your opponent controls". Bypasses targeting protection.</p>
+                </div>
+
+                <!-- DoomZ -->
+                <div class="patron-card doomz p-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-lg font-bold text-green-400">DoomZ (Xyz)</h4>
+                        <i class="fas fa-cogs text-green-500/50 text-2xl"></i>
+                    </div>
+                    <div id="jupiter-img" class="card-placeholder mb-4">Jupiter</div>
+                    <p class="text-sm text-gray-400 mb-2"><strong>Deity:</strong> Jupiter, Patron of Destruction</p>
+                    <p class="text-xs text-gray-500 leading-relaxed">Uses Equip Spells as ammunition. Destroys cards on
+                        field and floats into more resources.</p>
+                </div>
+
+                <!-- Elvennotes -->
+                <div class="patron-card elvennotes p-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-lg font-bold text-red-400">Elvennotes (Synchro)</h4>
+                        <i class="fas fa-music text-red-500/50 text-2xl"></i>
+                    </div>
+                    <div id="junora-img" class="card-placeholder mb-4">Junora</div>
+                    <p class="text-sm text-gray-400 mb-2"><strong>Deity:</strong> Junora, Patron of Tuning</p>
+                    <p class="text-xs text-gray-500 leading-relaxed">Acts as a Skill Drain for the opponent's board on
+                        Summon. Locks columns to prevent Link plays.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logic Blocks / Combo Visualization -->
+        <section class="mb-16">
+            <h2 class="text-3xl text-white font-divine mb-8 text-center"><i
+                    class="fas fa-chess-board mr-3 text-yellow-500"></i>Tactical Operations</h2>
+            <p class="text-center text-gray-400 mb-12 max-w-2xl mx-auto font-tech">The Power Patron strategy is modular.
+                Your opening hand and the opponent's board dictate which "Dimension" you access.</p>
+
+            <!-- 1. The Core (Starter) -->
+            <div class="mb-12">
+                <div class="patron-card p-6 border-l-4 border-l-yellow-500 relative">
+                    <div class="absolute top-0 right-0 p-4 opacity-10">
+                        <i class="fas fa-star text-6xl text-yellow-500"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 font-divine">MODULE A: The Core Engine</h3>
+                    <div class="flex flex-col md:flex-row gap-6 items-center">
+                        <div class="md:w-1/4">
+                            <span
+                                class="bg-yellow-900/30 text-yellow-500 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider border border-yellow-500/30">The
+                                Starter</span>
+                        </div>
+                        <div class="md:w-3/4">
+                            <p class="text-gray-300 text-sm mb-2"><strong>Goal:</strong> Access the deck and setup
+                                recursion.</p>
+                            <div class="bg-[#050505] p-3 rounded border border-gray-800">
+                                <p class="text-sm text-white"><i class="fas fa-play mr-2 text-yellow-500"></i>Normal
+                                    Summon <strong class="text-yellow-400">Medius the Pure</strong></p>
+                                <p class="text-xs text-gray-500 mt-1 ml-6">Or use <em>Theorealize</em> to send Medius to
+                                    GY and revive it.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. The Branch Selection -->
+            <h3 class="text-lg font-bold text-white mb-6 font-divine border-b border-gray-800 pb-2">Select Your Path
+            </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+
+                <!-- Fusion (Control) -->
+                <div class="patron-card artmage p-6 flex flex-col h-full">
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-purple-400 font-bold font-divine">MODULE B: Fusion</h4>
+                            <i class="fas fa-atom text-purple-500/30 text-2xl"></i>
+                        </div>
+                        <span class="tag-badge text-purple-300 border border-purple-500/30">GOING FIRST / CONTROL</span>
+                    </div>
+                    <div class="flex-grow space-y-4">
+                        <div class="bg-[#050505] p-3 rounded border border-gray-800">
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Action</p>
+                            <p class="text-sm text-gray-300">Summon Medius -> Special Summon <strong
+                                    class="text-purple-400">Artmage Patron</strong>.</p>
+                        </div>
+                        <div class="bg-[#050505] p-3 rounded border border-gray-800">
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Payoff</p>
+                            <p class="text-sm text-gray-300">Quick-Effect Fusion into <strong
+                                    class="text-purple-400">Nerva</strong>.</p>
+                            <p class="text-xs text-purple-400 mt-1"><em>*Rewrites opponent's effects into "Destroy all
+                                    cards you control".</em></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Xyz (Midrange) -->
+                <div class="patron-card doomz p-6 flex flex-col h-full">
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-green-400 font-bold font-divine">MODULE C: Xyz</h4>
+                            <i class="fas fa-cogs text-green-500/30 text-2xl"></i>
+                        </div>
+                        <span class="tag-badge text-green-300 border border-green-500/30">GRIND / REMOVAL</span>
+                    </div>
+                    <div class="flex-grow space-y-4">
+                        <div class="bg-[#050505] p-3 rounded border border-gray-800">
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Action</p>
+                            <p class="text-sm text-gray-300">Summon Medius -> Special Summon <strong
+                                    class="text-green-400">DoomZ Patron</strong>.</p>
+                        </div>
+                        <div class="bg-[#050505] p-3 rounded border border-gray-800">
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Payoff</p>
+                            <p class="text-sm text-gray-300">Cheat out <strong class="text-green-400">Jupiter</strong>
+                                or <strong>Diactorus</strong>.</p>
+                            <p class="text-xs text-green-400 mt-1"><em>*Destroys cards on field & searches Equip
+                                    Spells.</em></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Synchro (Stun) -->
+                <div class="patron-card elvennotes p-6 flex flex-col h-full">
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-red-400 font-bold font-divine">MODULE D: Synchro</h4>
+                            <i class="fas fa-music text-red-500/30 text-2xl"></i>
+                        </div>
+                        <span class="tag-badge text-red-300 border border-red-500/30">GOING SECOND / STUN</span>
+                    </div>
+                    <div class="flex-grow space-y-4">
+                        <div class="bg-[#050505] p-3 rounded border border-gray-800">
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Action</p>
+                            <p class="text-sm text-gray-300">Summon Medius -> Special Summon <strong
+                                    class="text-red-400">Elvennotes Patron</strong>.</p>
+                        </div>
+                        <div class="bg-[#050505] p-3 rounded border border-gray-800">
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Payoff</p>
+                            <p class="text-sm text-gray-300">Level Modulate -> Synchro <strong
+                                    class="text-red-400">Junora</strong>.</p>
+                            <p class="text-xs text-red-400 mt-1"><em>*Negates entire board on summon & locks
+                                    columns.</em></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. The Shadow Bridge (Advanced) -->
+            <div class="mb-12">
+                <div class="patron-card p-6 bg-gradient-to-r from-[#1a1b26] to-[#0f1014] border-l-4 border-white">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-white font-divine">MODULE E: The Shadow Bridge</h3>
+                            <p class="text-xs text-gray-400 font-tech mt-1">The "High-Ceiling" Combo Line</p>
+                        </div>
+                        <div class="bg-yellow-900/20 px-3 py-1 rounded border border-yellow-500/30">
+                            <span class="text-xs text-yellow-500 font-bold"><i
+                                    class="fas fa-exclamation-circle mr-2"></i>Requires: Medius + 1 Discard</span>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <!-- Connecting Line -->
+                        <div class="absolute left-4 top-4 bottom-4 w-0.5 bg-gray-700 hidden md:block"></div>
+
+                        <div class="space-y-4">
+                            <!-- Step 1 -->
+                            <div class="relative md:pl-12">
+                                <div
+                                    class="absolute left-0 top-1.5 w-8 h-8 rounded-full bg-gray-800 border border-gray-600 flex items-center justify-center hidden md:flex">
+                                    <span class="text-xs font-bold text-white">1</span>
+                                </div>
+                                <div class="bg-[#050505] p-3 rounded border border-gray-800 flex items-center gap-3">
+                                    <span class="text-yellow-500 font-bold md:hidden">1.</span>
+                                    <p class="text-sm text-gray-300">Summon <strong
+                                            class="text-yellow-400">Medius</strong>. Search <strong
+                                            class="text-purple-400">Shadow Beast Nervedo</strong> (Pendulum).</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="relative md:pl-12">
+                                <div
+                                    class="absolute left-0 top-1.5 w-8 h-8 rounded-full bg-purple-900/50 border border-purple-500 flex items-center justify-center hidden md:flex">
+                                    <span class="text-xs font-bold text-white">2</span>
+                                </div>
+                                <div
+                                    class="bg-[#050505] p-3 rounded border border-purple-500/30 flex items-center gap-3">
+                                    <span class="text-purple-500 font-bold md:hidden">2.</span>
+                                    <p class="text-sm text-gray-300">Activate Nervedo Scale. Effect: Destroy self ->
+                                        Cheat out <strong class="text-purple-400">Nerva</strong>.</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="relative md:pl-12">
+                                <div
+                                    class="absolute left-0 top-1.5 w-8 h-8 rounded-full bg-green-900/50 border border-green-500 flex items-center justify-center hidden md:flex">
+                                    <span class="text-xs font-bold text-white">3</span>
+                                </div>
+                                <div
+                                    class="bg-[#050505] p-3 rounded border border-green-500/30 flex items-center gap-3">
+                                    <span class="text-green-500 font-bold md:hidden">3.</span>
+                                    <p class="text-sm text-gray-300">Nervedo (Face-up in ED) triggers -> Summon <strong
+                                            class="text-green-400">Shadow Machine Zegredo</strong>.</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 4 -->
+                            <div class="relative md:pl-12">
+                                <div
+                                    class="absolute left-0 top-1.5 w-8 h-8 rounded-full bg-green-900/50 border border-green-500 flex items-center justify-center hidden md:flex">
+                                    <span class="text-xs font-bold text-white">4</span>
+                                </div>
+                                <div
+                                    class="bg-[#050505] p-3 rounded border border-green-500/30 flex items-center gap-3">
+                                    <span class="text-green-500 font-bold md:hidden">4.</span>
+                                    <p class="text-sm text-gray-300">Activate Zegredo Scale. Effect: Destroy self +
+                                        Medius -> Cheat out <strong class="text-green-400">Jupiter</strong>.</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 5 -->
+                            <div class="relative md:pl-12">
+                                <div
+                                    class="absolute left-0 top-1.5 w-8 h-8 rounded-full bg-red-900/50 border border-red-500 flex items-center justify-center hidden md:flex">
+                                    <span class="text-xs font-bold text-white">5</span>
+                                </div>
+                                <div class="bg-[#050505] p-3 rounded border border-red-500/30 flex items-center gap-3">
+                                    <span class="text-red-500 font-bold md:hidden">5.</span>
+                                    <p class="text-sm text-gray-300">Zegredo (Face-up in ED) triggers -> Search Field
+                                        Spell -> Cheat out <strong class="text-red-400">Junora</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Win Condition (Vidrium) -->
+            <div
+                class="patron-card p-6 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-black text-center border-t-2 border-t-yellow-600">
+                <h3 class="text-xl font-bold text-white mb-2 font-divine"><i
+                        class="fas fa-crown text-yellow-500 mr-2"></i>THE ULTIMATE ENDGAME: VIDRIUM</h3>
+                <p class="text-gray-400 text-sm mb-4 max-w-xl">When resources are low or you need to seal the game,
+                    combine the three dimensions.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
+                    <div class="bg-[#050505] p-3 rounded border border-gray-800">
+                        <span class="text-xs text-gray-500 uppercase font-bold block">Condition</span>
+                        <span class="text-sm text-white">Return 1 Fusion, 1 Synchro, 1 Xyz from Field/GY to Extra
+                            Deck.</span>
+                    </div>
+                    <div class="bg-[#050505] p-3 rounded border border-yellow-500/30">
+                        <span class="text-xs text-yellow-500 uppercase font-bold block">Effect</span>
+                        <span class="text-sm text-white">Banish <strong class="text-red-500">ALL</strong> cards in both
+                            Graveyards Face-Down.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board Analysis -->
+        <section class="mb-16">
+            <h2 class="text-3xl text-white font-divine mb-8 text-center">The End Board</h2>
+            <div class="patron-card p-8 bg-[#0a0a0a]">
+                <div class="flex flex-wrap justify-center gap-8 relative z-10">
+                    <!-- Nerva -->
+                    <div class="flex flex-col items-center group">
+                        <div id="nerva-board"
+                            class="w-32 h-48 card-placeholder mb-3 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                            Nerva</div>
+                        <span class="text-sm text-purple-400 font-bold tracking-wider">WIPE</span>
+                    </div>
+
+                    <!-- Jupiter -->
+                    <div class="flex flex-col items-center group -mt-6">
+                        <div id="jupiter-board"
+                            class="w-36 h-52 card-placeholder mb-3 border-green-500 shadow-[0_0_25px_rgba(16,185,129,0.5)] z-20">
+                            Jupiter</div>
+                        <span class="text-base text-green-400 font-bold tracking-wider">DISRUPT</span>
+                    </div>
+
+                    <!-- Junora -->
+                    <div class="flex flex-col items-center group">
+                        <div id="junora-board"
+                            class="w-32 h-48 card-placeholder mb-3 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+                            Junora</div>
+                        <span class="text-sm text-red-400 font-bold tracking-wider">LOCK</span>
+                    </div>
+                </div>
+                <div class="text-center mt-8 text-gray-500 text-sm italic border-t border-gray-800 pt-4">
+                    "The convergence of three dimensions allows for a game state where the opponent has no safe zones,
+                    no graveyard resources, and no safe activations."
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+            <div class="patron-card p-6">
+                <h3 class="text-lg font-bold text-yellow-400 mb-4 border-b border-gray-800 pb-2">Strategic Dominance
+                </h3>
+                <ul class="space-y-3 text-gray-300 text-sm">
+                    <li><i class="fas fa-check text-green-500 mr-2"></i><strong>The Bridge Theory:</strong> Unlike decks
+                        locked to one mechanic, Power Patron fluidly adapts. If Artmage (Fusion) is stopped, it pivots
+                        seamlessly to DoomZ (Xyz) via the Shadow Patrons.</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i><strong>Recursion:</strong> Medius shuffling
+                        itself back means you never run out of grind game.</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i><strong>The Vidrium Option:</strong> Against
+                        GY-reliant decks (Snake-Eye, Fire King), Vidrium is an instant win condition by banishing all
+                        resources face-down.</li>
+                </ul>
+            </div>
+            <div class="patron-card p-6">
+                <h3 class="text-lg font-bold text-red-400 mb-4 border-b border-gray-800 pb-2">Meta Considerations</h3>
+                <ul class="space-y-3 text-gray-300 text-sm">
+                    <li><i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i><strong>Medius
+                            Dependency:</strong> While powerful, the deck relies heavily on resolving Medius. A
+                        well-timed <em>Droll & Lock Bird</em> or banishing Medius (<em>Bystials</em>) can halt the
+                        engine.</li>
+                    <li><i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i><strong>Complexity:</strong> The
+                        non-linear combo lines require high pilot skill. Mismanaging the "Shadow Patron" order can
+                        accidentally lock you into the wrong Extra Deck type.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Banlist Status -->
+        <section class="mb-16">
+            <div id="banlist-status" class="patron-card p-6"></div>
+        </section>
+
+        <!-- Deck Resources -->
+        <section class="mb-16">
+            <div id="deck-resources-container"></div>
+        </section>
+
+    </div>
+
+    <!-- Animation & Logic -->
+    <script>
+        // Canvas Animation: The Convergence
+        const canvas = document.getElementById('convergence-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = canvas.parentElement.offsetWidth;
+            height = canvas.height = canvas.parentElement.offsetHeight;
+        }
+
+        class Star {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.z = Math.random() * 2; // Depth
+                this.size = Math.random() * 2;
+                // Randomly assign a dimension color
+                const rand = Math.random();
+                if (rand < 0.33) this.color = '168, 85, 247'; // Purple
+                else if (rand < 0.66) this.color = '16, 185, 129'; // Green
+                else this.color = '239, 68, 68'; // Red
+
+                this.alpha = Math.random();
+            }
+            update() {
+                // Move towards center
+                const dx = (width / 2) - this.x;
+                const dy = (height / 2) - this.y;
+
+                this.x += dx * 0.002 * (this.z + 1);
+                this.y += dy * 0.002 * (this.z + 1);
+
+                // If close to center, reset to edge
+                if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+                    this.reset();
+                    // Reset to outer edges
+                    if (Math.random() > 0.5) this.x = Math.random() > 0.5 ? 0 : width;
+                    else this.y = Math.random() > 0.5 ? 0 : height;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 100; i++) particles.push(new Star());
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.1)'; // Trail effect
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Draw Central Singularity (Medius)
+            ctx.beginPath();
+            ctx.arc(width / 2, height / 2, 10 + Math.sin(Date.now() / 500) * 2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'gold';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+
+        // Init
+        document.addEventListener('DOMContentLoaded', async () => {
+            resize();
+            initParticles();
+            animate();
+
+            // Load Cards
+            CardLoader.loadCards({
+                'medius-img': 'Medius the Pure',
+                'nerva-img': 'Nerva the Power Patron of Creation',
+                'jupiter-img': 'Jupiter the Power Patron of Destruction',
+                'junora-img': 'Junora the Power Patron of Tuning',
+                'nerva-board': 'Nerva the Power Patron of Creation',
+                'jupiter-board': 'Jupiter the Power Patron of Destruction',
+                'junora-board': 'Junora the Power Patron of Tuning'
+            });
+
+            // Banlist
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Medius the Pure',
+                'Nerva the Power Patron of Creation',
+                'Power Patron Shadow Beast Nervedo',
+                'Mulcharmy Fuwalos',
+                'Ash Blossom & Joyous Spring'
+            ], {
+                archetypeName: 'Power Patron',
+                archetypeTraits: {
+                    coreMechanic: 'Multi-Dimensional Summoning (Fusion/Synchro/Xyz/Pendulum)',
+                    supportReliance: 'High (Shadow Patrons)',
+                    adaptability: 'Tier 0 Potential',
+                    resilience: 'Infinite Grind Game via Medius'
+                }
+            });
+
+            // Resources
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Power Patron');
+
+            // Render archetype cards browser (compact mode at top)
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Power Patron', {
+                compact: true,
+                buttonColor: 'from-purple-600 to-indigo-600',
+                buttonHoverColor: 'from-purple-700 to-indigo-700'
+            });
+        });
+    </script>
+
+    <!-- Cookie Consent -->
+    <script src="../assets/js/cookie-consent.js"></script>
+    <script src="../assets/js/cookie-consent-config.js"></script>
+</body>
+
+</html>

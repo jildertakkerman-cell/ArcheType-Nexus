@@ -1,12 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phantasm Spiral: Sea Serpent Equip Control</title>
     <script src="../assets/js/google-analytics.js"></script>
     <link href="../output.css" rel="stylesheet">
-        <!-- Supabase CDN for gameplay tags (optional) -->
+    <!-- Supabase CDN for gameplay tags (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../assets/js/supabase-config.js"></script>
     <script src="../assets/js/card-loader.js"></script>
@@ -18,43 +19,62 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0a192f; /* Deep Navy Blue */
-            color: #ccd6f6; /* Light Slate */
+            background-color: #0a192f;
+            /* Deep Navy Blue */
+            color: #ccd6f6;
+            /* Light Slate */
         }
+
         .container {
             max-width: 1024px;
         }
+
         .card {
-            background-color: #172a46; /* Lighter Navy */
+            background-color: #172a46;
+            /* Lighter Navy */
             border-radius: 1rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
             border: 1px solid #303C55;
         }
+
         .combo-step-card {
             background-color: #0e2038;
             border: 1px solid #303C55;
         }
+
         .pro-con-card {
             background-color: #0e2038;
             border: 1px solid #303C55;
         }
+
         .card-image-container {
             width: 100%;
             max-width: 180px;
             flex-shrink: 0;
         }
+
         .card-image {
             width: 100%;
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         .animate-fadeIn {
             animation: fadeIn 0.5s ease-in-out forwards;
         }
+
         .card-placeholder {
             background-color: #0a192f;
             color: #64ffda;
@@ -71,16 +91,34 @@
             padding: 0.5rem;
             border: 1px dashed #303C55;
         }
-        .pro-icon { color: #34d399; }
-        .con-icon { color: #ef4444; }
-        .neutral-icon { color: #60a5fa; }
-        .text-accent { color: #64ffda; } /* Bright Teal/Mint */
-        .arrow-color { color: #64ffda; }
+
+        .pro-icon {
+            color: #34d399;
+        }
+
+        .con-icon {
+            color: #ef4444;
+        }
+
+        .neutral-icon {
+            color: #60a5fa;
+        }
+
+        .text-accent {
+            color: #64ffda;
+        }
+
+        /* Bright Teal/Mint */
+        .arrow-color {
+            color: #64ffda;
+        }
+
         .heading-underline {
             border-bottom: 2px solid #64ffda;
             display: inline-block;
             padding-bottom: 0.25rem;
         }
+
         .lore-link {
             color: #64ffda;
             font-weight: bold;
@@ -88,6 +126,7 @@
             border-bottom: 1px dotted #64ffda;
             transition: color 0.3s, border-bottom-color 0.3s;
         }
+
         .lore-link:hover {
             color: #fff;
             border-bottom-color: #fff;
@@ -108,6 +147,7 @@
             margin-bottom: 2.5rem;
             border: 1px solid #303C55;
         }
+
         #banner-canvas {
             position: absolute;
             top: 0;
@@ -116,21 +156,29 @@
             height: 100%;
             z-index: 1;
         }
+
         .banner-header::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: radial-gradient(circle, rgba(10, 25, 47, 0.4) 0%, rgba(10, 25, 47, 0.8) 100%);
             z-index: 2;
         }
-        .banner-header h1, .banner-header p {
+
+        .banner-header h1,
+        .banner-header p {
             position: relative;
             z-index: 3;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
         }
+
         .banner-header h1 {
             font-family: 'Cinzel', serif;
         }
+
         /* Home Button */
         .ygo-home-button {
             position: fixed;
@@ -151,6 +199,7 @@
             cursor: pointer;
             text-decoration: none;
         }
+
         .ygo-home-button:hover {
             transform: scale(1.1);
             box-shadow: 0 0 25px rgba(100, 255, 218, 0.6), inset 0 0 10px rgba(100, 255, 218, 0.4);
@@ -160,12 +209,13 @@
     </style>
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
 </head>
+
 <body class="p-4 md:p-8">
     <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
         <i class="fas fa-home"></i>
     </a>
 
-<div class="container mx-auto">
+    <div class="container mx-auto">
         <header class="banner-header text-center">
             <canvas id="banner-canvas"></canvas>
             <h1 class="text-3xl md:text-5xl font-bold text-white mb-2">Phantasm Spiral</h1>
@@ -174,77 +224,101 @@
 
         <!-- Deck Resources & Card Browser (Dock Design) -->
         <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
-            <div class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
                 <div id="deck-resources-compact" class="flex items-center"></div>
-                
+
                 <!-- Vertical Divider (Desktop) -->
                 <div class="hidden md:block w-px h-6 bg-indigo-500/30 mx-1"></div>
-                
+
                 <div id="archetype-cards-browser" class="flex justify-center"></div>
             </div>
             <!-- Glow effect behind -->
-            <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none"></div>
+            <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none">
+            </div>
         </div>
         <section class="mb-10 md:mb-16">
             <div class="card p-6">
                 <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
                 <p class="text-slate-300">
-                    The <strong class="text-accent font-bold">Phantasm Spiral</strong> archetype is a unique control strategy that weaponizes Normal Monsters, turning them into the engine of a powerful resource loop. Centered around its Field Spell, <strong class="text-accent font-bold">Pacifis, the Phantasm City</strong>, the deck thrives on reactive plays, generating tokens and searching for powerful traps in response to the opponent's actions. It operates within a 
-                    <a href="https://yugipedia.com/wiki/Phantasm_Spiral" target="_blank" class="lore-link">submerged kingdom of Normal Monsters</a>,
-                    creating a fortress of backrow and floodgates that can dismantle effect-heavy strategies while preparing for a decisive counter-attack with its colossal boss monster, <strong class="text-accent font-bold">Phantasm Spiral Dragon</strong>.
+                    The <strong class="text-accent font-bold">Phantasm Spiral</strong> archetype is a unique control
+                    strategy that weaponizes Normal Monsters, turning them into the engine of a powerful resource loop.
+                    Centered around its Field Spell, <strong class="text-accent font-bold">Pacifis, the Phantasm
+                        City</strong>, the deck thrives on reactive plays, generating tokens and searching for powerful
+                    traps in response to the opponent's actions. It operates within a
+                    <a href="https://yugipedia.com/wiki/Phantasm_Spiral" target="_blank" class="lore-link">submerged
+                        kingdom of Normal Monsters</a>,
+                    creating a fortress of backrow and floodgates that can dismantle effect-heavy strategies while
+                    preparing for a decisive counter-attack with its colossal boss monster, <strong
+                        class="text-accent font-bold">Phantasm Spiral Dragon</strong>.
                 </p>
             </div>
         </section>
 
         <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Anatomy of the Spiral</h2>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Anatomy of the
+                Spiral</h2>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="card p-6 flex flex-col md:flex-row items-center gap-4">
                     <div id="pacifis-img" class="card-image-container card-placeholder">Pacifis, the Phantasm City</div>
                     <div>
                         <h3 class="text-xl font-bold text-accent">Pacifis, the Phantasm City</h3>
-                        <p class="text-slate-300 mt-2">The heart of the deck. Its name is treated as "Umi," it generates a 2000/2000 Token whenever the opponent activates an effect (not once per turn), and searches a "Phantasm Spiral" card when you summon a Normal Monster. This card is your entire engine.</p>
+                        <p class="text-slate-300 mt-2">The heart of the deck. Its name is treated as "Umi," it generates
+                            a 2000/2000 Token whenever the opponent activates an effect (not once per turn), and
+                            searches a "Phantasm Spiral" card when you summon a Normal Monster. This card is your entire
+                            engine.</p>
                     </div>
                 </div>
                 <div class="card p-6 flex flex-col md:flex-row items-center gap-4">
                     <div id="dragon-img" class="card-image-container card-placeholder">Phantasm Spiral Dragon</div>
                     <div>
                         <h3 class="text-xl font-bold text-accent">Phantasm Spiral Dragon</h3>
-                        <p class="text-slate-300 mt-2">The primary boss monster. A Level 8 Normal Monster with 2900 ATK/DEF, it's summoned from the deck by the archetype's Equip Spells during the Battle Phase for explosive, often game-ending, pushes.</p>
+                        <p class="text-slate-300 mt-2">The primary boss monster. A Level 8 Normal Monster with 2900
+                            ATK/DEF, it's summoned from the deck by the archetype's Equip Spells during the Battle Phase
+                            for explosive, often game-ending, pushes.</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Gameplay Loop</h2>
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Gameplay Loop
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="card p-6">
                     <h3 class="text-xl font-bold text-accent mb-4 text-center">The "Pacifis Loop" (Resource Engine)</h3>
                     <ol class="list-decimal list-inside space-y-3 text-slate-300">
                         <li>Opponent activates any card or effect.</li>
-                        <li>If you control no Tokens, <strong class="text-accent">Pacifis</strong> triggers, summoning a <strong class="text-accent">Phantasm Spiral Token</strong>.</li>
-                        <li>The summon of a Normal Monster triggers <strong class="text-accent">Pacifis</strong> again, searching for a "Phantasm Spiral" card (usually a Trap).</li>
-                        <li>You now have a 2000 ATK body and a live, hand-activated Trap to disrupt your opponent further.</li>
+                        <li>If you control no Tokens, <strong class="text-accent">Pacifis</strong> triggers, summoning a
+                            <strong class="text-accent">Phantasm Spiral Token</strong>.</li>
+                        <li>The summon of a Normal Monster triggers <strong class="text-accent">Pacifis</strong> again,
+                            searching for a "Phantasm Spiral" card (usually a Trap).</li>
+                        <li>You now have a 2000 ATK body and a live, hand-activated Trap to disrupt your opponent
+                            further.</li>
                     </ol>
                 </div>
-                 <div class="card p-6">
+                <div class="card p-6">
                     <h3 class="text-xl font-bold text-accent mb-4 text-center">The OTK Push (Offensive Combo)</h3>
                     <ol class="list-decimal list-inside space-y-3 text-slate-300">
                         <li>Summon a Normal Monster like <strong class="text-accent">Megalosmasher X</strong>.</li>
                         <li>Equip it with <strong class="text-accent">Phantasm Spiral Crash</strong>.</li>
                         <li>Attack an opponent's monster (or directly), inflicting piercing damage.</li>
-                        <li><strong class="text-accent">Crash</strong> triggers, summoning <strong class="text-accent">Phantasm Spiral Dragon</strong> from the deck and re-equipping itself.</li>
-                        <li>Because the summon happens during the Battle Phase, the new 2900 ATK Dragon can immediately declare a second attack.</li>
+                        <li><strong class="text-accent">Crash</strong> triggers, summoning <strong
+                                class="text-accent">Phantasm Spiral Dragon</strong> from the deck and re-equipping
+                            itself.</li>
+                        <li>Because the summon happens during the Battle Phase, the new 2900 ATK Dragon can immediately
+                            declare a second attack.</li>
                     </ol>
                 </div>
             </div>
         </section>
-        
+
         <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ideal End Board: "Protect the Castle"</h2>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Ideal End Board:
+                "Leviathan's Lair"</h2>
             <p class="text-slate-300 mb-8 text-center max-w-3xl mx-auto">
-                Unlike combo decks that build boards of monsters, Phantasm Spiral's ideal setup is a fortress of backrow that creates a soft-lock, turning every opponent action into your advantage.
+                Unlike combo decks that build boards of monsters, Phantasm Spiral's ideal setup is a fortress of backrow
+                that creates a soft-lock, turning every opponent action into your advantage.
             </p>
             <div class="max-w-4xl mx-auto">
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-center">
@@ -278,34 +352,53 @@
         </section>
 
         <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="card p-6 pro-con-card">
                     <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
                     <ul class="list-disc list-inside space-y-2 text-slate-300">
-                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong class="text-green-400">Anti-Meta:</strong> Main-deck floodgates and immunity to common hand traps give it a strong matchup against monster-heavy combo decks.</li>
-                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong class="text-green-400">Resource Loop:</strong> The "Pacifis Loop" can out-grind many strategies by consistently generating advantage from the opponent's plays.</li>
-                        <li><span class="pro-icon"><i class="fas fa-coins"></i></span> <strong class="text-green-400">Budget-Friendly:</strong> The core engine is composed of low-rarity cards, making it a powerful and accessible rogue option.</li>
+                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong
+                                class="text-green-400">Anti-Meta:</strong> Main-deck floodgates and immunity to common
+                            hand traps give it a strong matchup against monster-heavy combo decks.</li>
+                        <li><span class="pro-icon"><i class="fas fa-sync-alt"></i></span> <strong
+                                class="text-green-400">Resource Loop:</strong> The "Pacifis Loop" can out-grind many
+                            strategies by consistently generating advantage from the opponent's plays.</li>
+                        <li><span class="pro-icon"><i class="fas fa-coins"></i></span> <strong
+                                class="text-green-400">Budget-Friendly:</strong> The core engine is composed of
+                            low-rarity cards, making it a powerful and accessible rogue option.</li>
                     </ul>
                 </div>
                 <div class="card p-6 pro-con-card">
                     <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
                     <ul class="list-disc list-inside space-y-2 text-slate-300">
-                        <li><span class="con-icon"><i class="fas fa-map-marked-alt"></i></span> <strong class="text-red-400">Reliant on Pacifis:</strong> The entire strategy crumbles if the Field Spell is removed from the field.</li>
-                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong class="text-red-400">Backrow Vulnerability:</strong> Highly susceptible to mass Spell/Trap removal like Harpie's Feather Duster and Lightning Storm.</li>
-                        <li><span class="con-icon"><i class="fas fa-hourglass-half"></i></span> <strong class="text-red-400">Reactive Nature:</strong> Requires the opponent to act to start its engine, making it potentially slow against passive opponents.</li>
+                        <li><span class="con-icon"><i class="fas fa-map-marked-alt"></i></span> <strong
+                                class="text-red-400">Reliant on Pacifis:</strong> The entire strategy crumbles if the
+                            Field Spell is removed from the field.</li>
+                        <li><span class="con-icon"><i class="fas fa-wind"></i></span> <strong
+                                class="text-red-400">Backrow Vulnerability:</strong> Highly susceptible to mass
+                            Spell/Trap removal like Harpie's Feather Duster and Lightning Storm.</li>
+                        <li><span class="con-icon"><i class="fas fa-hourglass-half"></i></span> <strong
+                                class="text-red-400">Reactive Nature:</strong> Requires the opponent to act to start its
+                            engine, making it potentially slow against passive opponents.</li>
                     </ul>
                 </div>
                 <div class="card p-6 pro-con-card">
                     <h3 class="text-xl font-bold text-white mb-4">Hybrid Builds & Tech</h3>
                     <ul class="list-disc list-inside space-y-2 text-slate-300">
-                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Tenyi Engine:</strong> The premier hybrid, using Tenyi monsters as free Special Summons to trigger Pacifis without a Normal Summon.</li>
-                        <li><span class="neutral-icon"><i class="fas fa-water"></i></span> <strong class="text-accent">Paleozoic Engine:</strong> Uses Trap activations to swarm the field with Level 2 Normal Monsters for Xyz and Link plays.</li>
-                        <li><span class="neutral-icon"><i class="fas fa-anchor"></i></span> <strong class="text-accent">Umi Control:</strong> Leverages Pacifis being treated as "Umi" to incorporate modern stun cards like Sea Stealth II.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong
+                                class="text-accent">Tenyi Engine:</strong> The premier hybrid, using Tenyi monsters as
+                            free Special Summons to trigger Pacifis without a Normal Summon.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-water"></i></span> <strong
+                                class="text-accent">Paleozoic Engine:</strong> Uses Trap activations to swarm the field
+                            with Level 2 Normal Monsters for Xyz and Link plays.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-anchor"></i></span> <strong
+                                class="text-accent">Umi Control:</strong> Leverages Pacifis being treated as "Umi" to
+                            incorporate modern stun cards like Sea Stealth II.</li>
                     </ul>
                 </div>
             </div>
-        </section>        
+        </section>
 
         <!-- TCG Banlist Impact Section -->
         <section>
@@ -313,14 +406,14 @@
                 <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
             </div>
         </section>
-                <section>
+        <section>
             <div id="deck-resources-container">
                 <!-- Deck search section will be populated by CardLoader.renderDeckSearchSection -->
             </div>
         </section>
     </div>
 
-    
+
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -399,8 +492,8 @@
             // Render compact deck resources in header
             await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Phantasm Spiral');
             // Render archetype cards browser (compact mode at top)
-            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Phantasm Spiral', { 
-                compact: true, 
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Phantasm Spiral', {
+                compact: true,
                 buttonColor: 'from-purple-600 to-indigo-600',
                 buttonHoverColor: 'from-purple-700 to-indigo-700'
             });
@@ -409,12 +502,12 @@
             // Render banlist section
             await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Phantasm Spiral', {
                 relatedCards: []
-            });});
+            });
+        });
     </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>
 </body>
+
 </html>
-
-

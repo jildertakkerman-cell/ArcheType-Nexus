@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archfiend: The Imperial Renaissance</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Creepster&family=Roboto+Mono:wght@400;600&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- CardLoader -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+    <style>
+        :root {
+            --color-bg-dark: #0f0505;
+            --color-panel-bg: #1a0a0a;
+            --color-royal-red: #8b0000;
+            --color-blood-bright: #ff0000;
+            --color-gold-accent: #ffd700;
+            --color-text-primary: #e0e0e0;
+            --color-text-muted: #a0a0a0;
+            --chess-overlay: rgba(255, 255, 255, 0.03);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg-dark);
+            color: var(--color-text-primary);
+            background-image:
+                linear-gradient(45deg, var(--chess-overlay) 25%, transparent 25%, transparent 75%, var(--chess-overlay) 75%, var(--chess-overlay)),
+                linear-gradient(45deg, var(--chess-overlay) 25%, transparent 25%, transparent 75%, var(--chess-overlay) 75%, var(--chess-overlay));
+            background-position: 0 0, 20px 20px;
+            background-size: 40px 40px;
+        }
+
+        .font-regal {
+            font-family: 'Cinzel', serif;
+        }
+
+        .font-horror {
+            font-family: 'Creepster', cursive;
+        }
+
+        .font-tech {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* --- Card Styling --- */
+        .card-panel {
+            background-color: var(--color-panel-bg);
+            border: 1px solid #331111;
+            border-left: 4px solid var(--color-royal-red);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, transparent 50%, rgba(139, 0, 0, 0.1) 50%);
+            pointer-events: none;
+        }
+
+        .card-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(139, 0, 0, 0.2);
+            border-color: var(--color-blood-bright);
+        }
+
+        /* --- Custom Link Style (The Hint) --- */
+        .archfiend-link {
+            color: var(--color-gold-accent);
+            text-decoration: none;
+            border-bottom: 1px solid var(--color-royal-red);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .archfiend-link:hover {
+            color: var(--color-blood-bright);
+            text-shadow: 0 0 10px var(--color-royal-red);
+        }
+
+        .archfiend-link::after {
+            content: ' \f447';
+            /* Chess piece or eye icon */
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            font-size: 0.8em;
+            opacity: 0;
+            transition: opacity 0.3s;
+            margin-left: 4px;
+        }
+
+        .archfiend-link:hover::after {
+            opacity: 1;
+        }
+
+        /* --- Banner --- */
+        .banner-header {
+            position: relative;
+            min-height: 300px;
+            background: radial-gradient(circle at center, #2a0a0a 0%, #000000 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--color-royal-red);
+            box-shadow: 0 0 50px rgba(139, 0, 0, 0.3);
+            margin-bottom: 3rem;
+        }
+
+        #ember-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.8;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid rgba(255, 215, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        /* --- Card Placeholders --- */
+        .card-placeholder {
+            background-color: #0f0505;
+            color: #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            min-height: 200px;
+            border-radius: 0.5rem;
+            border: 1px dashed #441111;
+            box-shadow: inset 0 0 20px #000;
+            transition: all 0.3s;
+        }
+
+        .card-placeholder:hover {
+            border-color: var(--color-gold-accent);
+            color: var(--color-gold-accent);
+        }
+
+        /* --- Buttons --- */
+        .royal-btn {
+            background: linear-gradient(to bottom, #2a0a0a, #000);
+            border: 1px solid var(--color-royal-red);
+            color: var(--color-gold-accent);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .royal-btn:hover {
+            background: var(--color-royal-red);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
+        }
+
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: #000;
+            color: var(--color-royal-red);
+            border: 2px solid var(--color-royal-red);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(139, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .ygo-home-button:hover {
+            transform: scale(1.1);
+            background: var(--color-royal-red);
+            color: #fff;
+        }
+
+        /* End Board Zones */
+        .zone-card {
+            border: 1px solid var(--color-royal-red);
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 140px;
+            position: relative;
+        }
+
+        .zone-label {
+            position: absolute;
+            top: -10px;
+            background: #000;
+            padding: 0 10px;
+            font-size: 0.7rem;
+            color: var(--color-gold-accent);
+            border: 1px solid var(--color-royal-red);
+            border-radius: 10px;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+</head>
+
+<body class="p-4 md:p-8">
+
+    <!-- Home Button -->
+    <a href="../index.html" class="ygo-home-button" title="Return to Nexus">
+        <i class="fas fa-chess-king"></i>
+    </a>
+
+    <div class="container mx-auto max-w-6xl">
+
+        <!-- Header -->
+        <header class="banner-header">
+            <canvas id="ember-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="text-4xl md:text-6xl font-regal text-white mb-2" style="text-shadow: 0 4px 10px #000;">
+                    <span style="color: var(--color-royal-red);">ARCHFIEND</span> RENAISSANCE
+                </h1>
+                <p class="text-lg font-regal text-gold-500 text-yellow-500 uppercase tracking-widest mt-2">
+                    Strategy: Ritual-Pendulum Control
+                </p>
+                <p class="text-xs text-red-400 mt-2 font-tech">Analysis of the "Burst Protocol" Support Wave</p>
+            </div>
+        </header>
+
+        <!-- Deck Resources & Card Browser (Dock Design) -->
+        <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                <div id="deck-resources-compact" class="flex items-center"></div>
+
+                <!-- Vertical Divider (Desktop) -->
+                <div class="hidden md:block w-px h-6 bg-indigo-500/30 mx-1"></div>
+
+                <div id="archetype-cards-browser" class="flex justify-center"></div>
+            </div>
+            <!-- Glow effect behind -->
+            <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none">
+            </div>
+        </div>
+
+        <!-- Introduction -->
+        <section class="mb-12 animate-fadeIn">
+            <div class="card-panel p-8">
+                <div class="flex items-start gap-4">
+                    <i class="fas fa-chess-rook text-4xl text-red-800 hidden md:block"></i>
+                    <div>
+                        <h2 class="text-2xl font-regal text-white mb-4 border-b border-red-900 pb-2">Evolution of a
+                            Legacy</h2>
+                        <p class="text-gray-300 leading-relaxed mb-4">
+                            The release of the <strong>Burst Protocol (BPRO)</strong> set represents a seminal moment in
+                            the history of the game. Historically, the <a
+                                href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Archfiend&stype=1"
+                                target="_blank" class="archfiend-link"
+                                title="View Archfiend Cards in Database">Archfiend</a> designation has functioned less
+                            as a cohesive strategic engine and more as a loose categorization.
+                        </p>
+                        <p class="text-gray-300 leading-relaxed">
+                            This new wave, however, fundamentally restructures the deck into a <strong>Ritual-Pendulum
+                                Hybrid</strong>. By leveraging the "Royal Court" monsters and the recursion of the
+                            Face-Up Extra Deck, the strategy transitions from disjointed beatdown into a sophisticated
+                            resource loop capable of consistent board-breaking.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Imperial Court (Monsters) -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-regal text-center text-white mb-8"><span class="text-red-600">I.</span> The
+                Imperial Court</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Royal -->
+                <div class="card-panel p-5">
+                    <div id="royal-img" class="card-placeholder mb-4">Royal Archfiend</div>
+                    <h3 class="text-xl font-bold text-white mb-1">Royal Archfiend</h3>
+                    <p class="text-xs text-yellow-500 font-tech mb-3">THE KINGMAKER (STARTER)</p>
+                    <ul class="text-sm text-gray-400 list-disc list-inside space-y-1">
+                        <li><strong>Tribute Self:</strong> Search ANY Archfiend card.</li>
+                        <li><strong>Extra Summon:</strong> Grants an additional Normal Summon for a Fiend.</li>
+                        <li><strong>Setup:</strong> Immediately loads GY for Highness cost.</li>
+                    </ul>
+                </div>
+
+                <!-- Highness -->
+                <div class="card-panel p-5 border-yellow-600">
+                    <div id="highness-img" class="card-placeholder mb-4">Highness Archfiend</div>
+                    <h3 class="text-xl font-bold text-white mb-1">Highness Archfiend</h3>
+                    <p class="text-xs text-yellow-500 font-tech mb-3">THE ECONOMY (ENGINE)</p>
+                    <ul class="text-sm text-gray-400 list-disc list-inside space-y-1">
+                        <li><strong>Banish Cost:</strong> Banish 1 Archfiend from GY.</li>
+                        <li><strong>Plus One:</strong> Adds <span class="text-green-400">TWO</span> Archfiend cards from
+                            Deck.</li>
+                        <li><strong>Recursion:</strong> Floats back if a Ritual is destroyed.</li>
+                    </ul>
+                </div>
+
+                <!-- Duke -->
+                <div class="card-panel p-5">
+                    <div id="duke-img" class="card-placeholder mb-4">Duke Archfiend</div>
+                    <h3 class="text-xl font-bold text-white mb-1">Duke Archfiend</h3>
+                    <p class="text-xs text-yellow-500 font-tech mb-3">THE TACTICIAN (MILLER)</p>
+                    <ul class="text-sm text-gray-400 list-disc list-inside space-y-1">
+                        <li><strong>Deck Dump:</strong> Sends <em>Archfiend Heiress</em> to GY.</li>
+                        <li><strong>Indirect Search:</strong> Triggering Heiress searches any missing piece.</li>
+                        <li><strong>Ritual Fodder:</strong> Facilitates Level 7 plays.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Emperor (Boss) -->
+        <section class="mb-12">
+            <div class="card-panel p-8 border-l-4 border-yellow-600 bg-gradient-to-r from-red-950 to-black">
+                <div class="flex flex-col md:flex-row gap-8 items-center">
+                    <div class="w-full md:w-1/3">
+                        <div id="emperor-img" class="card-placeholder h-auto w-full border-2 border-yellow-600">
+                            Archfiend Emperor</div>
+                    </div>
+                    <div class="w-full md:w-2/3">
+                        <h2 class="text-3xl font-regal text-white mb-2">Archfiend Emperor</h2>
+                        <span class="bg-red-900 text-white text-xs px-2 py-1 rounded font-tech">LEVEL 7 RITUAL /
+                            PENDULUM</span>
+
+                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="text-yellow-500 font-bold mb-2"><i class="fas fa-skull mr-2"></i>Cataclysmic
+                                    Removal</h4>
+                                <p class="text-sm text-gray-300">
+                                    When Ritual Summoned from the <strong>Face-Up Extra Deck</strong>, it <span
+                                        class="text-red-400">banishes all monsters</span> in the Main Monster Zones.
+                                    Bypasses destruction protection and targeting.
+                                </p>
+                            </div>
+                            <div>
+                                <h4 class="text-yellow-500 font-bold mb-2"><i
+                                        class="fas fa-shield-alt mr-2"></i>Absolute Authority</h4>
+                                <p class="text-sm text-gray-300">
+                                    While in the <strong>Extra Monster Zone</strong> (EMZ), it is unaffected by monster
+                                    effects. Also recruits any Fiend from Deck/GY once per turn.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Armory & Anomaly -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-regal text-center text-white mb-8"><span class="text-red-600">II.</span> The Armory
+                & The Anomaly</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Throne -->
+                <div class="card-panel p-4">
+                    <div id="throne-img" class="card-placeholder mb-4">Throne of the Archfiends</div>
+                    <h4 class="text-white font-bold mb-1">Throne of the Archfiends</h4>
+                    <span class="text-xs text-gray-500 font-tech">RITUAL SPELL</span>
+                    <p class="text-xs text-gray-300 mt-2">Summons from Hand, GY, Banishment, or <span
+                            class="text-yellow-500">Face-Up Extra Deck</span>. Recycles itself every turn.</p>
+                </div>
+                <!-- Strategy -->
+                <div class="card-panel p-4">
+                    <div id="strategy-img" class="card-placeholder mb-4">Archfiend Strategy</div>
+                    <h4 class="text-white font-bold mb-1">Archfiend Strategy</h4>
+                    <span class="text-xs text-gray-500 font-tech">FIELD SPELL</span>
+                    <p class="text-xs text-gray-300 mt-2">Places Pendulums into Extra Deck directly. Boosts Fiends in
+                        EMZ by 1000 ATK.</p>
+                </div>
+                <!-- Playtime -->
+                <div class="card-panel p-4">
+                    <div id="playtime-img" class="card-placeholder mb-4">Archfiend Playtime</div>
+                    <h4 class="text-white font-bold mb-1">Archfiend Playtime</h4>
+                    <span class="text-xs text-gray-500 font-tech">NORMAL TRAP</span>
+                    <p class="text-xs text-gray-300 mt-2">Summons 3 monsters from Deck (Royal, Duke, Highness) if you
+                        have a Ritual in ED. Massive resource swing.</p>
+                </div>
+                <!-- Shipping (Anomaly) -->
+                <div class="card-panel p-4 border-l-cyan-600">
+                    <div id="shipping-img" class="card-placeholder mb-4">Shipping Archfiend</div>
+                    <div class="flex justify-between items-start">
+                        <h4 class="text-cyan-400 font-bold mb-1">Shipping Archfiend</h4>
+                        <i class="fas fa-question-circle text-cyan-600"></i>
+                    </div>
+                    <span class="text-xs text-gray-500 font-tech">THE ANOMALY</span>
+                    <p class="text-xs text-gray-300 mt-2">Manipulates Types/Attributes. Bounces cards based on
+                        "Matches". Excellent anti-meta tech against Floodgates.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Primary Loop (Combo) -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-regal text-center text-white mb-8"><span class="text-red-600">III.</span> The
+                Primary Play Loop</h2>
+            <div class="card-panel p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="text-red-500 uppercase font-tech border-b border-red-900">
+                            <tr>
+                                <th class="pb-3 pl-2">Seq</th>
+                                <th class="pb-3">Action</th>
+                                <th class="pb-3">Resource Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-red-900/30">
+                            <tr class="hover:bg-red-900/10">
+                                <td class="py-3 pl-2 font-bold text-yellow-500">01</td>
+                                <td>Activate <strong>Royal Archfiend</strong>. Tribute self -> Search
+                                    <strong>Highness</strong>.
+                                </td>
+                                <td class="text-gray-500">GY Setup + Search</td>
+                            </tr>
+                            <tr class="hover:bg-red-900/10">
+                                <td class="py-3 pl-2 font-bold text-yellow-500">02</td>
+                                <td>Normal Summon <strong>Highness</strong> (via Extra Summon). Banish Royal -> Search
+                                    <strong>Duke</strong> & <strong>Strategy</strong>.
+                                </td>
+                                <td class="text-green-400">+1 Advantage</td>
+                            </tr>
+                            <tr class="hover:bg-red-900/10">
+                                <td class="py-3 pl-2 font-bold text-yellow-500">03</td>
+                                <td>Activate <strong>Archfiend Strategy</strong>. Place <strong>Archfiend
+                                        Emperor</strong> in
+                                    Face-Up Extra Deck.</td>
+                                <td class="text-blue-400">Boss Loaded</td>
+                            </tr>
+                            <tr class="hover:bg-red-900/10">
+                                <td class="py-3 pl-2 font-bold text-yellow-500">04</td>
+                                <td>Summon <strong>Duke</strong>. Send <strong>Heiress</strong> to GY. Heiress searches
+                                    <strong>Throne</strong>.
+                                </td>
+                                <td class="text-gray-500">Ritual Spell Access</td>
+                            </tr>
+                            <tr class="hover:bg-red-900/10">
+                                <td class="py-3 pl-2 font-bold text-yellow-500">05</td>
+                                <td>Activate <strong>Throne</strong>. Tribute Duke -> Summon <strong>Archfiend
+                                        Emperor</strong> from Extra Deck.</td>
+                                <td class="text-red-500 font-bold">BOARD WIPE</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board & Competitive Analysis -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+
+            <!-- End Board Visualization -->
+            <div>
+                <h3 class="text-xl font-regal text-white mb-4 border-b border-red-900 pb-2">Ideal End Board</h3>
+                <div class="card-panel p-6 bg-black/50">
+                    <!-- EMZ -->
+                    <div class="flex justify-center mb-6">
+                        <div class="zone-card w-32 border-yellow-600 shadow-[0_0_15px_rgba(255,215,0,0.2)]">
+                            <span class="zone-label">EMZ</span>
+                            <div class="text-xs text-center font-bold text-yellow-500">ARCHFIEND EMPEROR</div>
+                            <div class="text-[10px] text-gray-400 mt-1">Unaffected by Monsters</div>
+                            <div class="text-[10px] text-gray-400">Recruiter</div>
+                        </div>
+                    </div>
+
+                    <!-- Backrow -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="zone-card h-24">
+                            <span class="zone-label">Field</span>
+                            <div class="text-[10px] font-bold text-white">ARCHFIEND STRATEGY</div>
+                            <div class="text-[9px] text-gray-500">+1000 ATK to EMZ</div>
+                        </div>
+                        <div class="zone-card h-24 border-red-500">
+                            <span class="zone-label">Trap</span>
+                            <div class="text-[10px] font-bold text-white">ARCHFIEND'S FERVOR</div>
+                            <div class="text-[9px] text-red-400">Target Negate</div>
+                        </div>
+                        <div class="zone-card h-24 border-red-500">
+                            <span class="zone-label">Trap</span>
+                            <div class="text-[10px] font-bold text-white">PLAYTIME</div>
+                            <div class="text-[9px] text-red-400">Summon 3 (End Phase)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Competitive Analysis -->
+            <div>
+                <h3 class="text-xl font-regal text-white mb-4 border-b border-red-900 pb-2">Competitive Analysis</h3>
+                <div class="space-y-4">
+                    <div class="card-panel p-4 border-l-green-600">
+                        <h4 class="text-green-500 font-bold mb-2"><i class="fas fa-plus-circle mr-2"></i>Strengths</h4>
+                        <ul class="text-sm text-gray-300 list-disc list-inside space-y-1">
+                            <li><strong>Resilience:</strong> Throne recycles the boss from anywhere (GY/Banish/ED).</li>
+                            <li><strong>Removal:</strong> Non-targeting, non-destruction banishment clears almost any
+                                board.</li>
+                            <li><strong>Consistency:</strong> 9+ Starters (Royal, Highness, Strategy).</li>
+                        </ul>
+                    </div>
+                    <div class="card-panel p-4 border-l-red-600">
+                        <h4 class="text-red-500 font-bold mb-2"><i class="fas fa-minus-circle mr-2"></i>Weaknesses</h4>
+                        <ul class="text-sm text-gray-300 list-disc list-inside space-y-1">
+                            <li><strong>Droll & Lock Bird:</strong> The "Highness" add-2 effect is a critical choke
+                                point.</li>
+                            <li><strong>Shifter:</strong> Highness requires a GY banish cost to function.</li>
+                            <li><strong>X-Lock:</strong> The deck is locked into "Archfiend" Extra Deck monsters,
+                                limiting generic toolboxing.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Banlist Status (Generated) -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-regal text-white mb-4">Regulation Status</h2>
+            <div id="banlist-status" class="card-panel p-6"></div>
+        </section>
+
+        <!-- Deck Resources -->
+        <section>
+            <div id="deck-resources-container"></div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-600 text-xs mt-12 pb-8 font-tech">
+            <p>Archfiend Data Analysis | Burst Protocol Wave</p>
+            <p class="mt-2 text-red-900">CHECKMATE.</p>
+        </footer>
+
+    </div>
+
+    <!-- Logic -->
+    <script>
+        // Canvas Animation (Hellfire Embers)
+        const canvas = document.getElementById('ember-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        class Ember {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 20;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 1 + 0.5;
+                this.life = Math.random() * 100 + 50;
+                this.maxLife = this.life;
+                this.color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0,`;
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += Math.sin(this.life / 20) * 0.5;
+                this.life--;
+                if (this.life <= 0) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color + (this.life / this.maxLife) + ')';
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 70; i++) particles.push(new Ember());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        initParticles();
+        animate();
+
+        // Card Loader Integration
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Mapping IDs to Card Names from the Doc
+            CardLoader.loadCards({
+                'royal-img': 'Royal Archfiend',
+                'highness-img': 'Highness Archfiend',
+                'duke-img': 'Duke Archfiend',
+                'emperor-img': 'Archfiend Emperor',
+                'throne-img': 'Throne of the Archfiends',
+                'strategy-img': 'Archfiend Strategy',
+                'playtime-img': 'Archfiend Playtime',
+                'shipping-img': 'Shipping Archfiend'
+            });
+
+            // Render Banlist
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Royal Archfiend', 'Highness Archfiend', 'Duke Archfiend',
+                'Archfiend Emperor', 'Archfiend Heiress', 'Tour Guide From the Underworld'
+            ], {
+                archetypeName: 'Archfiend',
+                archetypeTraits: {
+                    coreMechanic: 'Ritual-Pendulum Looping',
+                    supportReliance: 'High (Burst Protocol Wave)',
+                    adaptability: 'Rogue Tier (Strong Board Breaking)',
+                    resilience: 'Very High (Infinite Recursion)'
+                }
+            });
+
+            // Render compact deck resources in header
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Archfiend');
+
+            // Render archetype cards browser (compact mode at top)
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Archfiend', {
+                compact: true,
+                buttonColor: 'from-purple-600 to-indigo-600',
+                buttonHoverColor: 'from-purple-700 to-indigo-700'
+            });
+        });
+    </script>
+    <!-- Cookie Consent Banner -->
+    <script src="../assets/js/cookie-consent.js"></script>
+    <script src="../assets/js/cookie-consent-config.js"></script>
+</body>
+
+</html>

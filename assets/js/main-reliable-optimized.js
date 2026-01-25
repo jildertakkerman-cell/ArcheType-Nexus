@@ -204,9 +204,9 @@ class ArchetypeLoader {
             }
 
             if (archetypeDates && archetypeDates.size > 0) {
-                // Cache the results for 24 hours
+                // Cache the results for 10 minutes
                 localStorage.setItem(cacheKey, JSON.stringify([...archetypeDates]));
-                localStorage.setItem(cacheExpiryKey, (now + 24 * 60 * 60 * 1000).toString());
+                localStorage.setItem(cacheExpiryKey, (now + 10 * 60 * 1000).toString());
 
                 this.updateArchetypesWithDates(archetypeDates);
                 console.log('Archetype dates fetched and cached');
