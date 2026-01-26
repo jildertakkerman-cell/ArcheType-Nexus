@@ -435,7 +435,7 @@ window.CardLoader = (function () {
      * @param {number} passcode - Optional card passcode for action lookups
      * @returns {string} HTML string for tags section
      */
-    function formatTagsSection(tags, cardType = '', passcode = null) {
+    function formatTagsSection(tags, cardType = '', passcode = null, cardName = '') {
         if (!tags || tags.length === 0) return '';
 
         // Extract tag names for hand trap detection
@@ -447,10 +447,13 @@ window.CardLoader = (function () {
 
         // Detect true hand traps: Hand Activation + (Negate OR Banishment OR Floodgate)
         // BUT exclude Extra Deck monsters
+        // ALSO include Mulcharmy cards (draw-based hand traps with Hand Activation)
+        const isMulcharmy = cardName.toLowerCase().startsWith('mulcharmy');
         const isHandTrap = !isExtraDeck && tagNames.includes('Hand Activation') &&
             (tagNames.includes('Negate') ||
                 tagNames.includes('Banishment') ||
-                tagNames.includes('Floodgate'));
+                tagNames.includes('Floodgate') ||
+                isMulcharmy);
 
         // Group tags by category
         const groups = groupTagsByCategory(tags);
@@ -2028,7 +2031,7 @@ window.CardLoader = (function () {
                 if (tagsContainer) {
                     if (tags.length > 0) {
                         // Use formatTagsSection but strip the outer container/header as we are in a tab
-                        let content = formatTagsSection(tags, cardInfo.type || '', cardPasscode);
+                        let content = formatTagsSection(tags, cardInfo.type || '', cardPasscode, cardInfo.name || '');
                         // Simple clean up to remove the "Gameplay Tags" header from the helper output
                         content = content.replace(/<div class="text-xs text-gray-400 mb-2">🏷️ Gameplay Tags<\/div>/, '');
                         content = content.replace(/<div class="mt-3 pt-2 border-t border-gray-700">/, '<div>'); // Remove top border
