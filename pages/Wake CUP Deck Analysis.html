@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAKE CUP!: The Morning Alarm</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Roboto+Mono:wght@400;600&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- CardLoader -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+
+    <style>
+        :root {
+            /* Theme: Dark Roast & Morning Mist */
+            --color-bg: #0f0e0e;
+            /* Espresso Black */
+            --color-card-bg: #1a1614;
+            /* Dark Bean */
+            --color-accent-steam: #e0f2fe;
+            /* Light Blue Steam */
+            --color-accent-roast: #d97706;
+            /* Amber/Orange */
+            --color-accent-wind: #22d3ee;
+            /* Cyan Wind */
+            --color-text-main: #f3f4f6;
+            --color-text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text-main);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(217, 119, 6, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(34, 211, 238, 0.05) 0%, transparent 20%);
+            min-height: 100vh;
+        }
+
+        .font-cafe {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .font-tech {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* --- Card Styling --- */
+        .cafe-card {
+            background-color: var(--color-card-bg);
+            border: 1px solid #3f3f46;
+            border-left: 4px solid var(--color-accent-roast);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cafe-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03));
+            pointer-events: none;
+        }
+
+        .cafe-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--color-accent-wind);
+            box-shadow: 0 10px 25px -5px rgba(34, 211, 238, 0.15);
+        }
+
+        .cafe-card.wind-border {
+            border-left-color: var(--color-accent-wind);
+        }
+
+        /* --- Animated Banner --- */
+        .steam-header {
+            position: relative;
+            min-height: 300px;
+            background: linear-gradient(to bottom right, #1a1614, #000);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            border: 1px solid #3f3f46;
+            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8);
+        }
+
+        #steam-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.4;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .title-glow {
+            text-shadow: 0 0 20px rgba(217, 119, 6, 0.4);
+        }
+
+        /* --- Custom Links & Buttons --- */
+        .wace-link {
+            color: var(--color-accent-roast);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--color-accent-roast);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .wace-link:hover {
+            color: var(--color-accent-wind);
+            border-bottom-color: var(--color-accent-wind);
+            padding-bottom: 2px;
+        }
+
+        .brew-btn {
+            background: rgba(217, 119, 6, 0.1);
+            border: 1px solid var(--color-accent-roast);
+            color: var(--color-accent-roast);
+            padding: 0.5rem 1rem;
+            font-family: 'Roboto Mono', monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 0.25rem;
+        }
+
+        .brew-btn:hover,
+        .brew-btn.active {
+            background: var(--color-accent-roast);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(217, 119, 6, 0.4);
+        }
+
+        /* --- Card Placeholders --- */
+        .card-placeholder {
+            background: #18181b;
+            color: #52525b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            height: 200px;
+            width: 100%;
+            border-radius: 0.375rem;
+            border: 1px dashed #3f3f46;
+            position: relative;
+        }
+
+        .icon-wind {
+            color: var(--color-accent-wind);
+        }
+
+        .icon-roast {
+            color: var(--color-accent-roast);
+        }
+
+        /* --- Home Button --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: #000;
+            color: var(--color-accent-roast);
+            border: 2px solid var(--color-accent-roast);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(217, 119, 6, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .ygo-home-button:hover {
+            transform: scale(1.1) rotate(15deg);
+            background: var(--color-accent-roast);
+            color: #fff;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+</head>
+
+<body class="p-4 md:p-8">
+
+    <!-- Home Button -->
+    <a href="../index.html" class="ygo-home-button" title="Return to Nexus">
+        <i class="fas fa-coffee"></i>
+    </a>
+
+    <div class="container mx-auto max-w-6xl">
+
+        <!-- Header Section -->
+        <header class="steam-header">
+            <canvas id="steam-canvas"></canvas>
+            <div class="header-content animate-fadeIn">
+                <h1 class="text-6xl md:text-8xl font-cafe text-white mb-2 title-glow italic">WAKE CUP!</h1>
+                <p class="text-xl md:text-2xl font-tech text-orange-200 tracking-wider">FLIP MECHANICS // RE-BREWED</p>
+                <div class="flex gap-4 mt-6 text-sm font-bold text-cyan-400">
+                    <span><i class="fas fa-wind mr-2"></i>WIND</span>
+                    <span><i class="fas fa-tint mr-2"></i>AQUA</span>
+                    <span><i class="fas fa-sync-alt mr-2"></i>FLIP</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Deck Resources & Card Browser (Dock Design) -->
+        <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#1a1614]/90 backdrop-blur-md border border-orange-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                <div id="deck-resources-compact" class="flex items-center"></div>
+
+                <!-- Vertical Divider (Desktop) -->
+                <div class="hidden md:block w-px h-6 bg-orange-500/30 mx-1"></div>
+
+                <div id="archetype-cards-browser" class="flex justify-center"></div>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <section class="mb-12 animate-fadeIn">
+            <div class="cafe-card p-8">
+                <h2 class="text-3xl font-cafe text-white mb-4 border-b border-gray-700 pb-2">Technical Summary</h2>
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-1">
+                        <p class="text-gray-300 leading-relaxed mb-4">
+                            The <strong>WAKE CUP!</strong> series (often stylized as "Wace CUP!" in community theory)
+                            represents a paradigm shift in the utilization of the <span class="text-cyan-400">Flip
+                                mechanic</span>. Traditionally hampered by the "Set and Wait" restriction, this engine
+                            accelerates the process via position-manipulation effects that function as Quick Effects or
+                            chainable triggers.
+                        </p>
+                        <p class="text-gray-300 leading-relaxed">
+                            Operating primarily as a WIND/Aqua engine, the deck utilizes a "reveal-and-set" loop to
+                            bypass Normal Summon restrictions, effectively weaponizing the face-down status of monsters.
+                            Before diving into the mechanics, you might want to <a href="#menu-section"
+                                class="wace-link">check out the full Wace CUP! roster</a> below.
+                        </p>
+                    </div>
+                    <div class="md:w-1/3 bg-black/30 p-4 rounded border border-gray-800">
+                        <h4 class="text-orange-400 font-bold mb-3 font-tech text-sm">MECHANICAL PILLARS</h4>
+                        <ul class="space-y-2 text-sm text-gray-400">
+                            <li><i class="fas fa-bolt text-yellow-500 w-5"></i> <strong>Instant Flip:</strong> Quick
+                                Effect activation of Set cards.</li>
+                            <li><i class="fas fa-hand-holding text-cyan-500 w-5"></i> <strong>Search & Discard:</strong>
+                                Triggers Shaddoll/Dark World effects.</li>
+                            <li><i class="fas fa-lock text-red-500 w-5"></i> <strong>The Lock:</strong> Abuse of
+                                "Whirlwind Weasel".</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Menu (Card Breakdown) -->
+        <section id="menu-section" class="mb-16">
+            <h2 class="text-3xl font-cafe text-white mb-8 flex items-center">
+                <span class="text-orange-500 mr-3">01.</span> The Menu
+                <span class="text-sm font-tech text-gray-500 ml-auto">LEVEL 3 FACILITATORS & LEVEL 7 ENFORCERS</span>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Kuro -->
+                <div class="cafe-card wind-border p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-white">WAKE CUP! Kuro</h3>
+                        <span class="bg-gray-800 text-cyan-400 text-xs px-2 py-1 rounded font-tech">LVL 7 /
+                            SEARCHER</span>
+                    </div>
+                    <div class="flex gap-4">
+                        <div id="kuro-img" class="card-placeholder w-32 flex-shrink-0">Kuro</div>
+                        <div class="text-sm text-gray-400">
+                            <p class="mb-2"><strong class="text-orange-400">Effect:</strong> Reveal self to add ANY WIND
+                                Flip monster, then <span class="underline decoration-dotted">discard 1 card</span>
+                                (Effect, not Cost).</p>
+                            <p class="mb-2"><strong class="text-cyan-400">Quick Effect:</strong> Change a Set monster to
+                                Face-up Defense.</p>
+                            <p class="italic text-xs text-gray-500">"The Linchpin. Triggers Shaddolls and sets up the
+                                Weasel lock."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Erl -->
+                <div class="cafe-card wind-border p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-white">WAKE CUP! Erl</h3>
+                        <span class="bg-gray-800 text-cyan-400 text-xs px-2 py-1 rounded font-tech">LVL 7 /
+                            REMOVAL</span>
+                    </div>
+                    <div class="flex gap-4">
+                        <div id="erl-img" class="card-placeholder w-32 flex-shrink-0">Erl</div>
+                        <div class="text-sm text-gray-400">
+                            <p class="mb-2"><strong class="text-orange-400">Summon:</strong> Discard a Flip monster to
+                                SS self (Face-up or Face-down).</p>
+                            <p class="mb-2"><strong class="text-cyan-400">Flip Effect:</strong> Send face-up cards
+                                opponent controls to GY (Non-targeting) equal to number of Flip monsters.</p>
+                            <p class="italic text-xs text-gray-500">"The Board Wipe. Bypasses destruction immunity."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Macchia -->
+                <div class="cafe-card p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-white">WAKE CUP! Macchia</h3>
+                        <span class="bg-gray-800 text-orange-400 text-xs px-2 py-1 rounded font-tech">LVL 3 /
+                            SWARM</span>
+                    </div>
+                    <div class="flex gap-4">
+                        <div id="macchia-img" class="card-placeholder w-32 flex-shrink-0">Macchia</div>
+                        <div class="text-sm text-gray-400">
+                            <p class="mb-2"><strong class="text-orange-400">Effect:</strong> Reveal self + 1 Flip
+                                monster in hand -> Special Summon BOTH Face-down.</p>
+                            <p><strong class="text-cyan-400">End Phase:</strong> Send a Face-down card to GY.</p>
+                            <p class="italic text-xs text-gray-500 mt-2">"The Double Set. Saves your Normal Summon."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mocha -->
+                <div class="cafe-card p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-white">WAKE CUP! Mocha</h3>
+                        <span class="bg-gray-800 text-orange-400 text-xs px-2 py-1 rounded font-tech">LVL 3 /
+                            TRIGGER</span>
+                    </div>
+                    <div class="flex gap-4">
+                        <div id="mocha-img" class="card-placeholder w-32 flex-shrink-0">Mocha</div>
+                        <div class="text-sm text-gray-400">
+                            <p class="mb-2"><strong class="text-orange-400">Effect:</strong> If you control a Set
+                                monster: SS self, then FLIP that monster to Attack Position.</p>
+                            <p><strong class="text-cyan-400">End Phase:</strong> Resets itself Face-down.</p>
+                            <p class="italic text-xs text-gray-500 mt-2">"The Alarm Clock. Forces flip effects
+                                immediately."</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Combo Operations -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-cafe text-white mb-8 flex items-center">
+                <span class="text-orange-500 mr-3">02.</span> Brewing Methodology
+            </h2>
+
+            <div class="flex gap-4 mb-6">
+                <button class="brew-btn active" onclick="showCombo('combo-weasel', this)">The Whirlwind Lock</button>
+                <button class="brew-btn" onclick="showCombo('combo-erl', this)">The Erl Wipe</button>
+            </div>
+
+            <!-- Weasel Lock -->
+            <div id="combo-weasel" class="cafe-card p-8 block">
+                <h3 class="text-xl font-bold text-cyan-400 mb-2">The Whirlwind Weasel Lockdown</h3>
+                <p class="text-gray-500 text-sm mb-6">Objective: Prevent opponent from activating Spells/Traps for the
+                    entire turn.</p>
+
+                <ol class="space-y-4 font-tech text-gray-300">
+                    <li class="flex gap-4 items-start">
+                        <span class="text-orange-500 font-bold">01.</span>
+                        <div>Reveal <strong>WAKE CUP! Kuro</strong>. Add <strong>Whirlwind Weasel</strong> (Lvl 3 WIND
+                            Flip). Discard fodder (e.g., Shaddoll Beast).</div>
+                    </li>
+                    <li class="flex gap-4 items-start">
+                        <span class="text-orange-500 font-bold">02.</span>
+                        <div>Normal Summon (or SS via Macchia) <strong>Whirlwind Weasel</strong> in Face-down Defense.
+                        </div>
+                    </li>
+                    <li class="flex gap-4 items-start">
+                        <span class="text-orange-500 font-bold">03.</span>
+                        <div><strong>Opponent's Draw Phase:</strong> Activate Kuro's Quick Effect (or Riot's Reason) to
+                            FLIP Weasel face-up.</div>
+                    </li>
+                    <li class="flex gap-4 items-start">
+                        <span class="text-cyan-400 font-bold">RES.</span>
+                        <div>Weasel Effect: "Your opponent cannot activate Spell or Trap Cards for the rest of this
+                            turn."</div>
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Erl Wipe -->
+            <div id="combo-erl" class="cafe-card p-8 hidden">
+                <h3 class="text-xl font-bold text-cyan-400 mb-2">The Erl Board Clear</h3>
+                <p class="text-gray-500 text-sm mb-6">Objective: Non-targeting removal of 1-3 cards.</p>
+
+                <ol class="space-y-4 font-tech text-gray-300">
+                    <li class="flex gap-4 items-start">
+                        <span class="text-orange-500 font-bold">01.</span>
+                        <div>Discard <strong>WAKE CUP! Mocha</strong> to Special Summon <strong>WAKE CUP! Erl</strong>
+                            Face-down.</div>
+                    </li>
+                    <li class="flex gap-4 items-start">
+                        <span class="text-orange-500 font-bold">02.</span>
+                        <div>Activate <strong>Riot's Reason</strong> or <strong>Book of Taiyou</strong> to Flip Erl
+                            face-up.</div>
+                    </li>
+                    <li class="flex gap-4 items-start">
+                        <span class="text-orange-500 font-bold">03.</span>
+                        <div>Erl Effect Triggers: Check number of Flip monsters. Send equal number of opponent's cards
+                            to GY.</div>
+                    </li>
+                    <li class="flex gap-4 items-start">
+                        <span class="text-cyan-400 font-bold">END.</span>
+                        <div>End Phase: Erl Effect triggers. Revive <strong>Mocha</strong> Face-down from GY. Mocha
+                            resets itself.</div>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- End Board Visualizer -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-cafe text-white mb-8 flex items-center">
+                <span class="text-orange-500 mr-3">03.</span> The End Board
+                <span class="text-sm font-tech text-gray-500 ml-auto">THE "DUNGEON-WEASEL" MATRIX</span>
+            </h2>
+
+            <div class="cafe-card p-8 relative min-h-[400px]">
+                <div
+                    class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5">
+                </div>
+
+                <!-- Field Layout Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+
+                    <!-- Field Spell Zone -->
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="w-24 h-32 border border-green-500/50 bg-green-900/20 rounded flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+                            <span class="text-xs text-green-400 text-center font-bold px-2">Mimighoul Dungeon</span>
+                        </div>
+                        <p class="text-xs text-gray-400 text-center w-48">Prevents Normal Summon unless player controls
+                            a Face-up Monster.</p>
+                    </div>
+
+                    <!-- Monster Zone -->
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="w-32 h-48 border-2 border-dashed border-orange-500 bg-gray-900 rounded flex flex-col items-center justify-center mb-2 shadow-[0_0_20px_rgba(217,119,6,0.3)] transform rotate-90 lg:rotate-0">
+                            <div class="text-4xl text-gray-700 mb-2"><i class="fas fa-question"></i></div>
+                            <span class="text-sm text-orange-400 font-bold">Whirlwind Weasel</span>
+                            <span class="text-[10px] text-gray-500 uppercase mt-1">Face-Down Defense</span>
+                        </div>
+                        <p class="text-xs text-gray-400 text-center">Ready to be flipped by Kuro/Mocha.</p>
+                    </div>
+
+                    <!-- Hand/Backrow -->
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="w-24 h-32 border border-cyan-500/50 bg-cyan-900/20 rounded flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(34,211,238,0.2)]">
+                            <span class="text-xs text-cyan-400 text-center font-bold px-2">WAKE CUP! Kuro</span>
+                        </div>
+                        <p class="text-xs text-gray-400 text-center w-48">In Hand or Field (Quick Eff). The Trigger.</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-800 text-center">
+                    <p class="text-gray-300 font-tech text-sm"><strong class="text-red-500">LOCK STATE:</strong>
+                        Opponent cannot Normal Summon (Dungeon) AND cannot use Spells to extend (Weasel). Must pass
+                        turn.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis (From DOCX) -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-cafe text-white mb-8 flex items-center">
+                <span class="text-orange-500 mr-3">04.</span> Competitive Analysis
+                <span class="text-sm font-tech text-gray-500 ml-auto">2026 LANDSCAPE</span>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Meta Context -->
+                <div class="cafe-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4"><i
+                            class="fas fa-chart-line text-cyan-400 mr-2"></i>Meta Integration</h3>
+                    <p class="text-sm text-gray-400 mb-4 leading-relaxed">
+                        In the current 2026 landscape dominated by <strong>Mitsurugi</strong> (Ritual) and
+                        <strong>Dracotail</strong> (Synchro), WAKE CUP! serves as a critical "Play Insulator". The
+                        engine's ability to force interactions before committing to a Normal Summon makes it a popular
+                        hybrid choice.
+                    </p>
+                    <ul class="text-sm text-gray-300 space-y-2">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> <strong>Shaddoll Synergy:</strong> Kuro's
+                            discard is an <em>Effect</em>, triggering Shaddoll/Dark World chains.</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> <strong>Mimighoul Hybrid:</strong> Turns
+                            "Passive" flip effects into "Proactive" disruption.</li>
+                        <li><i class="fas fa-trophy text-yellow-500 mr-2"></i> <strong>Performance:</strong> Consistent
+                            Top 32 presence in OCG and YCS Bologna 2025.</li>
+                    </ul>
+                </div>
+
+                <!-- The Dominus Conflict -->
+                <div class="cafe-card p-6 border-l-4 border-red-500">
+                    <h3 class="text-xl font-bold text-white mb-4"><i
+                            class="fas fa-exclamation-triangle text-red-500 mr-2"></i>The Dominus Conflict</h3>
+                    <p class="text-sm text-gray-400 mb-4 leading-relaxed">
+                        The primary threat to the engine is the <strong>"Dominus"</strong> series of hand traps (e.g.,
+                        <em>Dominus Purge</em>). Since Kuro activates in the hand, it plays directly into these negates.
+                    </p>
+                    <div class="bg-red-900/20 p-3 rounded border border-red-900/50">
+                        <p class="text-xs text-red-200 font-tech">
+                            <strong>TACTICAL NOTE:</strong> Because Kuro discards at resolution, a negated Kuro does NOT
+                            discard. However, this can be used to bait the Dominus before committing to a Shaddoll
+                            Fusion.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Banlist Status -->
+        <section class="mb-12 animate-fadeIn">
+            <h2 class="text-3xl font-cafe text-white mb-6 heading-underline">Regulation Status</h2>
+            <div id="banlist-status" class="cafe-card p-6">
+                <!-- Banlist content populated by JS -->
+            </div>
+        </section>
+
+        <!-- Deck Resources / Search Section -->
+        <section class="mb-12 animate-fadeIn">
+            <div id="deck-resources-container">
+                <!-- Deck Search content populated by JS -->
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Combo Switcher Logic
+        function showCombo(comboId, btn) {
+            document.querySelectorAll('#combo-weasel, #combo-erl').forEach(panel => {
+                panel.classList.add('hidden');
+                panel.classList.remove('block');
+            });
+            document.getElementById(comboId).classList.remove('hidden');
+            document.getElementById(comboId).classList.add('block');
+
+            document.querySelectorAll('.brew-btn').forEach(b => {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+        }
+
+        // Initialize Card Loader & Visuals
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Load Cards
+            CardLoader.loadCards({
+                'kuro-img': 'WAKE CUP! Kuro',
+                'erl-img': 'WAKE CUP! Erl',
+                'macchia-img': 'WAKE CUP! Macchia',
+                'mocha-img': 'WAKE CUP! Mocha'
+            });
+
+            // 2. Render Banlist Section
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Whirlwind Weasel',
+                'WAKE CUP! Kuro',
+                'WAKE CUP! Erl',
+                'Dominus Purge',
+                'Riot\'s Reason'
+            ], {
+                archetypeName: 'WAKE CUP!',
+                relatedCards: ['Shaddoll Beast', 'Mimighoul Dungeon'],
+                archetypeTraits: {
+                    coreMechanic: 'Quick-Flip Position Manipulation',
+                    supportReliance: 'High (WIND/Flip generic support)',
+                    adaptability: 'Tier 2 Engine (High Ceiling, Hand-Trap Vulnerable)'
+                }
+            });
+
+            // 3. Render Deck Resources
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'WAKE CUP!');
+
+            // 4. Render Archetype Cards Browser
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'WAKE CUP!', {
+                compact: true,
+                buttonColor: 'from-orange-600 to-amber-600',
+                buttonHoverColor: 'from-orange-700 to-amber-700'
+            });
+
+            // 5. Canvas Animation (Steam/Wind)
+            const canvas = document.getElementById('steam-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let width, height;
+                let particles = [];
+
+                function resize() {
+                    width = canvas.width = canvas.offsetWidth;
+                    height = canvas.height = canvas.offsetHeight;
+                }
+
+                class SteamParticle {
+                    constructor() { this.reset(); }
+                    reset() {
+                        this.x = Math.random() * width;
+                        this.y = height + (Math.random() * 50);
+                        this.size = Math.random() * 3 + 1;
+                        this.speedY = Math.random() * 1 + 0.5;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.life = Math.random() * 100 + 100;
+                        this.maxLife = this.life;
+                        this.opacity = 0;
+                    }
+                    update() {
+                        this.y -= this.speedY;
+                        this.x += Math.sin(this.y * 0.02) * 0.5; // Wavy motion
+                        this.life--;
+
+                        // Fade in then out
+                        if (this.life > this.maxLife * 0.8) {
+                            this.opacity += 0.02;
+                        } else if (this.life < this.maxLife * 0.4) {
+                            this.opacity -= 0.01;
+                        }
+
+                        if (this.life <= 0 || this.opacity <= 0) this.reset();
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        // Steam color (white/cyan tint) or Roast color (orange tint)
+                        const isSteam = Math.random() > 0.3;
+                        const r = isSteam ? 224 : 217;
+                        const g = isSteam ? 242 : 119;
+                        const b = isSteam ? 254 : 6;
+
+                        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${this.opacity})`;
+                        ctx.fill();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < 80; i++) particles.push(new SteamParticle());
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, width, height);
+                    particles.forEach(p => { p.update(); p.draw(); });
+                    requestAnimationFrame(animate);
+                }
+
+                window.addEventListener('resize', resize);
+                resize();
+                initParticles();
+                animate();
+            }
+        });
+    </script>
+</body>
+
+</html>

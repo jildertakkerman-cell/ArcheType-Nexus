@@ -2328,10 +2328,18 @@ window.CardLoader = (function () {
                 const header = document.createElement('h2');
                 header.className = `banlist-header text-xl md:text-3xl font-bold ${pageColors.headerColor} mb-6 text-center`;
                 header.innerHTML = `<i class="fas fa-gavel mr-2"></i><span class="banlist-title-text">Banlist Impact</span>`;
-                if (parentSection === container) {
-                    container.insertBefore(header, container.firstChild);
+
+                // Find the direct child of parentSection that contains (or is) the container
+                let directChild = container;
+                while (directChild.parentElement && directChild.parentElement !== parentSection) {
+                    directChild = directChild.parentElement;
+                }
+
+                if (directChild.parentElement === parentSection) {
+                    parentSection.insertBefore(header, directChild);
                 } else {
-                    parentSection.insertBefore(header, container);
+                    // Fallback if structure is unexpected
+                    parentSection.insertBefore(header, parentSection.firstChild);
                 }
             }
         }

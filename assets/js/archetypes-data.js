@@ -5,6 +5,46 @@
 // Total file size: 661.93 KB
 
 const archetypes = [
+    {
+        name: "WAKE CUP!",
+        description: "A specialized WIND/Aqua engine that modernizes Flip monsters through high-speed position shifting, famously enabling the 'Whirlwind Weasel' lock.",
+        filepath: "pages/Wake CUP Deck Analysis.html",
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="wakeCupBg" cx="50%" cy="50%" r="60%">
+                    <stop offset="0%" stop-color="#1a1614"/>
+                    <stop offset="100%" stop-color="#000"/>
+                </radialGradient>
+                <linearGradient id="steamGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.2"/>
+                    <stop offset="100%" stop-color="#e0f2fe" stop-opacity="0.8"/>
+                </linearGradient>
+            </defs>
+            <!-- Background -->
+            <rect x="10" y="10" width="80" height="80" rx="15" fill="url(#wakeCupBg)" stroke="#d97706" stroke-width="2"/>
+            
+            <!-- Coffee Cup -->
+            <path d="M30 55 L35 80 Q50 85 65 80 L70 55 Z" fill="#d97706" stroke="#f59e0b" stroke-width="2"/>
+            <path d="M30 55 Q50 65 70 55 Q50 45 30 55" fill="#78350f" opacity="0.9"/>
+            <!-- Handle -->
+            <path d="M70 60 Q80 60 80 68 Q80 75 70 75" fill="none" stroke="#d97706" stroke-width="3"/>
+            
+            <!-- Steam Whirlwind -->
+            <path d="M45 45 Q35 30 50 25 T55 15" fill="none" stroke="url(#steamGrad)" stroke-width="3" stroke-linecap="round" opacity="0.8">
+                <animate attributeName="d" values="M45 45 Q35 30 50 25 T55 15;M45 43 Q40 28 50 23 T55 13;M45 45 Q35 30 50 25 T55 15" dur="3s" repeatCount="indefinite"/>
+            </path>
+            <path d="M55 48 Q65 35 55 28 T50 18" fill="none" stroke="url(#steamGrad)" stroke-width="2" stroke-linecap="round" opacity="0.6">
+                <animate attributeName="d" values="M55 48 Q65 35 55 28 T50 18;M55 46 Q60 33 55 26 T50 16;M55 48 Q65 35 55 28 T50 18" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+            </path>
+
+            <!-- Flip/Wind Symbol Overlay -->
+            <path d="M30 30 L40 25 L40 35 Z" fill="#22d3ee">
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="10s" repeatCount="indefinite"/>
+            </path>
+        </svg>`,
+        firstReleaseDate: "2026-03-15",
+        latestReleaseDate: "2026-03-15"
+    },
 
     {
         name: "Archfiend",
