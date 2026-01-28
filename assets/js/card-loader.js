@@ -69,6 +69,7 @@ window.CardLoader = (function () {
     let currentBanlistFormat = 'tcg'; // Default format
     let popup = null;
     let activePopup = null;
+    let hideTimeout = null;
     let lastShown = 0;
     let currentCard = null;
     // Debug toggle for development — when true, material extraction steps are logged
@@ -1866,6 +1867,12 @@ window.CardLoader = (function () {
     async function showPopupByName(cardName, event) {
         if (!cardName) return;
 
+        // Stop propagation immediately to prevent document click from closing existing popup
+        // before the new one opens (during the await fetch)
+        if (event && event.stopPropagation) {
+            event.stopPropagation();
+        }
+
         // Create a synthetic event if none provided
         if (!event) {
             event = {
@@ -1892,6 +1899,12 @@ window.CardLoader = (function () {
     }
 
     function showPopup(event, cardName) {
+        // Cancel pending hide if any
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            hideTimeout = null;
+        }
+
         // Stop event propagation to prevent immediate hide
         event.stopPropagation();
 
@@ -2083,9 +2096,14 @@ window.CardLoader = (function () {
         if (activePopup) {
             activePopup.style.opacity = 0;
             activePopup.style.pointerEvents = 'none'; // Disable pointer events
-            setTimeout(() => {
-                if (activePopup) activePopup.style.display = 'none';
+
+            if (hideTimeout) clearTimeout(hideTimeout);
+            hideTimeout = setTimeout(() => {
+                // Only hide if no active popup is set (meaning we haven't re-opened)
+                if (!activePopup && popup) popup.style.display = 'none';
+                hideTimeout = null;
             }, 200);
+
             activePopup = null;
             currentCard = null;
         }

@@ -127,9 +127,11 @@ class UpdatesLoader {
         let featuredCardHTML = '';
         if (update.featuredCard) {
             const cardId = `card-${update.id}`;
+            // Escape double quotes for HTML attribute
+            const safeFeaturedCard = update.featuredCard.replace(/"/g, '&quot;');
             featuredCardHTML = `
                 <div class="featured-card-container">
-                    <div id="${cardId}" class="featured-card" data-card-name="${update.featuredCard}">
+                    <div id="${cardId}" class="featured-card" data-card-name="${safeFeaturedCard}">
                         <div class="card-loading">
                             <i class="fas fa-spinner fa-spin"></i>
                         </div>
@@ -147,9 +149,14 @@ class UpdatesLoader {
         let cardNamesHTML = '';
 
         if (update.newCards && update.newCards.length > 0) {
-            const cardBadges = update.newCards.map(name =>
-                `<span class="card-name-badge" data-card-name="${name}" onclick="if(CardLoader && CardLoader.showPopupByName) CardLoader.showPopupByName('${name.replace(/'/g, "\\'")}', event)">${name}</span>`
-            ).join('');
+            const cardBadges = update.newCards.map(name => {
+                // Escape double quotes for HTML attributes
+                const safeName = name.replace(/"/g, '&quot;');
+                // For JS string inside onclick: escape single quotes (JS string delimiter) AND double quotes (HTML attribute delimiter)
+                const safeJsName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                return `<span class="card-name-badge" data-card-name="${safeName}" onclick="if(CardLoader && CardLoader.showPopupByName) CardLoader.showPopupByName('${safeJsName}', event)">${name}</span>`;
+            }).join('');
 
             cardNamesHTML = `
                 <div class="new-cards-box">
