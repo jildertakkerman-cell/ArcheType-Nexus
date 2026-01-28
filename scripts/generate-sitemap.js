@@ -56,6 +56,12 @@ sitemapXml += `  <url>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>${baseUrl}/pages/Updates.html</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
 `;
 
 // Add all archetype pages (with deduplication)
@@ -70,19 +76,19 @@ archetypes.forEach((archetype) => {
             return;
         }
         processedPaths.add(archetype.filepath);
-        
+
         // Construct the URL from the filepath and encode it properly
         // encodeURI preserves slashes and encodes spaces and special characters
         const encodedPath = archetype.filepath.split('/').map(segment => encodeURIComponent(segment)).join('/');
         const url = `${baseUrl}/${encodedPath}`;
-        
+
         // Use the latest release date if available, otherwise use a default
         // Validate that it looks like a date (YYYY-MM-DD format)
         let lastmod = currentDate;
         if (archetype.latestReleaseDate && /^\d{4}-\d{2}-\d{2}$/.test(archetype.latestReleaseDate)) {
             lastmod = archetype.latestReleaseDate;
         }
-        
+
         sitemapXml += `  <url>
     <loc>${url}</loc>
     <lastmod>${lastmod}</lastmod>
