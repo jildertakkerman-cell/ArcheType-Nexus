@@ -1857,6 +1857,40 @@ window.CardLoader = (function () {
         });
     };
 
+    /**
+     * Show popup by card name - can be called directly without requiring card to be pre-loaded
+     * Fetches card data first if needed, then shows the popup
+     * @param {string} cardName - Name of the card to show
+     * @param {Event} event - Optional click event for positioning
+     */
+    async function showPopupByName(cardName, event) {
+        if (!cardName) return;
+
+        // Create a synthetic event if none provided
+        if (!event) {
+            event = {
+                stopPropagation: () => { },
+                clientX: window.innerWidth / 2,
+                clientY: window.innerHeight / 2
+            };
+        }
+
+        // Check if card is already in cache
+        if (!cardDataCache[cardName]) {
+            // Fetch card data first
+            const data = await fetchCardData(cardName);
+            if (data) {
+                cardDataCache[cardName] = data;
+            } else {
+                console.warn('[CardLoader] Could not fetch card:', cardName);
+                return;
+            }
+        }
+
+        // Now show the popup
+        showPopup(event, cardName);
+    }
+
     function showPopup(event, cardName) {
         // Stop event propagation to prevent immediate hide
         event.stopPropagation();
@@ -3658,6 +3692,7 @@ window.CardLoader = (function () {
         clearCache,
         configure,
         showPopup,
+        showPopupByName,
         renderDeckSearchSection,
         renderDeckResourcesCompact,
         cardDataCache,
