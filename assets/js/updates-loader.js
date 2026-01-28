@@ -155,7 +155,15 @@ class UpdatesLoader {
                 // For JS string inside onclick: escape single quotes (JS string delimiter) AND double quotes (HTML attribute delimiter)
                 const safeJsName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
-                return `<span class="card-name-badge" data-card-name="${safeName}" onclick="if(CardLoader && CardLoader.showPopupByName) CardLoader.showPopupByName('${safeJsName}', event)">${name}</span>`;
+                // Interaction Logic:
+                // Desktop (>768px): Hover -> Popup, Click -> Large Image
+                // Mobile (<=768px): Click -> Popup
+
+                const hoverAttrs = `onmouseenter="if(window.innerWidth > 768 && CardLoader.showPopupByName) CardLoader.showPopupByName('${safeJsName}', event)" onmouseleave="if(window.innerWidth > 768 && CardLoader.hidePopup) CardLoader.hidePopup()"`;
+
+                const clickAttr = `onclick="if(window.innerWidth <= 768) { if(CardLoader.showPopupByName) CardLoader.showPopupByName('${safeJsName}', event); } else { if(CardLoader.showLargeImageByName) CardLoader.showLargeImageByName('${safeJsName}', event); }"`;
+
+                return `<span class="card-name-badge" data-card-name="${safeName}" ${hoverAttrs} ${clickAttr} style="cursor: pointer;">${name}</span>`;
             }).join('');
 
             cardNamesHTML = `

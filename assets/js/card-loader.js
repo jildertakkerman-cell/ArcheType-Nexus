@@ -436,7 +436,7 @@ window.CardLoader = (function () {
      * @param {number} passcode - Optional card passcode for action lookups
      * @returns {string} HTML string for tags section
      */
-    function formatTagsSection(tags, cardType = '', passcode = null, cardName = '') {
+    function formatTagsSection(tags, cardType = '', passcode = null, cardName = '', hasDiscardAction = false) {
         if (!tags || tags.length === 0) return '';
 
         // Extract tag names for hand trap detection
@@ -446,15 +446,12 @@ window.CardLoader = (function () {
         const extraDeckTypes = ['Fusion', 'Synchro', 'Xyz', 'Link', 'Pendulum'];
         const isExtraDeck = extraDeckTypes.some(type => cardType.includes(type));
 
-        // Detect true hand traps: Hand Activation + (Negate OR Banishment OR Floodgate)
+        // Detect true hand traps: Hand Activation + Discard Cost (Action verification)
         // BUT exclude Extra Deck monsters
         // ALSO include Mulcharmy cards (draw-based hand traps with Hand Activation)
         const isMulcharmy = cardName.toLowerCase().startsWith('mulcharmy');
         const isHandTrap = !isExtraDeck && tagNames.includes('Hand Activation') &&
-            (tagNames.includes('Negate') ||
-                tagNames.includes('Banishment') ||
-                tagNames.includes('Floodgate') ||
-                isMulcharmy);
+            (hasDiscardAction || isMulcharmy);
 
         // Group tags by category
         const groups = groupTagsByCategory(tags);
@@ -594,8 +591,91 @@ window.CardLoader = (function () {
             if (popup) applyConstraints(popup);
         });
 
+        // Keep popup open when hovering over it (Desktop)
+        popup.addEventListener('mouseenter', () => {
+            if (hideTimeout) clearTimeout(hideTimeout);
+        });
+        popup.addEventListener('mouseleave', () => {
+            hidePopup();
+        });
+
         document.body.appendChild(popup);
     }
+
+    /**
+     * Large Image Modal (Lightbox)
+     */
+    let largeImageModal = null;
+
+    function createLargeImageModal() {
+        if (largeImageModal) return;
+
+        largeImageModal = document.createElement('div');
+        largeImageModal.id = 'large-image-modal';
+        largeImageModal.className = 'fixed inset-0 z-[10002] bg-black/85 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-sm';
+
+        // Close on ANY click
+        largeImageModal.onclick = () => hideLargeImageModal();
+
+        largeImageModal.innerHTML = `
+            <div class="relative flex flex-col items-center justify-center w-full h-full">
+                <!-- Reduced size: max-h-[80vh], max-w-[80vw] -->
+                <img id="large-card-image" src="" alt="Card Art" class="max-h-[80vh] max-w-[80vw] object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-slate-700 transform scale-95 transition-transform duration-300 cursor-zoom-out" title="Click to close">
+                <button class="mt-6 px-6 py-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-full border border-slate-600 transition-all font-semibold shadow-lg backdrop-blur-md flex items-center gap-2 group">
+                    <i class="fas fa-times text-slate-400 group-hover:text-white transition-colors"></i> Close
+                </button>
+            </div>
+        `;
+        document.body.appendChild(largeImageModal);
+    }
+
+    async function showLargeImageModal(cardName, event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        if (!largeImageModal) createLargeImageModal();
+
+        // Show loading state or placeholder if needed, but usually fast enough
+        // Fetch image URL
+        const imgUrl = await getCardImageUrl(cardName);
+        if (!imgUrl) {
+            console.error('Could not find image for', cardName);
+            return;
+        }
+
+        const img = largeImageModal.querySelector('img');
+        img.src = imgUrl;
+
+        largeImageModal.style.display = 'flex';
+        // Trigger reflow
+        requestAnimationFrame(() => {
+            largeImageModal.classList.remove('opacity-0', 'pointer-events-none');
+            img.classList.remove('scale-95');
+            img.classList.add('scale-100');
+        });
+    }
+
+    function hideLargeImageModal() {
+        if (!largeImageModal) return;
+
+        largeImageModal.classList.add('opacity-0', 'pointer-events-none');
+        const img = largeImageModal.querySelector('img');
+        if (img) {
+            img.classList.remove('scale-100');
+            img.classList.add('scale-95');
+        }
+
+        setTimeout(() => {
+            largeImageModal.style.display = 'none';
+        }, 300);
+    }
+
+    // Export internal functions to global CardLoader object immediately if it exists (for inline HTML handlers)
+    window.CardLoader = window.CardLoader || {};
+    window.CardLoader.showLargeImageByName = showLargeImageModal;
+    window.CardLoader.hideLargeImageModal = hideLargeImageModal;
 
     /**
      * Setup global click listener to close popup
@@ -607,6 +687,19 @@ window.CardLoader = (function () {
                 return;
             }
             hidePopup();
+
+            // Close Large Image Modal if clicking outside image (redundant check but safe)
+            if (largeImageModal && largeImageModal.style.display !== 'none' && event.target === largeImageModal) {
+                hideLargeImageModal();
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hidePopup();
+                hideLargeImageModal();
+            }
         });
     }
 
@@ -831,10 +924,34 @@ window.CardLoader = (function () {
             return;
         }
 
-        container.addEventListener('click', (event) => {
-            event.stopPropagation();
-            showPopup(event, cardName);
-        });
+        const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
+
+        if (isMobile) {
+            // Mobile: Tap to show popup
+            container.addEventListener('click', (event) => {
+                event.stopPropagation();
+                showPopup(event, cardName);
+            });
+        } else {
+            // Desktop: Hover for popup, Click for Large Image
+            container.addEventListener('mouseenter', (event) => {
+                showPopup(event, cardName);
+            });
+
+            container.addEventListener('mouseleave', () => {
+                hidePopup();
+            });
+
+            container.addEventListener('click', (event) => {
+                // If the container is inside a link, we might want to let the link work?
+                // User requirement: "When you click the card it shows a way larger image".
+                // This implies blocking navigation if it refers to the same visual element.
+                // Assuming card containers are primary interaction points.
+                event.preventDefault(); // Stop link navigation if applicable
+                event.stopPropagation();
+                showLargeImageModal(cardName, event);
+            });
+        }
 
         try {
             if (cardDataCache[cardName]) {
@@ -2073,12 +2190,22 @@ window.CardLoader = (function () {
 
         // Fetch and display tags asynchronously
         if (cardPasscode && getSupabaseClient()) {
-            fetchCardTags(cardPasscode).then(tags => {
+            fetchCardTags(cardPasscode).then(async tags => {
                 const tagsContainer = popup.querySelector('#card-tags-container');
                 if (tagsContainer) {
                     if (tags.length > 0) {
+                        // Check for specific discard actions if Hand Activation is present
+                        let hasDiscardAction = false;
+                        if (tags.some(t => t.tag_name === 'Hand Activation')) {
+                            // Using the internal fetchActionsForTag function
+                            const actions = await fetchActionsForTag(cardPasscode, 'Hand Activation');
+                            hasDiscardAction = actions.some(a =>
+                                /discard this card|send this card from your hand to the gy/i.test(a)
+                            );
+                        }
+
                         // Use formatTagsSection but strip the outer container/header as we are in a tab
-                        let content = formatTagsSection(tags, cardInfo.type || '', cardPasscode, cardInfo.name || '');
+                        let content = formatTagsSection(tags, cardInfo.type || '', cardPasscode, cardInfo.name || '', hasDiscardAction);
                         // Simple clean up to remove the "Gameplay Tags" header from the helper output
                         content = content.replace(/<div class="text-xs text-gray-400 mb-2">🏷️ Gameplay Tags<\/div>/, '');
                         content = content.replace(/<div class="mt-3 pt-2 border-t border-gray-700">/, '<div>'); // Remove top border
@@ -3750,6 +3877,8 @@ window.CardLoader = (function () {
             CATEGORY_PRIORITY,
             CONFIG
         }),
+        showLargeImageByName: showLargeImageModal,
+        hideLargeImageModal
     };
 })();
 
