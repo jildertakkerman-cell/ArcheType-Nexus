@@ -156,14 +156,16 @@ class UpdatesLoader {
                 const safeJsName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                 // Interaction Logic:
-                // Desktop (>768px): Hover -> Popup, Click -> Large Image
-                // Mobile (<=768px): Click -> Popup
+                // Universal: Click -> Popup
+                // Popup contains "View Full Art" button
 
-                const hoverAttrs = `onmouseenter="if(window.innerWidth > 768 && CardLoader.showPopupByName) CardLoader.showPopupByName('${safeJsName}', event)" onmouseleave="if(window.innerWidth > 768 && CardLoader.hidePopup) CardLoader.hidePopup()"`;
+                // No hover attributes needed
+                const hoverAttrs = '';
 
-                const clickAttr = `onclick="if(window.innerWidth <= 768) { if(CardLoader.showPopupByName) CardLoader.showPopupByName('${safeJsName}', event); } else { if(CardLoader.showLargeImageByName) CardLoader.showLargeImageByName('${safeJsName}', event); }"`;
+                // Click always calls showPopupByName
+                const clickAttr = `onclick="if(CardLoader.showPopupByName) CardLoader.showPopupByName('${safeJsName}', event)"`;
 
-                return `<span class="card-name-badge" data-card-name="${safeName}" ${hoverAttrs} ${clickAttr} style="cursor: pointer;">${name}</span>`;
+                return `<span class="card-name-badge" data-card-name="${safeName}" ${clickAttr} style="cursor: pointer;">${name}</span>`;
             }).join('');
 
             cardNamesHTML = `

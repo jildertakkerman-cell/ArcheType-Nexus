@@ -937,23 +937,11 @@ window.CardLoader = (function () {
                 showPopup(event, cardName);
             });
         } else {
-            // Desktop: Hover for popup, Click for Large Image
-            container.addEventListener('mouseenter', (event) => {
-                showPopup(event, cardName);
-            });
-
-            container.addEventListener('mouseleave', () => {
-                hidePopup();
-            });
-
+            // Desktop: Click for Popup (changed from Hover)
             container.addEventListener('click', (event) => {
-                // If the container is inside a link, we might want to let the link work?
-                // User requirement: "When you click the card it shows a way larger image".
-                // This implies blocking navigation if it refers to the same visual element.
-                // Assuming card containers are primary interaction points.
                 event.preventDefault(); // Stop link navigation if applicable
                 event.stopPropagation();
-                showLargeImageModal(cardName, event);
+                showPopup(event, cardName);
             });
         }
 
@@ -2130,11 +2118,18 @@ window.CardLoader = (function () {
         popup.innerHTML = `
             <div class="flex flex-col h-full" style="background-color: #0f172a;">
                 <div class="flex-shrink-0" style="background-color: #0f172a;">
-                    <div class="flex justify-between items-start">
-                        <h3 class="text-blue-400 font-bold text-lg">${cardInfo.name}</h3>
+                    <div class="flex justify-between items-start mb-1.5">
+                        <h3 class="text-blue-400 font-bold text-lg leading-tight mr-2">${cardInfo.name}</h3>
                         <span id="popup-release-date" class="text-[10px] text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded border border-gray-700 whitespace-nowrap ${releaseDateHtml ? '' : 'hidden'}">
                             ${releaseDateHtml}
                         </span>
+                    </div>
+
+                    <div class="flex items-center mb-2">
+                         <button onclick="window.CardLoader.showLargeImageByName('${cardInfo.name.replace(/'/g, "\\'")}', event)" class="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 rounded-full text-[10px] text-slate-300 hover:text-white transition-all group shadow-sm">
+                            <i class="fas fa-image text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                            <span class="font-medium tracking-wide">View Full Art</span>
+                         </button>
                     </div>
                     
                     <!-- Tab Navigation -->
