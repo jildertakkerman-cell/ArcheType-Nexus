@@ -33416,6 +33416,58 @@ const archetypes = [
         firstReleaseDate: '2026-01-15',
         latestReleaseDate: '2026-01-15',
 
+    },
+    {
+        name: 'Topologic',
+        description: "A Cyberse series of Link Monsters that act as 'environmental hazards', triggering powerful field-nuke and banish effects when monsters are summoned to Linked Zones. Masters of spatial geometry and board clears.",
+        filepath: 'pages/Topologic Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="topoBg" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#0f172a" />
+                                <stop offset="100%" stop-color="#020617" />
+                            </radialGradient>
+                            <filter id="topoGlow">
+                                <feGaussianBlur stdDeviation="1" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Background -->
+                        <path d="M50 5 L95 27.5 L95 72.5 L50 95 L5 72.5 L5 27.5 Z" fill="url(#topoBg)" stroke="#22d3ee" stroke-width="1.5" />
+                        
+                        <!-- Link Arrow Network -->
+                        <line x1="50" y1="20" x2="20" y2="70" stroke="#1e293b" stroke-width="2" />
+                        <line x1="50" y1="20" x2="80" y2="70" stroke="#1e293b" stroke-width="2" />
+                        <line x1="20" y1="70" x2="80" y2="70" stroke="#1e293b" stroke-width="2" />
+
+                        <!-- Active Zones (Bomber style) -->
+                        <circle cx="50" cy="25" r="4" fill="#f43f5e" filter="url(#topoGlow)">
+                            <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+                        </circle>
+                        
+                        <!-- Trigger lines -->
+                        <line x1="50" y1="25" x2="20" y2="70" stroke="#22d3ee" stroke-width="2" stroke-dasharray="4 2">
+                             <animate attributeName="stroke-dashoffset" values="100;0" dur="2s" repeatCount="indefinite" />
+                        </line>
+                        <line x1="50" y1="25" x2="80" y2="70" stroke="#22d3ee" stroke-width="2" stroke-dasharray="4 2">
+                             <animate attributeName="stroke-dashoffset" values="100;0" dur="2s" repeatCount="indefinite" />
+                        </line>
+
+                        <circle cx="20" cy="70" r="3" fill="#22d3ee" />
+                        <circle cx="80" cy="70" r="3" fill="#22d3ee" />
+
+                        <!-- Central Node -->
+                        <rect x="42" y="42" width="16" height="16" transform="rotate(45 50 50)" fill="none" stroke="#f43f5e" stroke-width="2" />
+                        <circle cx="50" cy="50" r="4" fill="#f43f5e">
+                            <animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite" />
+                        </circle>
+                    </svg>`,
+        firstReleaseDate: '2017-08-04',
+        latestReleaseDate: '2026-05-15',
+
     }
 ];// Export for use in main script
 if (typeof module !== 'undefined' && module.exports) {

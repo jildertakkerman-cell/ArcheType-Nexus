@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topologic: Architectural Spatial Dominance</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@400;700&family=Exo+2:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- External Asset Loaders -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+
+    <style>
+        :root {
+            --topo-bg: #020617;
+            --topo-panel: #0f172a;
+            --topo-accent: #22d3ee;
+            /* Cyan-400 */
+            --topo-danger: #f43f5e;
+            /* Rose-500 */
+            --topo-circuit: rgba(34, 211, 238, 0.05);
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background-color: var(--topo-bg);
+            color: var(--text-main);
+            background-image:
+                linear-gradient(var(--topo-circuit) 1px, transparent 1px),
+                linear-gradient(90deg, var(--topo-circuit) 1px, transparent 1px);
+            background-size: 40px 40px;
+            overflow-x: hidden;
+        }
+
+        .font-tech {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .font-mono-code {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* Hexagon Clip for Geometric Feel */
+        .topo-card {
+            background-color: var(--topo-panel);
+            border: 1px solid rgba(34, 211, 238, 0.2);
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            clip-path: polygon(5% 0, 100% 0, 100% 95%, 95% 100%, 0 100%, 0 5%);
+        }
+
+        .topo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--topo-accent), transparent);
+            opacity: 0.5;
+        }
+
+        .topo-card:hover {
+            border-color: var(--topo-accent);
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.15);
+            transform: translateY(-4px);
+        }
+
+        /* Banner Styles */
+        .hero-banner {
+            position: relative;
+            height: 350px;
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            border-bottom: 2px solid var(--topo-accent);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #topo-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.4;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .glitch-text {
+            font-size: 4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: white;
+            text-shadow: 2px 2px var(--topo-danger), -2px -2px var(--topo-accent);
+            animation: glitch 3s infinite;
+        }
+
+        @keyframes glitch {
+            0% {
+                text-shadow: 2px 2px var(--topo-danger), -2px -2px var(--topo-accent);
+            }
+
+            25% {
+                text-shadow: -2px 2px var(--topo-accent), 2px -2px var(--topo-danger);
+            }
+
+            50% {
+                text-shadow: 2px -2px var(--topo-danger), -2px 2px var(--topo-accent);
+            }
+
+            75% {
+                text-shadow: -2px -2px var(--topo-accent), 2px 2px var(--topo-danger);
+            }
+
+            100% {
+                text-shadow: 2px 2px var(--topo-danger), -2px -2px var(--topo-accent);
+            }
+        }
+
+        /* Card Placeholders */
+        .card-placeholder {
+            background: #020617;
+            border: 1px solid #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--topo-accent);
+            font-size: 0.75rem;
+            min-height: 180px;
+            border-radius: 4px;
+        }
+
+        /* Navigation Button */
+        .nav-btn {
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid var(--topo-accent);
+            color: var(--topo-accent);
+            padding: 0.5rem 1.5rem;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            transition: 0.3s;
+        }
+
+        .nav-btn:hover,
+        .nav-btn.active {
+            background: var(--topo-accent);
+            color: #000;
+            box-shadow: 0 0 15px var(--topo-accent);
+        }
+
+        /* Topo Link Hint */
+        .topo-hint {
+            color: var(--topo-accent);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--topo-accent);
+            transition: 0.3s;
+        }
+
+        .topo-hint:hover {
+            color: #fff;
+            text-shadow: 0 0 8px var(--topo-accent);
+            background: rgba(34, 211, 238, 0.1);
+        }
+
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(2, 6, 23, 0.8);
+            color: var(--topo-accent);
+            border: 1px solid var(--topo-accent);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            backdrop-filter: blur(4px);
+            transition: 0.3s;
+        }
+
+        .ygo-home-button:hover {
+            transform: rotate(90deg) scale(1.1);
+            background: var(--topo-accent);
+            color: #000;
+        }
+
+        /* Endboard Grid */
+        .zone-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .zone-slot {
+            aspect-ratio: 2/3;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: #444;
+        }
+
+        .zone-active {
+            border: 1px solid var(--topo-accent);
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--topo-accent) !important;
+            box-shadow: inset 0 0 10px rgba(34, 211, 238, 0.2);
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <!-- Home Button -->
+    <a href="../index.html" class="ygo-home-button" title="Nexus Home">
+        <i class="fas fa-th-large"></i>
+    </a>
+
+    <div class="container mx-auto max-w-6xl">
+
+        <!-- Hero Header -->
+        <header class="hero-banner rounded-3xl mb-12">
+            <canvas id="topo-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="glitch-text font-tech">TOPOLOGIC</h1>
+                <p class="text-cyan-300 font-mono-code tracking-[0.3em] mt-4 uppercase">Environmental Hazard // Spatial
+                    Logic</p>
+                <div class="flex justify-center gap-6 mt-6 text-xs font-tech text-gray-400">
+                    <span class="flex items-center"><i class="fas fa-microchip mr-2 text-cyan-400"></i> CYBERSE</span>
+                    <span class="flex items-center"><i class="fas fa-moon mr-2 text-rose-500"></i> DARK</span>
+                    <span class="flex items-center"><i class="fas fa-project-diagram mr-2 text-yellow-500"></i>
+                        LINK-TRIGGER</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Deck Resources (Compact Header Dock) -->
+        <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-cyan-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.6)]">
+                <div id="deck-resources-compact" class="flex items-center"></div>
+                <div class="hidden md:block w-px h-6 bg-cyan-500/30 mx-1"></div>
+                <div id="archetype-cards-browser" class="flex justify-center"></div>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <section class="mb-12 animate-fadeIn">
+            <div class="topo-card p-8">
+                <h2 class="text-3xl font-tech text-white mb-6 border-l-4 border-cyan-400 pl-4 uppercase">The Topological
+                    Paradigm</h2>
+                <p class="text-gray-300 leading-relaxed text-lg mb-4">
+                    The <a href="#" class="topo-hint">Topologic Series</a> constitutes a suite of DARK Cyberse Link
+                    Monsters that redefine spatial dynamics. These are not merely monsters; they are <strong
+                        class="text-cyan-400">environmental hazards</strong> that manipulate the field's geometry to
+                    punish opponent summons or facilitate mass field resets.
+                </p>
+                <p class="text-gray-400 leading-relaxed italic border-t border-gray-800 pt-4">
+                    "Topology: the mathematical study of geometric properties and spatial relations. In-game, this
+                    translates to effects that detonated when monsters enter specific zones identified by Link Arrows."
+                </p>
+            </div>
+        </section>
+
+        <!-- Taxonomy of the Void -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-tech text-white mb-8 flex items-center">
+                <span class="text-cyan-400 mr-4">01.</span> CORE ARSENAL
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Bomber Dragon -->
+                <div class="topo-card p-5 flex flex-col">
+                    <div id="bomber-img" class="card-placeholder mb-4">Topologic Bomber Dragon</div>
+                    <h3 class="text-xl font-bold text-white mb-1">Bomber Dragon</h3>
+                    <p class="text-xs text-rose-500 font-mono-code mb-3">LINK-4 | 3000 ATK</p>
+                    <p class="text-sm text-gray-400 flex-grow">The **Nuke**. Triggers when *any* monster is summoned to
+                        *any* Link zone. Destroys all monsters in Main Monster Zones.</p>
+                </div>
+
+                <!-- Trisbaena -->
+                <div class="topo-card p-5 flex flex-col">
+                    <div id="trisbaena-img" class="card-placeholder mb-4">Topologic Trisbaena</div>
+                    <h3 class="text-xl font-bold text-white mb-1">Trisbaena</h3>
+                    <p class="text-xs text-rose-500 font-mono-code mb-3">LINK-3 | 2500 ATK</p>
+                    <p class="text-sm text-gray-400 flex-grow">The **Backrow Bane**. Banishes all Spells/Traps on the
+                        field and summoned monsters to deal 500 burn per banished card.</p>
+                </div>
+
+                <!-- Zeroboros -->
+                <div class="topo-card p-5 flex flex-col">
+                    <div id="zeroboros-img" class="card-placeholder mb-4">Topologic Zeroboros</div>
+                    <h3 class="text-xl font-bold text-white mb-1">Zeroboros</h3>
+                    <p class="text-xs text-rose-500 font-mono-code mb-3">LINK-4 | 3000+ ATK</p>
+                    <p class="text-sm text-gray-400 flex-grow">The **Zero Reset**. Banishes everything on the field.
+                        Scales ATK by +200 per banished card. The ultimate finisher.</p>
+                </div>
+
+                <!-- Gumblar (Banned) -->
+                <div class="topo-card p-5 flex flex-col opacity-60 grayscale border-rose-900">
+                    <div id="gumblar-img" class="card-placeholder mb-4">Topologic Gumblar Dragon</div>
+                    <h3 class="text-xl font-bold text-gray-400 mb-1">Gumblar Dragon</h3>
+                    <p class="text-xs text-rose-700 font-mono-code mb-3">LINK-4 | FORBIDDEN</p>
+                    <p class="text-sm text-gray-500">The **Hand Loop**. Discards opponent's cards randomly. Currently
+                        Forbidden due to degenerate game states.</p>
+                </div>
+
+                <!-- Blaster (Upcoming) -->
+                <div class="topo-card p-5 flex flex-col border-yellow-500/30">
+                    <div id="blaster-img" class="card-placeholder mb-4">Topologic Blaster Dragon</div>
+                    <h3 class="text-xl font-bold text-yellow-400 mb-1">Blaster Dragon</h3>
+                    <p class="text-xs text-yellow-600 font-mono-code mb-3">LINK-5 | 3500 ATK</p>
+                    <p class="text-sm text-gray-400">The **Extra Deck Rip**. Shuffles cards into deck or snipes the
+                        opponent's Extra Deck. Debuting in 2026.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tactical Endboard Visualizer -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-tech text-white mb-8 flex items-center">
+                <span class="text-cyan-400 mr-4">02.</span> SPATIAL GEOMETRY
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="topo-card p-8 bg-black/40">
+                    <h3 class="text-xl font-bold text-cyan-400 mb-6 font-tech">Configuration: Orcust Lockdown</h3>
+                    <div class="zone-grid mb-8">
+                        <!-- Opponent EMZ -->
+                        <div class="zone-slot"></div>
+                        <div class="zone-slot"></div>
+                        <div class="zone-slot"></div>
+                        <div class="zone-slot"></div>
+                        <div class="zone-slot"></div>
+                        <!-- Player EMZ -->
+                        <div class="zone-slot"></div>
+                        <div class="zone-slot"></div>
+                        <div class="zone-slot zone-active" title="Topologic Bomber Dragon">TOPO</div>
+                        <div class="zone-slot"></div>
+                        <div class="zone-slot"></div>
+                        <!-- Player MMZ -->
+                        <div class="zone-slot"></div>
+                        <div class="zone-slot zone-active" title="Linked Zone">DET</div>
+                        <div class="zone-slot zone-active" title="Linked Zone">DET</div>
+                        <div class="zone-slot zone-active" title="Linked Zone">DET</div>
+                        <div class="zone-slot"></div>
+                    </div>
+                    <ul class="space-y-4 text-sm text-gray-300">
+                        <li class="flex items-start"><i class="fas fa-crosshairs text-cyan-400 mt-1 mr-3"></i>
+                            <strong>Trigger Point:</strong> Summons to any center MMZ zone activates Bomber.</li>
+                        <li class="flex items-start"><i class="fas fa-shield-alt text-cyan-400 mt-1 mr-3"></i>
+                            <strong>Babel Integration:</strong> Summon Orcusts from GY as Quick Effects to trigger the
+                            nuke.</li>
+                    </ul>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <div class="topo-card p-6">
+                        <h4 class="text-lg font-bold text-white mb-2">I:P Masquerena Synergy</h4>
+                        <p class="text-sm text-gray-400">Standard interaction involves summoning **Zeroboros** then
+                            using I:P to summon a monster to its arrow on the opponent's turn, triggering a total field
+                            wipe.</p>
+                    </div>
+                    <div class="topo-card p-6">
+                        <h4 class="text-lg font-bold text-white mb-2">The "Splashing" Meta</h4>
+                        <p class="text-sm text-gray-400">Topologic monsters act as tactical anchors for **Mathmech**,
+                            **Orcust**, and **Dragon Link**, providing high-impact removal that generic Link-4s lack.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis (Based on Docx) -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-tech text-white mb-8 flex items-center">
+                <span class="text-cyan-400 mr-4">03.</span> COMPETITIVE ANALYSIS
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Strengths -->
+                <div class="topo-card p-6 border-l-4 border-cyan-500">
+                    <h3 class="text-xl font-bold text-cyan-400 mb-4"><i class="fas fa-bolt mr-2"></i> Strategic
+                        Strengths</h3>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li><span class="text-cyan-400 font-bold">Mandatory Trigger Priority:</span> SEGOC rules mean
+                            Topologic effects are difficult to "Chain Block" with optional effects.</li>
+                        <li><span class="text-cyan-400 font-bold">Cyberse Consistency:</span> Access to **Mathmech
+                            Circular**, **Cynet Mining**, and **Lady Debug** makes them easily accessible.</li>
+                        <li><span class="text-cyan-400 font-bold">Zero-Reset Win-Con:</span> Zeroboros scaling past 8000
+                            ATK provides an OTK option that ignores established boards.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="topo-card p-6 border-l-4 border-rose-500">
+                    <h3 class="text-xl font-bold text-rose-500 mb-4"><i class="fas fa-exclamation-triangle mr-2"></i>
+                        Vulnerabilities</h3>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li><span class="text-rose-500 font-bold">Double-Edged Sword:</span> Savvy opponents can
+                            intentionally summon to a linked zone to trigger a wipe at the *wrong* time for the
+                            controller.</li>
+                        <li><span class="text-rose-500 font-bold">Positional Dependence:</span> 100% of their
+                            effectiveness relies on board geometry; a "Book of Moon" or "Kaiju" immediately shuts down
+                            the threat.</li>
+                        <li><span class="text-rose-500 font-bold">Banned Elements:</span> Loss of Gumblar Dragon removed
+                            the archetype's primary win-condition for hand-control builds.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Banlist & Infrastructure -->
+        <section class="mb-16">
+            <div id="banlist-status"></div>
+            <div id="deck-resources-container" class="mt-8"></div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-600 text-xs py-12 border-t border-gray-900">
+            <p>ARCHITECTURAL REPORT V4.0 // COMPILED FOR CYBERSE INTEGRATION</p>
+            <p class="mt-2 font-tech text-cyan-950">SPATIAL DOMINANCE SECURED</p>
+        </footer>
+
+    </div>
+
+    <!-- Logic Script -->
+    <script>
+        // Tab / Combo Logic (as requested to keep)
+        function showCombo(id, btn) {
+            document.querySelectorAll('.combo-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // Particle System for Header
+        const canvas = document.getElementById('topo-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
+
+        function resize() {
+            width = canvas.width = canvas.offsetWidth;
+            height = canvas.height = canvas.offsetHeight;
+        }
+
+        class GeometricNode {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 1;
+                this.vy = (Math.random() - 0.5) * 1;
+                this.size = Math.random() * 2 + 1;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset();
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(34, 211, 238, 0.5)';
+                ctx.beginPath();
+                ctx.rect(this.x, this.y, this.size, this.size);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 50; i++) particles.push(new GeometricNode());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+                particles.forEach(p2 => {
+                    const d = Math.sqrt((p.x - p2.x) ** 2 + (p.y - p2.y) ** 2);
+                    if (d < 100) {
+                        ctx.strokeStyle = `rgba(34, 211, 238, ${0.1 - d / 1000})`;
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p.x, p2.y); // Step pattern
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                });
+            });
+            requestAnimationFrame(animate);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load Cards
+            CardLoader.loadCards({
+                'bomber-img': 'Topologic Bomber Dragon',
+                'trisbaena-img': 'Topologic Trisbaena',
+                'zeroboros-img': 'Topologic Zeroboros',
+                'gumblar-img': 'Topologic Gumblar Dragon',
+                'blaster-img': 'Topologic Blaster Dragon'
+            });
+
+            // Compact Header Resources
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Topologic');
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Topologic', {
+                compact: true,
+                buttonColor: 'from-cyan-600 to-blue-600'
+            });
+
+            // Banlist & Full Resources
+            await CardLoader.renderBanlistSection('banlist-status',
+                ['Topologic Gumblar Dragon', 'Topologic Bomber Dragon', 'Topologic Trisbaena', 'Mathmech Circular', 'Orcustrated Babel'],
+                {
+                    archetypeName: 'Topologic',
+                    archetypeTraits: {
+                        coreMechanic: 'Mandatory spatial triggers based on Link Arrows',
+                        supportReliance: 'High dependency on Cyberse and Orcust engines',
+                        adaptability: 'Meta staple as a side-deck or high-impact finisher'
+                    }
+                }
+            );
+
+            resize();
+            initParticles();
+            animate();
+            window.addEventListener('resize', resize);
+        });
+    </script>
+</body>
+
+</html>
