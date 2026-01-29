@@ -635,6 +635,10 @@ window.CardLoader = (function () {
             event.stopPropagation();
         }
 
+        // Hide any active popup immediately
+        hidePopup();
+        if (activePopup) activePopup.style.display = 'none'; // Force hide if animation/delay issues
+
         if (!largeImageModal) createLargeImageModal();
 
         // Show loading state or placeholder if needed, but usually fast enough
