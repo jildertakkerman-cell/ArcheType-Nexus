@@ -125,15 +125,48 @@ const archetypes = [
         filepath: 'pages/D_D Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="ddGrad" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#7b2cbf;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#3c096c;stop-opacity:1" />
+                            <radialGradient id="ddVoid" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="#4c1d95"/>
+                                <stop offset="100%" stop-color="#0f172a"/>
                             </radialGradient>
+                            <linearGradient id="contractGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#c084fc"/>
+                                <stop offset="50%" stop-color="#a855f7"/>
+                                <stop offset="100%" stop-color="#7e22ce"/>
+                            </linearGradient>
+                            <filter id="evilSigil">
+                                <feGaussianBlur stdDeviation="1" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
                         </defs>
-                        <circle cx="50" cy="50" r="45" fill="url(#ddGrad)" stroke="#9d4edd" stroke-width="2"/>
-                        <path d="M25 35 Q50 20 75 35 Q60 50 75 65 Q50 80 25 65 Q40 50 25 35 Z" fill="none" stroke="#c77dff" stroke-width="3"/>
-                        <circle cx="50" cy="50" r="8" fill="#e0aaff"/>
-                        <text x="50" y="57" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">D/D</text>
+                        <!-- Dimensional Background -->
+                        <rect x="0" y="0" width="100" height="100" rx="20" fill="url(#ddVoid)"/>
+                        
+                        <!-- Dark Contract Scroll Silhouette -->
+                        <path d="M20 20 Q50 10 80 20 L80 80 Q50 90 20 80 Z" fill="#1e1b4b" stroke="#7c3aed" stroke-width="1" opacity="0.6"/>
+                        
+                        <!-- Demonic Seal/Sigil -->
+                        <g filter="url(#evilSigil)">
+                             <circle cx="50" cy="50" r="25" fill="none" stroke="url(#contractGlow)" stroke-width="2"/>
+                             <path d="M50 25 L65 50 L50 75 L35 50 Z" fill="none" stroke="#e9d5ff" stroke-width="1.5"/>
+                             <!-- Inner Eye/Core -->
+                             <path d="M50 40 Q60 50 50 60 Q40 50 50 40" fill="#f43f5e"/>
+                        </g>
+
+                        <!-- Pendulum Scales -->
+                        <path d="M15 40 L25 50 L15 60" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M85 40 L75 50 L85 60" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+
+                        <!-- Archetype Text -->
+                        <text x="50" y="90" text-anchor="middle" font-family="serif" font-weight="bold" font-size="12" fill="#c084fc" letter-spacing="2">D/D/D</text>
+                        
+                        <!-- Floating runes -->
+                        <circle cx="30" cy="30" r="1" fill="#fff" opacity="0.6">
+                            <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                         <circle cx="70" cy="70" r="1" fill="#fff" opacity="0.6">
+                            <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1s" repeatCount="indefinite"/>
+                        </circle>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
