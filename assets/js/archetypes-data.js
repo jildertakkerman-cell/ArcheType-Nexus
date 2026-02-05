@@ -29024,35 +29024,47 @@ const archetypes = [
         name: 'Therion',
         description: 'A therion archetype that evolves through fusion for monstrous power.',
         filepath: 'pages/Therion Deck Analysis.html',
-        icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="therionGradient" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#8b0000;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+                            <radialGradient id="therionGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#b91c1c" stop-opacity="1"/>
+                                <stop offset="100%" stop-color="#450a0a" stop-opacity="1"/>
                             </radialGradient>
-                            <filter id="therionShadow" x="-50%" y="-50%" width="200%" height="200%">
-                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+                            <linearGradient id="therionMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#d4d4d8"/>
+                                <stop offset="50%" stop-color="#a1a1aa"/>
+                                <stop offset="100%" stop-color="#52525b"/>
+                            </linearGradient>
+                            <filter id="therionGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#therionGradient)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#therionShadow)">
-                            <path d="M 30 40 Q 50 30 70 40 Q 50 50 30 40" fill="#8b0000" stroke="#000000" stroke-width="2"/>
-                            <circle cx="45" cy="35" r="4" fill="#000000"/>
-                            <circle cx="55" cy="35" r="4" fill="#000000"/>
-                            <rect x="40" y="45" width="20" height="10" fill="#8b0000" stroke="#000000" stroke-width="2" rx="5"/>
-                            <circle cx="50" cy="50" r="5" fill="#000000" stroke="#8b0000" stroke-width="2">
-                                <animate attributeName="r" values="5;8;5" dur="2s" repeatCount="indefinite"/>
-                            </circle>
+                        <circle cx="50" cy="50" r="45" fill="url(#therionGrad)" stroke="#ef4444" stroke-width="2"/>
+                        <!-- Gear mechanism background -->
+                        <g opacity="0.4" transform-origin="center">
+                            <path d="M50 20 L55 30 L65 30 L60 40 L65 50 L55 50 L50 60 L45 50 L35 50 L40 40 L35 30 L45 30 Z" fill="none" stroke="#000000" stroke-width="2">
+                                <animateTransform attributeName="transform" type="rotate" values="0;360" dur="10s" repeatCount="indefinite"/>
+                            </path>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#8b0000">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        <!-- Stylized Lion/Beast Head (Regulus) -->
+                        <g filter="url(#therionGlow)">
+                            <path d="M30 35 Q50 20 70 35 L65 60 Q50 75 35 60 Z" fill="#7f1d1d" stroke="#fca5a5" stroke-width="2"/>
+                            <!-- Eyes -->
+                            <path d="M35 40 L45 42 L42 48 Z" fill="#fca5a5"/>
+                            <path d="M65 40 L55 42 L58 48 Z" fill="#fca5a5"/>
+                            <!-- Mechanical Jaw -->
+                            <rect x="42" y="55" width="16" height="8" fill="url(#therionMetal)" rx="2"/>
+                            <line x1="42" y1="59" x2="58" y2="59" stroke="#000000" stroke-width="1"/>
+                        </g>
+                        <!-- Energy core -->
+                        <circle cx="50" cy="50" r="4" fill="#ef4444" stroke="#ffffff" stroke-width="1">
+                            <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#8b0000">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#8b0000" font-weight="bold">Therion</text>
+                        <text x="50" y="85" text-anchor="middle" font-size="10" fill="#fca5a5" font-weight="bold">THERION</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
