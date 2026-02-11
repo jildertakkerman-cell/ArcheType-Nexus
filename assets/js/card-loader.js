@@ -620,7 +620,7 @@ window.CardLoader = (function () {
         largeImageModal.innerHTML = `
             <div class="relative flex flex-col items-center justify-center w-full h-full">
                 <!-- Reduced size: max-h-[80vh], max-w-[80vw] -->
-                <img id="large-card-image" src="" alt="Card Art" class="max-h-[80vh] max-w-[80vw] object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-slate-700 transform scale-95 transition-transform duration-300 cursor-zoom-out" title="Click to close">
+                <img id="large-card-image" src="" alt="Card Art" class="object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-slate-700 transform scale-95 transition-transform duration-300 cursor-zoom-out" style="max-height: 85vh; max-width: 85vw; width: auto;" title="Click to close">
                 <button class="mt-6 px-6 py-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-full border border-slate-600 transition-all font-semibold shadow-lg backdrop-blur-md flex items-center gap-2 group">
                     <i class="fas fa-times text-slate-400 group-hover:text-white transition-colors"></i> Close
                 </button>
@@ -652,6 +652,13 @@ window.CardLoader = (function () {
         const img = largeImageModal.querySelector('img');
         img.src = imgUrl;
 
+        // Apply desktop constraints via JS to ensure they happen regardless of CSS build
+        if (window.innerWidth >= 768) {
+            img.style.maxWidth = '360px';
+        } else {
+            img.style.maxWidth = '85vw';
+        }
+
         largeImageModal.style.display = 'flex';
         // Trigger reflow
         requestAnimationFrame(() => {
@@ -680,6 +687,7 @@ window.CardLoader = (function () {
     window.CardLoader = window.CardLoader || {};
     window.CardLoader.showLargeImageByName = showLargeImageModal;
     window.CardLoader.hideLargeImageModal = hideLargeImageModal;
+    window.CardLoader.showPopupByName = showPopupByName;
 
     /**
      * Setup global click listener to close popup
