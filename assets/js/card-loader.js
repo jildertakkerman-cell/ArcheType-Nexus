@@ -549,7 +549,7 @@ window.CardLoader = (function () {
      * Creates the popup element if it doesn't exist
      */
     function createPopup() {
-        popup = document.getElementById('card-popup');
+        popup = document.getElementById('shared-card-popup');
 
         // Helper to apply responsive constraints
         const applyConstraints = (el) => {
@@ -576,7 +576,7 @@ window.CardLoader = (function () {
         }
 
         popup = document.createElement('div');
-        popup.id = 'card-popup';
+        popup.id = 'shared-card-popup';
         popup.className = 'z-50 text-white p-4 rounded-lg shadow-2xl opacity-0 transition-opacity duration-200 pointer-events-none';
         popup.style.position = 'fixed';
         popup.style.backgroundColor = '#0f172a'; // Solid dark slate background
@@ -1947,7 +1947,7 @@ window.CardLoader = (function () {
      * Switch popup tab
      */
     window.switchPopupTab = function (tabName) {
-        const popup = document.getElementById('card-popup');
+        const popup = document.getElementById('shared-card-popup');
         if (!popup) return;
 
         // Update tab buttons
