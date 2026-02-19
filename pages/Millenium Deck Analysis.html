@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Millennium: The Eternal Court</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <!-- Tailwind CSS -->
+    <link href="../output.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Supabase CDN for gameplay tags -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+
+    <style>
+        :root {
+            --bg-ancient: #0c0a09;
+            --stone-dark: #1c1917;
+            --gold-royal: #fbbf24;
+            --gold-dim: #b45309;
+            --lapis-blue: #1e3a8a;
+            --text-primary: #f5f5f4;
+            --text-hieroglyph: #d6d3d1;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-ancient);
+            color: var(--text-primary);
+            background-image:
+                radial-gradient(circle at 50% 0%, #1e1b4b 0%, transparent 70%),
+                linear-gradient(rgba(251, 191, 36, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(251, 191, 36, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-pharaoh {
+            font-family: 'Cinzel', serif;
+        }
+
+        .font-lore {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+        }
+
+        /* Card Container Styling */
+        .millennium-card {
+            background-color: var(--stone-dark);
+            border: 1px solid #44403c;
+            border-top: 2px solid var(--gold-royal);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .millennium-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, transparent 50%, rgba(251, 191, 36, 0.1) 50%);
+            pointer-events: none;
+        }
+
+        .millennium-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.15);
+            border-color: var(--gold-royal);
+        }
+
+        /* Banner Styles */
+        .pharaoh-banner {
+            position: relative;
+            height: 320px;
+            background: radial-gradient(circle at center, #292524 0%, #000000 100%);
+            border: 1px solid var(--gold-dim);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 3rem;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
+        }
+
+        #ankh-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.4;
+            z-index: 1;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .banner-title {
+            font-size: 3.5rem;
+            background: linear-gradient(to bottom, #fff8dc, var(--gold-royal));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 25px rgba(251, 191, 36, 0.5);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--gold-dim);
+            padding-bottom: 0.5rem;
+        }
+
+        .section-header i {
+            color: var(--gold-royal);
+            margin-right: 1rem;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px var(--gold-dim);
+        }
+
+        /* Link Styling */
+        .millennium-link {
+            color: var(--gold-royal);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--gold-royal);
+            font-weight: bold;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .millennium-link:hover {
+            color: #fff;
+            text-shadow: 0 0 15px var(--gold-royal);
+            border-bottom: 1px solid #fff;
+        }
+
+        /* End Board Grid */
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--gold-dim);
+            position: relative;
+        }
+
+        .board-zone {
+            aspect-ratio: 3/4.2;
+            border: 1px dashed #57534e;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #78716c;
+            position: relative;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .board-zone.occupied {
+            border: 1px solid var(--gold-royal);
+            background: linear-gradient(to bottom, rgba(28, 25, 23, 0.9), rgba(12, 10, 9, 0.9));
+            color: #fff;
+            box-shadow: inset 0 0 15px rgba(251, 191, 36, 0.1);
+        }
+
+        .board-zone.gy-zone {
+            grid-column: 5;
+            grid-row: 2;
+            margin-top: 10px;
+            border-color: var(--lapis-blue);
+        }
+
+        .zone-label {
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 0.6rem;
+            opacity: 0.5;
+            font-family: monospace;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Card Placeholders for Loader */
+        .card-placeholder {
+            background: #1c1917;
+            border: 1px solid #44403c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #78716c;
+            font-size: 0.8rem;
+            min-height: 180px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(12, 10, 9, 0.9);
+            color: var(--gold-royal);
+            border: 1px solid var(--gold-royal);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+        }
+
+        .ygo-home-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px var(--gold-royal);
+            background: #000;
+        }
+
+        #card-popup {
+            position: fixed;
+            display: none;
+            z-index: 2000;
+            max-width: 300px;
+            background-color: var(--stone-dark);
+            border: 2px solid var(--gold-royal);
+            border-radius: 0.5rem;
+            padding: 10px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+            color: #fff;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+</head>
+
+<body class="p-4 md:p-8">
+    <div id="card-popup"></div>
+
+    <!-- Home Button -->
+    <a href="../index.html" class="ygo-home-button" title="Return to Nexus">
+        <i class="fas fa-eye"></i>
+    </a>
+
+    <div class="container mx-auto max-w-6xl">
+
+        <!-- Banner -->
+        <header class="pharaoh-banner">
+            <canvas id="ankh-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="banner-title">Millennium</h1>
+                <p class="text-yellow-500 font-pharaoh text-xl mt-2 tracking-widest">The Eternal Court</p>
+                <div class="mt-4 flex justify-center gap-6 text-xs text-gray-400 font-bold uppercase tracking-widest">
+                    <span><i class="fas fa-ankh mr-2 text-yellow-500"></i>Exodia Lock</span>
+                    <span><i class="fas fa-balance-scale mr-2 text-blue-400"></i>Gaia Control</span>
+                    <span><i class="fas fa-shield-alt mr-2 text-red-400"></i>Action Economy</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Deck Resources & Card Browser (Dock Design) -->
+        <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#1c1917]/90 backdrop-blur-md border border-yellow-600/30 shadow-[0_8px_30px_rgb(0,0,0,0.6)]">
+                <div id="deck-resources-compact" class="flex items-center"></div>
+                <!-- Vertical Divider -->
+                <div class="hidden md:block w-px h-6 bg-yellow-600/30 mx-1"></div>
+                <div id="archetype-cards-browser" class="flex justify-center"></div>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <section class="mb-12 millennium-card p-8 rounded-xl animate-fadeIn">
+            <div class="section-header">
+                <i class="fas fa-scroll"></i>
+                <h2 class="text-2xl font-pharaoh text-white">The Ontological Shift</h2>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2">
+                    <p class="text-gray-300 leading-relaxed mb-4">
+                        Historically operating as a rogue "protect-the-castle" strategy, the Millennium archetype has
+                        evolved significantly following the release of <em>Maze of Muertos</em> (February 2026). The
+                        introduction of <strong class="text-yellow-500">Heart of Gaia</strong> has fundamentally altered
+                        the strategic trajectory of the deck, elevating it from a fragile nostalgic novelty to a Tier 3
+                        mid-range control powerhouse.
+                    </p>
+                    <p class="text-gray-300 leading-relaxed">
+                        By integrating <a
+                            href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Millennium&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=2&other=1&za=1&os=1"
+                            target="_blank" class="millennium-link">the Infinite Forbidden archives</a> of Millennium
+                        cards with the new Gaia support, the deck now possesses an asymmetrical floodgate mechanic that
+                        disrupts modern Level modulation and a consistent Omni-Negate that converts dormant board pieces
+                        into interaction.
+                    </p>
+                </div>
+                <div class="bg-black/40 p-4 rounded border border-yellow-900/50 flex flex-col justify-center">
+                    <h4 class="text-yellow-500 font-pharaoh text-center mb-3 text-lg">Format Impact</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center text-gray-400">
+                            <i class="fas fa-arrow-up text-green-500 mr-3"></i>
+                            <span>Transitioned from <strong>Rogue</strong> to <strong>Tier 3</strong></span>
+                        </li>
+                        <li class="flex items-center text-gray-400">
+                            <i class="fas fa-lock text-yellow-500 mr-3"></i>
+                            <span>New <strong>Synchro/Xyz Lock</strong> via Level Mod</span>
+                        </li>
+                        <li class="flex items-center text-gray-400">
+                            <i class="fas fa-hand-paper text-red-500 mr-3"></i>
+                            <span>Access to <strong>Non-Targeting Removal</strong></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Heart of Gaia Analysis -->
+        <section class="mb-16">
+            <div class="section-header">
+                <i class="fas fa-chess-knight"></i>
+                <h2 class="text-2xl font-pharaoh text-white">The Keystone: Heart of Gaia</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                <!-- Card Display -->
+                <div class="millennium-card p-6 flex flex-col items-center text-center">
+                    <div id="gaia-img"
+                        class="card-placeholder w-full max-w-[200px] mb-4 shadow-[0_0_20px_rgba(251,191,36,0.2)]">Heart
+                        of Gaia</div>
+                    <h3 class="text-xl font-bold text-white mb-1">Heart of Gaia</h3>
+                    <p class="text-xs text-yellow-600 mb-4 font-pharaoh">The Maze of Muertos Paradigm Shift</p>
+                    <div
+                        class="text-left bg-black/30 p-4 rounded border border-gray-700 w-full text-sm text-gray-300 space-y-2">
+                        <p><i class="fas fa-tag text-yellow-500 mr-2"></i><strong>Condition:</strong> Always treated as
+                            a "Millennium" card (Searchable by Sengenjin).</p>
+                        <p><i class="fas fa-bolt text-blue-400 mr-2"></i><strong>Summon:</strong> Normal Summon without
+                            tribute if you control a Lvl 5+ monster.</p>
+                        <p><i class="fas fa-ban text-red-500 mr-2"></i><strong>Negate:</strong> Quick Effect: Send 1
+                            other Lvl 5+ monster to GY to negate & destroy a monster effect.</p>
+                    </div>
+                </div>
+
+                <!-- Strategic Breakdown -->
+                <div class="space-y-6">
+                    <div class="millennium-card p-5 border-l-4 border-l-blue-500">
+                        <h4 class="text-lg font-bold text-blue-400 mb-2">The Modulatory Floodgate</h4>
+                        <p class="text-sm text-gray-300">
+                            "The Level of any monster your opponent Normal or Special Summons in Attack Position... is
+                            increased by 7."
+                        </p>
+                        <p class="text-sm text-gray-400 mt-2 italic">
+                            This creates a mathematical impossibility for most Synchro/Xyz decks. A standard Lvl 4
+                            becomes Lvl 11, breaking Rank 4 plays entirely.
+                        </p>
+                    </div>
+
+                    <div class="millennium-card p-5 border-l-4 border-l-yellow-500">
+                        <h4 class="text-lg font-bold text-yellow-500 mb-2">The Blue-Eyes Synergy</h4>
+                        <p class="text-sm text-gray-300">
+                            <strong>Heart of the Blue-Eyes (GY Effect):</strong> Triggers when opponent summons a Lvl 8+
+                            monster to send it to GY.
+                        </p>
+                        <p class="text-sm text-gray-400 mt-2">
+                            Because Gaia forces almost all monsters to become Level 8 or higher immediately on summon,
+                            this turns "Heart of the Blue-Eyes" into an <strong>automatic, non-targeting removal
+                                engine</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Combo Sequencing -->
+        <section class="mb-16">
+            <div class="section-header">
+                <i class="fas fa-stream"></i>
+                <h2 class="text-2xl font-pharaoh text-white">Procedural Sequencing</h2>
+            </div>
+
+            <div class="millennium-card p-6">
+                <h3 class="text-yellow-500 font-bold mb-6 font-pharaoh">Standard Line: The "Sengenjin" Opener</h3>
+                <div class="relative pl-8 border-l border-gray-700 space-y-8">
+                    <!-- Step 1 -->
+                    <div class="relative">
+                        <div
+                            class="absolute -left-[41px] bg-stone-800 border border-yellow-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-yellow-500 text-sm">
+                            1</div>
+                        <div class="flex gap-4 items-start">
+                            <div id="sengenjin-img"
+                                class="w-16 h-20 bg-gray-800 rounded shrink-0 border border-gray-600"></div>
+                            <div>
+                                <h4 class="font-bold text-white">Establish the Core</h4>
+                                <p class="text-sm text-gray-400">Place <strong>Sengenjin Wakes from a
+                                        Millennium</strong> in S/T zone. Pay 2000 LP to Special Summon it. Search
+                                    <strong>Shield of the Millennium Dynasty</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="relative">
+                        <div
+                            class="absolute -left-[41px] bg-stone-800 border border-yellow-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-yellow-500 text-sm">
+                            2</div>
+                        <div class="flex gap-4 items-start">
+                            <div id="shield-img" class="w-16 h-20 bg-gray-800 rounded shrink-0 border border-gray-600">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Assemble the Pieces</h4>
+                                <p class="text-sm text-gray-400">Place Shield in S/T zone. Pay 2000 LP to Special Summon
+                                    it. Search <strong>Millennium Ankh</strong> (or Heart of Gaia if Ankh is in hand).
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="relative">
+                        <div
+                            class="absolute -left-[41px] bg-stone-800 border border-yellow-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-yellow-500 text-sm">
+                            3</div>
+                        <div class="flex gap-4 items-start">
+                            <div
+                                class="w-16 h-20 bg-gray-800 rounded shrink-0 border border-blue-500/50 flex items-center justify-center text-xs text-center text-blue-300 p-1">
+                                Heart of Gaia</div>
+                            <div>
+                                <h4 class="font-bold text-white">The Action Economy Pivot</h4>
+                                <p class="text-sm text-gray-400">Utilize the dormant Normal Summon for <strong>Heart of
+                                        Gaia</strong> (Tribute free due to Lvl 5+ monsters). This must happen
+                                    <em>before</em> Ankh activation.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="relative">
+                        <div
+                            class="absolute -left-[41px] bg-stone-800 border border-yellow-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-yellow-500 text-sm">
+                            4</div>
+                        <div class="flex gap-4 items-start">
+                            <div id="exodia-inc-img"
+                                class="w-16 h-20 bg-gray-800 rounded shrink-0 border border-yellow-500 shadow-[0_0_10px_rgba(251,191,36,0.4)]">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-yellow-500">The Resolution</h4>
+                                <p class="text-sm text-gray-400">Activate <strong>Millennium Ankh</strong>. Reveal the
+                                    Forbidden One pieces. Summon <strong>The Unstoppable Exodia Incarnate</strong>.</p>
+                                <p class="text-xs text-red-400 mt-1">Note: Ankh does not shuffle back "Millennium"
+                                    monsters, so Gaia, Shield, and Sengenjin remain on field.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Board Visualizer -->
+        <section class="mb-16">
+            <div class="section-header">
+                <i class="fas fa-th"></i>
+                <h2 class="text-2xl font-pharaoh text-white">The Optimized End Board</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Field View -->
+                <div class="board-grid">
+                    <!-- Monster Zones -->
+                    <div class="board-zone occupied border-yellow-500">
+                        <span class="zone-label text-yellow-500">M1</span>
+                        <i class="fas fa-chess-knight card-icon text-white"></i>
+                        <span class="font-bold text-xs">Heart of Gaia</span>
+                        <span class="text-[0.6rem] text-yellow-400 mt-1">NEGATE / FLOODGATE</span>
+                    </div>
+                    <div class="board-zone">
+                        <span class="zone-label">M2</span>
+                    </div>
+                    <div
+                        class="board-zone occupied border-yellow-500 bg-yellow-900/20 shadow-[inset_0_0_20px_rgba(251,191,36,0.2)]">
+                        <span class="zone-label text-yellow-500">M3 (EMZ)</span>
+                        <i class="fas fa-ankh card-icon text-yellow-500 animate-pulse"></i>
+                        <span class="font-bold text-xs text-center">Exodia Incarnate</span>
+                        <span class="text-[0.6rem] text-yellow-400 mt-1">BOSS / S/T NEGATE</span>
+                    </div>
+                    <div class="board-zone occupied">
+                        <span class="zone-label">M4</span>
+                        <i class="fas fa-shield-alt card-icon text-gray-500"></i>
+                        <span class="font-bold text-xs">Shield</span>
+                        <span class="text-[0.6rem] text-gray-400 mt-1">FODDER</span>
+                    </div>
+                    <div class="board-zone occupied">
+                        <span class="zone-label">M5</span>
+                        <i class="fas fa-fist-raised card-icon text-gray-500"></i>
+                        <span class="font-bold text-xs">Sengenjin</span>
+                        <span class="text-[0.6rem] text-gray-400 mt-1">FODDER</span>
+                    </div>
+
+                    <!-- Spell Zones (Simplified) -->
+                    <div class="board-zone" style="grid-row: 2; height: 60px; min-height: 0;">S1</div>
+                    <div class="board-zone" style="grid-row: 2; height: 60px; min-height: 0;">S2</div>
+                    <div class="board-zone occupied" style="grid-row: 2; height: 60px; min-height: 0;">
+                        <span class="text-[0.6rem] font-bold">Wedju Temple</span>
+                    </div>
+                    <div class="board-zone" style="grid-row: 2; height: 60px; min-height: 0;">S4</div>
+
+                    <!-- Graveyard -->
+                    <div class="board-zone occupied border-blue-500/50" style="grid-row: 2;">
+                        <span class="zone-label text-blue-400">GY</span>
+                        <i class="fas fa-dragon card-icon text-blue-300"></i>
+                        <span class="font-bold text-[0.65rem] text-center leading-tight">Heart of the Blue-Eyes</span>
+                        <span class="text-[0.6rem] text-blue-300 mt-1">PENDING TRIGGER</span>
+                    </div>
+                </div>
+
+                <!-- Analysis of Board -->
+                <div class="flex flex-col justify-center space-y-4">
+                    <div class="millennium-card p-4 border-l-4 border-l-green-500">
+                        <h4 class="font-bold text-green-400 mb-1">Defense Matrix</h4>
+                        <ul class="text-sm text-gray-300 list-disc list-inside">
+                            <li><strong>Spell/Trap:</strong> Negated by Exodia Incarnate.</li>
+                            <li><strong>Monster Effects:</strong> Negated by Heart of Gaia (tributing Shield/Sengenjin).
+                            </li>
+                            <li><strong>Battle:</strong> Exodia gains ATK = LP (usually 4000+).</li>
+                        </ul>
+                    </div>
+                    <div class="millennium-card p-4 border-l-4 border-l-red-500">
+                        <h4 class="font-bold text-red-400 mb-1">Offensive Disruption</h4>
+                        <ul class="text-sm text-gray-300 list-disc list-inside">
+                            <li><strong>Summoning:</strong> Gaia modulates opponent levels +7.</li>
+                            <li><strong>Removal:</strong> Any summon triggers Blue-Eyes in GY to send monster to GY
+                                (Non-Targeting).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-16">
+            <div class="section-header">
+                <i class="fas fa-balance-scale-right"></i>
+                <h2 class="text-2xl font-pharaoh text-white">Competitive Analysis</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strengths -->
+                <div class="millennium-card p-6">
+                    <h3 class="text-lg font-bold text-green-500 mb-4 font-pharaoh"><i
+                            class="fas fa-plus-circle mr-2"></i>Post-Gaia Strengths</h3>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span><strong>Targeting Protection:</strong> Prior to Gaia, "S:P Little Knight" could banish
+                                Exodia. Gaia now negates this threat.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span><strong>The Vanquish Soul Matchup:</strong> "VS K9" used to flip Exodia face-down.
+                                Gaia negates this interaction, securing the castle.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span><strong>Extra Deck Lock:</strong> The Level +7 modulation forces opponents to play
+                                "vanilla" beatdown, which they lose against Exodia's stats.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Weaknesses -->
+                <div class="millennium-card p-6">
+                    <h3 class="text-lg font-bold text-red-500 mb-4 font-pharaoh"><i
+                            class="fas fa-minus-circle mr-2"></i>Environmental Hazards</h3>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li class="flex items-start">
+                            <i class="fas fa-times text-red-500 mt-1 mr-2"></i>
+                            <span><strong>Dimensional Fissure / Shifter:</strong> Gaia requires sending cost to GY.
+                                Blue-Eyes requires sending opponent to GY. Banishing floodgates break the engine.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-times text-red-500 mt-1 mr-2"></i>
+                            <span><strong>Super Polymerization:</strong> The board is Dark/Earth/Light. Super Poly is
+                                unrespondable and fuses away the entire defensive matrix.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-times text-red-500 mt-1 mr-2"></i>
+                            <span><strong>Kaiju / Lava Golem:</strong> Tributing monsters for cost bypasses negation.
+                                Sphere Mode is a mandatory sideboard against this deck.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Banlist Status -->
+        <section class="mb-16">
+            <div id="banlist-status" class="millennium-card p-6"></div>
+        </section>
+
+        <!-- Resources -->
+        <section class="mb-12">
+            <div id="deck-resources-container" class="millennium-card p-6"></div>
+        </section>
+
+    </div>
+
+    <script>
+        // Banner Animation: Floating Ankhs and Symbols
+        const canvas = document.getElementById('ankh-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let symbols = [];
+        const glyphs = ['☥', '𓂀', '𓀀', '𓁚', '𓃭', '𓆣', '𓈖']; // Ankh, Eye of Horus, etc.
+
+        function resize() {
+            width = canvas.width = canvas.parentElement.offsetWidth;
+            height = canvas.height = canvas.parentElement.offsetHeight;
+        }
+
+        class AncientSymbol {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = height + Math.random() * 50;
+                this.char = glyphs[Math.floor(Math.random() * glyphs.length)];
+                this.size = Math.random() * 30 + 10;
+                this.speed = Math.random() * 0.5 + 0.2;
+                this.opacity = 0;
+                this.fadeIn = true;
+                this.maxOpacity = Math.random() * 0.4 + 0.1;
+            }
+            update() {
+                this.y -= this.speed;
+
+                // Fade logic
+                if (this.fadeIn) {
+                    this.opacity += 0.005;
+                    if (this.opacity >= this.maxOpacity) this.fadeIn = false;
+                } else {
+                    this.opacity -= 0.002;
+                }
+
+                if (this.y < -50 || this.opacity <= 0) this.reset();
+            }
+            draw() {
+                ctx.fillStyle = `rgba(251, 191, 36, ${this.opacity})`; // Gold color
+                ctx.font = `${this.size}px serif`;
+                ctx.fillText(this.char, this.x, this.y);
+            }
+        }
+
+        function initSymbols() {
+            symbols = [];
+            for (let i = 0; i < 40; i++) symbols.push(new AncientSymbol());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            symbols.forEach(sym => {
+                sym.update();
+                sym.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        initSymbols();
+        animate();
+
+        // Card Loader Integration
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Mapping IDs to Card Names from the docx
+            CardLoader.loadCards({
+                'gaia-img': 'Heart of Gaia',
+                'sengenjin-img': 'Sengenjin Wakes from a Millennium',
+                'shield-img': 'Shield of the Millennium Dynasty',
+                'exodia-inc-img': 'The Unstoppable Exodia Incarnate',
+                'blue-eyes-img': 'Heart of the Blue-Eyes',
+                'ankh-img': 'Millennium Ankh'
+            });
+
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Heart of Gaia',
+                'Sengenjin Wakes from a Millennium',
+                'Millennium Ankh',
+                'The Unstoppable Exodia Incarnate',
+                'Heart of the Blue-Eyes',
+                'Shield of the Millennium Dynasty',
+                'Dimensional Fissure'
+            ], {
+                archetypeName: 'Millennium',
+                archetypeTraits: {
+                    coreMechanic: 'Protect the Castle / Level Modulation',
+                    supportReliance: 'High (Requires Ankh resolution)',
+                    adaptability: 'Tier 3 (Post-Maze of Muertos)',
+                    resilience: 'High (Spell/Trap/Monster Negates + Battle Protection)'
+                }
+            });
+
+            // Render compact deck resources in header
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Millennium');
+
+            // Render archetype cards browser
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Millennium', {
+                compact: true,
+                buttonColor: 'from-yellow-600 to-yellow-800',
+                buttonHoverColor: 'from-yellow-500 to-yellow-700'
+            });
+        });
+    </script>
+    <script src="../assets/js/cookie-consent.js"></script>
+    <script src="../assets/js/cookie-consent-config.js"></script>
+</body>
+
+</html>

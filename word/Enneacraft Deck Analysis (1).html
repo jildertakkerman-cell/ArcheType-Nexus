@@ -1,0 +1,707 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enneacraft: The Mechanics of Obscurity</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <!-- Tailwind CSS -->
+    <link href="../output.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- CardLoader -->
+    <!-- Supabase CDN for gameplay tags (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            /* Very dark slate/black */
+            --card-bg: #151b2b;
+            --accent-cyan: #06b6d4;
+            /* For "Craft" / Machine */
+            --accent-sin: #f43f5e;
+            /* For "Sin" / Burn */
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --grid-color: rgba(6, 182, 212, 0.05);
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            background-image:
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .font-mono-code {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* Card Container Styling */
+        .ennea-card {
+            background-color: var(--card-bg);
+            border: 1px solid #1e293b;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .ennea-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-sin));
+            opacity: 0.7;
+        }
+
+        .ennea-card:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.2);
+        }
+
+        /* Typography */
+        .text-sin {
+            color: var(--accent-sin);
+        }
+
+        .text-craft {
+            color: var(--accent-cyan);
+        }
+
+        .heading-tech {
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .heading-tech::after {
+            content: '';
+            flex-grow: 1;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-cyan), transparent);
+            margin-left: 1rem;
+        }
+
+        /* Banner Styles */
+        .hero-banner {
+            position: relative;
+            background: radial-gradient(circle at center, #1e293b 0%, #0b0f19 100%);
+            border: 1px solid var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+            overflow: hidden;
+        }
+
+        #ennea-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.6;
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 10;
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
+        }
+
+        /* Combo Buttons */
+        .combo-btn {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            transition: all 0.3s;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .combo-btn:hover,
+        .combo-btn.active {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+
+        /* Card Loader Placeholders */
+        .card-placeholder {
+            background: #0f172a;
+            border: 1px dashed var(--accent-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            min-height: 200px;
+            border-radius: 0.5rem;
+        }
+
+        /* Home Button */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(11, 15, 25, 0.9);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .ygo-home-button:hover {
+            box-shadow: 0 0 15px var(--accent-cyan);
+            transform: scale(1.1);
+        }
+
+        /* Tooltip Link */
+        .archive-link {
+            color: var(--accent-sin);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--accent-sin);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .archive-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px var(--accent-sin);
+        }
+
+        #card-popup {
+            position: fixed;
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--accent-cyan);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+</head>
+
+<body class="p-4 md:p-8">
+
+    <!-- Home Button -->
+    <a href="../index.html" class="ygo-home-button">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div id="card-popup"></div>
+
+    <div class="container mx-auto max-w-6xl">
+
+        <!-- Header -->
+        <header class="hero-banner rounded-xl p-8 md:p-16 mb-12 text-center">
+            <canvas id="ennea-canvas"></canvas>
+            <div class="banner-content">
+                <h1 class="text-4xl md:text-6xl font-bold mb-2 tracking-widest uppercase">Enneacraft</h1>
+                <p class="text-xl md:text-2xl text-cyan-200 font-mono-code">System: Reactive Obscurity // Status:
+                    Face-Down</p>
+                <div class="mt-4 flex justify-center gap-4 text-sm text-sin font-bold">
+                    <span><i class="fas fa-exclamation-triangle mr-2"></i>PENDULUM</span>
+                    <span><i class="fas fa-sync mr-2"></i>FLIP</span>
+                    <span><i class="fas fa-fire mr-2"></i>BURN</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Deck Resources & Card Browser (Dock Design) -->
+        <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                <div id="deck-resources-compact" class="flex items-center"></div>
+
+                <!-- Vertical Divider (Desktop) -->
+                <div class="hidden md:block w-px h-6 bg-indigo-500/30 mx-1"></div>
+
+                <div id="archetype-cards-browser" class="flex justify-center"></div>
+            </div>
+            <!-- Glow effect behind -->
+            <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none">
+            </div>
+        </div>
+
+        <!-- Intro -->
+        <section class="mb-12 ennea-card rounded-xl p-8 animate-fadeIn">
+            <h2 class="heading-tech text-2xl font-bold text-white"><i
+                    class="fas fa-terminal mr-3 text-craft"></i>Executive Summary</h2>
+            <p class="text-gray-300 leading-relaxed text-lg">
+                The <strong class="text-craft">Enneacraft</strong> archetype introduces a paradigm shift known as
+                "Reactive Obscurity." By fusing the disparate mechanics of Pendulum Summoning and Flip Effects, the deck
+                functions as a psychological minefield. The deck subverts the "Face-Up" nature of modern Yu-Gi-Oh! by
+                forcing a game state where threats are hidden in Face-Down Defense Position, effectively "blanking"
+                common interactions like <em>Infinite Impermanence</em>.
+            </p>
+            <p class="mt-4 text-gray-300">
+                The core win condition revolves around the <strong class="text-sin">Sinquisition Counters</strong>. As
+                opponents trigger hidden threats, they generate counters which are converted into massive burn damage
+                (900 per counter) during the End Phase via the field spell, <a
+                    href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Enneacraft&stype=1"
+                    target="_blank" class="archive-link">accessing the Enneacraft Archives</a> for lethal damage without
+                ever declaring an attack.
+            </p>
+        </section>
+
+        <!-- Mechanics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <!-- Mechanic 1 -->
+            <section class="ennea-card rounded-xl p-6">
+                <h3 class="text-xl font-bold text-white mb-4 border-l-4 border-sin pl-3">The Face-Down Lock</h3>
+                <p class="text-gray-400 text-sm mb-4">
+                    "You cannot Special Summon... except in Face-Down Defense Position."
+                </p>
+                <p class="text-gray-300">
+                    This restriction prevents Link, Synchro, or Xyz plays for the turn but insulates the player from
+                    "Turn 0" interruptions. Monsters never hit the field face-up, meaning target-based negates have no
+                    legal targets.
+                </p>
+            </section>
+            <!-- Mechanic 2 -->
+            <section class="ennea-card rounded-xl p-6">
+                <h3 class="text-xl font-bold text-white mb-4 border-l-4 border-sin pl-3">The Sinquisition Economy</h3>
+                <p class="text-gray-400 text-sm mb-4">
+                    1 Counter = 900 Damage
+                </p>
+                <p class="text-gray-300">
+                    Counters are generated when monsters flip face-up. The field spell, <strong
+                        class="text-craft">Enneapolis</strong>, removes these counters to inflict 900 damage each. A
+                    typical turn cycle can generate 3000+ burn damage simply by surviving.
+                </p>
+            </section>
+        </div>
+
+        <!-- Card Breakdown -->
+        <section class="mb-12">
+            <h2 class="heading-tech text-2xl font-bold text-white"><i class="fas fa-cogs mr-3 text-craft"></i>System
+                Components</h2>
+
+            <!-- Level 1 Engine -->
+            <div class="mb-8">
+                <h3 class="text-xl text-craft font-bold mb-4 font-mono-code">// LEVEL 1: THE REACTIVE ENGINE</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- orgIA -->
+                    <div class="ennea-card p-4">
+                        <div id="orgia-img" class="card-placeholder mb-3">Enneacraft a' orgIA</div>
+                        <h4 class="text-white font-bold">Proto Enneacraft - "orgIA"</h4>
+                        <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: Hand Effect</p>
+                        <p class="text-sm text-gray-400 mt-2">The anti-starter. Flips when opponent activates a monster
+                            effect in Hand. Destroys 1 monster.</p>
+                    </div>
+                    <!-- alazoneIA -->
+                    <div class="ennea-card p-4">
+                        <div id="alazoneia-img" class="card-placeholder mb-3">Deftero Enneacraft - "alazoneIA"</div>
+                        <h4 class="text-white font-bold">Deftero Enneacraft - "alazoneIA"</h4>
+                        <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: Search</p>
+                        <p class="text-sm text-gray-400 mt-2">Punishes Greed. Flips when opponent adds from Deck to
+                            Hand. Banishes 1 random hand card.</p>
+                    </div>
+                    <!-- tromarIA -->
+                    <div class="ennea-card p-4">
+                        <div id="tromaria-img" class="card-placeholder mb-3">Enneacraft ?' tromarIA</div>
+                        <h4 class="text-white font-bold">Ekto Enneacraft - "tromarIA"</h4>
+                        <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: Special Summon</p>
+                        <p class="text-sm text-gray-400 mt-2">The Negate. Flips on Special Summon. Negates 1 face-up
+                            monster's effects.</p>
+                    </div>
+                    <!-- oknirIA -->
+                    <div class="ennea-card p-4">
+                        <div id="okniria-img" class="card-placeholder mb-3">Enneacraft ?' oknirIA</div>
+                        <h4 class="text-white font-bold">Enato Enneacraft - "oknirIA"</h4>
+                        <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: GY Effect</p>
+                        <p class="text-sm text-gray-400 mt-2">GY Control. Flips on GY activation. Shuffles 3 cards from
+                            opponent's GY/Banishment.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level 9 Bosses -->
+            <div class="mb-8">
+                <h3 class="text-xl text-sin font-bold mb-4 font-mono-code">// LEVEL 9: THE BEHEMOTHS</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Atori.MAR -->
+                    <div class="ennea-card p-4 flex gap-4">
+                        <div id="atori-img" class="card-placeholder w-32 h-48 flex-shrink-0">Atori.MAR</div>
+                        <div>
+                            <h4 class="text-white font-bold text-lg">Enneacraft - Atori.MAR</h4>
+                            <p class="text-xs text-craft mt-1 font-mono-code">FIELD MARSHAL</p>
+                            <p class="text-sm text-gray-300 mt-2">Triggers on ANY card activation on field. Flips to
+                                change <strong>ALL</strong> opponent's monsters to Face-Down Defense Position (cannot
+                                change battle position). Hard counter to Link/Synchro.</p>
+                        </div>
+                    </div>
+                    <!-- Archa.TAIL -->
+                    <div class="ennea-card p-4 flex gap-4">
+                        <div id="archa-img" class="card-placeholder w-32 h-48 flex-shrink-0">Archa.TAIL</div>
+                        <div>
+                            <h4 class="text-white font-bold text-lg">Enneacraft - Archa.TAIL</h4>
+                            <p class="text-xs text-craft mt-1 font-mono-code">THE FORTRESS</p>
+                            <p class="text-sm text-gray-300 mt-2">Triggers on destruction effects. Grants blanket
+                                destruction immunity to Monsters AND Enneacraft Spells. Burns for every monster sent to
+                                opponent's GY.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spells -->
+            <div class="mb-8">
+                <h3 class="text-xl text-white font-bold mb-4 font-mono-code">// INFRASTRUCTURE</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <!-- Release -->
+                    <div class="ennea-card p-4 flex gap-4 items-center">
+                        <div id="release-img" class="card-placeholder w-24 h-32 flex-shrink-0">Release</div>
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-lg text-craft"><i class="fas fa-magic mr-2"></i>Enneacraft -
+                                Release</h4>
+                            <p class="text-xs text-gray-500 font-mono-code mb-1">NORMAL SPELL</p>
+                            <p class="text-sm text-gray-300">The consistency engine. Places an Enneacraft Pendulum
+                                Monster directly from Deck to Scale. <span class="text-sin">Bypasses Droll & Lock
+                                    Bird</span> entirely.</p>
+                        </div>
+                    </div>
+                    <!-- Enneapolis -->
+                    <div class="ennea-card p-4 flex gap-4 items-center">
+                        <div id="enneapolis-img" class="card-placeholder w-24 h-32 flex-shrink-0">Enneapolis</div>
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-lg text-sin"><i class="fas fa-city mr-2"></i>Enneapolis,
+                                Sinquisition City</h4>
+                            <p class="text-xs text-gray-500 font-mono-code mb-1">FIELD SPELL</p>
+                            <p class="text-sm text-gray-300">The kill condition. Bounces scales to hand to reuse
+                                effects. Recycles flipped monsters. <span class="text-sin">Converts counters into 900
+                                    burn damage each.</span></p>
+                        </div>
+                    </div>
+                    <!-- Rebirth -->
+                    <div class="ennea-card p-4 flex gap-4 items-center">
+                        <div id="rebirth-img" class="card-placeholder w-24 h-32 flex-shrink-0">Rebirth</div>
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-lg text-craft"><i class="fas fa-sync-alt mr-2"></i>Enneacraft -
+                                Reset</h4>
+                            <p class="text-xs text-gray-500 font-mono-code mb-1">QUICK-PLAY SPELL</p>
+                            <p class="text-sm text-gray-300">Hand mulligan tool. GY effect allows you to <span
+                                    class="text-craft">manually flip</span> your own monsters face-up to force their
+                                trigger effects on your terms.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h2 class="heading-tech text-2xl font-bold text-white"><i
+                    class="fas fa-project-diagram mr-3 text-craft"></i>Tactical Sequences</h2>
+
+            <div class="flex flex-wrap gap-4 mb-6">
+                <button class="combo-btn px-6 py-2 rounded font-bold active" onclick="showCombo('standard')">Standard
+                    Release Line</button>
+                <button class="combo-btn px-6 py-2 rounded font-bold" onclick="showCombo('zaborg')">Zaborg
+                    Aggro Line</button>
+            </div>
+
+            <!-- Standard Combo -->
+            <div id="combo-standard" class="ennea-card p-6 rounded-xl">
+                <h3 class="text-xl font-bold text-white mb-4">The "Release" Line (1.5 Card Combo)</h3>
+                <p class="text-gray-400 mb-4">The safest setup that plays around Droll & Lock Bird.</p>
+                <ol class="space-y-4 font-mono-code text-sm md:text-base">
+                    <li class="flex items-start">
+                        <span class="text-craft mr-2">01.</span>
+                        <span>Activate <strong class="text-white">Enneacraft - Release</strong>. Place
+                            <strong class="text-craft">orgIA</strong> directly into Pendulum Zone.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-craft mr-2">02.</span>
+                        <span>Activate <strong class="text-craft">orgIA</strong> Scale Effect: Pay 900 LP.
+                            Reveal 3 <strong class="text-sin">Enneapolis</strong>. Add 1 to hand.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-craft mr-2">03.</span>
+                        <span>Activate Field Spell <strong class="text-sin">Enneapolis</strong>. Use effect
+                            to bounce <strong class="text-craft">orgIA</strong> from Scale to Hand.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-craft mr-2">04.</span>
+                        <span>Reveal <strong class="text-craft">orgIA</strong> in hand to Special Summon
+                            another Enneacraft from hand (Face-Down).</span>
+                    </li>
+                    <li class="flex items-start mt-4 pt-4 border-t border-gray-700">
+                        <span class="text-sin font-bold mr-2">END BOARD:</span>
+                        <span class="text-gray-300">Field Spell active + 1 Face-Down Monster + <strong
+                                class="text-craft">orgIA</strong> in hand (Anti-Hand Trap live).</span>
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Zaborg Combo -->
+            <div id="combo-zaborg" class="ennea-card p-6 rounded-xl hidden">
+                <h3 class="text-xl font-bold text-white mb-4">The "Spirit + Zaborg" Aggro Line</h3>
+                <p class="text-gray-400 mb-4">High risk, game-ending reward by ripping the opponent's Extra
+                    Deck.</p>
+                <ol class="space-y-4 font-mono-code text-sm md:text-base">
+                    <li class="flex items-start">
+                        <span class="text-craft mr-2">01.</span>
+                        <span>Normal Summon <strong class="text-white">Spirit of the Fall Wind</strong>.
+                            Search any Enneacraft.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-craft mr-2">02.</span>
+                        <span>Reveal Enneacraft in hand to Special Summon another body Face-Down.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-craft mr-2">03.</span>
+                        <span>Tribute Summon <strong class="text-sin">Zaborg the Mega Monarch</strong>.
+                            Target self to destroy.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-craft mr-2">04.</span>
+                        <span>Send 8 cards from BOTH Extra Decks to GY.</span>
+                        <ul class="ml-8 mt-2 text-gray-400 list-disc">
+                            <li>You send: 3x <strong class="text-white">Elder Entity N'tss</strong> (Pop 3),
+                                1x <strong class="text-white">Garura</strong> (Draw 1).</li>
+                            <li>Opponent sends: Their entire engine (Promethean Princess, Albion, etc.).
+                            </li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+            <div class="ennea-card p-6 rounded-xl">
+                <h3 class="text-lg font-bold text-craft mb-4">Strengths</h3>
+                <ul class="space-y-2 text-gray-300 text-sm">
+                    <li><i class="fas fa-check text-green-500 mr-2"></i><strong>Turn 0 Immunity:</strong> Cannot be hit
+                        by Impermanence/Veiler while setting up.</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i><strong>Extra Deck Lock:</strong> Atori.MAR
+                        flips boards face-down, preventing Link/Synchro/Xyz summons.</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i><strong>Burn Damage:</strong> Does not need to
+                        attack to win; ignores high ATK boards.</li>
+                </ul>
+            </div>
+            <div class="ennea-card p-6 rounded-xl">
+                <h3 class="text-lg font-bold text-sin mb-4">Weaknesses</h3>
+                <ul class="space-y-2 text-gray-300 text-sm">
+                    <li><i class="fas fa-times text-red-500 mr-2"></i><strong>Droll & Lock Bird:</strong> Hard counter
+                        to the searching loop.</li>
+                    <li><i class="fas fa-times text-red-500 mr-2"></i><strong>Non-Destruction Removal:</strong>
+                        Snake-Eye (placing in S/T zone) bypasses Archa.TAIL protection.</li>
+                    <li><i class="fas fa-times text-red-500 mr-2"></i><strong>Slow Tempo:</strong> Requires "Set and
+                        Pass," vulnerable to time rules if burn doesn't kill fast enough.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Deck Showcase Video -->
+        <section class="mb-12 animate-fadeIn">
+            <h2 class="heading-tech text-2xl font-bold text-white"><i class="fas fa-video mr-3 text-craft"></i>Deck
+                Showcase</h2>
+            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 1.5rem;">
+                <div
+                    style="position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 0 20px rgba(6, 182, 212, 0.3); border: 2px solid var(--accent-cyan);">
+                    <iframe width="315" height="560" src="https://www.youtube.com/embed/7_9Lqj2t2m4"
+                        title="Enneacraft Deck Showcase" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen style="display: block;">
+                    </iframe>
+                </div>
+                <p style="text-align: center; color: #94a3b8; font-size: 0.875rem; margin-top: 0.75rem;">
+                    <i class="fas fa-play-circle" style="margin-right: 4px; color: var(--accent-cyan);"></i> See
+                    Enneacraft in action
+                </p>
+                <p style="text-align: center; color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">
+                    <i class="fas fa-calendar-alt" style="margin-right: 4px;"></i> Video Date: <span
+                        style="color: #9ca3af;">Dec 19, 2025</span>
+                </p>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-12 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="heading-tech text-2xl font-bold text-white"><i
+                    class="fas fa-gavel mr-3 text-craft"></i>Regulation Status</h2>
+            <div id="banlist-status" class="ennea-card p-6 rounded-xl">
+                <!-- Banlist content will be dynamically generated here by CardLoader -->
+                <div class="text-center text-cyan-500 font-mono-code animate-pulse">
+                    Scanning F&L Database...
+                </div>
+            </div>
+        </section>
+
+        <!-- Deck Resources Section -->
+        <section class="mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <div id="deck-resources-container">
+                <!-- Deck search resources will be dynamically generated here -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Animation & Logic Script -->
+    <script>
+        // Banner Animation
+        const canvas = document.getElementById('ennea-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = canvas.parentElement.offsetWidth;
+            height = canvas.height = canvas.parentElement.offsetHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2 + 1;
+                // Random between Cyan and Sin Red
+                this.color = Math.random() > 0.5 ? 'rgba(6, 182, 212, ' : 'rgba(244, 63, 94, ';
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color + this.alpha + ')';
+                ctx.fill();
+
+                // Draw connections
+                particles.forEach(p => {
+                    const dx = p.x - this.x;
+                    const dy = p.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(p.x, p.y);
+                        ctx.strokeStyle = `rgba(148, 163, 184, ${0.1 - dist / 1000})`;
+                        ctx.stroke();
+                    }
+                });
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 60; i++) particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        initParticles();
+        animate();
+
+        // Combo Tab Logic
+        function showCombo(id) {
+            document.querySelectorAll('[id^="combo-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('combo-' + id).classList.remove('hidden');
+
+            document.querySelectorAll('.combo-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Card Loader Integration
+        document.addEventListener('DOMContentLoaded', async () => {
+            CardLoader.loadCards({
+                'orgia-img': 'Proto Enneacraft - "orgIA"',
+                'alazoneia-img': 'Deftero Enneacraft - "alazoneIA"',
+                'tromaria-img': 'Ekto Enneacraft - "tromarIA"',
+                'okniria-img': 'Enato Enneacraft - "oknirIA"',
+                'atori-img': 'Enneacraft - Atori.MAR',
+                'archa-img': 'Enneacraft - Archa.TAIL',
+                'release-img': 'Enneacraft Release',
+                'enneapolis-img': 'Enneapolis',
+                'rebirth-img': 'Enneacraft Reset'
+            });
+
+            // Render Banlist Section
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Proto Enneacraft - "orgIA"',
+                'Deftero Enneacraft - "alazoneIA"',
+                'Ekto Enneacraft - "tromarIA"',
+                'Enneacraft - Atori.MAR',
+                'Enneacraft - Release',
+                'Enneapolis, the Sinquisition City',
+                'Zaborg the Mega Monarch',
+                'Spirit of the Fall Wind',
+                'Pot of Extravagance',
+                'Droll & Lock Bird'
+            ], {
+                archetypeName: 'Enneacraft',
+                archetypeTraits: {
+                    coreMechanic: 'Pendulum/Flip hybrid relying on face-down mechanics and burn damage',
+                    supportReliance: 'Uses generic Flip support (Spirit of the Fall Wind) and Tribute engines (Zaborg)',
+                    adaptability: 'Specialized control strategy; struggles to pivot into standard Extra Deck combos due to archetype lock',
+                    resilience: 'High immunity to targeting/destruction; vulnerable to search negation (Droll)'
+                }
+            });
+
+            // Render compact deck resources in header
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Enneacraft');
+
+            // Render compact deck resources in header
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Enneacraft');
+
+            // Render archetype cards browser (compact mode at top)
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Enneacraft', {
+                compact: true,
+                buttonColor: 'from-purple-600 to-indigo-600',
+                buttonHoverColor: 'from-purple-700 to-indigo-700'
+            });
+        });
+    </script>
+    <!-- Cookie Consent Banner -->
+    <script src="../assets/js/cookie-consent.js"></script>
+    <script src="../assets/js/cookie-consent-config.js"></script>
+</body>
+
+</html>

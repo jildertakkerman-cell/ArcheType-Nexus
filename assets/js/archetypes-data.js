@@ -23544,6 +23544,49 @@ const archetypes = [
 
     },
     {
+        name: 'Millennium',
+        description: 'The Eternal Court: Masters of Level Modulation and the unstoppable Exodia Lock, controlling the duel through ancient rites.',
+        filepath: 'pages/Millenium Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="millenniumGold" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#fef3c7"/>
+                                <stop offset="40%" stop-color="#fbbf24"/>
+                                <stop offset="100%" stop-color="#b45309"/>
+                            </radialGradient>
+                            <linearGradient id="millenniumAnkh" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fbbf24"/>
+                                <stop offset="50%" stop-color="#d97706"/>
+                                <stop offset="100%" stop-color="#92400e"/>
+                            </linearGradient>
+                            <filter id="millenniumGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Sun Disc Background -->
+                        <circle cx="50" cy="50" r="45" fill="url(#millenniumGold)" stroke="#92400e" stroke-width="2">
+                             <animate attributeName="opacity" values="1;0.8;1" dur="4s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Ankh Symbol -->
+                        <g filter="url(#millenniumGlow)">
+                             <path d="M50 20 C60 20 60 30 50 35 C40 30 40 20 50 20 Z M50 23 C45 23 45 30 50 32 C55 30 55 23 50 23 Z" fill="url(#millenniumAnkh)" stroke="#92400e" stroke-width="1"/>
+                             <rect x="47" y="35" width="6" height="40" fill="url(#millenniumAnkh)" stroke="#92400e" stroke-width="1"/>
+                             <rect x="35" y="42" width="30" height="6" fill="url(#millenniumAnkh)" stroke="#92400e" stroke-width="1"/>
+                        </g>
+                        <!-- Hieroglyphic details (decorative) -->
+                        <path d="M50 10 L53 15 L47 15 Z" fill="#92400e"/>
+                        <circle cx="20" cy="50" r="3" fill="#92400e" opacity="0.6"/>
+                        <circle cx="80" cy="50" r="3" fill="#92400e" opacity="0.6"/>
+                     </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: null,
+
+    },
+    {
         name: 'Mimighoul',
         description: 'A quirky DARK Fiend archetype themed around mimicry, graveyard recursion, and disruptive hand traps.',
         filepath: 'pages/Mimighoul Deck Analysis.html',
@@ -33512,6 +33555,77 @@ const archetypes = [
                     </svg>`,
         firstReleaseDate: '2017-08-04',
         latestReleaseDate: '2026-05-15',
+
+    },
+    {
+        name: 'Call of the Haunted',
+        description: 'A Trap-centric strategy focusing on continuous revival and graveyard manipulation, often acting as a powerful engine in various decks.',
+        filepath: 'pages/Call of the Haunted deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="hauntedMist" cx="50%" cy="50%" r="70%">
+                            <stop offset="0%" stop-color="#cbd5e1" stop-opacity="0.4"/>
+                            <stop offset="60%" stop-color="#94a3b8" stop-opacity="0.2"/>
+                            <stop offset="100%" stop-color="#475569" stop-opacity="0"/>
+                        </radialGradient>
+                        <linearGradient id="graveStone" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#64748b"/>
+                            <stop offset="100%" stop-color="#334155"/>
+                        </linearGradient>
+                        <filter id="ghostlyGlow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    
+                    <!-- Night sky background -->
+                    <rect x="10" y="10" width="80" height="80" rx="40" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+                    
+                    <!-- Moon -->
+                    <circle cx="75" cy="25" r="8" fill="#f8fafc" opacity="0.8" filter="url(#ghostlyGlow)">
+                        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="4s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <!-- Mist/Fog layers -->
+                    <ellipse cx="50" cy="70" rx="35" ry="15" fill="url(#hauntedMist)">
+                        <animate attributeName="rx" values="35;38;35" dur="5s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <ellipse cx="60" cy="65" rx="25" ry="12" fill="url(#hauntedMist)" opacity="0.6">
+                        <animate attributeName="cx" values="60;55;60" dur="6s" repeatCount="indefinite"/>
+                    </ellipse>
+
+                    <!-- Gravestones -->
+                    <path d="M30 50 L30 80 L45 80 L45 50 Q37.5 40 30 50" fill="url(#graveStone)" stroke="#1e293b" stroke-width="1"/>
+                    <path d="M55 55 L55 80 L70 80 L70 55 Q62.5 45 55 55" fill="url(#graveStone)" stroke="#1e293b" stroke-width="1" transform="scale(0.8) translate(30, 20)"/>
+                    <path d="M20 60 L20 80 L30 80 L30 60 Q25 55 20 60" fill="url(#graveStone)" stroke="#1e293b" stroke-width="1" transform="scale(0.9) translate(-5, 10)"/>
+
+                    <!-- Rising Spirit -->
+                    <path d="M37 75 Q37 60 45 55 Q53 50 45 40 Q37 30 50 25 Q63 30 55 40 Q47 50 55 55 Q63 60 63 75" 
+                          fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" filter="url(#ghostlyGlow)" opacity="0.8">
+                        <animate attributeName="d" 
+                            values="M37 75 Q37 60 45 55 Q53 50 45 40 Q37 30 50 25 Q63 30 55 40 Q47 50 55 55 Q63 60 63 75;
+                                    M37 75 Q32 60 40 55 Q48 50 40 40 Q32 30 45 25 Q58 30 50 40 Q42 50 50 55 Q58 60 63 75;
+                                    M37 75 Q37 60 45 55 Q53 50 45 40 Q37 30 50 25 Q63 30 55 40 Q47 50 55 55 Q63 60 63 75" 
+                            dur="4s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.4;0.9;0.4" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    
+                    <!-- Spirit orbs -->
+                    <circle cx="35" cy="45" r="1.5" fill="#a78bfa" opacity="0.6">
+                        <animate attributeName="cy" values="45;35;45" dur="2.5s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0;0.8;0" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="65" cy="40" r="1.5" fill="#a78bfa" opacity="0.6">
+                        <animate attributeName="cy" values="40;30;40" dur="3s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0;0.8;0" dur="3s" repeatCount="indefinite"/>
+                    </circle>
+
+                </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: null,
 
     }
 ];// Export for use in main script

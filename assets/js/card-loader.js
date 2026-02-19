@@ -1480,7 +1480,7 @@ window.CardLoader = (function () {
                 }
                 // Trim inline effect starts even if the material match is long (e.g. 'If a ...')
                 // More robust: find the earliest effect-start marker and cut off everything after it.
-                const effectMarker = materials.search(/\s+(?:You|If|When|Once|During|For|Unless|While|Then|In the|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains)\b/i);
+                const effectMarker = materials.search(/\s+(?:You|If|When|Once|During|For|Unless|While|Then|In the|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains|Cannot)\b/i);
                 if (effectMarker !== -1) {
                     materials = materials.substring(0, effectMarker).trim();
                 }
@@ -1495,7 +1495,7 @@ window.CardLoader = (function () {
                 if (materials.length < 100) {
                     // If the materials accidentally included the start of effect text
                     // (e.g., "If a Battlin' Boxer monster ..."), drop that clause.
-                    const inlineEffectStart = materials.match(/\s+(?:You|If|When|Once|During|For|Unless|While|Then|In the|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains)\b/i);
+                    const inlineEffectStart = materials.match(/\s+(?:You|If|When|Once|During|For|Unless|While|Then|In the|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains|Cannot)\b/i);
                     if (inlineEffectStart && inlineEffectStart.index > 0) {
                         // Trim off the effect start and continue with the shortened materials
                         materials = materials.slice(0, inlineEffectStart.index).trim();
@@ -1517,7 +1517,7 @@ window.CardLoader = (function () {
                         // Don't duplicate "monster"
                         if (currentEnd && nextStart) validTrailing = false;
                         // Only accept short phrases, avoid sentences
-                        if (trailingMonster[0].length >= 50 || /^(?:A|The)\s/i.test(trailingMonster[1])) validTrailing = false;
+                        if (trailingMonster[0].length >= 50 || /^(?:A|The|Cannot)\b/i.test(trailingMonster[1])) validTrailing = false;
 
                         if (validTrailing) {
                             materials += trailingMonster[0];
@@ -1528,7 +1528,7 @@ window.CardLoader = (function () {
                     }
 
                     // 2. Check for sentence starts - if the lookahead is effect text, stop here
-                    if (/^\s*(?:You|If|When|Once|During|For|Unless|While|Then|In the|When your|If that|If this|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains)\b/i.test(lookahead)) {
+                    if (/^\s*(?:You|If|When|Once|During|For|Unless|While|Then|In the|When your|If that|If this|If a|If an|If any|When a|When an|When you|While your|Any|Each|All|Must|This|Gains|Cannot)\b/i.test(lookahead)) {
                         return materials;
                     }
 
@@ -3356,6 +3356,10 @@ window.CardLoader = (function () {
 
         const showAllDecks = options.showAllDecks !== false;
 
+        // Custom colors for Community Decks button (defaults to Slate)
+        const communityBtnColor = options.communityButtonColor || 'from-slate-500 to-slate-600';
+        const communityBtnHover = options.communityButtonHoverColor || 'hover:from-slate-600 hover:to-slate-700';
+
         // Check if archetype exists by fetching cards
         const archetypeCards = await fetchArchetypeCards(archetypeName);
         const archetypeExists = archetypeCards.length > 0;
@@ -3401,7 +3405,7 @@ window.CardLoader = (function () {
                 <!-- All Decks Button -->
                 <a href="${casualUrl}" target="_blank" rel="noopener noreferrer" 
                    class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white 
-                          bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700
+                          bg-gradient-to-r ${communityBtnColor} ${communityBtnHover}
                           shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
                    title="View all community-submitted deck lists for ${archetypeName}">
                     <i class="fas fa-users text-xs"></i>
