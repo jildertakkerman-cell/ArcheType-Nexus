@@ -1951,7 +1951,7 @@ window.CardLoader = (function () {
         if (!popup) return;
 
         // Update tab buttons
-        const tabs = popup.querySelectorAll('.tab-btn');
+        const tabs = popup.querySelectorAll('.popup-tab-btn');
         tabs.forEach(btn => {
             if (btn.dataset.tab === tabName) {
                 btn.classList.add('text-blue-400', 'border-blue-500');
@@ -1965,7 +1965,7 @@ window.CardLoader = (function () {
         });
 
         // Update tab content
-        const contents = popup.querySelectorAll('.tab-content');
+        const contents = popup.querySelectorAll('.popup-tab-content');
         contents.forEach(content => {
             if (content.id === `tab-${tabName}`) {
                 content.classList.remove('hidden');
@@ -2142,9 +2142,9 @@ window.CardLoader = (function () {
                     
                     <!-- Tab Navigation -->
                     <div class="flex border-b border-slate-600 mt-1" style="background-color: #1e293b;">
-                        <button onclick="window.switchPopupTab('details')" data-tab="details" class="tab-btn flex-1 py-1.5 text-xs font-medium text-blue-400 border-b-2 border-blue-500 transition-colors" style="background-color: #334155;">Details</button>
-                        <button onclick="window.switchPopupTab('sets')" data-tab="sets" class="tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Sets</button>
-                        <button onclick="window.switchPopupTab('prices')" data-tab="prices" class="tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Prices</button>
+                        <button onclick="window.switchPopupTab('details')" data-tab="details" class="popup-tab-btn flex-1 py-1.5 text-xs font-medium text-blue-400 border-b-2 border-blue-500 transition-colors" style="background-color: #334155;">Details</button>
+                        <button onclick="window.switchPopupTab('sets')" data-tab="sets" class="popup-tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Sets</button>
+                        <button onclick="window.switchPopupTab('prices')" data-tab="prices" class="popup-tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Prices</button>
                     </div>
                     
                     <!-- Card Type (below tabs) -->
@@ -2153,7 +2153,7 @@ window.CardLoader = (function () {
 
                 <div class="flex-1 mt-2 pr-1" style="background-color: #0f172a;">
                     <!-- Details Tab -->
-                    <div id="tab-details" class="tab-content" style="background-color: #0f172a;">
+                    <div id="tab-details" class="popup-tab-content" style="background-color: #0f172a;">
                         <div id="popup-desc-area">
                             ${cardInfo.desc ? formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name) : '<p class="text-gray-400 italic text-xs p-2">Loading details...</p>'}
                         </div>
@@ -2165,14 +2165,14 @@ window.CardLoader = (function () {
                     </div>
 
                     <!-- Prices Tab -->
-                    <div id="tab-prices" class="tab-content hidden" style="background-color: #0f172a;">
+                    <div id="tab-prices" class="popup-tab-content hidden" style="background-color: #0f172a;">
                         <div id="popup-price-area" class="pt-2">
                             ${priceHtml || '<p class="text-gray-500 text-xs italic">No price data available.</p>'}
                         </div>
                     </div>
 
                     <!-- Sets Tab -->
-                    <div id="tab-sets" class="tab-content hidden" style="background-color: #0f172a;">
+                    <div id="tab-sets" class="popup-tab-content hidden" style="background-color: #0f172a;">
                         <div id="popup-sets-area" style="padding-top: 4px;">
                             ${formatSetsSection(cardInfo)}
                         </div>
