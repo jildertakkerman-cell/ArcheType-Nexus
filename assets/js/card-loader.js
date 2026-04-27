@@ -1277,7 +1277,16 @@ window.CardLoader = (function () {
         const img = document.createElement('img');
         img.src = imageUrl;
         img.alt = cardInfo.name;
-        img.className = 'w-full h-auto rounded-lg shadow-md';
+        img.className = 'w-full h-auto rounded-lg shadow-md cursor-pointer';
+        img.title = 'Double-click to view full art';
+
+        // Add double-click listener for large art
+        img.addEventListener('dblclick', (event) => {
+            event.stopPropagation();
+            if (typeof showLargeImageModal === 'function') {
+                showLargeImageModal(cardInfo.name, event);
+            }
+        });
 
         // --- Anti-Aliasing & Image Quality Restoration ---
         // These properties ensure large images look smooth when squished down

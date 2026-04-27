@@ -6,6 +6,52 @@
 
 const archetypes = [
     {
+        name: 'Clown Crew',
+        description: 'A meta-defining strategy that subverts Tribute Summoning, projecting Extra Deck monsters as consumable ammunition for a massive resource engine.',
+        filepath: 'pages/Clown Crew Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="clownCircus" cx="50%" cy="50%" r="60%">
+                    <stop offset="0%" stop-color="#2d1b4e"/>
+                    <stop offset="100%" stop-color="#0a0510"/>
+                </radialGradient>
+                <linearGradient id="neonRose" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f43f5e"/>
+                    <stop offset="100%" stop-color="#9f1239"/>
+                </linearGradient>
+                <filter id="circusGlow">
+                    <feGaussianBlur stdDeviation="2" result="blur"/>
+                    <feMerge>
+                        <feMergeNode in="blur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            <rect x="10" y="10" width="80" height="80" rx="15" fill="url(#clownCircus)" stroke="#582a8a" stroke-width="3"/>
+            <path d="M50 20 L25 50 L25 80 L75 80 L75 50 Z" fill="#1e0f33" stroke="#fbbf24" stroke-width="2"/>
+            <path d="M50 20 L40 50 M50 20 L60 50" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4"/>
+            <g filter="url(#circusGlow)">
+                <path d="M35 55 Q50 80 65 55 Q65 40 50 40 Q35 40 35 55 Z" fill="#ffffff" stroke="#f43f5e" stroke-width="2"/>
+                <circle cx="45" cy="52" r="3" fill="#0a0510"/>
+                <circle cx="55" cy="52" r="3" fill="#0a0510"/>
+                <path d="M45 57 L43 65 L47 65 Z" fill="url(#neonRose)"/>
+                <path d="M55 57 L53 65 L57 65 Z" fill="#fbbf24"/>
+                <path d="M43 70 Q50 75 57 70" fill="none" stroke="#f43f5e" stroke-width="2"/>
+            </g>
+            <circle cx="25" cy="35" r="4" fill="#3b82f6" opacity="0.8">
+                <animate attributeName="cy" values="35;30;35" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="75" cy="35" r="4" fill="#a855f7" opacity="0.8">
+                <animate attributeName="cy" values="35;40;35" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="50" cy="15" r="4" fill="#ef4444" opacity="0.8">
+                <animate attributeName="cy" values="15;10;15" dur="2s" repeatCount="indefinite"/>
+            </circle>
+        </svg>`,
+        firstReleaseDate: '2026-01-01',
+        latestReleaseDate: '2026-01-01'
+    },
+    {
         name: "WAKE CUP!",
         description: "A specialized WIND/Aqua engine that modernizes Flip monsters through high-speed position shifting, famously enabling the 'Whirlwind Weasel' lock.",
         filepath: "pages/Wake CUP Deck Analysis.html",
