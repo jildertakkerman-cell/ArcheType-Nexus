@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hecahands: Multi-Armed Link Monsters</title>
+    <title>Hecahands: Multi-Armed Link & Fusion Monsters</title>
     <script src="../assets/js/google-analytics.js"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,8 +16,7 @@
         rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- CardLoader -->
-        <!-- Supabase CDN for gameplay tags (optional) -->
+    <!-- Supabase CDN for gameplay tags (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../assets/js/supabase-config.js"></script>
     <script src="../assets/js/card-loader.js"></script>
@@ -30,6 +29,8 @@
             /* Ectoplasm Green */
             --color-accent-horror: #9d4edd;
             /* Void Purple */
+            --color-accent-blaze: #ff5400;
+            /* Blazing Dominion Orange */
             --color-text-ghost: #e0e0e0;
             --color-text-dim: #a0a0a0;
         }
@@ -52,7 +53,7 @@
         }
 
         .container {
-            max-width: 1024px;
+            max-width: 1200px;
         }
 
         /* --- Card Styling --- */
@@ -61,15 +62,18 @@
             border: 1px solid var(--color-void-border);
             border-radius: 0.5rem;
             box-shadow: 0 4px 20px rgba(0, 255, 157, 0.05);
-            /* Subtle green glow */
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .card:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(157, 78, 221, 0.15);
-            /* Purple glow on hover */
             border-color: var(--color-accent-horror);
+        }
+
+        .card.blaze-border:hover {
+            box-shadow: 0 8px 30px rgba(255, 84, 0, 0.15);
+            border-color: var(--color-accent-blaze);
         }
 
         .combo-step-card,
@@ -81,7 +85,7 @@
         /* --- Animated Banner --- */
         .banner-header {
             position: relative;
-            min-height: 250px;
+            min-height: 300px;
             background-color: #000;
             border-radius: 1rem;
             overflow: hidden;
@@ -109,35 +113,19 @@
             position: relative;
             z-index: 2;
             text-align: center;
-            text-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
         }
 
-        /* --- Custom Link Style --- */
-        .void-link {
-            color: var(--color-accent-spectral);
-            text-decoration: none;
-            border-bottom: 1px dashed var(--color-accent-spectral);
-            transition: all 0.3s ease;
-            position: relative;
+        .text-gradient {
+            background: linear-gradient(to right, var(--color-accent-spectral), var(--color-accent-horror));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .void-link:hover {
-            color: var(--color-accent-horror);
-            border-bottom-color: var(--color-accent-horror);
-            text-shadow: 0 0 8px var(--color-accent-horror);
-        }
-
-        .void-link::after {
-            content: '&#x270B;';
-            /* Hand emoji hint */
-            font-size: 0.8em;
-            margin-left: 4px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .void-link:hover::after {
-            opacity: 1;
+        .text-gradient-blaze {
+            background: linear-gradient(to right, var(--color-accent-horror), var(--color-accent-blaze));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         /* --- Icons & Accents --- */
@@ -147,6 +135,10 @@
 
         .icon-horror {
             color: var(--color-accent-horror);
+        }
+
+        .icon-blaze {
+            color: var(--color-accent-blaze);
         }
 
         .heading-underline {
@@ -162,6 +154,10 @@
             bottom: -5px;
             left: 0;
             background: linear-gradient(90deg, transparent, var(--color-accent-spectral), transparent);
+        }
+
+        .heading-underline-blaze::after {
+            background: linear-gradient(90deg, transparent, var(--color-accent-blaze), transparent);
         }
 
         /* --- Card Placeholders --- */
@@ -192,10 +188,11 @@
         .card-image-container {
             width: 100%;
             max-width: 140px;
+            flex-shrink: 0;
             margin: 0 auto;
         }
 
-        /* --- Buttons --- */
+        /* --- Buttons & Tabs --- */
         .void-btn {
             background: rgba(157, 78, 221, 0.1);
             border: 1px solid var(--color-accent-horror);
@@ -213,6 +210,40 @@
             background: var(--color-accent-horror);
             color: #000;
             box-shadow: 0 0 15px var(--color-accent-horror);
+        }
+
+        .blaze-btn {
+            background: rgba(255, 84, 0, 0.1);
+            border: 1px solid var(--color-accent-blaze);
+        }
+
+        .blaze-btn:hover,
+        .blaze-btn.active {
+            background: var(--color-accent-blaze);
+            color: #000;
+            box-shadow: 0 0 15px var(--color-accent-blaze);
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            color: var(--color-text-dim);
+        }
+
+        .tab-btn:hover {
+            color: white;
+        }
+
+        .tab-btn.active-spectral {
+            color: var(--color-accent-spectral);
+            border-bottom-color: var(--color-accent-spectral);
+        }
+
+        .tab-btn.active-blaze {
+            color: var(--color-accent-blaze);
+            border-bottom-color: var(--color-accent-blaze);
         }
 
         /* --- Home Button --- */
@@ -256,6 +287,22 @@
             width: 0%;
             transition: width 1s ease-out;
         }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
 </head>
@@ -273,194 +320,250 @@
         <header class="banner-header">
             <canvas id="void-canvas"></canvas>
             <div class="banner-content">
-                <h1 class="text-5xl md:text-7xl font-horror text-white mb-2"
-                    style="color: var(--color-accent-spectral);">HECAHANDS</h1>
-                <p class="text-xl font-tech text-purple-300">"Your Resources? No... OUR Resources."</p>
-                <p class="text-xs text-gray-500 mt-2 font-tech">Analysis Version 2.1 | Includes Chimera & Fiendsmith
-                    Integrations</p>
+                <h1 class="text-5xl md:text-7xl font-horror text-white mb-2 text-gradient">HECAHANDS</h1>
+                <p class="text-xl font-tech text-gray-200">"Your Resources? No... OUR Resources."</p>
+                <div class="mt-4 inline-block bg-black/50 border border-orange-500/50 rounded-full px-4 py-1">
+                    <p class="text-sm text-orange-400 font-tech font-bold"><i class="fas fa-fire mr-2"></i>Updated for
+                        Blazing Dominion (v3.0)</p>
+                </div>
             </div>
         </header>
 
         <!-- Deck Resources & Card Browser (Dock Design) -->
         <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
-            <div class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
                 <div id="deck-resources-compact" class="flex items-center"></div>
-                
+
                 <!-- Vertical Divider (Desktop) -->
                 <div class="hidden md:block w-px h-6 bg-indigo-500/30 mx-1"></div>
-                
+
                 <div id="archetype-cards-browser" class="flex justify-center"></div>
             </div>
             <!-- Glow effect behind -->
-            <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none"></div>
+            <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none">
+            </div>
         </div>
 
-                <!-- Executive Summary -->
-        <section class="mb-12 animate-fadeIn">
-            <div class="card p-8 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                    <i class="fas fa-hand-holding fa-10x"></i>
+        <!-- Lore / Thematic Intro Section -->
+        <section class="max-w-4xl mx-auto mb-12 px-4">
+            <div class="relative bg-[#121212]/80 backdrop-blur-md border-l-4 border-purple-500 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+                <div class="absolute -top-4 -left-4 bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#121212]">
+                    <i class="fas fa-book-open"></i>
                 </div>
-                <h2 class="text-3xl font-bold mb-4 heading-underline text-white">The Paradigm Shift</h2>
-                <p class="text-gray-300 leading-relaxed mb-4">
-                    The release of <em>Phantom Revengers</em> introduces a strategy defined by <strong
-                        class="text-green-400">Resource Appropriation</strong>. Known in the OCG as
-                    <em>Hecatoncheire</em> (after the hundred-handed giants), the deck leverages the battle immunity of
-                    the <strong class="text-purple-400">Illusion</strong> type to grind games to a halt.
-                </p>
-                <p class="text-gray-300 leading-relaxed">
-                    Rather than simply negating effects, Hecahands actively steal cards from the opponent's Hand, Deck,
-                    GY, and Extra Deck to use as Fusion Material. They operate on a principle of "Perfect
-                    Information&mdash;knowing the opponent's hand via <strong>Breus</strong>, their deck via
-                    <strong>Gygas</strong>, and their Extra Deck via <strong>Xeno</strong>.
+                <h2 class="text-xl md:text-2xl font-bold text-purple-400 mb-3 tracking-wide uppercase">Lore Archive</h2>
+                <p class="text-gray-300 leading-relaxed italic text-lg md:text-xl font-serif">
+                    "From the abyssal void reach the Hecahands—an eldritch swarm of phantom limbs that hunger for the resources of the living. They are the ultimate parasites, weaving illusions to disorient their prey before violently ripping assets from their grip. To face them is to fight your own shadow; they do not merely destroy your weapons, they appropriate them, turning your greatest strengths into the very instruments of your horrifying demise."
                 </p>
             </div>
         </section>
 
-        <!-- Anatomy Section -->
+        <!-- Executive Summary & Lore -->
         <section class="mb-12">
-            <h2 class="text-3xl font-bold mb-8 text-center text-white heading-underline">Anatomy of the Swarm</h2>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Level 6 Enablers -->
-                <div class="card p-6">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-eye icon-horror text-2xl mr-3"></i>
-                        <h3 class="text-2xl font-bold text-white">The Enablers (Level 6)</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 card p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                        <i class="fas fa-hand-holding fa-10x text-purple-500"></i>
                     </div>
-                    <div class="space-y-4">
-                        <div class="combo-step-card p-4 rounded flex gap-4">
-                            <div id="ibel-img" class="card-image-container card-placeholder">Hecahands Ibel</div>
-                            <div>
-                                <h4 class="text-lg font-bold text-green-400">Hecahands Ibel</h4>
-                                <p class="text-sm text-gray-400 mt-1"><strong>The Pivot:</strong> Shuffles itself from
-                                    hand to Deck to summon any other Hecahands. Dodges Droll/Imperm. GY Effect: Revives
-                                    a Hecahands monster.</p>
-                            </div>
-                        </div>
-                        <div class="combo-step-card p-4 rounded flex gap-4">
-                            <div id="yadel-img" class="card-image-container card-placeholder">Hecahands Yadel</div>
-                            <div>
-                                <h4 class="text-lg font-bold text-green-400">Hecahands Yadel</h4>
-                                <p class="text-sm text-gray-400 mt-1"><strong>The Searcher:</strong> Shuffles back to
-                                    search Spells/Traps. GY Effect: Resets a Spell/Trap from GY (Grind Game).</p>
-                            </div>
-                        </div>
-                    </div>
+                    <h2 class="text-3xl font-bold mb-4 heading-underline text-white">The Paradigm Shift</h2>
+                    <p class="text-gray-300 leading-relaxed mb-4">
+                        Initially introduced in <em>Phantom Revenge</em>, the Hecahands strategy is defined by <strong
+                            class="text-green-400">Resource Appropriation</strong>. Leveraging the battle immunity of
+                        the <strong class="text-purple-400">Illusion</strong> type, the deck focuses on stealing cards
+                        from the opponent's Hand, Deck, GY, and Extra Deck.
+                    </p>
+                    <p class="text-gray-300 leading-relaxed">
+                        However, the archetype underwent a massive evolution with the <em>Blazing Dominion</em>
+                        expansion. Before this, the deck was notoriously reactive, relying on the opponent to trigger
+                        effects. The new wave of support provides hyper-consistent proactive starters, un-targetable
+                        hand fusions, and staggering OTK potential, elevating Hecahands from a fragile control gimmick
+                        to a lethal, top-tier hybrid threat.
+                    </p>
                 </div>
 
-                <!-- Level 7 Disruptors -->
-                <div class="card p-6">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-hand-paper icon-spectral text-2xl mr-3"></i>
-                        <h3 class="text-2xl font-bold text-white">The Disruptors (Level 7)</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="combo-step-card p-4 rounded flex gap-4">
-                            <div id="breus-img" class="card-image-container card-placeholder">Hecahands Breus</div>
-                            <div>
-                                <h4 class="text-lg font-bold text-purple-400">Hecahands Breus</h4>
-                                <p class="text-sm text-gray-400 mt-1"><strong>Hand Control:</strong> Looks at opponent's
-                                    hand and Special Summons 1 monster from it to YOUR field.</p>
-                            </div>
-                        </div>
-                        <div class="combo-step-card p-4 rounded flex gap-4">
-                            <div id="gygas-img" class="card-image-container card-placeholder">Hecahands Gygas</div>
-                            <div>
-                                <h4 class="text-lg font-bold text-purple-400">Hecahands Gygas</h4>
-                                <p class="text-sm text-gray-400 mt-1"><strong>Deck Control:</strong> Excavates top 3 of
-                                    opponent's deck; steals a monster. Essential for Fusion material.</p>
-                            </div>
-                        </div>
-                        <div class="combo-step-card p-4 rounded flex gap-4">
-                            <div id="goddus-img" class="card-image-container card-placeholder">Hecahands Goddus</div>
-                            <div>
-                                <h4 class="text-lg font-bold text-purple-400">Hecahands Goddus</h4>
-                                <p class="text-sm text-gray-400 mt-1"><strong>GY Control:</strong> Quick Effect to
-                                    revive a monster from opponent's GY to your field. Disables recursion.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Fusion Titans (Added Xeno) -->
-            <div class="card p-6 mt-8">
-                <div class="flex items-center mb-6">
-                    <i class="fas fa-dragon icon-horror text-2xl mr-3"></i>
-                    <h3 class="text-2xl font-bold text-white">The Fusion Titans</h3>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="combo-step-card p-4 rounded flex gap-4">
-                        <div id="jawza-img" class="card-image-container card-placeholder">Hecahands Jawza</div>
-                        <div>
-                            <h4 class="text-lg font-bold text-green-400">Hecahands Jawza</h4>
-                            <p class="text-sm text-gray-400 mt-1"><strong>The Bridge:</strong> Contact Fuses using
-                                opponent's monsters. Searches Spells/Traps on summon. Battle Immunity.</p>
-                        </div>
-                    </div>
-                    <div class="combo-step-card p-4 rounded flex gap-4">
-                        <div id="xeno-img" class="card-image-container card-placeholder">Hecahands Xeno</div>
-                        <div>
-                            <h4 class="text-lg font-bold text-purple-400">Hecahands Xeno</h4>
-                            <p class="text-sm text-gray-400 mt-1"><strong>Extra Deck Rip:</strong> Looks at opponent's
-                                Extra Deck and steals a monster. On death, steals ALL monsters opponent controls.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Spells & Traps -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                <div class="card p-5">
-                    <h4 class="text-xl font-bold text-white mb-2">"Hecahands"</h4>
-                    <span class="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded">Normal Spell</span>
-                    <p class="text-sm text-gray-400 mt-3">The ROTA. Adds a monster, then Sends card to GY to Set a Trap.
-                        GY Effect: Forces opponent to "Draw 1, Discard 1" (Triggers Lvl 7s).</p>
-                </div>
-                <div class="card p-5">
-                    <h4 class="text-xl font-bold text-white mb-2">Hecahands Tartarus</h4>
-                    <span class="text-xs bg-purple-900 text-purple-100 px-2 py-1 rounded">Quick-Play</span>
-                    <p class="text-sm text-gray-400 mt-3">Fusion Spell. Lets you treat stolen monsters as "Hecahands"
-                        cards. Bounces S/T on field.</p>
-                </div>
-                <div class="card p-5">
-                    <h4 class="text-xl font-bold text-white mb-2">Ipt & Yad</h4>
-                    <span class="text-xs bg-red-900 text-red-100 px-2 py-1 rounded">Counter Traps</span>
-                    <p class="text-sm text-gray-400 mt-3"><strong>Ipt (Monster)</strong> & <strong>Yad
-                            (Spell/Trap)</strong>. They negate activations and <strong>steal</strong> the card instead
-                        of destroying it.</p>
+                <div class="card p-8 bg-gradient-to-br from-black to-gray-900 border-t-4 border-t-purple-600">
+                    <h3 class="text-xl font-bold mb-3 text-purple-400"><i class="fas fa-book-dead mr-2"></i>Eldritch
+                        Lore</h3>
+                    <p class="text-sm text-gray-400 mb-3">
+                        The archetype draws from the myth of the Hecatoncheires, splitting into two factions of horrors.
+                    </p>
+                    <ul class="text-sm text-gray-400 space-y-2">
+                        <li><strong class="text-red-400">Dark Hecahands (Xeno):</strong> Utilize pure horror, trapping
+                            victims in <em>Tartaros</em> to drive them insane ("salting the meat").</li>
+                        <li><strong class="text-blue-400">Light Hecahands (Jauzah):</strong> Employ deception,
+                            brainwashing victims into false ascension to assimilate them physically.</li>
+                    </ul>
                 </div>
             </div>
         </section>
 
-        <!-- Engines Section -->
-        <section class="mb-12 animate-fadeIn">
-            <h2 class="text-3xl font-bold mb-8 text-center text-white heading-underline">Mandatory Synergies</h2>
-            <div class="card p-8 bg-gradient-to-br from-gray-900 to-black border-l-4 border-l-purple-600">
-                <div class="flex flex-col md:flex-row gap-8 items-center">
-                    <div class="flex-1">
-                        <h3 class="text-2xl font-bold text-white mb-4"><i class="fas fa-dna text-purple-500 mr-2"></i>
-                            Hybrid Theory</h3>
-                        <p class="text-gray-300 mb-4">
-                            Pure Hecahands works, but hybrid builds raise the ceiling.
+        <!-- Anatomy Section with Tabs -->
+        <section class="mb-12">
+            <div class="flex justify-center mb-6 border-b border-gray-800">
+                <button class="tab-btn active-blaze" onclick="switchTab('anatomy', 'modern', this, 'active-blaze')">
+                    <i class="fas fa-fire icon-blaze mr-2"></i> Blazing Dominion (Modern)
+                </button>
+                <button class="tab-btn" onclick="switchTab('anatomy', 'classic', this, 'active-spectral')">
+                    <i class="fas fa-ghost icon-spectral mr-2"></i> Phantom Revenge (Classic)
+                </button>
+            </div>
+
+            <!-- Tab Content: Blazing Dominion (Modern) -->
+            <div id="anatomy-modern" class="fade-in">
+                <h2 class="text-3xl font-bold mb-8 text-center text-white heading-underline-blaze">The Lethal Trinity
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card blaze-border p-6 flex flex-col h-full">
+                        <div id="makibel-img" class="card-image-container card-placeholder mb-4">Hecahands Makibel</div>
+                        <h4 class="text-xl font-bold text-orange-400">Hecahands Makibel</h4>
+                        <span class="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded w-max mt-1 mb-3">Level 6 |
+                            Enabler</span>
+                        <p class="text-sm text-gray-300 flex-grow"><strong>The Bridge:</strong> Reveals itself in hand
+                            to Fusion Summon using hand/field. Completely dodges on-field negation (Imperm/Veiler).
+                            Recurs to hand from GY when an Illusion Fusion goes to the GY, granting infinite grind game.
                         </p>
-                        <ul class="list-disc list-inside text-gray-400 space-y-2">
-                            <li><strong class="text-green-400">Chimera:</strong> <em>Nightmare Apprentice</em> bridges
-                                the decks. Chimera allows hand-ripping in End Phase.</li>
-                            <li><strong class="text-purple-400">Fiendsmith:</strong> <em>Fiendsmith Engraver</em>
-                                provides Link climbing capabilities to insulate plays from hand traps.</li>
-                            <li><strong class="text-blue-400">Spirit Sculptor:</strong> A tech choice for pure builds.
-                                Tributes itself to search Ibel (1600/2100) based on combined stats.</li>
-                        </ul>
                     </div>
-                    <div class="w-full md:w-1/3 flex justify-center gap-2">
-                        <div id="nightmare-apprentice-img" class="card-image-container card-placeholder"
-                            style="height:150px;">Apprentice</div>
-                        <div id="sculptor-img" class="card-image-container card-placeholder" style="height:150px;">
-                            Spirit Sculptor</div>
+
+                    <div class="card blaze-border p-6 flex flex-col h-full">
+                        <div id="dandalos-img" class="card-image-container card-placeholder mb-4">Hecahands Dandalos
+                        </div>
+                        <h4 class="text-xl font-bold text-red-500">Hecahands Dandalos</h4>
+                        <span class="text-xs bg-purple-900 text-purple-100 px-2 py-1 rounded w-max mt-1 mb-3">Level 7 |
+                            Boss Fusion</span>
+                        <p class="text-sm text-gray-300 flex-grow"><strong>The Finisher (2900 ATK):</strong> Hard OPT
+                            target and permanent steal of an opponent's monster. Grants all your Fusions and stolen
+                            monsters the ability to <strong>Attack Directly</strong>, fixing the archetype's combat
+                            weaknesses instantly.</p>
+                    </div>
+
+                    <div class="card blaze-border p-6 flex flex-col h-full">
+                        <div id="baytal-img" class="card-image-container card-placeholder mb-4">Bayt'al-Hecahands</div>
+                        <span class="text-xs bg-pink-900 text-pink-100 px-2 py-1 rounded w-max mt-1 mb-3">Continuous
+                            Trap</span>
+                        <h4 class="text-xl font-bold text-pink-400">Bayt'al-Hecahands</h4>
+                        <p class="text-sm text-gray-300 flex-grow"><strong>The Loop:</strong> Tribute a Hecahands OR a
+                            monster owned by your opponent to steal an opponent's monster. Spell Speed 2 disruption that
+                            cannibalizes the opponent's own cards.</p>
                     </div>
                 </div>
+            </div>
+
+            <!-- Tab Content: Phantom Revenge (Classic) -->
+            <div id="anatomy-classic" class="hidden fade-in">
+                <h2 class="text-3xl font-bold mb-8 text-center text-white heading-underline">The Original Swarm</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Enablers & Disruptors -->
+                    <div class="card p-6">
+                        <h3 class="text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-2">Main Deck Core</h3>
+                        <div class="space-y-4">
+                            <div class="combo-step-card p-4 rounded flex gap-4">
+                                <div id="ibel-img" class="card-image-container card-placeholder">Hecahands Ibel</div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-green-400">Hecahands Ibel & Yadel</h4>
+                                    <p class="text-sm text-gray-400 mt-1"><strong>Ibel:</strong> Shuffles self to summon
+                                        from deck. <strong>Yadel:</strong> Searches Spells/Traps. The primary resource
+                                        loop.</p>
+                                </div>
+                            </div>
+                            <div class="combo-step-card p-4 rounded flex gap-4">
+                                <div id="gygas-img" class="card-image-container card-placeholder">Gygas, Goddus, Breus
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-purple-400">The Hand Trap Trio</h4>
+                                    <p class="text-sm text-gray-400 mt-1">Reactive Level 7s. They steal from Deck
+                                        (Gygas), GY (Goddus), and Hand (Breus) when the opponent adds cards to their
+                                        hand.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fusions & Spells -->
+                    <div class="card p-6">
+                        <h3 class="text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-2">Extra Deck & Spells
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="combo-step-card p-4 rounded flex gap-4">
+                                <div id="jawza-img" class="card-image-container card-placeholder">Jawza & Xeno</div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-purple-400">Jawza & Xeno</h4>
+                                    <p class="text-sm text-gray-400 mt-1"><strong>Jawza:</strong> Contact Fuses with
+                                        opponent's monsters, searches on summon. <strong>Xeno:</strong> Rips the Extra
+                                        deck, steals field on death.</p>
+                                </div>
+                            </div>
+                            <div class="combo-step-card p-4 rounded flex gap-4">
+                                <div
+                                    class="card-image-container flex items-center justify-center bg-gray-800 rounded border border-gray-600">
+                                    <i class="fas fa-scroll fa-3x text-gray-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-green-400">Backrow Support</h4>
+                                    <p class="text-sm text-gray-400 mt-1"><strong>The Hidden Hecahands:</strong> The
+                                        ROTA. <strong>Tartaros:</strong> Quick-play Fusion. <strong>Ipt & Yad:</strong>
+                                        Negate and Steal Counter Traps.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deckbuilding / Hybrid Engines Grid -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center text-white heading-underline">Optimal Engine Synergies</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                <!-- Pure -->
+                <div class="card p-5 border-t-4 border-t-green-500">
+                    <h4 class="text-xl font-bold text-white mb-2">Pure Control</h4>
+                    <p class="text-xs text-gray-400 mb-3">Maximizes Makibel consistency & Traps.</p>
+                    <ul class="text-sm text-gray-300 space-y-1 mb-4 list-disc pl-4">
+                        <li>3x Makibel & Ibel</li>
+                        <li>Heavy Trap Lineup</li>
+                        <li>Summon Breaker access</li>
+                    </ul>
+                </div>
+
+                <!-- Chimera -->
+                <div class="card p-5 border-t-4 border-t-purple-500 bg-purple-900/10">
+                    <h4 class="text-xl font-bold text-white mb-2">Chimera Hybrid</h4>
+                    <p class="text-xs text-gray-400 mb-3">The dominant OTK & disruption shell.</p>
+                    <ul class="text-sm text-gray-300 space-y-1 mb-4 list-disc pl-4">
+                        <li>Nightmare Apprentice Bridge</li>
+                        <li>Quick-Play Dandalos Fusions</li>
+                        <li>Guardian Chimera utility</li>
+                    </ul>
+                    <div id="nightmare-apprentice-img" class="card-image-container card-placeholder h-24 mt-2">
+                        Apprentice</div>
+                </div>
+
+                <!-- Azamina -->
+                <div class="card p-5 border-t-4 border-t-red-500">
+                    <h4 class="text-xl font-bold text-white mb-2">Azamina / Sinful</h4>
+                    <p class="text-xs text-gray-400 mb-3">Bifurcated threats and GY triggers.</p>
+                    <ul class="text-sm text-gray-300 space-y-1 mb-4 list-disc pl-4">
+                        <li>Diabellstar triggers Hecahands GY</li>
+                        <li>Azamina Moa Regina beats</li>
+                        <li>Non-targeting disruption</li>
+                    </ul>
+                    <div id="diabellstar-img" class="card-image-container card-placeholder h-24 mt-2">Diabellstar</div>
+                </div>
+
+                <!-- Relinquished -->
+                <div class="card p-5 border-t-4 border-t-blue-500">
+                    <h4 class="text-xl font-bold text-white mb-2">Relinquished</h4>
+                    <p class="text-xs text-gray-400 mb-3">The ultimate parasitic theft build.</p>
+                    <ul class="text-sm text-gray-300 space-y-1 mb-4 list-disc pl-4">
+                        <li>Millennium-Eyes Illusionist</li>
+                        <li>Shared Illusion typing</li>
+                        <li>Absolute field absorption</li>
+                    </ul>
+                    <div id="relinquished-img" class="card-image-container card-placeholder h-24 mt-2">Relinquished
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -469,189 +572,241 @@
             <h2 class="text-3xl font-bold mb-6 text-center text-white heading-underline">Tactical Operations</h2>
 
             <!-- Combo Tabs -->
-            <div class="flex flex-wrap justify-center gap-4 mb-8" id="combo-buttons">
-                <button class="void-btn active" onclick="showCombo('combo-1', this)">
-                    <i class="fas fa-lock mr-2"></i> The Chimera Lock
+            <div class="flex flex-wrap justify-center gap-2 mb-8" id="combo-buttons">
+                <button class="blaze-btn void-btn active" onclick="showCombo('combo-makibel', this)">
+                    <i class="fas fa-fire mr-2"></i> Makibel Standard (1.5)
                 </button>
-                <button class="void-btn" onclick="showCombo('combo-2', this)">
-                    <i class="fas fa-skull-crossbones mr-2"></i> Fiendsmith Bridge
+                <button class="blaze-btn void-btn" onclick="showCombo('combo-otk', this)">
+                    <i class="fas fa-skull-crossbones mr-2"></i> Chimera Lethal OTK
                 </button>
-                <button class="void-btn" onclick="showCombo('combo-3', this)">
-                    <i class="fas fa-ghost mr-2"></i> Pure Spirit Sculptor
+                <button class="blaze-btn void-btn" onclick="showCombo('combo-loop', this)">
+                    <i class="fas fa-sync mr-2"></i> Bayt'al Resource Loop
                 </button>
+                <div class="w-full text-center my-2 text-gray-600 text-sm">- Classic Lines -</div>
+                <button class="void-btn" onclick="showCombo('combo-1', this)">Chimera Lock</button>
+                <button class="void-btn" onclick="showCombo('combo-2', this)">Fiendsmith Bridge</button>
             </div>
 
-            <!-- Combo 1: Standard Chimera Line -->
-            <div id="combo-1" class="combo-panel block">
-                <div class="card p-6 mb-6">
+            <!-- Modern Combo 1: Makibel Standard -->
+            <div id="combo-makibel" class="combo-panel block fade-in">
+                <div class="card p-6 mb-6 border-orange-500/50">
                     <p class="text-center text-gray-300 mb-4 border-b border-gray-700 pb-4">
-                        <strong>Input:</strong> Mirror Swordknight + 1 Discard<br>
-                        <strong>Output:</strong> Hand Rip (x2), Omni-Negate (Theft), GY Steal.
+                        <strong>Input:</strong> Hecahands Makibel + 1 "Hecahands" card (e.g., Ibel)<br>
+                        <strong>Output:</strong> Dandalos (Stolen Monster), Bayt'al-Hecahands Set, Makibel in GY (ready
+                        to recur).
                     </p>
                     <ol class="space-y-4 font-tech text-sm text-gray-400">
                         <li class="flex gap-3">
-                            <span class="text-green-400 font-bold">01.</span>
-                            <span>Normal Summon <strong>Mirror Swordknight</strong>. Tribute -> SS <strong>Big-Winged
-                                    Berfomet</strong>. Add <strong>Chimera Fusion</strong> &
-                                <strong>Gazelle</strong>.</span>
+                            <span class="text-orange-400 font-bold">01.</span>
+                            <span>Activate <strong>Makibel</strong> in hand. Reveal it and the other Hecahands
+                                card.</span>
                         </li>
                         <li class="flex gap-3">
-                            <span class="text-green-400 font-bold">02.</span>
-                            <span>Fuse <strong>Berfomet</strong> + <strong>Gazelle</strong> -> <strong>Chimera
-                                    King</strong>. <br><span class="text-purple-400">Chain:</span> Chimera (Rip),
-                                Berfomet (Revive Swordknight), Gazelle (Add <strong>Nightmare
-                                    Apprentice</strong>).</span>
+                            <span class="text-orange-400 font-bold">02.</span>
+                            <span>Fusion Summon <strong>Hecahands Dandalos</strong> using Makibel and the in-hand card.
+                                (Un-targetable by on-field negates).</span>
                         </li>
                         <li class="flex gap-3">
-                            <span class="text-green-400 font-bold">03.</span>
-                            <span>SS <strong>Nightmare Apprentice</strong> (Discard 1). Search <strong>Hecahands
-                                    Ibel</strong>.</span>
+                            <span class="text-orange-400 font-bold">03.</span>
+                            <span>Activate <strong>Dandalos</strong> ignition effect: Target and permanently steal 1
+                                opposing monster.</span>
                         </li>
                         <li class="flex gap-3">
-                            <span class="text-green-400 font-bold">04.</span>
-                            <span>Ibel Effect: Shuffle self -> Summon <strong>Hecahands Gygas</strong>. Gygas excavates
-                                opponent's deck -> Summons monster.</span>
+                            <span class="text-orange-400 font-bold">04.</span>
+                            <span>If the other card was <strong>Ibel</strong> (or you have it), shuffle Ibel from hand
+                                to SS <strong>Yadel</strong>.</span>
                         </li>
                         <li class="flex gap-3">
-                            <span class="text-green-400 font-bold">05.</span>
-                            <span>Contact Fuse <strong>Gygas</strong> + Stolen Monster -> <strong>Hecahands
-                                    Jawza</strong>. Search <strong>"Hecahands"</strong> (Spell).</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-green-400 font-bold">06.</span>
-                            <span>Activate Spell: Send Apprentice (Cost). Add <strong>Yadel</strong>. Set <strong>Ipt al
-                                    Hecahands</strong>.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-green-400 font-bold">07.</span>
-                            <span>SS <strong>Yadel</strong> (via Ibel GY effect or hand effect if searched). Add
-                                <strong>Tartarus</strong> or <strong>Yad</strong>.</span>
+                            <span class="text-orange-400 font-bold">05.</span>
+                            <span>Yadel effect: Search and Set <strong>Bayt'al-Hecahands</strong>.</span>
                         </li>
                     </ol>
                 </div>
             </div>
 
-            <!-- Combo 2: Fiendsmith -->
+            <!-- Modern Combo 2: Chimera OTK -->
+            <div id="combo-otk" class="combo-panel hidden fade-in">
+                <div class="card p-6 mb-6 border-orange-500/50">
+                    <p class="text-center text-gray-300 mb-4 border-b border-gray-700 pb-4">
+                        <strong>Input:</strong> Nightmare Apprentice + Makibel (or access to them)<br>
+                        <strong>Goal:</strong> Generate >8000 Direct Damage bypassing all defenders.
+                    </p>
+                    <ol class="space-y-4 font-tech text-sm text-gray-400">
+                        <li class="flex gap-3">
+                            <span class="text-red-400 font-bold">01.</span>
+                            <span>Discard 1 to SS <strong>Nightmare Apprentice</strong>. Search
+                                <strong>Ibel</strong>.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-red-400 font-bold">02.</span>
+                            <span>Shuffle Ibel -> SS <strong>Yadel</strong> -> Search <strong>Hecahands
+                                    Tartaros</strong>.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-red-400 font-bold">03.</span>
+                            <span>Activate <strong>Makibel</strong> (in hand) + Apprentice (on field) -> Fusion
+                                <strong>Jauzah</strong> (2400 ATK).</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-red-400 font-bold">04.</span>
+                            <span>Jauzah on-summon: Search missing piece or trap.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-red-400 font-bold">05.</span>
+                            <span>Activate <strong>Tartaros</strong>. Banish Makibel + Apprentice from GY -> Fusion
+                                <strong>Dandalos</strong> (2900 ATK).</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-red-400 font-bold">06.</span>
+                            <span>Dandalos effect: Steal opponent's Boss (e.g., 3000 ATK).</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-red-400 font-bold">07.</span>
+                            <span><strong>Battle Phase:</strong> Dandalos grants Direct Attacks. 2400 + 2900 + 3000 =
+                                <strong>8300 Unblockable Damage</strong>.</span>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Modern Combo 3: Bayt'al Loop -->
+            <div id="combo-loop" class="combo-panel hidden fade-in">
+                <div class="card p-6 mb-6 border-pink-500/50">
+                    <p class="text-center text-gray-300 mb-4 border-b border-gray-700 pb-4">
+                        <strong>Input:</strong> Bayt'al-Hecahands (Face-up) + 1 previously stolen monster.<br>
+                        <strong>Goal:</strong> Spell Speed 2 Disruption & Resource Parity.
+                    </p>
+                    <ol class="space-y-4 font-tech text-sm text-gray-400">
+                        <li class="flex gap-3">
+                            <span class="text-pink-400 font-bold">01.</span>
+                            <span>Opponent Normal Summons combo starter.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-pink-400 font-bold">02.</span>
+                            <span>Activate <strong>Bayt'al-Hecahands</strong> effect. Tribute the monster you previously
+                                stole (counts as "owned by opponent").</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-pink-400 font-bold">03.</span>
+                            <span>Target and take control of the newly Normal Summoned monster.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-pink-400 font-bold">04.</span>
+                            <span><strong>End Phase:</strong> Send the exhausted stolen monster to GY to satisfy
+                                Bayt'al's maintenance cost. Loop resets for next turn.</span>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Classic Combo 1: Standard Chimera Line -->
+            <div id="combo-1" class="combo-panel hidden">
+                <div class="card p-6 mb-6">
+                    <ol class="space-y-4 font-tech text-sm text-gray-400">
+                        <li class="flex gap-3"><span class="text-green-400 font-bold">01.</span><span>Normal Summon
+                                Swordknight. Tribute -> SS Berfomet. Add Chimera Fusion & Gazelle.</span></li>
+                        <li class="flex gap-3"><span class="text-green-400 font-bold">02.</span><span>Fuse Berfomet +
+                                Gazelle -> Chimera King. Chain: Chimera (Rip), Berfomet (Revive), Gazelle (Add
+                                Apprentice).</span></li>
+                        <li class="flex gap-3"><span class="text-green-400 font-bold">03.</span><span>SS Apprentice
+                                (Discard 1). Search Ibel.</span></li>
+                        <li class="flex gap-3"><span class="text-green-400 font-bold">04.</span><span>Ibel: Shuffle self
+                                -> Summon Gygas. Gygas excavates -> Summons monster.</span></li>
+                        <li class="flex gap-3"><span class="text-green-400 font-bold">05.</span><span>Contact Fuse Gygas
+                                + Stolen Monster -> Jawza. Search "Hecahands" Spell.</span></li>
+                        <li class="flex gap-3"><span class="text-green-400 font-bold">06.</span><span>Spell: Send
+                                Apprentice. Add Yadel. Set Ipt al Hecahands.</span></li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Classic Combo 2: Fiendsmith -->
             <div id="combo-2" class="combo-panel hidden">
                 <div class="card p-6 mb-6">
-                    <p class="text-center text-gray-300 mb-4 border-b border-gray-700 pb-4">
-                        <strong>Input:</strong> Fiendsmith Tract + Hecahands Name (or Swordknight start)<br>
-                        <strong>Goal:</strong> High Ceiling, insulation from Droll, multiple disruption layers.
-                    </p>
                     <ol class="space-y-4 font-tech text-sm text-gray-400">
-                        <li class="flex gap-3">
-                            <span class="text-purple-400 font-bold">01.</span>
-                            <span>Standard Start: Swordknight -> Berfomet -> Search Fusion/Gazelle. Fuse for Chimera.
-                                Gazelle searches Ibel.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-purple-400 font-bold">02.</span>
-                            <span>Link <strong>Berfomet</strong> (or generic body) -> <strong>Fiendsmith
-                                    Requiem</strong>.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-purple-400 font-bold">03.</span>
-                            <span>Requiem Effect: SS <strong>Fiendsmith's Lacrima</strong>. Lacrima sends
-                                <strong>Fiendsmith Engraver</strong> to GY.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-purple-400 font-bold">04.</span>
-                            <span>Engraver Effect: SS itself. Overlay/Link into <strong>Fiendsmith Sequentia</strong> or
-                                <strong>Caesar Valius</strong>.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-green-400 font-bold">05.</span>
-                            <span><strong>Hecahands Extension:</strong> Activate Ibel -> Summon Gygas -> Steal Monster
-                                -> Contact Fuse <strong>Jawza</strong>.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-green-400 font-bold">06.</span>
-                            <span>Jawza searches Hecahands Spell. Activate Spell (Cost: send spent Fiendsmith) -> Set
-                                <strong>Ipt al Hecahands</strong>.</span>
-                        </li>
+                        <li class="flex gap-3"><span class="text-purple-400 font-bold">01.</span><span>Link Berfomet ->
+                                Fiendsmith Requiem.</span></li>
+                        <li class="flex gap-3"><span class="text-purple-400 font-bold">02.</span><span>Requiem Effect:
+                                SS Lacrima. Lacrima sends Engraver.</span></li>
+                        <li class="flex gap-3"><span class="text-purple-400 font-bold">03.</span><span>Engraver: SS
+                                itself. Link into Sequentia.</span></li>
+                        <li class="flex gap-3"><span class="text-green-400 font-bold">04.</span><span>Activate Ibel ->
+                                Summon Gygas -> Steal Monster -> Contact Fuse Jawza.</span></li>
+                        <li class="flex gap-3"><span class="text-green-400 font-bold">05.</span><span>Jawza searches
+                                Hecahands Spell. Activate -> Set Ipt al Hecahands.</span></li>
                     </ol>
                 </div>
             </div>
-
-            <!-- Combo 3: Spirit Sculptor -->
-            <div id="combo-3" class="combo-panel hidden">
-                <div class="card p-6 mb-6">
-                    <p class="text-center text-gray-300 mb-4 border-b border-gray-700 pb-4">
-                        <strong>Input:</strong> Spirit Sculptor<br>
-                        <strong>Goal:</strong> 1-Card Starter for Pure Builds.
-                    </p>
-                    <ol class="space-y-4 font-tech text-sm text-gray-400">
-                        <li class="flex gap-3">
-                            <span class="text-blue-400 font-bold">01.</span>
-                            <span>Normal Summon <strong>Spirit Sculptor</strong>. Tribute itself (Cost).</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-blue-400 font-bold">02.</span>
-                            <span>Math: Sculptor had 1600 ATK / 2100 DEF (Total 3700). Search monster with same total
-                                stats: <strong>Hecahands Ibel</strong> (1600/2100).</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-blue-400 font-bold">03.</span>
-                            <span>Ibel Effect: Shuffle self -> Summon <strong>Gygas</strong>.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-blue-400 font-bold">04.</span>
-                            <span>Gygas excavates -> Steals monster -> Contact Fuse <strong>Jawza</strong>.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-blue-400 font-bold">05.</span>
-                            <span>Jawza searches Spell -> Spell searches Yadel -> Yadel resets Trap.</span>
-                        </li>
-                    </ol>
-                </div>
-            </div>
-
         </section>
 
-        <!-- Matchup Analysis (New Section) -->
+        <!-- Matchup Analysis & Advanced Rulings -->
         <section class="mb-12">
-            <h2 class="text-3xl font-bold mb-8 text-center text-white heading-underline">Matchup Analysis</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Vs Meta -->
-                <div class="card p-6">
-                    <h4 class="text-xl font-bold text-white mb-2">Vs. Snake-Eye / Fire King</h4>
-                    <p class="text-sm text-gray-400 mb-4"><strong>Advantage: Hecahands.</strong> Goddus is MVP here.</p>
-                    <ul class="text-sm text-gray-300 space-y-2">
-                        <li><i class="fas fa-check text-green-400"></i> Stealing <strong>Promethean Princess</strong>
-                            from GY shuts down recursion.</li>
-                        <li><i class="fas fa-check text-green-400"></i> <strong>Ipt</strong> stealing Snake-Eye Ash
-                            gives you a starter.</li>
-                    </ul>
-                    <div class="matchup-bar-bg">
-                        <div class="matchup-bar-fill" style="width: 70%"></div>
+            <h2 class="text-3xl font-bold mb-8 text-center text-white heading-underline">Metagame Positioning &
+                Mechanics</h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Matchups -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-bold text-gray-300 mb-4"><i class="fas fa-crosshairs mr-2"></i>Key Matchups
+                    </h3>
+
+                    <div class="card p-4">
+                        <h4 class="font-bold text-white mb-1">Vs. Midrange & Board-Centric (e.g. Purrely)</h4>
+                        <p class="text-sm text-gray-400 mb-2"><strong>Advantage: Overwhelming.</strong> Hecahands
+                            bypasses standard destruction protection by "taking control". Moving cards prevents GY
+                            floating effects.</p>
+                        <div class="matchup-bar-bg">
+                            <div class="matchup-bar-fill" style="width: 85%"></div>
+                        </div>
+                    </div>
+
+                    <div class="card p-4 border-l-4 border-l-red-500">
+                        <h4 class="font-bold text-white mb-1">Vs. Untargetable Threats (e.g. Majespecter)</h4>
+                        <p class="text-sm text-gray-400 mb-2"><strong>Disadvantage.</strong> Dandalos and Bayt'al
+                            explicitly state "target". You must rely on non-engine (Guardian Chimera/Evenly Matched) to
+                            break these boards.</p>
+                        <div class="matchup-bar-bg">
+                            <div class="matchup-bar-fill" style="width: 30%"></div>
+                        </div>
+                    </div>
+
+                    <div class="card p-4 border-l-4 border-l-red-500">
+                        <h4 class="font-bold text-white mb-1">Vs. Token Strategies</h4>
+                        <p class="text-sm text-gray-400 mb-2"><strong>Disadvantage.</strong> Tokens vanish when they
+                            leave the field (bad for GY fusion). Stealing a token wastes an activation. Bayt'al tribute
+                            math gets muddy.</p>
+                        <div class="matchup-bar-bg">
+                            <div class="matchup-bar-fill" style="width: 25%"></div>
+                        </div>
                     </div>
                 </div>
-                <!-- Vs Tenpai -->
-                <div class="card p-6">
-                    <h4 class="text-xl font-bold text-white mb-2">Vs. Tenpai Dragon</h4>
-                    <p class="text-sm text-gray-400 mb-4"><strong>Advantage: Even/Slight Disadvantage.</strong></p>
-                    <ul class="text-sm text-gray-300 space-y-2">
-                        <li><i class="fas fa-exclamation-triangle text-yellow-500"></i> Illusion battle immunity can
-                            backfire if Tenpai wants to battle.</li>
-                        <li><i class="fas fa-check text-green-400"></i> Must use <strong>Xeno</strong> to rip Synchros
-                            from Extra Deck before Battle Phase.</li>
+
+                <!-- Advanced Rulings -->
+                <div class="card p-6 bg-[#0a0a0a]">
+                    <h3 class="text-xl font-bold text-orange-400 mb-4"><i class="fas fa-gavel mr-2"></i>Advanced Judge
+                        Rulings</h3>
+                    <ul class="space-y-4 text-sm text-gray-300">
+                        <li class="border-b border-gray-800 pb-3">
+                            <strong class="text-purple-400 block mb-1">Owner vs. Controller (Bayt'al-Hecahands)</strong>
+                            If you steal an opponent's monster (e.g. Fallen of Albaz), you are the <em>controller</em>,
+                            but they are the <em>owner</em>. You can legally Tribute that Albaz to pay the cost for
+                            Bayt'al, forcing the opponent to pay for their own demise.
+                        </li>
+                        <li class="border-b border-gray-800 pb-3">
+                            <strong class="text-purple-400 block mb-1">Makibel Chain Blocking</strong>
+                            Makibel's hand-fusion resolves in a single chain link. The opponent cannot wait for the
+                            reveal and then fast-effect destroy a field material before the fusion legally occurs. If
+                            Makibel is ripped from hand (e.g., via a chained discard effect), the fusion resolves
+                            without effect.
+                        </li>
+                        <li>
+                            <strong class="text-purple-400 block mb-1">Ib'al vs Replacement Effects (e.g.
+                                Nemleria)</strong>
+                            If Ib'al-Hecahands negates a monster, but the opponent applies a continuous replacement
+                            effect (e.g. banish from ED instead of destroy), the initial effect remains negated, but you
+                            do <em>not</em> steal the monster because it wasn't destroyed.
+                        </li>
                     </ul>
-                    <div class="matchup-bar-bg">
-                        <div class="matchup-bar-fill" style="width: 50%"></div>
-                    </div>
-                </div>
-                <!-- Vs Enneacraft -->
-                <div class="card p-6">
-                    <h4 class="text-xl font-bold text-white mb-2">Vs. Enneacraft (Flip)</h4>
-                    <p class="text-sm text-gray-400 mb-4"><strong>Advantage: Disadvantage.</strong></p>
-                    <ul class="text-sm text-gray-300 space-y-2">
-                        <li><i class="fas fa-times text-red-500"></i> Face-down monsters cannot be targeted by
-                            Gygas/Jawza theft mechanics.</li>
-                        <li><i class="fas fa-lightbulb text-yellow-500"></i> Rely on Tartarus to bounce sets.</li>
-                    </ul>
-                    <div class="matchup-bar-bg">
-                        <div class="matchup-bar-fill" style="width: 30%"></div>
-                    </div>
                 </div>
             </div>
         </section>
@@ -664,22 +819,35 @@
             </div>
         </section>
 
-        <!-- Deck Resources / Search Section -->
-        <section class="mb-12 animate-fadeIn">
-            <div id="deck-resources-container">
-                <!-- Deck Search content populated by JS -->
-            </div>
-        </section>
-
         <!-- Footer / Credits -->
         <footer class="text-center text-gray-600 text-xs mt-12 pb-8">
-            <p>Report compiled by Senior TCG Meta Analyst - November 25, 2025</p>
+            <p>Report compiled by Senior TCG Meta Analyst - April 27, 2026</p>
             <p class="mt-2 font-horror text-lg text-purple-900">THE VOID STARES BACK</p>
         </footer>
 
     </div>
 
     <script>
+        // Tab Switcher Logic for Anatomy
+        function switchTab(group, targetId, btn, activeClass) {
+            // Hide all tabs in group
+            const container = document.getElementById(group + '-modern').parentNode;
+            container.querySelectorAll('.fade-in').forEach(p => {
+                if (p.id.startsWith(group)) {
+                    p.classList.add('hidden');
+                }
+            });
+            // Show target
+            document.getElementById(group + '-' + targetId).classList.remove('hidden');
+
+            // Reset buttons
+            btn.parentNode.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active-spectral', 'active-blaze');
+            });
+            // Set active
+            btn.classList.add(activeClass);
+        }
+
         // Combo Switcher Logic
         function showCombo(comboId, btn) {
             document.querySelectorAll('.combo-panel').forEach(panel => {
@@ -707,37 +875,41 @@
                 'nightmare-apprentice-img': 'Nightmare Apprentice',
                 'jawza-img': 'Hecahands Jawza',
                 'xeno-img': 'Hecahands Xeno',
-                'sculptor-img': 'Spirit Sculptor'
+                'sculptor-img': 'Spirit Sculptor',
+                // New additions
+                'makibel-img': 'Hecahands Makibel',
+                'dandalos-img': 'Hecahands Dandalos',
+                'baytal-img': 'Bayt\'al-Hecahands',
+                'diabellstar-img': 'Diabellstar the Black Witch',
+                'relinquished-img': 'Relinquished'
             });
 
-            // 2. Render Deck Search Section
-            await 
             // Render compact deck resources in header
             await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Hecahands');
 
             // Render archetype cards browser (compact mode at top)
-            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Hecahands', { 
-                compact: true, 
-                buttonColor: 'from-purple-600 to-indigo-600',
-                buttonHoverColor: 'from-purple-700 to-indigo-700'
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Hecahands', {
+                compact: true,
+                buttonColor: 'from-orange-600 to-red-600',
+                buttonHoverColor: 'from-orange-700 to-red-700'
             });
 
-            // 3. Render Banlist Section
+            // Render Banlist Section
             await CardLoader.renderBanlistSection('banlist-status', [
-                'Hecahands Ibel', 'Hecahands Yadel', 'Hecahands Breus',
+                'Hecahands Makibel', 'Hecahands Dandalos', 'Hecahands Ibel', 'Hecahands Yadel',
                 'Mirror Swordknight', 'Chimera Fusion',
-                'Fiendsmith Engraver', 'Fiendsmith Tract'
+                'Diabellstar the Black Witch', 'WANTED: Seeker of Sinful Spoils'
             ], {
-                archetypeName: 'Hecahands',
-                relatedCards: ['Hecahands Xeno', 'Fiendsmith Sequence'],
+                archetypeName: 'Hecahands (Blazing Dominion Era)',
+                relatedCards: ['Hecahands Xeno', 'Hecahands Jauzah', 'Bayt\'al-Hecahands'],
                 archetypeTraits: {
-                    coreMechanic: 'Resource Appropriation via Illusion type',
-                    supportReliance: 'Hybridizes with Chimera/Fiendsmith',
-                    adaptability: 'Tier 1.5 Contender'
+                    coreMechanic: 'Resource Appropriation & Direct Attack OTK',
+                    supportReliance: 'Hybridizes with Chimera/Azamina',
+                    adaptability: 'Tier 1 Contender'
                 }
             });
 
-            // Canvas Animation
+            // Canvas Animation (Intact from original)
             const canvas = document.getElementById('void-canvas');
             if (canvas) {
                 const ctx = canvas.getContext('2d');
@@ -759,7 +931,11 @@
                         this.speedY = (Math.random() - 0.5) * 0.5;
                         this.life = Math.random() * 100 + 50;
                         this.maxLife = this.life;
-                        this.color = Math.random() > 0.5 ? '157, 78, 221' : '0, 255, 157';
+                        // Added Blazing Dominion Orange to particle colors
+                        const rand = Math.random();
+                        if (rand > 0.66) this.color = '157, 78, 221'; // Purple
+                        else if (rand > 0.33) this.color = '0, 255, 157'; // Green
+                        else this.color = '255, 84, 0'; // Orange (New)
                     }
                     update() {
                         this.x += this.speedX;
@@ -777,7 +953,7 @@
 
                 function initParticles() {
                     particles = [];
-                    for (let i = 0; i < 60; i++) particles.push(new VoidParticle());
+                    for (let i = 0; i < 80; i++) particles.push(new VoidParticle());
                 }
 
                 function animate() {

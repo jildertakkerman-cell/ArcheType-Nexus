@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Artmage: Masters of Canvas Magic</title>
     <script src="../assets/js/google-analytics.js"></script>
-    <link href="../output.css" rel="stylesheet">
-    <!-- We will keep the original card-loader.js path, assuming it's in a relative 'assets/js/' folder -->
+    <!-- Assuming Tailwind is loaded via this output.css or a CDN if missing -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase CDN for gameplay tags (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../assets/js/supabase-config.js"></script>
@@ -26,32 +26,34 @@
         }
 
         .container {
-            max-width: 1024px;
+            max-width: 1100px;
         }
 
         .card {
             background-color: #2a2a3e;
             /* Dark Slate Blue */
             border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
             border: 1px solid #7f5af0;
             /* Bright Purple Border */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .combo-step-card {
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(127, 90, 240, 0.3);
+        }
+
+        .combo-step-card,
+        .pro-con-card {
             background-color: #3b3b5c;
             /* Lighter Slate Blue */
             border: 1px solid #9d7fe2;
             /* Lighter Purple Accent */
         }
 
-        .pro-con-card {
-            background-color: #3b3b5c;
-            border: 1px solid #9d7fe2;
-        }
-
         .card-placeholder {
-            background-color: #2a2a3e;
+            background-color: #1f1f33;
             color: white;
             display: flex;
             justify-content: center;
@@ -61,10 +63,11 @@
             line-height: 1rem;
             font-weight: bold;
             height: 100%;
-            min-height: 128px;
+            min-height: 140px;
             border-radius: 0.5rem;
             padding: 0.5rem;
-            box-shadow: 0 0 10px #2a2a3e;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            border: 1px dashed #7f5af0;
         }
 
         .pro-icon {
@@ -94,21 +97,10 @@
             padding-bottom: 0.25rem;
         }
 
-        a.lore-link {
-            color: #e0e0e0;
-            text-decoration: underline;
-            transition: color 0.3s;
-        }
-
-        a.lore-link:hover {
-            color: #a78bfa;
-        }
-
         /* --- NEW ANIMATED BANNER STYLES --- */
         .banner-header {
             position: relative;
-            min-height: 160px;
-            /* Matching Battlewasp size */
+            min-height: 180px;
             background-color: #1a1a2e;
             border-radius: 1rem;
             overflow: hidden;
@@ -119,6 +111,7 @@
             padding: 2rem;
             margin-bottom: 2.5rem;
             border: 1px solid #7f5af0;
+            box-shadow: 0 0 30px rgba(127, 90, 240, 0.2);
         }
 
         #artmage-banner {
@@ -137,7 +130,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(circle, rgba(26, 26, 46, 0.5) 0%, rgba(26, 26, 46, 0.9) 80%);
+            background: radial-gradient(circle, rgba(26, 26, 46, 0.4) 0%, rgba(26, 26, 46, 0.95) 90%);
             z-index: 2;
         }
 
@@ -148,13 +141,50 @@
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
         }
 
-        @media (min-width: 768px) {
-            .banner-header {
-                margin-bottom: 4rem;
+        /* --- Tab Styles --- */
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+            color: white;
+            border-color: transparent;
+        }
+
+        .tab-btn.inactive {
+            background-color: #2a2a3e;
+            color: #9ca3af;
+            border: 1px solid #4b5563;
+        }
+
+        .tab-btn.inactive:hover {
+            background-color: #3b3b5c;
+            color: #e5e7eb;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        /* --- END OF BANNER STYLES --- */
         /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
         .ygo-home-button {
             position: fixed;
@@ -170,40 +200,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow:
-                0 4px 15px rgba(99, 102, 241, 0.4),
-                0 0 20px rgba(99, 102, 241, 0.2);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
             transition: all 0.3s ease;
             cursor: pointer;
             text-decoration: none;
             overflow: hidden;
         }
 
-        .ygo-home-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background:
-                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
-            animation: ygoButtonPulse 3s ease-in-out infinite;
-            pointer-events: none;
-        }
-
         .ygo-home-button:hover {
             transform: translateY(-3px) scale(1.05);
-            box-shadow:
-                0 8px 25px rgba(99, 102, 241, 0.6),
-                0 0 30px rgba(99, 102, 241, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
             border-color: #8b5cf6;
-        }
-
-        .ygo-home-button:active {
-            transform: translateY(-1px) scale(1.02);
         }
 
         .ygo-home-button i {
@@ -211,101 +218,17 @@
             position: relative;
             z-index: 2;
             text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
-            animation: ygoIconGlow 2s ease-in-out infinite alternate;
-        }
-
-        .ygo-home-button .ygo-home-text {
-            position: absolute;
-            bottom: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            font-weight: 600;
-            color: #a5b4fc;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            white-space: nowrap;
-            pointer-events: none;
-        }
-
-        .ygo-home-button:hover .ygo-home-text {
-            opacity: 1;
-        }
-
-        @keyframes ygoButtonPulse {
-
-            0%,
-            100% {
-                opacity: 0.8;
-            }
-
-            50% {
-                opacity: 1;
-            }
-        }
-
-        @keyframes ygoIconGlow {
-            0% {
-                text-shadow:
-                    0 0 10px rgba(99, 102, 241, 0.8),
-                    0 0 20px rgba(139, 92, 246, 0.4);
-            }
-
-            100% {
-                text-shadow:
-                    0 0 15px rgba(99, 102, 241, 1),
-                    0 0 30px rgba(139, 92, 246, 0.6),
-                    0 0 40px rgba(59, 130, 246, 0.3);
-            }
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .ygo-home-button {
-                width: 50px;
-                height: 50px;
-                top: 15px;
-                left: 15px;
-            }
-
-            .ygo-home-button i {
-                font-size: 18px;
-            }
         }
 
         #card-popup {
             background: #1a1423 !important;
-            border: none !important;
+            border: 1px solid #7f5af0 !important;
             border-radius: 8px;
             padding: 12px;
             max-width: 300px;
             font-size: 14px;
             color: #ffffff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        #card-popup h3 {
-            margin: 0 0 8px 0;
-            font-weight: bold;
-            color: #ffffff;
-        }
-
-        #card-popup .card-type {
-            font-style: italic;
-            margin-bottom: 8px;
-            color: #e0e0e0;
-        }
-
-        #card-popup .card-description {
-            margin-bottom: 8px;
-            line-height: 1.4;
-            color: #f0f0f0;
-        }
-
-        #card-popup .card-stats {
-            font-size: 12px;
-            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
         }
     </style>
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
@@ -314,380 +237,714 @@
 <body class="p-4 md:p-8">
     <!-- Card Popup -->
     <div id="card-popup" class="fixed z-50 opacity-0 pointer-events-none transition-opacity duration-200"></div>
+
     <!-- Yu-Gi-Oh! Themed Home Button -->
     <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
         <i class="fas fa-home"></i>
-        <span class="ygo-home-text">NEXUS</span>
     </a>
 
     <div class="container mx-auto">
-        <!-- MODIFIED Title Section -->
+        <!-- Banner Section -->
         <header class="banner-header text-center">
             <canvas id="artmage-banner"></canvas>
-            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2 heading-underline">Artmage</h1>
-            <p class="text-lg md:text-xl text-purple-300">The Evolution of the Canvas: Post-Burst Protocol</p>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-3 heading-underline tracking-tight">Artmage
+            </h1>
+            <p class="text-lg md:text-2xl text-purple-300 font-semibold drop-shadow-md">Masters of Canvas Magic</p>
         </header>
 
         <!-- Deck Resources & Card Browser (Dock Design) -->
-        <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
+        <div class="relative z-10 -mt-10 mb-10 mx-auto max-w-fit">
             <div
-                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/90 backdrop-blur-md border border-indigo-500/50 shadow-[0_8px_30px_rgb(0,0,0,0.6)]">
                 <div id="deck-resources-compact" class="flex items-center"></div>
-
-                <!-- Vertical Divider (Desktop) -->
-                <div class="hidden md:block w-px h-6 bg-indigo-500/30 mx-1"></div>
-
+                <div class="hidden md:block w-px h-6 bg-indigo-500/50 mx-1"></div>
                 <div id="archetype-cards-browser" class="flex justify-center"></div>
             </div>
-            <!-- Glow effect behind -->
-            <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none">
+            <div class="absolute inset-0 bg-indigo-500/30 blur-2xl -z-10 rounded-full opacity-60 pointer-events-none">
             </div>
         </div>
 
-        <!-- Executive Summary Section -->
-        <section class="mb-10 md:mb-16">
-            <div class="card p-6">
-                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
-                <!-- UPDATED TEXT for Non-Finito -->
-                <p class="text-gray-200">
-                    The <strong class="text-accent font-bold">Artmage</strong> archetype has evolved from a linear
-                    "protect-the-castle" strategy into a dynamic, resource-rich midrange contender with the release of
-                    <strong>Burst Protocol</strong>. The introduction of <strong class="text-accent font-bold">Artmage
-                        Non-Finito</strong> allows the deck to play fluidly on both players' turns. By leveraging
-                    Non-Finito's ability to "Contact Summon" and its Quick Effect to fuse during the opponent's turn,
-                    Artmage now consistently satisfies its "Three-Type" condition (Spellcaster, Illusion,
-                    Warrior/Fairy). The deck retains its signature resource loop via <strong
-                        class="text-accent font-bold">Artmage Academic Arcane Arts Acropolis</strong> but now boasts
-                    higher consistency, "Turn 0" play potential, and better resilience against hand traps.
+        <!-- Lore / Thematic Intro Section -->
+        <section class="max-w-4xl mx-auto mb-12 px-4">
+            <div class="relative bg-[#1a1423]/80 backdrop-blur-md border-l-4 border-purple-500 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+                <div class="absolute -top-4 -left-4 bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#1a1423]">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h2 class="text-xl md:text-2xl font-bold text-purple-400 mb-3 tracking-wide uppercase">Lore Archive</h2>
+                <p class="text-gray-300 leading-relaxed italic text-lg md:text-xl font-serif">
+                    "The canvas of reality is theirs to command. Wielding arcane brushes and mystical palettes, the Artmages blend masterful illusion with potent spellcraft, painting breathtaking miracles into existence. They view the battlefield not as a zone of war, but as an unfinished masterpiece, ready to be altered, recolored, or entirely erased with a single, devastating stroke of their magical pigments."
                 </p>
             </div>
         </section>
 
-        <!-- Foundational Mechanics Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Foundational Mechanics: The Arcane
-                Arts</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="card p-6">
-                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-sitemap text-accent mr-2"></i>Type
-                        Diversity</h3>
-                    <p class="text-gray-200">The deck's power ceiling is unlocked by controlling 3+ different Monster
-                        Types. The addition of the <strong>Illusion</strong>-type <strong
-                            class="text-accent font-bold">Non-Finito</strong> stabilizes this condition, making your
-                        disruptions live more often.</p>
-                </div>
-                <div class="card p-6">
-                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-sync-alt text-accent mr-2"></i>The
-                        Acropolis Loop</h3>
-                    <p class="text-gray-200">The Field Spell, <strong class="text-accent font-bold">Acropolis</strong>,
-                        lets you discard 1 Spell/Trap to search an "Artmage" monster. Cards like <strong
-                            class="text-accent font-bold">Turmoil</strong> and <strong
-                            class="text-accent font-bold">Pedigree</strong> recycle themselves when discarded, creating
-                        an infinite resource engine.</p>
-                </div>
-                <!-- NEW SECTION -->
-                <div class="card p-6">
-                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-random text-accent mr-2"></i>Reactive
-                        Fusion</h3>
-                    <p class="text-gray-200">The strategy now pivots around <strong
-                            class="text-accent font-bold">Non-Finito's</strong> Quick Effect. Instead of committing to a
-                        static board, you can fuse during the opponent's turn to dodge targeting effects and summon
-                        disruptors like <strong class="text-accent font-bold">Nerva</strong> or <strong
-                            class="text-accent font-bold">Guardian Chimera</strong>.</p>
-                </div>
-            </div>
-        </section>
+        <!-- ERA SWITCHER TABS -->
+        <div class="flex flex-wrap justify-center gap-4 mb-10 border-b border-indigo-500/30 pb-6">
+            <button onclick="switchTab('blzd')" id="tab-btn-blzd"
+                class="tab-btn active px-8 py-3 rounded-full font-bold text-lg flex items-center gap-2">
+                <i class="fas fa-fire-alt text-orange-400"></i> Blazing Dominion Era (Current)
+            </button>
+            <button onclick="switchTab('burst')" id="tab-btn-burst"
+                class="tab-btn inactive px-8 py-3 rounded-full font-bold text-lg flex items-center gap-2">
+                <i class="fas fa-history"></i> Burst Protocol Era (Legacy)
+            </button>
+        </div>
 
-        <!-- Core Combo Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Non-Finito Bridge</h2>
-            <!-- UPDATED TEXT for Non-Finito line -->
-            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">The classic linear line has been replaced by a
-                branching decision tree centered on <strong class="text-accent font-bold">Artmage Non-Finito</strong>.
-                This combo establishes a recurring board state and sets a powerful trap directly from the deck.</p>
-            <div class="flex flex-col items-center gap-6">
-                <!-- Step 1 -->
-                <div
-                    class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
-                    <div id="medius-img-container" class="card-image-container card-placeholder">Medius the Pure</div>
-                    <div>
-                        <div class="flex items-center mb-2">
-                            <span
-                                class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
-                            <h3 class="text-lg font-bold">The Initiation</h3>
+        <!-- ========================================== -->
+        <!-- TAB 1: BLAZING DOMINION ERA (NEW CONTENT)  -->
+        <!-- ========================================== -->
+        <div id="tab-content-blzd" class="tab-content active">
+
+            <!-- Executive Summary -->
+            <section class="mb-10 md:mb-16">
+                <div class="card p-6 md:p-8 bg-gradient-to-br from-[#2a2a3e] to-[#1e1b4b]">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="bg-indigo-600 p-3 rounded-lg"><i class="fas fa-chart-line text-2xl text-white"></i>
                         </div>
-                        <p class="text-gray-200">Normal Summon <strong class="text-accent font-bold">Medius the
-                                Pure</strong>. Search for <strong class="text-accent font-bold">Artmage Power
-                                Patron</strong>. Use Medius to Special Summon Power Patron from hand.</p>
+                        <h2 class="text-2xl md:text-3xl font-bold text-white">Metagame Context: The Blazing Dominion
+                        </h2>
                     </div>
+                    <p class="text-gray-200 leading-relaxed text-lg mb-4">
+                        The release of the <strong class="text-accent">Blazing Dominion (BLZD)</strong> set has
+                        fundamentally restructured the competitive hierarchy. In an environment dominated by
+                        hyper-synergistic strategies like "Kewl Tune", "Predaplant", and graveyard-reliant "DoomZ"
+                        variants, the Artmage archetype has experienced a dramatic resurgence.
+                    </p>
+                    <p class="text-gray-200 leading-relaxed text-lg">
+                        Historically plagued by extreme susceptibility to hand traps (chokepointing at <strong
+                            class="text-accent">Medius the Pure</strong>) and a restrictive Fusion-lock, the deck has
+                        been saved by two masterful additions: the Level 10 Pendulum <strong class="text-white">Power
+                            Patron Shadow Beast Nervedo</strong> and the Counter Trap <strong class="text-white">Artmage
+                            Impasto -Recapture-</strong>. These tools have transformed Artmage from a fragile combo deck
+                        into a resilient, tempo-dictating powerhouse capable of securing dominant 8-1 tournament
+                        records.
+                    </p>
                 </div>
-                <!-- Arrow -->
-                <div class="w-full flex justify-center">
-                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                </div>
-                <!-- Step 2 -->
-                <div
-                    class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
-                    <div id="non-finito-combo-img" class="card-image-container card-placeholder">Artmage Non-Finito
+            </section>
+
+            <!-- New Foundational Mechanics -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-2xl md:text-4xl font-bold text-white mb-8 text-center"><i
+                        class="fas fa-cogs text-accent mr-3"></i>Architectural Upgrades</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Nervedo Panel -->
+                    <div class="card p-6 flex flex-col items-center text-center">
+                        <div id="nervedo-img" class="card-image-container card-placeholder w-full max-w-[200px] mb-6">
+                            Power Patron Shadow Beast Nervedo</div>
+                        <h3 class="text-2xl font-bold text-accent mb-3">The Pendulum Shield</h3>
+                        <p class="text-gray-300 mb-4 text-left">
+                            <strong class="text-white">Nervedo</strong> is the ultimate anti-interruption tool. Placed
+                            in the Pendulum Zone, if an opponent activates a monster effect (like <em>Ash Blossom</em>)
+                            in response to your Artmage effect, Nervedo negates it and destroys itself.
+                        </p>
+                        <p class="text-gray-300 text-left">
+                            Once sent face-up to the Extra Deck, it triggers its secondary effect: Special Summoning an
+                            Artmage directly from the deck. It converts opponent disruptions into your own extending
+                            combo loops.
+                        </p>
                     </div>
-                    <div>
-                        <div class="flex items-center mb-2">
-                            <span
-                                class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
-                            <h3 class="text-lg font-bold">The Pivot</h3>
+
+                    <!-- Impasto Panel -->
+                    <div class="card p-6 flex flex-col items-center text-center">
+                        <div id="impasto-img" class="card-image-container card-placeholder w-full max-w-[200px] mb-6">
+                            Artmage Impasto -Recapture-</div>
+                        <h3 class="text-2xl font-bold text-accent mb-3">High-Velocity Disruption</h3>
+                        <p class="text-gray-300 mb-4 text-left">
+                            <strong class="text-white">Impasto -Recapture-</strong> bypasses inherent Trap delays—it can
+                            be activated the turn it is Set if you control an Artmage.
+                        </p>
+                        <p class="text-gray-300 text-left mb-4">
+                            By banishing a friendly Fusion Monster as cost until the End Phase, it negates an opponent's
+                            monster effect. This "cost" is actually a premium evasion tactic, dodging board wipes like
+                            <em>Nibiru</em> or Predaplant counters.
+                        </p>
+                        <div class="bg-[#1e1b4b] p-3 rounded-lg border border-indigo-500/50 w-full text-sm">
+                            <strong class="text-purple-300">The Ultimate Kicker:</strong> If you control 3+ different
+                            Monster Types upon resolution, Impasto bounces <em>all</em> opponent Spells/Traps to the
+                            hand—devastating against DoomZ and Kewl Tune.
                         </div>
-                        <!-- UPDATED TEXT -->
-                        <p class="text-gray-200">Use <strong class="text-accent font-bold">Power Patron's</strong> Quick
-                            Effect to fuse Medius + Patron into <strong class="text-accent font-bold">Artmage
-                                Non-Finito</strong>. This puts an Illusion monster on board.</p>
                     </div>
                 </div>
-                <!-- Arrow -->
-                <div class="w-full flex justify-center">
-                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                </div>
-                <!-- Step 3 -->
-                <div
-                    class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
-                    <div id="awakening-img-container" class="card-image-container card-placeholder">Artmage Pact
-                        -Awakening-</div>
-                    <div>
-                        <div class="flex items-center mb-2">
-                            <span
-                                class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
-                            <h3 class="text-lg font-bold">The Setup</h3>
+            </section>
+
+            <!-- Advanced Combos -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center">The Insulated Initiation Sequence
+                </h2>
+                <div class="flex flex-col items-center gap-6">
+                    <!-- Step 1 -->
+                    <div class="card p-6 combo-step-card w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="nervedo-initiation-img" class="card-image-container card-placeholder w-40 md:w-48 flex-shrink-0 aspect-[2/3]">Power Patron Shadow Beast Nervedo</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-indigo-600 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-xl font-bold text-white">Establish the Shield</h3>
+                            </div>
+                            <p class="text-gray-300">Scale <strong class="text-accent">Nervedo</strong> and Normal
+                                Summon <strong class="text-accent">Medius the Pure</strong>. When Medius searches and
+                                the opponent attempts to interrupt (e.g. Ash Blossom), Nervedo negates it and destroys
+                                itself.</p>
                         </div>
-                        <!-- UPDATED TEXT -->
-                        <p class="text-gray-200"><strong class="text-accent font-bold">Non-Finito</strong> triggers on
-                            summon to Set <strong class="text-accent font-bold">Artmage Pact -Awakening-</strong>
-                            directly from the Deck. Power Patron (in GY) searches <strong
-                                class="text-accent font-bold">Acropolis</strong> to begin the resource loop.</p>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="card p-6 combo-step-card w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="litera-initiation-img" class="card-image-container card-placeholder w-40 md:w-48 flex-shrink-0 aspect-[2/3]">Artmage Litera</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-indigo-600 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-xl font-bold text-white">The Extender Loop</h3>
+                            </div>
+                            <p class="text-gray-300">Medius successfully searches a Power Patron. Nervedo, now in the
+                                Extra Deck, triggers to Special Summon <strong class="text-accent">Artmage
+                                    Litera</strong> from the deck. Litera recycles resources, establishing your
+                                <em>Fairy</em> and <em>Spellcaster</em> type geometry.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="card p-6 combo-step-card w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="impasto-initiation-img" class="card-image-container card-placeholder w-40 md:w-48 flex-shrink-0 aspect-[2/3]">Artmage Impasto -Recapture-</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-indigo-600 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-xl font-bold text-white">Fusion & Trap Securing</h3>
+                            </div>
+                            <p class="text-gray-300">Utilize <strong class="text-accent">Artmage Power Patron</strong>
+                                to Fusion Summon <strong class="text-accent">Artmage Diactorus</strong> or <strong
+                                    class="text-accent">Non-Finito</strong>. Search <strong class="text-accent">Impasto
+                                    -Recapture-</strong>, Set it, and it goes live immediately, providing unbreakable
+                                terminal disruption.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 text-pink-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 4 -->
+                    <div class="card p-6 combo-step-card w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-4 border-l-4 border-pink-500">
+                        <div id="nerva-initiation-img" class="card-image-container card-placeholder w-40 md:w-48 flex-shrink-0 aspect-[2/3]">Nerva the Power Patron of Creation</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-pink-600 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3"><i class="fas fa-exclamation-triangle"></i></span>
+                                <h3 class="text-xl font-bold text-pink-400">The Nerva Intercept Synergy (Opponent's Turn)</h3>
+                            </div>
+                            <p class="text-gray-300">If you cheat out <strong class="text-accent">Nerva the Power Patron
+                                    of Creation</strong>, you can use its Quick Effect to intercept any of your own
+                                Artmage activations (like Litera's Graveyard effect) and change the resolution to
+                                <strong>"Destroy all cards your opponent controls"</strong>. Impasto acts as Chain Link
+                                3 to ensure this apocalyptic board wipe resolves flawlessly.
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- End Board Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Evolved End Board</h2>
-            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">The board now prioritizes flexibility and the
-                "3-Type Lock" over static negation. The goal is to survive and disrupt with Quick Fusions.</p>
-            <!-- UPDATED GRID -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
-                    <div id="non-finito-endboard-img" class="card-image-container card-placeholder">Artmage Non-Finito
+            <!-- Matchup Dynamics -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Post-BLZD Matchup Dynamics</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-6 pro-con-card border-t-4 border-t-green-500">
+                        <h3 class="text-xl font-bold text-green-400 mb-4"><i class="fas fa-shield-alt mr-2"></i>
+                            Favorable Matchups</h3>
+                        <ul class="space-y-4 text-gray-200">
+                            <li><strong class="text-white block mb-1">vs. Branded / Fusion Decks:</strong> The main deck
+                                inclusion of 3x <em>Super Polymerization</em> perfectly absorbs Branded boards into
+                                <em>Garura</em> or <em>Mudragon</em>. Impasto permanently halts Mirrorjade.
+                            </li>
+                            <li><strong class="text-white block mb-1">vs. DoomZ & Kewl Tune:</strong> Impasto's mass
+                                backrow bounce circumvents DoomZ's destruction-triggered recursion and clears Kewl
+                                Tune's continuous spell setup completely.</li>
+                            <li><strong class="text-white block mb-1">vs. Predaplant:</strong> Banishing your own fusion
+                                monsters as Impasto's cost causes Predaplant targeting effects (and Predator Counters)
+                                to fizzle entirely.</li>
+                        </ul>
                     </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-white mb-2">The Engine Core</h3>
-                        <p class="text-gray-200"><strong class="text-accent font-bold">Artmage Non-Finito</strong>
-                            (Illusion) stands ready to Quick Fuse with your other monsters. This dodge capability makes
-                            your board incredibly sticky against targeting removal.</p>
-                    </div>
-                </div>
-                <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
-                    <div id="finmel-endboard-img-container" class="card-image-container card-placeholder">Artmage Finmel
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-white mb-2">The Floodgate</h3>
-                        <p class="text-gray-200">Summoned via "Awakening" on the opponent's turn. With Non-Finito
-                            (Illusion) and Litera (Spellcaster), <strong class="text-accent font-bold">Finmel</strong>
-                            (Warrior) activates to negate all face-up enemy monsters.</p>
-                    </div>
-                </div>
-                <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
-                    <div id="turmoil-endboard-img-container" class="card-image-container card-placeholder">Artmage
-                        Peripeteia -Turmoil-</div>
-                    <div>
-                        <h3 class="text-xl font-bold text-white mb-2">Recurring Disruption</h3>
-                        <p class="text-gray-200"><strong class="text-accent font-bold">Artmage Peripeteia
-                                -Turmoil-</strong> provides interruption by stealing a monster from the opponent's GY,
-                            disrupting their plays and helping you meet your 3-type requirement.</p>
+                    <div class="card p-6 pro-con-card border-t-4 border-t-red-500">
+                        <h3 class="text-xl font-bold text-red-400 mb-4"><i class="fas fa-skull-crossbones mr-2"></i>
+                            Challenging Matchups</h3>
+                        <ul class="space-y-4 text-gray-200">
+                            <li><strong class="text-white block mb-1">vs. Koulchun:</strong> If Koulchun establishes
+                                their non-linear board before the Nervedo/Impasto shield is live, the tempo differential
+                                can outpace Artmage's reactive capabilities.</li>
+                            <li><strong class="text-white block mb-1">vs. Dratail:</strong> Highly volatile and
+                                skill-dependent. A premature Impasto activation allows Dratail's continuous swarming to
+                                generate a lethal, sweeping counter-attack. Chain blocking priority is paramount here.
+                            </li>
+                        </ul>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Competitive Analysis Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- UPDATED Strengths -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
-                    <ul class="list-disc list-inside space-y-2 text-gray-200">
-                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong
-                                class="text-green-400 font-bold">Turn 0 Play:</strong> Can fuse <strong
-                                class="text-accent font-bold">Non-Finito</strong> and set a counter trap on the
-                            opponent's first turn via Power Patron.</li>
-                        <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong
-                                class="text-green-400 font-bold">Midrange Resilience:</strong> Less reliant on a single
-                            Normal Summon; "Contact Summoning" bypasses floodgates like Anti-Spell Fragrance.</li>
-                        <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong
-                                class="text-green-400 font-bold">Targeting Immunity:</strong> Non-Finito's Quick Effect
-                            allows you to "dodge" Imperm/Veiler by fusing the target away.</li>
-                    </ul>
-                </div>
-                <!-- UPDATED Weaknesses -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
-                    <ul class="list-disc list-inside space-y-2 text-gray-200">
-                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong
-                                class="text-red-400 font-bold">Dimensional Barrier:</strong> Calling "Fusion" completely
-                            shuts down the Non-Finito engine.</li>
-                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong
-                                class="text-red-400 font-bold">Super Polymerization:</strong> Opponents can fuse your
-                            Non-Finito and Finmel to make Mudragon or Garura, breaking your board.</li>
-                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong
-                                class="text-red-400 font-bold">Graveyard Hate:</strong> Bystials can banish your
-                            Medius/Finmel targets, disrupting the recursion loop.</li>
-                    </ul>
-                </div>
-                <!-- Tech & Engines -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-white mb-4">New Synergies</h3>
-                    <ul class="list-disc list-inside space-y-2 text-gray-200">
-                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong
-                                class="text-accent font-bold">Chimera Engine:</strong> Non-Finito is an Illusion
-                            monster, granting access to <strong class="text-accent font-bold">Chimera the King of
-                                Phantom Beasts</strong> support.</li>
-                        <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong
-                                class="text-accent font-bold">Fiendsmith Engine:</strong> Provides bait for hand traps
-                            before committing to Artmage lines; Medius connects via Light/Fiend interactions.</li>
-                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong
-                                class="text-accent font-bold">Guardian Chimera:</strong> The best target for
-                            Non-Finito's Quick Effect on the opponent's turn (Chain Link 2+).</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
+            <!-- Expanded Spellbook -->
+            <section class="mb-10">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center">The Expanded Spellbook (BLZD
+                    Updates)</h2>
+                <div class="flex flex-wrap justify-center gap-6">
 
-        <!-- Card Overview Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Artmage's Spellbook</h2>
-            <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">An overview of the essential cards, now
-                featuring the new Illusion monster <strong class="text-accent">Artmage Non-Finito</strong>.</p>
-            <!-- UPDATED GRID -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- NEW CARD ADDED -->
-                <div class="card p-6 border-2 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
-                    <div class="flex items-center justify-between mb-2" style="min-height: 3.5rem;">
-                        <h3 class="text-xl font-bold text-accent">Artmage Non-Finito</h3>
-                        <span
-                            class="text-xs bg-indigo-900 text-indigo-200 px-2 py-1 rounded border border-indigo-500 self-start mt-1">NEW</span>
+                    <!-- Nervedo -->
+                    <div class="card p-6 border border-orange-500/50 bg-gradient-to-b from-[#1a1423] to-black hover:border-orange-500 transition-all flex flex-col items-center w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] max-w-[380px]">
+                        <div class="w-full flex justify-between items-start mb-4" style="min-height: 3rem;">
+                            <h3 class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300 text-left leading-tight">Power Patron Shadow Beast Nervedo</h3>
+                            <span class="text-[10px] uppercase font-bold bg-orange-900/80 text-orange-200 px-2 py-1 rounded border border-orange-500/50 flex-shrink-0 ml-2 shadow-[0_0_10px_rgba(249,115,22,0.3)]">BLZD Core</span>
+                        </div>
+                        <div class="w-full max-w-[200px] mb-4">
+                            <div id="nervedo-spellbook-img" class="card-image-container card-placeholder aspect-[2/3] w-full rounded-md shadow-[0_0_15px_rgba(249,115,22,0.15)]">Power Patron Shadow Beast Nervedo</div>
+                        </div>
+                        <div class="w-full h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent mb-3"></div>
+                        <p class="text-orange-200 mb-3 text-xs uppercase tracking-wider font-semibold text-center w-full"><i class="fas fa-eye mr-1"></i> Illusion / Pendulum / Effect</p>
+                        <p class="text-gray-300 text-sm leading-relaxed text-center">
+                            <strong class="text-orange-400">Scale 1.</strong> The deck's premier anti-hand-trap shield. Destroys itself to negate opponent effects, moving to the Extra Deck where it specials Artmages from the deck. Can banish 3 cards face-down to cheat out Nerva.
+                        </p>
                     </div>
-                    <div class="flex justify-center mb-4">
-                        <div id="non-finito-spellbook-img" class="card-image-container card-placeholder"
-                            style="max-width: 140px;">
+
+                    <!-- Impasto -->
+                    <div class="card p-6 border border-pink-500/50 bg-gradient-to-b from-[#1a1423] to-black hover:border-pink-500 transition-all flex flex-col items-center w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] max-w-[380px]">
+                        <div class="w-full flex justify-between items-start mb-4" style="min-height: 3rem;">
+                            <h3 class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-300 text-left leading-tight">Artmage Impasto -Recapture-</h3>
+                            <span class="text-[10px] uppercase font-bold bg-pink-900/80 text-pink-200 px-2 py-1 rounded border border-pink-500/50 flex-shrink-0 ml-2 shadow-[0_0_10px_rgba(236,72,153,0.3)]">BLZD Core</span>
+                        </div>
+                        <div class="w-full max-w-[200px] mb-4">
+                            <div id="impasto-spellbook-img" class="card-image-container card-placeholder aspect-[2/3] w-full rounded-md shadow-[0_0_15px_rgba(236,72,153,0.15)]">Artmage Impasto -Recapture-</div>
+                        </div>
+                        <div class="w-full h-px bg-gradient-to-r from-transparent via-pink-500/50 to-transparent mb-3"></div>
+                        <p class="text-pink-200 mb-3 text-xs uppercase tracking-wider font-semibold text-center w-full"><i class="fas fa-ban mr-1"></i> Counter Trap</p>
+                        <p class="text-gray-300 text-sm leading-relaxed text-center">
+                            Activates the turn it's Set if you control an Artmage. <strong class="text-pink-400">Cost:</strong> Banish a Fusion (returns End Phase). Negates a monster effect. If you control 3+ Types, mass bounces all opponent Spells/Traps to hand.
+                        </p>
+                    </div>
+
+                    <!-- Nerva -->
+                    <div class="card p-6 border border-yellow-500/50 bg-gradient-to-b from-[#1a1423] to-black hover:border-yellow-500 transition-all flex flex-col items-center w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] max-w-[380px]">
+                        <div class="w-full flex justify-between items-start mb-4" style="min-height: 3rem;">
+                            <h3 class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-200 text-left leading-tight">Nerva the Power Patron of Creation</h3>
+                            <span class="text-[10px] uppercase font-bold bg-yellow-900/80 text-yellow-200 px-2 py-1 rounded border border-yellow-500/50 flex-shrink-0 ml-2 shadow-[0_0_10px_rgba(234,179,8,0.3)]">Boss</span>
+                        </div>
+                        <div class="w-full max-w-[200px] mb-4">
+                            <div id="nerva-spellbook-img" class="card-image-container card-placeholder aspect-[2/3] w-full rounded-md shadow-[0_0_15px_rgba(234,179,8,0.15)]">Nerva the Power Patron of Creation</div>
+                        </div>
+                        <div class="w-full h-px bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent mb-3"></div>
+                        <p class="text-yellow-200 mb-3 text-xs uppercase tracking-wider font-semibold text-center w-full"><i class="fas fa-dragon mr-1"></i> EARTH Illusion / Fusion / Effect</p>
+                        <p class="text-gray-300 text-sm leading-relaxed text-center">
+                            <strong class="text-yellow-400">3300 ATK/DEF.</strong> Destruction immunity while a Field Spell is active. Quick Effect: Intercepts your own Artmage effects, altering their resolution to unilaterally wipe the opponent's board.
+                        </p>
+                    </div>
+
+                    <!-- Medius -->
+                    <div class="card p-6 border border-indigo-500/30 bg-gradient-to-b from-[#1a1423] to-black hover:border-indigo-500/80 transition-all flex flex-col items-center w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] max-w-[380px]">
+                        <div class="w-full flex justify-between items-start mb-4" style="min-height: 3rem;">
+                            <h3 class="text-lg font-bold text-indigo-300 text-left leading-tight">Medius the Pure</h3>
+                        </div>
+                        <div class="w-full max-w-[200px] mb-4">
+                            <div id="medius-spellbook-img-blzd" class="card-image-container card-placeholder aspect-[2/3] w-full rounded-md shadow-[0_0_15px_rgba(99,102,241,0.1)]">Medius the Pure</div>
+                        </div>
+                        <div class="w-full h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent mb-3"></div>
+                        <p class="text-indigo-200 mb-3 text-xs uppercase tracking-wider font-semibold text-center w-full"><i class="fas fa-feather-alt mr-1"></i> LIGHT Fairy / Effect</p>
+                        <p class="text-gray-300 text-sm leading-relaxed text-center">
+                            The primary combo initiator. Normal Summon searches the Power Patron engine. Heavily protected by Nervedo in the modern meta.
+                        </p>
+                    </div>
+
+                    <!-- Super Poly -->
+                    <div class="card p-6 border border-green-500/30 bg-gradient-to-b from-[#1a1423] to-black hover:border-green-500/80 transition-all flex flex-col items-center w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] max-w-[380px]">
+                        <div class="w-full flex justify-between items-start mb-4" style="min-height: 3rem;">
+                            <h3 class="text-lg font-bold text-green-400 text-left leading-tight">Super Polymerization</h3>
+                            <span class="text-[10px] uppercase font-bold bg-green-900/80 text-green-200 px-2 py-1 rounded border border-green-500/50 flex-shrink-0 ml-2">Staple</span>
+                        </div>
+                        <div class="w-full max-w-[200px] mb-4">
+                            <div id="superpoly-spellbook-img" class="card-image-container card-placeholder aspect-[2/3] w-full rounded-md shadow-[0_0_15px_rgba(34,197,94,0.1)]">Super Polymerization</div>
+                        </div>
+                        <div class="w-full h-px bg-gradient-to-r from-transparent via-green-500/50 to-transparent mb-3"></div>
+                        <p class="text-green-200 mb-3 text-xs uppercase tracking-wider font-semibold text-center w-full"><i class="fas fa-bolt mr-1"></i> Quick-Play Spell</p>
+                        <p class="text-gray-300 text-sm leading-relaxed text-center">
+                            Main-decked at 3. Bypasses the deck's inherent Fusion-lock, utilizing opponent monsters to make Garura or Mudragon of the Swamp, establishing massive tempo swings.
+                        </p>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+        <!-- ========================================== -->
+
+
+        <!-- ========================================== -->
+        <!-- TAB 2: BURST PROTOCOL ERA (ARCHIVED INFO)  -->
+        <!-- ========================================== -->
+        <div id="tab-content-burst" class="tab-content inactive">
+
+            <div class="bg-indigo-900/40 border-l-4 border-indigo-500 p-4 mb-8 rounded-r-lg">
+                <p class="text-indigo-200 text-sm"><i class="fas fa-info-circle mr-2"></i> <strong>Archive
+                        Notice:</strong> The information below reflects the Artmage strategy during the <em>Burst
+                        Protocol</em> format. While foundational to understanding the deck's evolution, please refer to
+                    the Blazing Dominion tab for current competitive profiles.</p>
+            </div>
+
+            <!-- Executive Summary Section -->
+            <section class="mb-10 md:mb-16">
+                <div class="card p-6">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary (Burst Protocol)</h2>
+                    <p class="text-gray-200">
+                        The <strong class="text-accent font-bold">Artmage</strong> archetype has evolved from a linear
+                        "protect-the-castle" strategy into a dynamic, resource-rich midrange contender with the release
+                        of
+                        <strong>Burst Protocol</strong>. The introduction of <strong
+                            class="text-accent font-bold">Artmage
+                            Non-Finito</strong> allows the deck to play fluidly on both players' turns. By leveraging
+                        Non-Finito's ability to "Contact Summon" and its Quick Effect to fuse during the opponent's
+                        turn,
+                        Artmage now consistently satisfies its "Three-Type" condition (Spellcaster, Illusion,
+                        Warrior/Fairy). The deck retains its signature resource loop via <strong
+                            class="text-accent font-bold">Artmage Academic Arcane Arts Acropolis</strong> but boasts
+                        higher consistency, "Turn 0" play potential, and better resilience against hand traps.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Foundational Mechanics Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Foundational Mechanics: The Arcane
+                    Arts</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="card p-6">
+                        <h3 class="text-xl font-bold text-white mb-2"><i
+                                class="fas fa-sitemap text-accent mr-2"></i>Type Diversity</h3>
+                        <p class="text-gray-200">The deck's power ceiling is unlocked by controlling 3+ different
+                            Monster
+                            Types. The addition of the <strong>Illusion</strong>-type <strong
+                                class="text-accent font-bold">Non-Finito</strong> stabilizes this condition, making your
+                            disruptions live more often.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-xl font-bold text-white mb-2"><i
+                                class="fas fa-sync-alt text-accent mr-2"></i>The Acropolis Loop</h3>
+                        <p class="text-gray-200">The Field Spell, <strong
+                                class="text-accent font-bold">Acropolis</strong>,
+                            lets you discard 1 Spell/Trap to search an "Artmage" monster. Cards like <strong
+                                class="text-accent font-bold">Turmoil</strong> and <strong
+                                class="text-accent font-bold">Pedigree</strong> recycle themselves when discarded,
+                            creating an infinite resource engine.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-xl font-bold text-white mb-2"><i
+                                class="fas fa-random text-accent mr-2"></i>Reactive Fusion</h3>
+                        <p class="text-gray-200">The strategy pivots around <strong
+                                class="text-accent font-bold">Non-Finito's</strong> Quick Effect. Instead of committing
+                            to a static board, you can fuse during the opponent's turn to dodge targeting effects and
+                            summon disruptors like <strong class="text-accent font-bold">Nerva</strong>.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Core Combo Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Core Combo: The Non-Finito Bridge
+                </h2>
+                <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">The classic linear line has been replaced by
+                    a
+                    branching decision tree centered on <strong class="text-accent font-bold">Artmage
+                        Non-Finito</strong>.
+                    This combo establishes a recurring board state and sets a powerful trap directly from the deck.</p>
+                <div class="flex flex-col items-center gap-6">
+                    <!-- Step 1 -->
+                    <div
+                        class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="medius-img-container"
+                            class="card-image-container card-placeholder w-40 md:w-48 flex-shrink-0 aspect-[2/3]">Medius
+                            the Pure</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span
+                                    class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">The Initiation</h3>
+                            </div>
+                            <p class="text-gray-200">Normal Summon <strong class="text-accent font-bold">Medius the
+                                    Pure</strong>. Search for <strong class="text-accent font-bold">Artmage Power
+                                    Patron</strong>. Use Medius to Special Summon Power Patron from hand.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 2 -->
+                    <div
+                        class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="non-finito-combo-img"
+                            class="card-image-container card-placeholder w-40 md:w-48 flex-shrink-0 aspect-[2/3]">
+                            Artmage
+                            Non-Finito</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span
+                                    class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">The Pivot</h3>
+                            </div>
+                            <p class="text-gray-200">Use <strong class="text-accent font-bold">Power Patron's</strong>
+                                Quick Effect to fuse Medius + Patron into <strong class="text-accent font-bold">Artmage
+                                    Non-Finito</strong>. This puts an Illusion monster on board.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 3 -->
+                    <div
+                        class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="awakening-img-container"
+                            class="card-image-container card-placeholder w-40 md:w-48 flex-shrink-0 aspect-[2/3]">
+                            Artmage Pact -Awakening-</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span
+                                    class="bg-[#2a2a3e] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">The Setup</h3>
+                            </div>
+                            <p class="text-gray-200"><strong class="text-accent font-bold">Non-Finito</strong> triggers
+                                on summon to Set <strong class="text-accent font-bold">Artmage Pact -Awakening-</strong>
+                                directly from the Deck. Power Patron (in Graveyard) searches <strong
+                                    class="text-accent font-bold">Acropolis</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- End Board Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Evolved End Board</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                    <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
+                        <div id="non-finito-endboard-img"
+                            class="card-image-container card-placeholder w-40 md:w-48 flex-shrink-0 aspect-[2/3]">
                             Artmage Non-Finito</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">The Engine Core</h3>
+                            <p class="text-gray-200"><strong class="text-accent font-bold">Artmage Non-Finito</strong>
+                                (Illusion) stands ready to Quick Fuse with your other monsters, dodging targeting
+                                removal.</p>
+                        </div>
                     </div>
-                    <p class="text-gray-200 mb-2"><strong>Illusion/Fusion/Effect (Level 7)</strong></p>
-                    <p class="text-gray-200">The new heart of the deck. Can be Contact Summoned by tributing a Level 7
-                        Artmage. Sets a Trap from deck on summon and Quick Fuses during the opponent's turn.</p>
-                </div>
-                <div class="card p-6">
-                    <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
-                        <h3 class="text-xl font-bold text-accent">Artmage Academic Arcane Arts Acropolis</h3>
+                    <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
+                        <div id="finmel-endboard-img-container"
+                            class="card-image-container card-placeholder w-40 md:w-48 flex-shrink-0 aspect-[2/3]">
+                            Artmage Finmel</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">The Floodgate</h3>
+                            <p class="text-gray-200">Summoned via "Awakening" on the opponent's turn. With Non-Finito
+                                and Litera, <strong class="text-accent font-bold">Finmel</strong> negates all face-up
+                                enemy monsters.</p>
+                        </div>
                     </div>
-                    <div class="flex justify-center mb-4">
-                        <div id="acropolis-spellbook-img" class="card-image-container card-placeholder"
-                            style="max-width: 140px;">
-                            Artmage Academic Arcane Arts Acropolis</div>
-                    </div>
-                    <p class="text-gray-200 mb-2"><strong>Field Spell</strong></p>
-                    <p class="text-gray-200">The core engine. Discard 1 Spell/Trap to search any "Artmage" monster,
-                        triggering your resource loop.</p>
-                </div>
-                <div class="card p-6">
-                    <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
-                        <h3 class="text-xl font-bold text-accent">Artmage Varnish -Alteration-</h3>
-                    </div>
-                    <div class="flex justify-center mb-4">
-                        <div id="varnish-spellbook-img" class="card-image-container card-placeholder"
-                            style="max-width: 140px;">
-                            Artmage Varnish -Alteration-</div>
-                    </div>
-                    <p class="text-gray-200 mb-2"><strong>Normal Spell</strong></p>
-                    <p class="text-gray-200">The deck's primary starter. Places "Acropolis" from your Deck, or searches
-                        any "Artmage" card if "Acropolis" is already active.</p>
-                </div>
-                <div class="card p-6">
-                    <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
-                        <h3 class="text-xl font-bold text-accent">Medius the Pure</h3>
-                    </div>
-                    <div class="flex justify-center mb-4">
-                        <div id="medius-spellbook-img" class="card-image-container card-placeholder"
-                            style="max-width: 140px;">
-                            Medius the Pure</div>
-                    </div>
-                    <p class="text-gray-200 mb-2"><strong>Spellcaster/Effect</strong></p>
-                    <p class="text-gray-200">A key Normal Summon. Searches "Power Patron" and can revive himself from
-                        the Graveyard.</p>
-                </div>
-                <div class="card p-6">
-                    <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
-                        <h3 class="text-xl font-bold text-accent">Artmage Power Patron</h3>
-                    </div>
-                    <div class="flex justify-center mb-4">
-                        <div id="power-patron-spellbook-img" class="card-image-container card-placeholder"
-                            style="max-width: 140px;">
-                            Artmage Power Patron</div>
-                    </div>
-                    <p class="text-gray-200 mb-2"><strong>Spellcaster/Effect</strong></p>
-                    <p class="text-gray-200">Enables Quick-Effect Fusion Summons (including the "Turn 0" play) and
-                        searches "Acropolis" when used as material.</p>
-                </div>
-                <div class="card p-6">
-                    <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
-                        <h3 class="text-xl font-bold text-accent">Artmage Peripeteia -Turmoil-</h3>
-                    </div>
-                    <div class="flex justify-center mb-4">
-                        <div id="turmoil-spellbook-img" class="card-image-container card-placeholder"
-                            style="max-width: 140px;">
+                    <div class="card p-6 pro-con-card flex flex-col md:flex-row items-center gap-4">
+                        <div id="turmoil-endboard-img-container"
+                            class="card-image-container card-placeholder w-40 md:w-48 flex-shrink-0 aspect-[2/3]">
                             Artmage Peripeteia -Turmoil-</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">Recurring Disruption</h3>
+                            <p class="text-gray-200"><strong class="text-accent font-bold">-Turmoil-</strong> steals a
+                                monster from the opponent's Graveyard, disrupting plays and meeting 3-type requirements.
+                            </p>
+                        </div>
                     </div>
-                    <p class="text-gray-200 mb-2"><strong>Normal Trap</strong></p>
-                    <p class="text-gray-200">Key disruption that steals from the GY. When discarded for "Acropolis", it
-                        recycles any "Artmage" Spell from your GY.</p>
                 </div>
-                <div class="card p-6">
-                    <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
-                        <h3 class="text-xl font-bold text-accent">Artmage Movement -Pedigree-</h3>
+            </section>
+
+            <!-- Competitive Analysis Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis (Burst
+                    Protocol)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-200 text-sm">
+                            <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong
+                                    class="text-green-400 font-bold">Turn 0 Play:</strong> Fuse Non-Finito on opponent's
+                                first turn.</li>
+                            <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong
+                                    class="text-green-400 font-bold">Midrange Resilience:</strong> Bypasses floodgates
+                                like Anti-Spell.</li>
+                            <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong
+                                    class="text-green-400 font-bold">Targeting Immunity:</strong> "Dodge" Imperm/Veiler
+                                via fusing.</li>
+                        </ul>
                     </div>
-                    <div class="flex justify-center mb-4">
-                        <div id="pedigree-spellbook-img" class="card-image-container card-placeholder"
-                            style="max-width: 140px;">
-                            Artmage Movement -Pedigree-</div>
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-200 text-sm">
+                            <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong
+                                    class="text-red-400 font-bold">Dimensional Barrier:</strong> Calling "Fusion" shuts
+                                down the engine.</li>
+                            <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong
+                                    class="text-red-400 font-bold">Super Polymerization:</strong> Opponents can fuse
+                                your board.</li>
+                            <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong
+                                    class="text-red-400 font-bold">Graveyard Hate:</strong> Bystials disrupt the
+                                recursion loop.</li>
+                        </ul>
                     </div>
-                    <p class="text-gray-200 mb-2"><strong>Normal Spell</strong></p>
-                    <p class="text-gray-200">A going-second extender. When discarded for "Acropolis", it recycles any
-                        "Artmage" Trap (like "Turmoil") from your GY.</p>
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4">Tech & Engines</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-200 text-sm">
+                            <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong
+                                    class="text-accent font-bold">Chimera Engine:</strong> Non-Finito grants access to
+                                Chimera.</li>
+                            <li><span class="neutral-icon"><i class="fas fa-fire"></i></span> <strong
+                                    class="text-accent font-bold">Fiendsmith Engine:</strong> Hand trap bait.</li>
+                            <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong
+                                    class="text-accent font-bold">Guardian Chimera:</strong> Best Quick-Fuse target.
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+            </section>
+
+            <!-- Card Overview Section -->
+            <section class="mb-10">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Artmage's Spellbook (Archive)
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-2" style="min-height: 3.5rem;">
+                            <h3 class="text-xl font-bold text-accent">Artmage Non-Finito</h3>
+                        </div>
+                        <div class="flex justify-center mb-4">
+                            <div id="non-finito-spellbook-img"
+                                class="card-image-container card-placeholder w-40 md:w-48">
+                                Artmage Non-Finito</div>
+                        </div>
+                        <p class="text-gray-200 mb-2 text-sm text-center"><strong>Illusion/Fusion/Effect (Level
+                                7)</strong></p>
+                    </div>
+                    <div class="card p-6">
+                        <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
+                            <h3 class="text-xl font-bold text-accent">Artmage Academic Arcane Arts Acropolis</h3>
+                        </div>
+                        <div class="flex justify-center mb-4">
+                            <div id="acropolis-spellbook-img"
+                                class="card-image-container card-placeholder w-40 md:w-48">
+                                Artmage Academic Arcane Arts Acropolis</div>
+                        </div>
+                        <p class="text-gray-200 mb-2 text-sm text-center"><strong>Field Spell</strong></p>
+                    </div>
+                    <div class="card p-6">
+                        <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
+                            <h3 class="text-xl font-bold text-accent">Artmage Varnish -Alteration-</h3>
+                        </div>
+                        <div class="flex justify-center mb-4">
+                            <div id="varnish-spellbook-img" class="card-image-container card-placeholder w-40 md:w-48">
+                                Artmage Varnish -Alteration-</div>
+                        </div>
+                        <p class="text-gray-200 mb-2 text-sm text-center"><strong>Normal Spell</strong></p>
+                    </div>
+                    <div class="card p-6">
+                        <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
+                            <h3 class="text-xl font-bold text-accent">Medius the Pure</h3>
+                        </div>
+                        <div class="flex justify-center mb-4">
+                            <div id="medius-spellbook-img" class="card-image-container card-placeholder w-40 md:w-48">
+                                Medius the Pure</div>
+                        </div>
+                        <p class="text-gray-200 mb-2 text-sm text-center"><strong>Spellcaster/Effect</strong></p>
+                    </div>
+                    <div class="card p-6">
+                        <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
+                            <h3 class="text-xl font-bold text-accent">Artmage Power Patron</h3>
+                        </div>
+                        <div class="flex justify-center mb-4">
+                            <div id="power-patron-spellbook-img"
+                                class="card-image-container card-placeholder w-40 md:w-48">Artmage Power Patron</div>
+                        </div>
+                        <p class="text-gray-200 mb-2 text-sm text-center"><strong>Spellcaster/Effect</strong></p>
+                    </div>
+                    <div class="card p-6">
+                        <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
+                            <h3 class="text-xl font-bold text-accent">Artmage Peripeteia -Turmoil-</h3>
+                        </div>
+                        <div class="flex justify-center mb-4">
+                            <div id="turmoil-spellbook-img" class="card-image-container card-placeholder w-40 md:w-48">
+                                Artmage Peripeteia -Turmoil-</div>
+                        </div>
+                        <p class="text-gray-200 mb-2 text-sm text-center"><strong>Normal Trap</strong></p>
+                    </div>
+                    <div class="card p-6">
+                        <div class="mb-2 flex items-center" style="min-height: 3.5rem;">
+                            <h3 class="text-xl font-bold text-accent">Artmage Movement -Pedigree-</h3>
+                        </div>
+                        <div class="flex justify-center mb-4">
+                            <div id="pedigree-spellbook-img" class="card-image-container card-placeholder w-40 md:w-48">
+                                Artmage Movement -Pedigree-</div>
+                        </div>
+                        <p class="text-gray-200 mb-2 text-sm text-center"><strong>Normal Spell</strong></p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- ========================================== -->
+
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mt-8">
+            <div id="banlist-status">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
             </div>
+        </section>
 
-
-            <!-- TCG Banlist Impact Section -->
-            <section>
-                <div id="banlist-status">
-                    <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
-                </div>
-            </section>
-
-            <!-- Deck Search Section -->
-            <section>
-                <div id="deck-resources-container">
-                    <!-- Deck search section will be populated by CardLoader.renderDeckSearchSection -->
-                </div>
-            </section>
+        <!-- Deck Search Section -->
+        <section>
+            <div id="deck-resources-container">
+                <!-- Deck search section will be populated by CardLoader.renderDeckSearchSection -->
+            </div>
+        </section>
     </div>
+
     <script>
+        // --- TAB SWITCHING LOGIC ---
+        function switchTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+                el.classList.add('hidden');
+            });
+            // Show target content
+            const targetContent = document.getElementById(`tab-content-${tabId}`);
+            targetContent.classList.remove('hidden');
+            targetContent.classList.add('active');
+
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('inactive');
+            });
+            document.getElementById(`tab-btn-${tabId}`).classList.remove('inactive');
+            document.getElementById(`tab-btn-${tabId}`).classList.add('active');
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             // --- ARTMAGE "ARCANE CONVERGENCE" ANIMATION ---
             const canvas = document.getElementById('artmage-banner');
@@ -777,13 +1034,10 @@
 
                 function animate() {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
                     particles.forEach(p => { p.update(); p.draw(); });
                     sigils.forEach(s => { s.update(); s.draw(); });
-
                     sigils = sigils.filter(s => s.life < s.maxLife);
                     if (sigils.length < 7) sigils.push(new Sigil());
-
                     animationFrameId = requestAnimationFrame(animate);
                 }
 
@@ -798,17 +1052,29 @@
                 window.addEventListener('resize', startAnimation);
             }
 
-            // UPDATED CardLoader IDs for the new Non-Finito sections
+            // Expanded CardLoader IDs covering both eras
             if (typeof CardLoader !== 'undefined' && CardLoader.loadCards) {
                 CardLoader.loadCards({
+                    // --- BLAZING DOMINION ERA ---
+                    'nervedo-img': 'Power Patron Shadow Beast Nervedo',
+                    'impasto-img': 'Artmage Impasto -Recapture-',
+                    'nervedo-spellbook-img': 'Power Patron Shadow Beast Nervedo',
+                    'impasto-spellbook-img': 'Artmage Impasto -Recapture-',
+                    'nerva-spellbook-img': 'Nerva the Power Patron of Creation',
+                    'superpoly-spellbook-img': 'Super Polymerization',
+                    'medius-spellbook-img-blzd': 'Medius the Pure',
+                    'nervedo-initiation-img': 'Power Patron Shadow Beast Nervedo',
+                    'litera-initiation-img': 'Artmage Litera',
+                    'impasto-initiation-img': 'Artmage Impasto -Recapture-',
+                    'nerva-initiation-img': 'Nerva the Power Patron of Creation',
+
+                    // --- BURST PROTOCOL ERA ---
                     'medius-img-container': 'Medius the Pure',
-                    'non-finito-combo-img': 'Artmage Non-Finito', // NEW
-                    'awakening-img-container': 'Artmage Pact -Awakening-', // NEW
-                    'non-finito-endboard-img': 'Artmage Non-Finito', // NEW
+                    'non-finito-combo-img': 'Artmage Non-Finito',
+                    'awakening-img-container': 'Artmage Pact -Awakening-',
+                    'non-finito-endboard-img': 'Artmage Non-Finito',
                     'finmel-endboard-img-container': 'Artmage Finmel',
                     'turmoil-endboard-img-container': 'Artmage Peripeteia -Turmoil-',
-
-                    // --- The Artmage's Spellbook ---
                     'non-finito-spellbook-img': 'Artmage Non-Finito',
                     'acropolis-spellbook-img': 'Artmage Academic Arcane Arts Acropolis',
                     'varnish-spellbook-img': 'Artmage Varnish -Alteration-',
@@ -821,33 +1087,36 @@
                 console.warn('CardLoader script not found or loadCards method is missing.');
             }
 
-
-            // Render banlist section
+            // Render banlist section including the new BLZD cards
             if (typeof CardLoader !== 'undefined' && CardLoader.renderBanlistSectionByArchetype) {
-                // RE-ADDED relatedCards and Added Non-Finito
                 await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Artmage', {
                     relatedCards: [
-                        'Artmage Non-Finito', // Added to banlist watcher
+                        'Power Patron Shadow Beast Nervedo', // BLZD Addition
+                        'Artmage Impasto -Recapture-',      // BLZD Addition
+                        'Nerva the Power Patron of Creation', // BLZD Addition
+                        'Artmage Non-Finito',
                         'Artmage Movement -Pedigree-',
                         'Artmage Peripeteia -Turmoil-',
                         'Artmage Varnish -Alteration-'
                     ]
                 });
 
-                // Render compact deck resources in header
                 await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Artmage');
             } else {
                 console.warn('CardLoader script not found or renderBanlistSectionByArchetype method is missing.');
             }
 
-            // Render archetype cards browser (compact mode at top)
-            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Artmage', {
-                compact: true,
-                buttonColor: 'from-purple-600 to-indigo-600',
-                buttonHoverColor: 'from-purple-700 to-indigo-700'
-            });
+            // Render archetype cards browser
+            if (typeof CardLoader !== 'undefined' && CardLoader.renderArchetypeCardsBrowser) {
+                await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Artmage', {
+                    compact: true,
+                    buttonColor: 'from-purple-600 to-indigo-600',
+                    buttonHoverColor: 'from-purple-700 to-indigo-700'
+                });
+            }
         });
     </script>
+
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

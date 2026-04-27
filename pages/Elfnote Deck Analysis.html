@@ -17,7 +17,6 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- CardLoader -->
-    <!-- Supabase CDN for gameplay tags (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../assets/js/supabase-config.js"></script>
     <script src="../assets/js/card-loader.js"></script>
@@ -25,7 +24,6 @@
     <style>
         :root {
             --bg-maestro: #0a0a12;
-            /* Deepest Indigo */
             --bg-stage: #14141e;
             --accent-gold: #ffd700;
             --accent-starlight: #e0f7fa;
@@ -33,7 +31,7 @@
             --accent-water: #4fc3f7;
             --text-primary: #f0f0f0;
             --text-secondary: #b0b0b0;
-            --grid-line: rgba(255, 215, 0, 0.1);
+            --grid-line: rgba(255, 215, 0, 0.05);
         }
 
         body {
@@ -131,24 +129,21 @@
             font-size: 1.5rem;
         }
 
-        /* Buttons */
-        .btn-gold {
-            background: transparent;
-            border: 1px solid var(--accent-gold);
-            color: var(--accent-gold);
-            padding: 0.5rem 1.5rem;
+        /* Tab Buttons */
+        .tab-btn {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: var(--text-secondary);
             font-family: 'Cinzel', serif;
             transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
         }
 
-        .btn-gold:hover,
-        .btn-gold.active {
-            background: var(--accent-gold);
-            color: #000;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        .tab-btn.active {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
 
         /* Link Styling */
@@ -220,6 +215,7 @@
             font-weight: bold;
             color: var(--accent-gold);
             margin-bottom: 4px;
+            text-align: center;
         }
 
         .board-zone.occupied .card-role {
@@ -273,9 +269,6 @@
             box-shadow: 0 0 20px var(--accent-gold);
         }
 
-        /* Prompt Block */
-
-
         #card-popup {
             position: fixed;
             display: none;
@@ -286,6 +279,27 @@
             border-radius: 0.5rem;
             padding: 10px;
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+        }
+
+        .content-tab {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .content-tab.active-tab {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
@@ -306,11 +320,13 @@
             <canvas id="score-canvas"></canvas>
             <div class="banner-content">
                 <h1 class="banner-title">ELFNOTE</h1>
-                <p class="text-gold-200 font-score text-xl mt-2 tracking-widest">Symphonic Spatiality</p>
-                <div class="mt-4 flex justify-center gap-6 text-xs text-gray-400 font-bold uppercase tracking-widest">
+                <p class="text-gold-200 font-score text-xl mt-2 tracking-widest text-yellow-300">Symphonic Spatiality
+                </p>
+                <div
+                    class="mt-4 flex flex-wrap justify-center gap-6 text-xs text-gray-400 font-bold uppercase tracking-widest">
                     <span><i class="fas fa-chess-board mr-2 text-yellow-500"></i>Positional Control</span>
-                    <span><i class="fas fa-random mr-2 text-blue-400"></i>Column Swap</span>
-                    <span><i class="fas fa-hand-sparkles mr-2 text-red-400"></i>Turn 0 Play</span>
+                    <span><i class="fas fa-hand-sparkles mr-2 text-red-400"></i>Turn 0 Interaction</span>
+                    <span><i class="fas fa-infinity mr-2 text-purple-400"></i>Infinite Recursion</span>
                 </div>
             </div>
         </header>
@@ -320,10 +336,8 @@
             <div
                 class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
                 <div id="deck-resources-compact" class="flex items-center"></div>
-
                 <!-- Vertical Divider (Desktop) -->
                 <div class="hidden md:block w-px h-6 bg-indigo-500/30 mx-1"></div>
-
                 <div id="archetype-cards-browser" class="flex justify-center"></div>
             </div>
             <!-- Glow effect behind -->
@@ -331,308 +345,526 @@
             </div>
         </div>
 
-        <!-- Executive Summary -->
-        <section class="mb-12 elfnote-card p-8 rounded-xl animate-fadeIn">
-            <div class="section-header">
-                <i class="fas fa-feather-alt"></i>
-                <h2 class="text-2xl font-symphony text-white">Executive Summary: The Positional Orchestra</h2>
-            </div>
-            <!-- Text Content -->
-            <div class="mb-8">
-                <p class="text-gray-300 leading-relaxed mb-4">
-                    The release of <strong>Burst Protocol</strong> introduced a paradigm shift in board geometry
-                    with the <strong>Elfnote</strong> archetype. Unlike traditional decks that focus on accumulating
-                    resources in a linear fashion, Elfnote focuses on <strong class="text-yellow-400">Positional
-                        Equity</strong>. The deck revolves around the <strong>Center Main Monster Zone</strong>
-                    (Column 3), effectively playing a game of "musical chairs" where the value of a monster is
-                    determined by its physical location on the mat.
+        <!-- Lore / Thematic Intro Section -->
+        <section class="max-w-4xl mx-auto mb-12 px-4">
+            <div class="relative bg-[#1e1b4b]/80 backdrop-blur-md border-l-4 border-yellow-300 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+                <div class="absolute -top-4 -left-4 bg-yellow-400 text-indigo-900 w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#1e1b4b]">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h2 class="text-xl md:text-2xl font-bold text-yellow-200 mb-3 tracking-wide uppercase">Lore Archive</h2>
+                <p class="text-gray-300 leading-relaxed italic text-lg md:text-xl font-serif">
+                    "The battlefield is their concert hall, and every move is a carefully composed note in a grand symphony. The Elfnotes are ethereal maestros who manipulate the very spatial dimensions of combat through harmonic resonance. By shifting positions and striking chords in perfect synchrony, they weave an invisible, inescapable rhythm that disorients their foes, turning chaotic warfare into an elegant, flawlessly choreographed performance."
                 </p>
-                <p class="text-gray-300 leading-relaxed">
-                    By utilizing Quick Effects to swap positions, the deck executes sophisticated evasion and
-                    disruption maneuvers, including a potent "Turn 0" hand rip. For a complete list of compositions,
-                    conductors, and arrangements, you can consult the <a
-                        href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Elfnote&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=2&other=1&za=1&os=1"
-                        target="_blank" class="archive-link">Elfnote Archives</a> to understand the full scope of
-                    the symphony.
-                </p>
-            </div>
-
-            <!-- Key Mechanics (Grid Layout) -->
-            <div class="bg-black/30 p-6 rounded border border-gray-700">
-                <h4
-                    class="text-yellow-500 font-bold mb-6 text-center text-sm uppercase tracking-widest border-b border-gray-700 pb-2 mx-auto max-w-xs">
-                    Key Mechanics</h4>
-                <ul class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-400">
-                    <li class="flex flex-col items-center text-center p-2 hover:bg-white/5 rounded transition-colors">
-                        <i class="fas fa-crown text-yellow-500 text-3xl mb-3"></i>
-                        <span class="text-gray-200 font-bold mb-1 text-base">Center Stage</span>
-                        <span>Monsters in the middle zone gain powerful effects and immunity.</span>
-                    </li>
-                    <li class="flex flex-col items-center text-center p-2 hover:bg-white/5 rounded transition-colors">
-                        <i class="fas fa-exchange-alt text-blue-400 text-3xl mb-3"></i>
-                        <span class="text-gray-200 font-bold mb-1 text-base">Positional Velocity</span>
-                        <span>Swap columns to dodge targeting (Imperm) and trigger effects.</span>
-                    </li>
-                    <li class="flex flex-col items-center text-center p-2 hover:bg-white/5 rounded transition-colors">
-                        <i class="fas fa-ban text-red-400 text-3xl mb-3"></i>
-                        <span class="text-gray-200 font-bold mb-1 text-base">Column Lock</span>
-                        <span>The boss, <em>Junora</em>, denies Extra Deck summons in occupied columns.</span>
-                    </li>
-                </ul>
             </div>
         </section>
 
-        <!-- The Setlist -->
-        <section class="mb-16">
-            <div class="section-header">
-                <i class="fas fa-music"></i>
-                <h2 class="text-2xl font-symphony text-white">The Setlist</h2>
-            </div>
+        <!-- Era Selection Tabs -->
+        <div class="flex justify-center gap-4 mb-8">
+            <button onclick="switchTab('classic')" id="btn-classic"
+                class="tab-btn px-8 py-3 rounded-t-lg font-bold text-lg tracking-wider">
+                <i class="fas fa-music mr-2"></i> Movement I: Burst Protocol
+            </button>
+            <button onclick="switchTab('modern')" id="btn-modern"
+                class="tab-btn active px-8 py-3 rounded-t-lg font-bold text-lg tracking-wider">
+                <i class="fas fa-fire mr-2"></i> Movement II: Blazing Dominion
+            </button>
+        </div>
 
-            <!-- Main Deck -->
-            <div class="mb-6">
-                <h3 class="text-lg text-yellow-500 font-bold mb-4 font-score italic">I. The Musicians (Main Deck)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="elfnote-card p-4">
-                        <div id="tinia-img" class="card-placeholder mb-4">Elfnote Tinia</div>
-                        <h4 class="text-white font-bold">Elfnote Tinia</h4>
-                        <p class="text-xs text-blue-400 mb-2">WATER / Level 6</p>
-                        <p class="text-sm text-gray-400"><strong>The Disruptor.</strong> Self-summons to Center. Quick
-                            Effect: Swap with Center to banish 1 random card from opponent's hand (Turn 0 Play).</p>
-                    </div>
-                    <div class="elfnote-card p-4">
-                        <div id="lucina-img" class="card-placeholder mb-4">Elfnote Lucina</div>
-                        <h4 class="text-white font-bold">Elfnote Lucina</h4>
-                        <p class="text-xs text-red-400 mb-2">FIRE / Level 6</p>
-                        <p class="text-sm text-gray-400"><strong>The Aggressor.</strong> Self-summons to Center.
-                            Searches any Elfnote monster. Quick Effect: Swap to bounce an opponent's monster.</p>
-                    </div>
-                    <div class="elfnote-card p-4">
-                        <div id="fortuna-img" class="card-placeholder mb-4">Elfnote Fortuna</div>
-                        <h4 class="text-white font-bold">Elfnote Fortuna</h4>
-                        <p class="text-xs text-yellow-200 mb-2">LIGHT / Level 6</p>
-                        <p class="text-sm text-gray-400"><strong>The Technician.</strong> Places Trap from Deck. Quick
-                            Effect: Swap to bounce a face-up Spell/Trap (Field Spell counter).</p>
-                    </div>
-                    <div class="elfnote-card p-4">
-                        <div id="regina-img" class="card-placeholder mb-4">Elfnote Regina</div>
-                        <h4 class="text-white font-bold">Elfnote Regina</h4>
-                        <p class="text-xs text-green-400 mb-2">WIND / Level 6</p>
-                        <p class="text-sm text-gray-400"><strong>The Enabler.</strong> Can summon herself during
-                            opponent's turn by sending an Elfnote card to GY. Triggers "On Summon to Center" effects.
-                        </p>
-                    </div>
-                    <div class="elfnote-card p-4">
-                        <div id="power-patron-img" class="card-placeholder mb-4">Elfnote Power Patron</div>
-                        <h4 class="text-white font-bold">Elfnote Power Patron</h4>
-                        <span class="text-xs bg-red-900 px-2 py-1 rounded text-red-200">Level 1 Tuner</span>
-                        <p class="text-sm text-gray-400 mt-2"><strong>The Bridge.</strong> Increases Center monster's
-                            Level by 3 to Synchro Summon immediately. Essential for making Junora.</p>
-                    </div>
+        <!-- ========================================== -->
+        <!-- TAB: BLAZING DOMINION (MODERN / NEW CONTENT) -->
+        <!-- ========================================== -->
+        <div id="tab-modern" class="content-tab active-tab">
+            <!-- Executive Summary: Modern -->
+            <section class="mb-12 elfnote-card p-8 rounded-xl">
+                <div class="section-header">
+                    <i class="fas fa-crown"></i>
+                    <h2 class="text-2xl font-symphony text-white">Executive Summary: The Power Patron Paradigm</h2>
                 </div>
-            </div>
+                <div class="mb-8">
+                    <p class="text-gray-300 leading-relaxed mb-4">
+                        The competitive landscape in the spring of 2026 was fundamentally reshaped by <strong>Blazing
+                            Dominion (BLZD)</strong>. Transitioning from a fragile rogue deck focusing purely on grid
+                        placement, the modern Elfnote strategy has evolved into a premier Tier 1 metagame contender
+                        through the <strong>Power Patron Paradigm</strong>.
+                    </p>
+                    <p class="text-gray-300 leading-relaxed">
+                        Anchored by the lore of <span class="text-purple-400 font-bold">Medius the Pure</span>, the
+                        archetype now boasts unprecedented <strong class="text-red-400">Turn 0 interactivity</strong>
+                        via <em>Elfnote Regina</em>, and a virtually infinite resource engine driven by the Pendulum
+                        monster <em>Junoldo the Shadespirit Power Patron</em>. The strategy bypasses traditional
+                        mechanics, executing full combos before the opponent has committed a single card to the board.
+                    </p>
+                </div>
 
-            <!-- Extra Deck -->
-            <div class="mb-6">
-                <h3 class="text-lg text-yellow-500 font-bold mb-4 font-score italic">II. The Conductors (Extra Deck)
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="elfnote-card p-4 flex gap-4">
-                        <div id="strelitzia-img" class="card-placeholder w-32 shrink-0">Strelitzia</div>
-                        <div>
-                            <h4 class="text-white font-bold text-xl">Elfnote Seraphim Strelitzia</h4>
-                            <p class="text-xs text-red-400 mb-2">Level 7 Synchro</p>
-                            <p class="text-sm text-gray-300"><strong>The Extender.</strong> Quick Effect: Revive a Level
-                                6 Elfnote and reduce all Level 4+ monsters on field by 3 Levels. Ruins Xyz/Synchro math.
+                <div class="bg-black/30 p-6 rounded border border-gray-700">
+                    <h4
+                        class="text-yellow-500 font-bold mb-6 text-center text-sm uppercase tracking-widest border-b border-gray-700 pb-2 mx-auto max-w-xs">
+                        Tier 1 Mechanics</h4>
+                    <ul class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-400">
+                        <li class="flex flex-col items-center text-center p-2">
+                            <i class="fas fa-bolt text-red-400 text-3xl mb-3"></i>
+                            <span class="text-gray-200 font-bold mb-1 text-base">Turn 0 Disruption</span>
+                            <span>Regina summons from hand on opponent's Draw Phase to rip cards or bounce normal
+                                summons before Main Phase 1.</span>
+                        </li>
+                        <li class="flex flex-col items-center text-center p-2">
+                            <i class="fas fa-infinity text-purple-400 text-3xl mb-3"></i>
+                            <span class="text-gray-200 font-bold mb-1 text-base">Infinite Recursion Loop</span>
+                            <span>Junoldo generates +1s in the Pendulum scale and recycles Extra Deck resources
+                                infinitely.</span>
+                        </li>
+                        <li class="flex flex-col items-center text-center p-2">
+                            <i class="fas fa-lock text-yellow-500 text-3xl mb-3"></i>
+                            <span class="text-gray-200 font-bold mb-1 text-base">Geometric Suppression</span>
+                            <span>Junora permanently denies Extra Deck summons in any column occupied by an
+                                Elfnote.</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Modern Setlist -->
+            <section class="mb-16">
+                <div class="section-header">
+                    <i class="fas fa-star"></i>
+                    <h2 class="text-2xl font-symphony text-white">The New Setlist</h2>
+                </div>
+
+                <!-- Main Engine -->
+                <div class="mb-6">
+                    <h3 class="text-lg text-yellow-500 font-bold mb-4 font-score italic">I. The Lore Anchors</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="elfnote-card p-4">
+                            <div id="medius-img" class="card-placeholder mb-4">Medius the Pure</div>
+                            <h4 class="text-white font-bold">Medius the Pure</h4>
+                            <p class="text-xs text-purple-400 mb-2">DARK Fairy / Level 4</p>
+                            <p class="text-sm text-gray-400"><strong>The Linchpin.</strong> On summon: Adds/Summons 1
+                                "Power Patron" from Deck. Shuffles hand/field back to Deck to revive from Graveyard.</p>
+                        </div>
+                        <div class="elfnote-card p-4">
+                            <div id="junoldo-img" class="card-placeholder mb-4">Junoldo the Shadespirit Power Patron
+                            </div>
+                            <h4 class="text-white font-bold">Junoldo the Shadespirit</h4>
+                            <p class="text-xs text-purple-400 mb-2">DARK Pendulum / Level 10 / Scale 1</p>
+                            <p class="text-sm text-gray-400"><strong>The Economy.</strong> Pendulum: Destroy self when
+                                Elfnote is summoned to Draw 2, Discard 1. Monster: Banish top 3 to cheat out
+                                <em>Junora</em>. Recycles from Face-Up Extra Deck.
                             </p>
                         </div>
-                    </div>
-                    <div class="elfnote-card p-4 flex gap-4">
-                        <div id="junora-img" class="card-placeholder w-32 shrink-0">Junora</div>
-                        <div>
-                            <h4 class="text-white font-bold text-xl">Junora, Patron of Tuning</h4>
-                            <p class="text-xs text-red-400 mb-2">Level 10 Synchro</p>
-                            <p class="text-sm text-gray-300"><strong>The Grand Finale.</strong> Negates ALL face-up
-                                cards on summon. <strong>Floodgate:</strong> Opponent cannot Extra Deck summon in the
-                                same columns as your Elfnote monsters.</p>
+                        <div class="elfnote-card p-4">
+                            <div id="burst-ral-img" class="card-placeholder mb-4">Burst Ral Theorealize</div>
+                            <h4 class="text-white font-bold">Burst Ral Theorealize</h4>
+                            <span class="text-xs bg-green-900 px-2 py-1 rounded text-green-200">Normal Spell</span>
+                            <p class="text-sm text-gray-400 mt-2"><strong>Unrespondable Consistency.</strong> If you
+                                control an Elfnote: Special Summon Medius from hand/Deck. Opponent cannot respond to the
+                                summon.</p>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Spells -->
-            <div>
-                <h3 class="text-lg text-yellow-500 font-bold mb-4 font-score italic">III. The Score (Spells/Traps)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="elfnote-card p-4">
-                        <div id="welcome-home-img" class="card-placeholder mb-4">Elfnotes: Welcome Home</div>
-                        <h4 class="text-white font-bold">Elfnotes: Welcome Home</h4>
-                        <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">Continuous Spell</span>
-                        <p class="text-sm text-gray-400 mt-2"><strong>The Stage.</strong> Prevents Center monster
-                            destruction. Sends card to GY to summon an Elfnote from Deck (Starter).</p>
-                    </div>
-                    <div class="elfnote-card p-4">
-                        <div id="plea-help-img" class="card-placeholder mb-4">Elfnotes: A Plea for Help</div>
-                        <h4 class="text-white font-bold">Elfnotes: A Plea for Help</h4>
-                        <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">Continuous Spell</span>
-                        <p class="text-sm text-gray-400 mt-2"><strong>The Acoustics.</strong> Grants effects based on
-                            Center monster's attribute (Piercing, Backrow Protection, Battle Immunity).</p>
-                    </div>
-                    <div class="elfnote-card p-4">
-                        <div id="aristeia-trust-img" class="card-placeholder mb-4">Elfnotes: Aristeia of Trust</div>
-                        <h4 class="text-white font-bold">Elfnotes: Aristeia of Trust</h4>
-                        <span class="text-xs bg-pink-900 px-2 py-1 rounded text-pink-200">Continuous Trap</span>
-                        <p class="text-sm text-gray-400 mt-2"><strong>The Harmony.</strong> Target 1 Elfnote card; move
-                            it to an adjacent column, then destroy 1 card in the same column as the target.</p>
-                    </div>
-                    <div class="elfnote-card p-4">
-                        <div id="rhapsodia-madness-img" class="card-placeholder mb-4">Elfnotes: Rhapsodia of Madness
+                <!-- Modern Conductors & Staples -->
+                <div class="mb-6">
+                    <h3 class="text-lg text-yellow-500 font-bold mb-4 font-score italic">II. Advanced Orchestration &
+                        Tech</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                        <div class="elfnote-card p-4 flex gap-4">
+                            <div id="june-pride-img" class="card-placeholder w-32 md:w-40 shrink-0">June Pride</div>
+                            <div>
+                                <h4 class="text-white font-bold text-xl">June Pride - Elfnotes</h4>
+                                <p class="text-xs text-red-400 mb-2">Level 10 Synchro</p>
+                                <p class="text-sm text-gray-300"><strong>The Spatial Floodgate.</strong> Neither player
+                                    can attack except with monsters in the Center Main Monster Zone. Quick Effect:
+                                    Return to Extra Deck to summon up to 3 Elfnotes (Hand, Deck, Graveyard) to
+                                    re-establish locks.</p>
+                            </div>
                         </div>
-                        <h4 class="text-white font-bold">Elfnotes: Rhapsodia of Madness</h4>
-                        <span class="text-xs bg-pink-900 px-2 py-1 rounded text-pink-200">Continuous Trap</span>
-                        <p class="text-sm text-gray-400 mt-2"><strong>The Climax.</strong> When a Spell/Trap is
-                            activated while you control an "Elfnote" in the Center: Negate the activation and shuffle it
-                            into the Deck.</p>
+                        <div class="elfnote-card p-4 flex gap-4 border-l-4 border-teal-400">
+                            <div id="fidraulis-img" class="card-placeholder w-32 md:w-40 shrink-0">Fidraulis</div>
+                            <div>
+                                <h4 class="text-white font-bold text-xl">Fidraulis Harmonia</h4>
+                                <p class="text-xs text-teal-400 mb-2">Level 7 Tuner Handtrap</p>
+                                <p class="text-sm text-gray-300"><strong>The Meta Warper.</strong> Reveal Extra Deck
+                                    Synchros to
+                                    Special Summon, send 1 revealed Synchro (usually <em>Malong</em>) to Graveyard, and
+                                    destroy
+                                    1 opponent's card. Yields a pop, a bounce, and a Lvl 7 body.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Combo & Board State -->
-        <section class="mb-16">
-            <div class="section-header">
-                <i class="fas fa-project-diagram"></i>
-                <h2 class="text-2xl font-symphony text-white">Choreography & Board State</h2>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Combo Guide -->
-                <div class="elfnote-card p-6">
-                    <h3 class="text-xl text-yellow-500 font-bold mb-4">The "Welcome Home" Overture</h3>
-                    <p class="text-xs text-gray-400 mb-4 uppercase tracking-widest">1-Card Starter</p>
-                    <ol class="space-y-4 text-sm text-gray-300 font-mono">
-                        <li class="flex gap-3">
-                            <span class="text-yellow-500 font-bold">01.</span>
-                            <span>Activate <strong class="text-white">Welcome Home</strong>. Send 1 card to GY to Summon
-                                <strong class="text-green-400">Regina</strong> to Center (Col 3).</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-yellow-500 font-bold">02.</span>
-                            <span>Regina Effect (Center Trigger): Summon <strong class="text-red-400">Lucina</strong>
-                                from Deck to Col 2.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-yellow-500 font-bold">03.</span>
-                            <span>Lucina Effect: Add <strong class="text-red-400">Power Patron</strong> (Tuner) from
-                                Deck.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-yellow-500 font-bold">04.</span>
-                            <span>Normal Summon Power Patron. Target Regina (Lvl 6) -> Modulate to Lvl 9.</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="text-yellow-500 font-bold">05.</span>
-                            <span>Synchro Summon <strong class="text-white">Junora</strong> (Lvl 10) using Patron (1) +
-                                Regina (9).</span>
-                        </li>
-                        <li class="flex gap-3 border-t border-gray-700 pt-3">
-                            <span class="text-white font-bold">RESULT:</span>
-                            <span>Junora in Center (Negates Field). Lucina in Col 2. Opponent locked out of Columns 2
-                                and 3.</span>
-                        </li>
-                    </ol>
+            <!-- Modern Combos & Board -->
+            <section class="mb-16">
+                <div class="section-header">
+                    <i class="fas fa-chess-knight"></i>
+                    <h2 class="text-2xl font-symphony text-white">2026 Competitive Choreography</h2>
                 </div>
 
-                <!-- End Board Visualizer -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Fiendsmith Bridge -->
+                    <div class="elfnote-card p-6 border-t-4 border-purple-500">
+                        <h3 class="text-xl text-yellow-500 font-bold mb-2">The Fiendsmith Bridge</h3>
+                        <p class="text-xs text-gray-400 mb-4 uppercase tracking-widest">Pre-emptive Negation Line</p>
+                        <ol class="space-y-3 text-sm text-gray-300 font-mono">
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">01.</span>
+                                <span>Normal <strong class="text-purple-400">Medius the Pure</strong>. Search <strong
+                                        class="text-red-400">Elfnote Power Patron</strong>.</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">02.</span>
+                                <span>Synchro Medius + Patron into <strong class="text-white">Armades</strong> (Level
+                                    5).</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">03.</span>
+                                <span>Link Armades into <strong class="text-white">Fiendsmith's Requiem</strong>.</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">04.</span>
+                                <span>Requiem effect: Summon <strong class="text-red-400">Lacrima</strong> from deck.
+                                    Lacrima sends <strong class="text-gray-400">Engraver</strong> to the
+                                    Graveyard.</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">05.</span>
+                                <span>Equip Requiem to Lacrima. Contact Fuse into <strong
+                                        class="text-purple-300">Necroquip Princess</strong>.</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">06.</span>
+                                <span>Engraver Graveyard effect: shuffle Armades into Extra Deck to Special Summon
+                                    itself.</span>
+                            </li>
+                            <li class="flex gap-3 border-t border-gray-700 pt-3">
+                                <span class="text-white font-bold">RESULT:</span>
+                                <span>Overlay Engraver + Necroquip into <strong class="text-blue-400">D/D/D High King
+                                        Caesar</strong> (2x Special Summon Negates) before committing to Elfnote
+                                    locks.</span>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <!-- Turn 0 Visualizer -->
+                    <div class="elfnote-card p-6 border-t-4 border-red-500">
+                        <h3 class="text-xl text-yellow-500 font-bold mb-2">Turn 0 Disruption Matrix</h3>
+                        <p class="text-xs text-gray-400 mb-4 uppercase tracking-widest">Going Second execution</p>
+                        <div class="bg-[#11111a] p-4 rounded border border-gray-700 mb-4">
+                            <p class="text-sm text-gray-300 mb-2"><em>Opponent's Draw Phase starts:</em></p>
+                            <p class="text-sm text-green-400 font-bold mb-1">1. Activate Elfnote Regina from hand (Spell
+                                Speed 2).</p>
+                            <p class="text-sm text-gray-400 ml-4 mb-2">Cost: Discard Elfnote Tinia or Lucina.</p>
+
+                            <p class="text-sm text-green-400 font-bold mb-1">2. Regina resolves, Summons to CMMZ.</p>
+                            <p class="text-sm text-gray-400 ml-4 mb-2">Trigger Regina's mandatory deck-summon effect.
+                            </p>
+
+                            <p class="text-sm text-blue-400 font-bold mb-1">3. Summon Tinia (Water) to field.</p>
+                            <p class="text-sm text-gray-400 ml-4">Tinia effect triggers: Swap column to instantly rip 1
+                                card from opponent's starting hand before Main Phase 1.</p>
+                        </div>
+                        <div class="text-center text-sm text-gray-300">
+                            <p><i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i><strong>Psychological
+                                    Pressure:</strong> The opponent must now play through an established Level 6 body
+                                and a hand-rip while going first.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-16">
+                <div class="section-header">
+                    <i class="fas fa-chart-pie"></i>
+                    <h2 class="text-2xl font-symphony text-white">2026 Format Matchup Dynamics</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="elfnote-card p-6 border-l-4 border-green-500">
+                        <h3 class="text-xl font-bold text-green-400 mb-4">Dominating Matchups</h3>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li><i class="fas fa-check-circle text-green-500 mr-2"></i> <strong>Radiant Typhoon & Chaos
+                                    Ritual:</strong> The column lock from Junora structurally breaks their rigid
+                                Link/Synchro climbing paths. They mathematically cannot play through the board.</li>
+                            <li><i class="fas fa-check-circle text-green-500 mr-2"></i> <strong>Kewl Tune:</strong> In
+                                this grind-heavy rivalry, Junoldo's ability to recycle from the face-up Extra Deck gives
+                                Elfnote the definitive late-game attrition advantage.</li>
+                        </ul>
+                    </div>
+                    <div class="elfnote-card p-6 border-l-4 border-red-500">
+                        <h3 class="text-xl font-bold text-red-400 mb-4">Exploitable Chokepoints</h3>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li><i class="fas fa-times-circle text-red-500 mr-2"></i> <strong>Droll & Lock
+                                    Bird:</strong> The absolute nemesis. Dropping Droll in response to Medius or
+                                Junoldo's draw immediately terminates the Elfnote turn.</li>
+                            <li><i class="fas fa-times-circle text-red-500 mr-2"></i> <strong>Center Zone
+                                    Denial:</strong> Trap cards or tokens forced into the Center Main Monster Zone
+                                prevent Regina's effect from activating and disable Power Patron's level modulation.
+                            </li>
+                            <li><i class="fas fa-times-circle text-red-500 mr-2"></i> <strong>The 5th Summon
+                                    (Nibiru):</strong> Pure builds frequently hit 5 summons before establishing Junora.
+                                A well-timed rock clears the CMMZ entirely.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB: BURST PROTOCOL (CLASSIC / OLD CONTENT)-->
+        <!-- ========================================== -->
+        <div id="tab-classic" class="content-tab">
+            <!-- Executive Summary: Classic -->
+            <section class="mb-12 elfnote-card p-8 rounded-xl">
+                <div class="section-header">
+                    <i class="fas fa-feather-alt"></i>
+                    <h2 class="text-2xl font-symphony text-white">Classic Summary: The Positional Orchestra</h2>
+                </div>
+                <div class="mb-8">
+                    <p class="text-gray-300 leading-relaxed mb-4">
+                        The release of <strong>Burst Protocol</strong> introduced a paradigm shift in board geometry
+                        with the <strong>Elfnote</strong> archetype. Unlike traditional decks that focus on accumulating
+                        resources in a linear fashion, Elfnote focuses on <strong class="text-yellow-400">Positional
+                            Equity</strong>. The deck revolves around the <strong>Center Main Monster Zone</strong>
+                        (Column 3), effectively playing a game of "musical chairs" where the value of a monster is
+                        determined by its physical location on the mat.
+                    </p>
+                    <p class="text-gray-300 leading-relaxed">
+                        By utilizing Quick Effects to swap positions, the deck executes sophisticated evasion and
+                        disruption maneuvers. For a complete list of compositions, conductors, and arrangements, you can
+                        consult the <a
+                            href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Elfnote&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=2&other=1&za=1&os=1"
+                            target="_blank" class="archive-link">Elfnote Archives</a> to understand the full scope of
+                        the symphony.
+                    </p>
+                </div>
+
+                <div class="bg-black/30 p-6 rounded border border-gray-700">
+                    <h4
+                        class="text-yellow-500 font-bold mb-6 text-center text-sm uppercase tracking-widest border-b border-gray-700 pb-2 mx-auto max-w-xs">
+                        Core Mechanics</h4>
+                    <ul class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-400">
+                        <li
+                            class="flex flex-col items-center text-center p-2 hover:bg-white/5 rounded transition-colors">
+                            <i class="fas fa-crown text-yellow-500 text-3xl mb-3"></i>
+                            <span class="text-gray-200 font-bold mb-1 text-base">Center Stage</span>
+                            <span>Monsters in the middle zone gain powerful effects and immunity.</span>
+                        </li>
+                        <li
+                            class="flex flex-col items-center text-center p-2 hover:bg-white/5 rounded transition-colors">
+                            <i class="fas fa-exchange-alt text-blue-400 text-3xl mb-3"></i>
+                            <span class="text-gray-200 font-bold mb-1 text-base">Positional Velocity</span>
+                            <span>Swap columns to dodge targeting (Imperm) and trigger effects.</span>
+                        </li>
+                        <li
+                            class="flex flex-col items-center text-center p-2 hover:bg-white/5 rounded transition-colors">
+                            <i class="fas fa-ban text-red-400 text-3xl mb-3"></i>
+                            <span class="text-gray-200 font-bold mb-1 text-base">Column Lock</span>
+                            <span>The boss, <em>Junora</em>, denies Extra Deck summons in occupied columns.</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- The Setlist -->
+            <section class="mb-16">
+                <div class="section-header">
+                    <i class="fas fa-music"></i>
+                    <h2 class="text-2xl font-symphony text-white">The Core Setlist</h2>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg text-yellow-500 font-bold mb-4 font-score italic">I. The Musicians (Main Deck)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="elfnote-card p-4">
+                            <div id="tinia-img" class="card-placeholder mb-4">Elfnote Tinia</div>
+                            <h4 class="text-white font-bold">Elfnote Tinia</h4>
+                            <p class="text-xs text-blue-400 mb-2">WATER / Level 6</p>
+                            <p class="text-sm text-gray-400"><strong>The Disruptor.</strong> Self-summons to Center.
+                                Quick Effect: Swap with Center to banish 1 random card from opponent's hand.</p>
+                        </div>
+                        <div class="elfnote-card p-4">
+                            <div id="lucina-img" class="card-placeholder mb-4">Elfnote Lucina</div>
+                            <h4 class="text-white font-bold">Elfnote Lucina</h4>
+                            <p class="text-xs text-red-400 mb-2">FIRE / Level 6</p>
+                            <p class="text-sm text-gray-400"><strong>The Aggressor.</strong> Self-summons to Center.
+                                Searches any Elfnote monster. Quick Effect: Swap to bounce an opponent's monster.</p>
+                        </div>
+                        <div class="elfnote-card p-4">
+                            <div id="fortuna-img" class="card-placeholder mb-4">Elfnote Fortuna</div>
+                            <h4 class="text-white font-bold">Elfnote Fortuna</h4>
+                            <p class="text-xs text-yellow-200 mb-2">LIGHT / Level 6</p>
+                            <p class="text-sm text-gray-400"><strong>The Technician.</strong> Places Trap from Deck.
+                                Quick Effect: Swap to bounce a face-up Spell/Trap.</p>
+                        </div>
+                        <div class="elfnote-card p-4">
+                            <div id="regina-img" class="card-placeholder mb-4">Elfnote Regina</div>
+                            <h4 class="text-white font-bold">Elfnote Regina</h4>
+                            <p class="text-xs text-green-400 mb-2">WIND / Level 6</p>
+                            <p class="text-sm text-gray-400"><strong>The Enabler.</strong> Can summon herself during
+                                opponent's turn. Triggers "On Summon to Center" effects.</p>
+                        </div>
+                        <div class="elfnote-card p-4">
+                            <div id="power-patron-img" class="card-placeholder mb-4">Elfnote Power Patron</div>
+                            <h4 class="text-white font-bold">Elfnote Power Patron</h4>
+                            <span class="text-xs bg-red-900 px-2 py-1 rounded text-red-200">Level 1 Tuner</span>
+                            <p class="text-sm text-gray-400 mt-2"><strong>The Bridge.</strong> Increases Center
+                                monster's Level by 3 to Synchro Summon immediately.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg text-yellow-500 font-bold mb-4 font-score italic">II. The Conductors (Extra Deck)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="elfnote-card p-4 flex gap-4">
+                            <div id="strelitzia-img" class="card-placeholder w-32 md:w-40 shrink-0">Strelitzia</div>
+                            <div>
+                                <h4 class="text-white font-bold text-xl">Elfnote Seraphim Strelitzia</h4>
+                                <p class="text-xs text-red-400 mb-2">Level 7 Synchro</p>
+                                <p class="text-sm text-gray-300"><strong>The Extender.</strong> Quick Effect: Revive a
+                                    Level 6 Elfnote and reduce all Level 4+ monsters on field by 3 Levels.</p>
+                            </div>
+                        </div>
+                        <div class="elfnote-card p-4 flex gap-4">
+                            <div id="junora-img" class="card-placeholder w-32 md:w-40 shrink-0">Junora</div>
+                            <div>
+                                <h4 class="text-white font-bold text-xl">Junora, Patron of Tuning</h4>
+                                <p class="text-xs text-red-400 mb-2">Level 10 Synchro</p>
+                                <p class="text-sm text-gray-300"><strong>The Grand Finale.</strong> Negates ALL face-up
+                                    cards on summon. <strong>Floodgate:</strong> Opponent cannot Extra Deck summon in
+                                    the same columns.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div>
-                    <h3 class="text-xl text-yellow-500 font-bold mb-4">End Board: "Center Control"</h3>
-                    <div class="board-grid">
-                        <!-- Column 1 -->
-                        <div class="board-zone">
-                            <span class="col-label">C1</span>
+                    <h3 class="text-lg text-yellow-500 font-bold mb-4 font-score italic">III. The Score (Spells/Traps)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="elfnote-card p-4">
+                            <div id="welcome-home-img" class="card-placeholder mb-4">Elfnotes: Welcome Home</div>
+                            <h4 class="text-white font-bold">Elfnotes: Welcome Home</h4>
+                            <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">Continuous Spell</span>
+                            <p class="text-sm text-gray-400 mt-2"><strong>The Stage.</strong> Prevents Center
+                                destruction. Sends card to Graveyard to summon an Elfnote from Deck.</p>
                         </div>
-                        <!-- Column 2 -->
-                        <div class="board-zone occupied border-red-500/30 bg-red-900/10">
-                            <span class="col-label text-red-400">C2</span>
-                            <div class="text-2xl mb-1 opacity-20 absolute"><i class="fas fa-ban"></i></div>
-                            <div class="card-name relative z-10">Lucina</div>
-                            <div class="card-role relative z-10">Bouncer</div>
-                            <i class="fas fa-ban text-red-500 icon-status" title="Column Locked"></i>
+                        <div class="elfnote-card p-4">
+                            <div id="plea-help-img" class="card-placeholder mb-4">Elfnotes: A Plea for Help</div>
+                            <h4 class="text-white font-bold">Elfnotes: A Plea for Help</h4>
+                            <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">Continuous Spell</span>
+                            <p class="text-sm text-gray-400 mt-2"><strong>The Acoustics.</strong> Grants effects based
+                                on Center monster's attribute.</p>
                         </div>
-                        <!-- Column 3 (Center) -->
-                        <div class="board-zone center-stage occupied">
-                            <span class="col-label text-yellow-500">C3</span>
-                            <div class="absolute inset-0 bg-yellow-500/10 animate-pulse rounded"></div>
-                            <i class="fas fa-crown text-yellow-500 mb-1 relative z-10"></i>
-                            <div class="card-name relative z-10">Junora</div>
-                            <div class="card-role relative z-10 text-yellow-100">The Boss</div>
-                            <i class="fas fa-shield-alt text-blue-400 icon-status" title="Immune"></i>
+                        <div class="elfnote-card p-4">
+                            <div id="aristeia-trust-img" class="card-placeholder mb-4">Elfnotes: Aristeia of Trust</div>
+                            <h4 class="text-white font-bold">Elfnotes: Aristeia of Trust</h4>
+                            <span class="text-xs bg-pink-900 px-2 py-1 rounded text-pink-200">Continuous Trap</span>
+                            <p class="text-sm text-gray-400 mt-2"><strong>The Harmony.</strong> Target 1 Elfnote card;
+                                move it to an adjacent column, then destroy 1 card in that column.</p>
                         </div>
-                        <!-- Column 4 -->
-                        <div class="board-zone occupied border-red-500/30 bg-red-900/10">
-                            <span class="col-label text-red-400">C4</span>
-                            <div class="text-2xl mb-1 opacity-20 absolute"><i class="fas fa-ban"></i></div>
-                            <div class="card-name relative z-10">Fortuna</div>
-                            <div class="card-role relative z-10">Trap Setter</div>
-                            <i class="fas fa-ban text-red-500 icon-status" title="Column Locked"></i>
-                        </div>
-                        <!-- Column 5 -->
-                        <div class="board-zone">
-                            <span class="col-label">C5</span>
+                        <div class="elfnote-card p-4">
+                            <div id="rhapsodia-madness-img" class="card-placeholder mb-4">Elfnotes: Rhapsodia of Madness
+                            </div>
+                            <h4 class="text-white font-bold">Elfnotes: Rhapsodia of Madness</h4>
+                            <span class="text-xs bg-pink-900 px-2 py-1 rounded text-pink-200">Continuous Trap</span>
+                            <p class="text-sm text-gray-400 mt-2"><strong>The Climax.</strong> Negate Spell/Trap
+                                activation and shuffle it into the Deck if you control Center Elfnote.</p>
                         </div>
                     </div>
-                    <div class="mt-4 p-4 bg-gray-900 rounded border border-gray-700">
-                        <h4 class="text-sm font-bold text-white mb-2"><i class="fas fa-lock text-red-500 mr-2"></i>Lock
-                            Status</h4>
-                        <p class="text-xs text-gray-400">
-                            Opponent cannot Special Summon from Extra Deck to Columns 2, 3, or 4. Junora negates all
-                            face-up cards on summon. Welcome Home protects Junora from destruction.
-                        </p>
+                </div>
+            </section>
+
+            <!-- Combo & Board State -->
+            <section class="mb-16">
+                <div class="section-header">
+                    <i class="fas fa-project-diagram"></i>
+                    <h2 class="text-2xl font-symphony text-white">Choreography & Board State</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Combo Guide -->
+                    <div class="elfnote-card p-6">
+                        <h3 class="text-xl text-yellow-500 font-bold mb-4">The "Welcome Home" Overture</h3>
+                        <p class="text-xs text-gray-400 mb-4 uppercase tracking-widest">1-Card Starter</p>
+                        <ol class="space-y-4 text-sm text-gray-300 font-mono">
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">01.</span>
+                                <span>Activate <strong class="text-white">Welcome Home</strong>. Send 1 card to
+                                    Graveyard to
+                                    Summon <strong class="text-green-400">Regina</strong> to Center (Col 3).</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">02.</span>
+                                <span>Regina Effect (Center Trigger): Summon <strong
+                                        class="text-red-400">Lucina</strong> from Deck to Col 2.</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">03.</span>
+                                <span>Lucina Effect: Add <strong class="text-red-400">Power Patron</strong> (Tuner) from
+                                    Deck.</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">04.</span>
+                                <span>Normal Summon Power Patron. Target Regina (Lvl 6) -> Modulate to Lvl 9.</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="text-yellow-500 font-bold">05.</span>
+                                <span>Synchro Summon <strong class="text-white">Junora</strong> (Lvl 10) using Patron
+                                    (1) + Regina (9).</span>
+                            </li>
+                            <li class="flex gap-3 border-t border-gray-700 pt-3">
+                                <span class="text-white font-bold">RESULT:</span>
+                                <span>Junora in Center (Negates Field). Lucina in Col 2. Opponent locked out of Columns
+                                    2 and 3.</span>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <!-- End Board Visualizer -->
+                    <div>
+                        <h3 class="text-xl text-yellow-500 font-bold mb-4">End Board: "Center Control"</h3>
+                        <div class="board-grid">
+                            <div class="board-zone"><span class="col-label">C1</span></div>
+                            <div class="board-zone occupied border-red-500/30 bg-red-900/10">
+                                <span class="col-label text-red-400">C2</span>
+                                <div class="text-2xl mb-1 opacity-20 absolute"><i class="fas fa-ban"></i></div>
+                                <div class="card-name relative z-10">Lucina</div>
+                                <div class="card-role relative z-10">Bouncer</div>
+                                <i class="fas fa-ban text-red-500 icon-status" title="Column Locked"></i>
+                            </div>
+                            <div class="board-zone center-stage occupied">
+                                <span class="col-label text-yellow-500">C3</span>
+                                <div class="absolute inset-0 bg-yellow-500/10 animate-pulse rounded"></div>
+                                <i class="fas fa-crown text-yellow-500 mb-1 relative z-10"></i>
+                                <div class="card-name relative z-10">Junora</div>
+                                <div class="card-role relative z-10 text-yellow-100">The Boss</div>
+                                <i class="fas fa-shield-alt text-blue-400 icon-status" title="Immune"></i>
+                            </div>
+                            <div class="board-zone occupied border-red-500/30 bg-red-900/10">
+                                <span class="col-label text-red-400">C4</span>
+                                <div class="text-2xl mb-1 opacity-20 absolute"><i class="fas fa-ban"></i></div>
+                                <div class="card-name relative z-10">Fortuna</div>
+                                <div class="card-role relative z-10">Trap Setter</div>
+                                <i class="fas fa-ban text-red-500 icon-status" title="Column Locked"></i>
+                            </div>
+                            <div class="board-zone"><span class="col-label">C5</span></div>
+                        </div>
+                        <div class="mt-4 p-4 bg-gray-900 rounded border border-gray-700">
+                            <h4 class="text-sm font-bold text-white mb-2"><i
+                                    class="fas fa-lock text-red-500 mr-2"></i>Lock Status</h4>
+                            <p class="text-xs text-gray-400">Opponent cannot Special Summon from Extra Deck to Columns
+                                2, 3, or 4. Junora negates all face-up cards on summon.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
 
 
-
-        <!-- Competitive Analysis -->
-        <section class="mb-16">
-            <div class="section-header">
-                <i class="fas fa-chart-line"></i>
-                <h2 class="text-2xl font-symphony text-white">Competitive Analysis</h2>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="elfnote-card p-6 border-l-4 border-green-500">
-                    <h3 class="text-xl font-bold text-green-400 mb-4">Symphonic Strengths</h3>
-                    <ul class="space-y-3 text-sm text-gray-300">
-                        <li><i class="fas fa-check-circle text-green-500 mr-2"></i> <strong>Information
-                                Supremacy:</strong> Tinia's hand-rip effect on Turn 0 reveals the opponent's strategy
-                            before they commit, allowing for perfect interruptions.</li>
-                        <li><i class="fas fa-check-circle text-green-500 mr-2"></i> <strong>Column Control:</strong>
-                            Against Link decks (Snake-Eye, Salamangreat), Junora acts as a mechanic-based FTK by denying
-                            arrow placement.</li>
-                        <li><i class="fas fa-check-circle text-green-500 mr-2"></i> <strong>Resilience:</strong> The
-                            deck plays extensively on the opponent's turn. Even if the Normal Summon is negated,
-                            "Welcome Home" and Regina ensure the board is built.</li>
-                    </ul>
-                </div>
-                <div class="elfnote-card p-6 border-l-4 border-red-500">
-                    <h3 class="text-xl font-bold text-red-400 mb-4">Acoustic Weaknesses</h3>
-                    <ul class="space-y-3 text-sm text-gray-300">
-                        <li><i class="fas fa-times-circle text-red-500 mr-2"></i> <strong>Nibiru
-                                Susceptibility:</strong> The standard line to Junora summons 5+ times. The deck
-                            struggles to put up an Omni-negate before the 5th summon.</li>
-                        <li><i class="fas fa-times-circle text-red-500 mr-2"></i> <strong>Zone Locking:</strong> Decks
-                            like Kashtira that lock zones (specifically the Center Zone) completely shut down the
-                            engine's condition triggers.</li>
-                        <li><i class="fas fa-times-circle text-red-500 mr-2"></i> <strong>Droll & Lock Bird:</strong>
-                            The engine relies heavily on searching (Lucina, Welcome Home) to assemble the pieces.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- Banlist & Resources -->
+        <!-- Universal Banlist & Resources -->
         <section class="grid grid-cols-1 gap-8 mb-16">
             <div id="banlist-status" class="elfnote-card p-6"></div>
         </section>
@@ -643,6 +875,22 @@
     </div>
 
     <script>
+        // Tab Logic
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.content-tab').forEach(el => {
+                el.classList.remove('active-tab');
+            });
+            // Remove active style from buttons
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById('tab-' + tabId).classList.add('active-tab');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
         // Animation
         const canvas = document.getElementById('score-canvas');
         const ctx = canvas.getContext('2d');
@@ -703,6 +951,7 @@
         // Data Loading
         document.addEventListener('DOMContentLoaded', async () => {
             CardLoader.loadCards({
+                // Classic Core
                 'tinia-img': 'Elfnote Tinia',
                 'lucina-img': 'Elfnote Lucina',
                 'fortuna-img': 'Elfnote Fortuna',
@@ -713,20 +962,26 @@
                 'plea-help-img': 'Elfnotes: A Plea for Help',
                 'aristeia-trust-img': 'Elfnotes: Aristeia of Trust',
                 'rhapsodia-madness-img': 'Elfnotes: Rhapsodia of Madness',
-                'power-patron-img': 'Elfnote Power Patron'
+                'power-patron-img': 'Elfnote Power Patron',
+                // Modern Expansion
+                'medius-img': 'Medius the Pure',
+                'junoldo-img': 'Junoldo the Shadespirit Power Patron',
+                'june-pride-img': 'June Pride - Elfnotes',
+                'fidraulis-img': 'Fidraulis Harmonia',
+                'burst-ral-img': 'Burst Ral Theorealize'
             });
 
             await CardLoader.renderBanlistSection('banlist-status', [
-                'Elfnote Tinia', 'Elfnote Lucina', 'Elfnote Fortuna', 'Elfnote Regina',
-                'Elfnotes: Welcome Home', 'Elfnotes: A Plea for Help', 'Elfnotes: Aristeia of Trust', 'Elfnotes: Rhapsodia of Madness',
+                'Elfnote Tinia', 'Elfnote Lucina', 'Elfnote Fortuna', 'Elfnote Regina', 'Medius the Pure',
+                'Elfnotes: Welcome Home', 'Junoldo the Shadespirit Power Patron', 'Fidraulis Harmonia',
                 'Junora the Power Patron of Tuning', 'Elfnote Seraphim Strelitzia'
             ], {
                 archetypeName: 'Elfnote',
                 archetypeTraits: {
-                    coreMechanic: 'Positional Equity & Column Locking',
-                    supportReliance: 'High (White Forest Synergy)',
-                    adaptability: 'Tier 2 (Dependent on Column Matchups)',
-                    resilience: 'Moderate (Susceptible to Zone Lock)'
+                    coreMechanic: 'Positional Equity & Turn 0 Interaction',
+                    supportReliance: 'High (Fiendsmith Bridge)',
+                    adaptability: 'Tier 1 (Blazing Dominion Meta)',
+                    resilience: 'Very High (Infinite Junoldo Recursion)'
                 }
             });
 

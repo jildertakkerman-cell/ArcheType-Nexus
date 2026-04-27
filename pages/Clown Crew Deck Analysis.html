@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clown Crew Archetype</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Rye&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0510;
+            /* Very deep dark purple/black */
+            color: #f3e8ff;
+            /* Light purple-white */
+        }
+
+        .container {
+            max-width: 1024px;
+        }
+
+        .card {
+            background-color: #160b24;
+            /* Dark violet */
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            border: 1px solid #3b1f5e;
+            /* Muted violet border */
+        }
+
+        .combo-step-card {
+            background-color: #1e0f33;
+            border: 1px solid #582a8a;
+        }
+
+        .pro-con-card {
+            background-color: #1e0f33;
+            border: 1px solid #582a8a;
+        }
+
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .card-image {
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+
+        .card-placeholder {
+            background-color: #1a0f2e;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: bold;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+            border: 1px dashed #9333ea;
+        }
+
+        .pro-icon {
+            color: #34d399;
+        }
+
+        .con-icon {
+            color: #f43f5e;
+        }
+
+        .neutral-icon {
+            color: #fbbf24;
+        }
+
+        .text-accent {
+            color: #f43f5e;
+        }
+
+        /* Neon Rose */
+        .text-gold {
+            color: #fbbf24;
+        }
+
+        /* Circus Gold */
+        .arrow-color {
+            color: #fbbf24;
+        }
+
+        .heading-underline {
+            border-bottom: 2px solid #f43f5e;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        .lore-link {
+            color: #fbbf24;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #fbbf24;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #fbbf24;
+        }
+
+        /* --- Dark Circus Banner Styles --- */
+        .banner-header {
+            position: relative;
+            min-height: 180px;
+            background: radial-gradient(circle at center, #2d1b4e 0%, #0a0510 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 2px solid #582a8a;
+            box-shadow: 0 8px 30px rgba(88, 42, 138, 0.4);
+        }
+
+        #circus-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(10, 5, 16, 0.2) 0%, rgba(10, 5, 16, 0.9) 100%);
+            z-index: 2;
+        }
+
+        .banner-title {
+            font-family: 'Rye', serif;
+            /* Circus/Western style font */
+            font-size: 3rem;
+            color: #fff;
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 0 15px rgba(244, 63, 94, 0.8), 0 0 30px rgba(251, 191, 36, 0.6);
+            letter-spacing: 0.05em;
+        }
+
+        .banner-subtitle {
+            font-size: 1.125rem;
+            color: #e9d5ff;
+            position: relative;
+            z-index: 3;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .banner-header {
+                min-height: 140px;
+            }
+
+            .banner-title {
+                font-size: 2rem;
+            }
+
+            .banner-subtitle {
+                font-size: 0.875rem;
+            }
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+
+        @keyframes ygoButtonPulse {
+
+            0%,
+            100% {
+                opacity: 0.8;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes ygoIconGlow {
+            0% {
+                text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(139, 92, 246, 0.4);
+            }
+
+            100% {
+                text-shadow: 0 0 15px rgba(99, 102, 241, 1), 0 0 30px rgba(139, 92, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(10, 5, 16, 0.95);
+            border: 1px solid #f43f5e;
+            border-radius: 0.75rem;
+            color: #f3e8ff;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+
+        #card-popup h3 {
+            font-family: 'Rye', serif;
+            color: #fbbf24;
+            font-size: 1.125rem;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+    <div id="card-popup"></div>
+    <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Thematic Banner -->
+        <header class="banner-header text-center">
+            <canvas id="circus-canvas"></canvas>
+            <h1 class="banner-title">Clown Crew</h1>
+            <p class="banner-subtitle">Systems Architecture & Meta-Contextual Synergies</p>
+        </header>
+
+        <!-- Deck Resources (Global) -->
+        <div class="relative z-10 mb-8 mx-auto max-w-fit animate-fadeIn" style="animation-delay: 0.1s;">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-[#582a8a] shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                <div id="deck-resources-compact" class="flex items-center"></div>
+                <div class="hidden md:block w-px h-6 bg-[#582a8a] mx-1"></div>
+                <div id="archetype-cards-browser" class="flex justify-center"></div>
+            </div>
+            <div class="absolute inset-0 bg-[#582a8a]/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none">
+            </div>
+        </div>
+
+        <!-- Lore / Thematic Intro Section -->
+        <section class="max-w-4xl mx-auto mb-12 px-4">
+            <div class="relative bg-[#1e1b4b]/80 backdrop-blur-md border-l-4 border-purple-500 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+                <div class="absolute -top-4 -left-4 bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#1e1b4b]">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h2 class="text-xl md:text-2xl font-bold text-purple-300 mb-3 tracking-wide uppercase">Lore Archive</h2>
+                <p class="text-gray-300 leading-relaxed italic text-lg md:text-xl font-serif">
+                    "Under the grand, striped tent, the blinding spotlight reveals a truly sinister circus. The Clown Crew performs a chaotic show of acrobatics and deadly deception, turning the battlefield into a dizzying spectacle of trap doors and shifting alliances. Every laugh hides a lethal trick, and what begins as a colorful parade inevitably devolves into a nightmare of unpredictable disruptions and inescapable punchlines."
+                </p>
+            </div>
+        </section>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">The Grand Illusion: Executive Summary</h2>
+                <p class="text-purple-200">
+                    The <strong class="text-accent font-bold">Clown Crew</strong> archetype represents a profound
+                    subversion of the Tribute Summoning mechanic. Emerging as a meta-defining strategy in the 2026
+                    competitive format, the strategy bypasses traditional field accumulation by artificially projecting
+                    Extra Deck and Main Deck monsters directly onto the field. This allows the heroic ringmaster,
+                    Biancaviso, and <a href="#" class="lore-link">the traveling dark circus to pull beasts off the
+                        stage</a> for immediate consumption. The archetype actively weaponizes every "colored" Extra
+                    Deck monster not as end-game bosses, but as highly specific, consumable ammunition for its resource
+                    engine.
+                </p>
+            </div>
+        </section>
+
+        <!-- AI Canvas Conceptual Framework -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Theatrical Production Elements</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">
+                Because Clown Crew operates non-linearly—deferring its grand performances until the opponent's turn—traditional linear play-by-plays fail to capture the show. The strategy is best understood through its distinct theatrical roles.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Ignition / Opening Acts -->
+                <div class="card p-6 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                    <div id="malabarisme-canvas-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Crew Malabarisme</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gold mb-2"><i class="fas fa-magic mr-2"></i> Opening Acts</h3>
+                        <p class="text-purple-200 text-sm"><strong>Role: Stage Setting.</strong> These are the Spells and
+                            Traps (like <em>Malabarisme</em> and <em>Soiree Operations</em>) that alter the board state by
+                            spawning bodies from the Extra Deck directly to the stage, ignoring summoning conditions.</p>
+                    </div>
+                </div>
+                <!-- Ammunition / Performers -->
+                <div class="card p-6 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                    <div id="diablo-canvas-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Clan Diablo</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gold mb-2"><i class="fas fa-users mr-2"></i> Company Performers</h3>
+                        <p class="text-purple-200 text-sm"><strong>Role: The Talent.</strong> The Extra Deck pieces
+                            (<em>Diablo, Drish, Meteor, Devils</em>). They provide passive auras while staged and branch
+                            into disruptive spectaculars upon being tributed.</p>
+                    </div>
+                </div>
+                <!-- Catalysts / Ringmaster -->
+                <div class="card p-6 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                    <div id="biancaviso-canvas-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Crew Biancaviso</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gold mb-2"><i class="fas fa-hat-wizard mr-2"></i> The Ringmaster</h3>
+                        <p class="text-purple-200 text-sm"><strong>Role: Cues & Direction.</strong> Executed primarily by
+                            <em>Clown Crew Biancaviso</em>. Activated in response to opponent actions to direct the
+                            performers off stage, triggering massive chain resolutions.</p>
+                    </div>
+                </div>
+                <!-- Resource / Box Office -->
+                <div class="card p-6 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                    <div id="matinee-canvas-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Crew Matinee<br/>Operatics</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gold mb-2"><i class="fas fa-ticket-alt mr-2"></i> Box Office / Finale</h3>
+                        <p class="text-purple-200 text-sm"><strong>Role: The Grand Finale.</strong> Cards like <em>Matinee
+                                Operatics</em> and <em>New Face</em> calculate the final ticket sales, drawing up to 5
+                            cards in the End Phase and resetting the stage for the next loop.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Cast and Crew Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.3s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Circus Roster
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Monsters -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-mask text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Catalysts & Engine Performers</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                            <div id="roster-biancaviso-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Crew Biancaviso</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gold mb-1">Clown Crew Biancaviso</h4>
+                                <p class="text-sm text-purple-200">Level 7 LIGHT Illusion. The Ringmaster. Tributes 1
+                                    monster of any Extra Deck/Ritual/Pendulum type. Draws cards or negates effects based on
+                                    tributes. Has a Quick Effect to Tribute Summon during the opponent's turn.</p>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                            <div id="roster-flare-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Clan Flare</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gold mb-1">Clown Clan Flare</h4>
+                                <p class="text-sm text-purple-200">Level 1 LIGHT Beast-Warrior Ritual. Discard 1 to search
+                                    any archetype card. Floating effect manipulates the board.</p>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                            <div id="roster-drish-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Crew Drish</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gold mb-1">Clown Crew Drish</h4>
+                                <p class="text-sm text-purple-200">Link-2 (Blue Ammunition). Grants double attacks. When
+                                    tributed, forces a global hand-mulligan, enabling lethal locks with Droll & Lock Bird.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                            <div id="roster-diablo-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Clan Diablo</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gold mb-1">Clown Clan Diablo</h4>
+                                <p class="text-sm text-purple-200">Fusion (Purple Ammunition). Grants double piercing.
+                                    Floating effect acts as targeted disruption.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spells & Traps -->
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-ticket-alt text-4xl text-accent mr-4"></i>
+                        <h3 class="text-xl font-bold text-white">Theatrical Scheduling</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                            <div id="roster-malabarisme-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Crew Malabarisme</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gold mb-1">Clown Crew Malabarisme</h4>
+                                <p class="text-sm text-purple-200">Fusion Summon treating
+                                    2 bodies from Deck/Extra Deck. Graveyard effect: Tributes a card to bounce an opponent's card.</p>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                            <div id="roster-matinee-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Crew Matinee Operatics</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gold mb-1">Clown Crew Matinee Operatics</h4>
+                                <p class="text-sm text-purple-200">Continuous Spell. Summons 1 body per turn. End Phase:
+                                    Draw cards equal to distinct monster card types tributed that turn.</p>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                            <div id="roster-soiree-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Crew Soiree Operations</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gold mb-1">Clown Crew Soiree Operations</h4>
+                                <p class="text-sm text-purple-200">Continuous. While a
+                                    monster is Tribute Summoned, destroys Spells and Traps based on tributes used.</p>
+                            </div>
+                        </div>
+                        <div class="card combo-step-card p-4 flex flex-col md:flex-row gap-4 items-center md:items-start">
+                            <div id="roster-newface-img-container" class="card-image-container flex-shrink-0 card-placeholder w-32 md:w-40 text-[11px]">Clown Crew New Face</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gold mb-1">Clown Crew New Face</h4>
+                                <p class="text-sm text-purple-200">Target and negate;
+                                    discards if you control a Tribute Summoned monster. Graveyard effect provides deep tutoring.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Combo Walkthrough Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Core Routine: The
+                "Reincarnation" Hand-Rip</h2>
+            <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">This toxic interaction leverages
+                <strong>Drish</strong> and generic staples to create a zero-turn kill state during the opponent's
+                draw/search loops.</p>
+            <div class="flex flex-col items-center gap-6">
+                <!-- Step 1 -->
+                <div
+                    class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="matinee-img-container" class="card-image-container card-placeholder">Clown Crew Matinee
+                        Operatics</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span
+                                class="bg-[#1e0f33] border border-gold text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                            <h3 class="text-lg font-bold text-gold">Stage the Link Ammunition</h3>
+                        </div>
+                        <p class="text-purple-200">Activate an Ignition Module like <strong>Matinee Operatics</strong>
+                            or <strong>Malabarisme</strong> to cheat <strong class="text-accent">Clown Crew
+                                Drish</strong> from the Extra Deck to the field. Pass the turn.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 2 -->
+                <div
+                    class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="biancaviso-img-container" class="card-image-container card-placeholder">Clown Crew
+                        Biancaviso</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span
+                                class="bg-[#1e0f33] border border-gold text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                            <h3 class="text-lg font-bold text-gold">Trigger the Catalyst</h3>
+                        </div>
+                        <p class="text-purple-200">Wait for the opponent to search a card outside the Draw Phase. In
+                            response, activate <strong class="text-accent">Biancaviso's Quick Effect</strong> from hand,
+                            tributing Drish to Tribute Summon itself.</p>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="w-full flex justify-center">
+                    <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+                <!-- Step 3 -->
+                <div
+                    class="card p-6 combo-step-card w-full max-w-lg flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div id="drish-img-container" class="card-image-container card-placeholder">Clown Crew Drish</div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span
+                                class="bg-[#1e0f33] border border-gold text-white rounded-full h-8 w-8 flex items-center justify-center font-bold">3</span>
+                            <h3 class="text-lg font-bold text-gold">The Droll Lock Resolution</h3>
+                        </div>
+                        <p class="text-purple-200">As Drish hits the Graveyard, its floating effect triggers (Chain Link 1).
+                            Chain <strong>Droll & Lock Bird</strong> from your hand (Chain Link 2). Droll resolves
+                            first, locking searches. Drish forces the opponent to shuffle their hand away, but due to
+                            Droll, they cannot draw replacements—leaving them with 0 cards.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reactive Endboard Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Reactive Endboard
+                Architecture</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto max-w-4xl">
+                <!-- Deceptive Passing Board -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gold mb-4 text-center">Phase 1: The Deceptive Pass</h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="malabarisme-img-container" class="card-image-container card-placeholder">Clown Crew
+                            Malabarisme</div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><strong class="text-accent">No Traditional Negates:</strong> The board often passes turn
+                            looking extremely weak, featuring only continuous spells and vulnerable Extra Deck bodies
+                            (Diablo, Meteor, Devils).</li>
+                        <li><strong class="text-accent">Ammunition Staging:</strong> The goal is purely to stage 3
+                            distinct "colors" of monsters using <em>Malabarisme</em> and <em>Matinee Operatics</em>.
+                        </li>
+                    </ul>
+                </div>
+                <!-- The Opponent's Turn Volatility -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-gold mb-4 text-center">Phase 2: The Opponent's Turn Volatility
+                    </h3>
+                    <div class="flex justify-center mb-4">
+                        <div id="flare-img-container" class="card-image-container card-placeholder">Clown Clan Flare
+                        </div>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><strong class="text-accent">Quick Effect Tributes:</strong> Biancaviso (from hand) or Soiree
+                            Operations (from Graveyard) are chained to critical opponent actions.</li>
+                        <li><strong class="text-accent">Chain-Blocked Mass Advantage:</strong> The tribute triggers
+                            multiple Graveyard effects to disrupt the opponent, while Biancaviso draws 3 cards. In the End
+                            Phase, Matinee draws 3 more.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Strengths Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong
+                                class="text-green-300">Asymmetrical Draw Power:</strong> The "Draw 5" routine completely
+                            buries the opponent in card advantage.</li>
+                        <li><span class="pro-icon"><i class="fas fa-ghost"></i></span> <strong
+                                class="text-green-300">Dodging Restrictions:</strong> Circumvents traditional Extra Deck
+                            locks (like the <em>Mitsurugi</em> lock) since it never properly summons from the Extra Deck.</li>
+                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong
+                                class="text-green-300">Non-Linear Resilience:</strong> Hard to "Nibiru" because the
+                            massive swarm mechanics happen during the opponent's Standby or Main phases.</li>
+                    </ul>
+                </div>
+                <!-- Weaknesses Card -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="con-icon"><i class="fas fa-times-circle"></i></span> <strong
+                                class="text-red-300">Malabarisme Chokepoint:</strong> Negating <em>Malabarisme</em> with
+                            <em>Ash Blossom</em> leaves the engine stranded with no ammunition to tribute.</li>
+                        <li><span class="con-icon"><i class="fas fa-skull"></i></span> <strong
+                                class="text-red-300">Droll Vulnerability:</strong> While the deck abuses <em>Droll &
+                                Lock Bird</em>, getting Droll'd oneself stops the Matinee/Biancaviso draw loops dead in
+                            their tracks.</li>
+                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Extra
+                                Deck Ripping:</strong> Kashtira Unicorn surgically ripping <em>Drish</em> or
+                            <em>Diablo</em> permanently disables specific combo lines.</li>
+                    </ul>
+                </div>
+                <!-- External Engines & Tech Cards -->
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-white mb-4">Techs & Hybrid Synergies</h3>
+                    <ul class="list-disc list-inside space-y-2 text-purple-200">
+                        <li><span class="neutral-icon"><i class="fas fa-link"></i></span> <strong
+                                class="text-gold">Mitsurugi Engine:</strong> Generates free bodies that
+                            <em>Biancaviso</em> can tribute, ignoring Mitsurugi's Extra Deck-lock penalty.</li>
+                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong
+                                class="text-gold">Chimera / Illusion:</strong> <em>Nightmare Apprentice</em> perfectly
+                            searches Biancaviso. Flare's discard cost turns into an advantage for Chimera Graveyard triggers.
+                        </li>
+                        <li><span class="neutral-icon"><i class="fas fa-crown"></i></span> <strong
+                                class="text-gold">Tribute Control:</strong> Can effortlessly summon <em>Vanity's
+                                Ruler</em> or <em>Mega Zaborg</em> using the staged bodies to floodgate the opponent.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.7s;">
+            <div id="banlist-status">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- DARK CIRCUS BANNER ANIMATION ---
+            const canvas = document.getElementById('circus-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 60;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class CircusParticle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + Math.random() * 100;
+                        this.speed = Math.random() * 2 + 1;
+                        this.radius = Math.random() * 4 + 2;
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.spin = (Math.random() - 0.5) * 0.1;
+                        this.wobble = Math.random() * 100;
+                        const colors = ['#f43f5e', '#fbbf24', '#c084fc', '#e879f9'];
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                        this.alpha = Math.random() * 0.5 + 0.3;
+                    }
+                    update() {
+                        this.y -= this.speed;
+                        this.wobble += this.spin;
+                        this.x += Math.sin(this.wobble) * 1.5;
+                        if (this.y < -20) {
+                            this.y = canvas.height + 20;
+                            this.x = Math.random() * canvas.width;
+                        }
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.globalAlpha = this.alpha;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = this.color;
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new CircusParticle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // --- CARD LOADING LOGIC ---
+            // If CardLoader isn't defined via the external script (which it might not be since Clown Crew is a custom 2026 archetype),
+            // this fallback will populate the placeholders directly.
+            const cardsToLoad = {
+                'matinee-img-container': 'Clown Crew Matinee Operatics',
+                'biancaviso-img-container': 'Clown Crew Biancaviso',
+                'drish-img-container': 'Clown Crew Drish',
+                'malabarisme-img-container': 'Clown Crew Malabarisme',
+                'flare-img-container': 'Clown Clan Flare',
+                // Production Elements Section
+                'malabarisme-canvas-img-container': 'Clown Crew Malabarisme',
+                'diablo-canvas-img-container': 'Clown Clan Diablo',
+                'biancaviso-canvas-img-container': 'Clown Crew Biancaviso',
+                'matinee-canvas-img-container': 'Clown Crew Matinee Operatics',
+                // The Circus Roster Section
+                'roster-biancaviso-img-container': 'Clown Crew Biancaviso',
+                'roster-flare-img-container': 'Clown Clan Flare',
+                'roster-drish-img-container': 'Clown Crew Drish',
+                'roster-diablo-img-container': 'Clown Clan Diablo',
+                'roster-malabarisme-img-container': 'Clown Crew Malabarisme',
+                'roster-matinee-img-container': 'Clown Crew Matinee Operatics',
+                'roster-soiree-img-container': 'Clown Crew Soiree Operations',
+                'roster-newface-img-container': 'Clown Crew New Face'
+            };
+
+            if (typeof CardLoader !== 'undefined') {
+                if (typeof CardLoader.loadCards === 'function') {
+                    CardLoader.loadCards(cardsToLoad);
+                }
+                
+                // Render banlist section
+                if (typeof CardLoader.renderBanlistSectionByArchetype === 'function') {
+                    await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Clown Crew', {
+                        relatedCards: ['Droll & Lock Bird', 'Kashtira Unicorn']
+                    });
+                }
+                
+                // Render compact deck resources in header
+                if (typeof CardLoader.renderDeckResourcesCompact === 'function') {
+                    await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Clown Crew');
+                }
+                
+                // Render archetype cards browser
+                if (typeof CardLoader.renderArchetypeCardsBrowser === 'function') {
+                    await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Clown Crew', {
+                        compact: true,
+                        buttonColor: 'from-[#582a8a] to-[#f43f5e]',
+                        buttonHoverColor: 'from-[#3b1f5e] to-[#e11d48]'
+                    });
+                }
+            } else {
+                // Fallback for custom archetype rendering
+                for (const [containerId, cardName] of Object.entries(cardsToLoad)) {
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.innerHTML = `<div class="card-placeholder animate-fadeIn">${cardName}<br/><span class="text-xs text-purple-400 mt-2">(Data pending 2026 release)</span></div>`;
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
