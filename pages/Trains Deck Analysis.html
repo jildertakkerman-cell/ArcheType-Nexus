@@ -26,6 +26,10 @@
             border-radius: 1rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
             border: 1px solid #3f3f46; /* zinc-700 */
+            transition: transform 0.2s ease-in-out, border-color 0.2s ease;
+        }
+        .card:hover {
+            border-color: #d97706; /* amber-600 */
         }
         .combo-step-card, .pro-con-card {
             background-color: #27272a; /* zinc-800 */
@@ -36,6 +40,7 @@
             max-width: 180px;
             flex-shrink: 0;
             cursor: pointer; /* Added for card-loader */
+            margin: 0 auto;
         }
         .card-image {
             width: 100%;
@@ -43,11 +48,11 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .animate-fadeIn {
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.4s ease-out forwards;
         }
         .card-placeholder {
             background-color: #3f3f46; /* zinc-700 */
@@ -75,6 +80,18 @@
             display: inline-block;
             padding-bottom: 0.25rem;
         }
+        .arsenal-card-img {
+            width: 100%;
+            max-width: 160px;
+            margin: 0 auto 1rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            background: #3f3f46;
+            min-height: 40px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
         .lore-link {
             color: #f59e0b; /* amber-500 */
             font-weight: bold;
@@ -138,9 +155,8 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        /* --- END OF BANNER STYLES --- */
         
-        /* --- Home Button Styles (Copied from other files) --- */
+        /* --- Home Button Styles --- */
         .ygo-home-button {
             position: fixed;
             top: 20px;
@@ -172,7 +188,7 @@
             z-index: 2;
         }
         
-        /* --- Card Popup Styles (for card-loader.js) --- */
+        /* --- Card Popup Styles --- */
         #card-popup {
             position: fixed;
             display: none;
@@ -202,6 +218,75 @@
         #card-popup-stats {
             font-family: 'Inter', sans-serif;
             color: #f59e0b;
+        }
+
+        /* --- Tab Styles --- */
+        .tab-btn {
+            background: transparent;
+            color: #a1a1aa; /* zinc-400 */
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+            font-weight: bold;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        .tab-btn:hover {
+            color: #d4d4d8;
+        }
+        .tab-btn.active {
+            color: #f59e0b; /* amber-500 */
+            border-bottom-color: #f59e0b;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* --- Combo Switcher --- */
+        .combo-btn {
+            background: transparent;
+            color: #a1a1aa;
+            border: 2px solid transparent;
+            border-radius: 0.5rem;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .combo-btn:hover:not(.active) {
+            background: #3f3f46;
+            color: #d4d4d8;
+        }
+        .combo-btn.active {
+            background: #d97706;
+            color: #18181b;
+            border-color: #f59e0b;
+            box-shadow: 0 0 18px rgba(217, 119, 6, 0.45);
+        }
+        .combo-btn.bleu-active {
+            background: #2563eb;
+            color: #fff;
+            border-color: #60a5fa;
+            box-shadow: 0 0 18px rgba(37, 99, 235, 0.45);
+        }
+        .combo-panel {
+            display: none;
+        }
+        .combo-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        .combo-step-img {
+            width: 90px;
+            min-width: 90px;
+            min-height: 60px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            background: #3f3f46;
+            cursor: pointer;
+            flex-shrink: 0;
         }
     </style>
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
@@ -235,260 +320,578 @@
             <!-- Glow effect behind -->
             <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none"></div>
 
-        <!-- Lore / Thematic Intro Section -->
-        <section class="max-w-4xl mx-auto mb-12 px-4">
-            <div class="relative bg-[#111]/80 backdrop-blur-md border-l-4 border-yellow-500 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="bg-yellow-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#111] flex-shrink-0">
-                        <i class="fas fa-book-open"></i>
+            <!-- Lore / Thematic Intro Section -->
+            <section class="max-w-4xl mx-auto mb-12 px-4 mt-8">
+                <div class="relative bg-[#111]/80 backdrop-blur-md border-l-4 border-yellow-500 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="bg-yellow-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#111] flex-shrink-0">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-yellow-500 tracking-wide uppercase">Lore Archive</h2>
                     </div>
-                    <h2 class="text-xl md:text-2xl font-bold text-yellow-500 tracking-wide uppercase">Lore Archive</h2>
+                    <p class="text-gray-300 leading-relaxed italic text-lg md:text-xl font-serif">
+                        "The Trains are Level 10 EARTH Machine behemoths that barrel across the field with unstoppable momentum. From massive OTK payloads to impenetrable artillery blockades, they are not merely monsters—they are a mobile dominion of steel."
+                    </p>
                 </div>
-                <p class="text-gray-300 leading-relaxed italic text-lg md:text-xl font-serif">
-                    "The Trains are Level 10 EARTH Machine behemoths that barrel across the field with unstoppable momentum. Superdreadnought Rail Cannon Gustav Max inflicts 2000 burn damage, while Superdreadnought Rail Cannon Juggernaut Liebe attacks all monsters with 6000 ATK. These aren't monsters—they are mobile artillery platforms."
-                </p>
-            </div>
-        </section>
+            </section>
         </div>
 
-                <!-- Executive Summary Section -->
-        <section class="mb-10 md:mb-16">
-            <div class="card p-6">
-                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: The OTK Express</h2>
+        <!-- Executive Summary Section (Updated to span both eras) -->
+        <section class="mb-10 md:mb-12">
+            <div class="card p-6 bg-gradient-to-r from-zinc-800 to-zinc-900 border-l-4 border-l-amber-500">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: The Evolution of Earth Machine</h2>
+                <p class="text-zinc-300 mb-4">
+                    The "Railway" archetype, known colloquially as "Trains," historically functioned as one of the most explosive blind-second One-Turn Kill (OTK) strategies in Yu-Gi-Oh!. Combining immense base ATK with synergistic Xyz recursion loops, the engine specialized in breaking boards and deploying massive Rank 10 monsters.
+                </p>
                 <p class="text-zinc-300">
-                    The "Railway" archetype, known colloquially as "Trains," is one of the most direct and powerful offensive strategies in Yu-Gi-Oh!. Its core identity is a singular, overwhelming objective: summoning colossal Rank 10 EARTH Machine Xyz monsters to achieve a One-Turn Kill (OTK).
-                </p>
-                <p class="text-zinc-300 mt-4">
-                    In modern play, its true potential is unlocked as the payload of the "Earth Machine" engine, a synergistic fusion of three
-                    <a href="https://yugipedia.com/wiki/Earth_Machine" target="_blank" class="lore-link">archetypes</a>:
-                    <strong class="text-accent">Railway</strong>, <strong class="text-accent">Infinitrack</strong>, and <strong class="text-accent">Machina</strong>.
-                    This amalgam creates a resilient, consistent, and adaptable force that can pivot between an explosive going-second OTK and a formidable going-first defensive board.
+                    With the introduction of the <strong>Blazing Dominion</strong> core booster set, the strategy has experienced a profound paradigm shift. Enhanced by proactive combo enablers, token generation tricks, and anti-handtrap mechanics, the modern Earth Machine amalgam (Railway, Infinitrack, and Machina) has ascended from a fragile OTK deck into a highly resilient, proactive First-Turn Kill (FTK) and control powerhouse.
                 </p>
             </div>
         </section>
 
-        <!-- The Main Deck Engines Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Assembling the Machine: The Three Engines</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Railway -->
-                <div class="card p-6">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-train text-4xl text-amber-400 mr-4"></i>
-                        <h3 class="text-xl font-bold text-white">The Railway Core</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Heavy Freight Train Derricrane</h4>
-                            <p class="text-sm text-zinc-300">The premier extender. Special Summons itself and destroys a card when detached from an Xyz monster.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Night Express Knight</h4>
-                            <p class="text-sm text-zinc-300">The simplest starter. A Level 10 body that can be Normal Summoned without tributing.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Super Express Bullet Train</h4>
-                            <p class="text-sm text-zinc-300">Another extender that also provides resource recovery from the Graveyard during the End Phase.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Infinitrack -->
-                <div class="card p-6">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-cogs text-4xl text-amber-400 mr-4"></i>
-                        <h3 class="text-xl font-bold text-white">The Infinitrack Engine</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Infinitrack Harvester</h4>
-                            <p class="text-sm text-zinc-300">The deck's most important one-card starter. Searches any "Infinitrack" monster on summon.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Infinitrack Anchor Drill</h4>
-                            <p class="text-sm text-zinc-300">An extender that Special Summons an EARTH Machine from your hand on its summon.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Infinitrack Tunneller</h4>
-                            <p class="text-sm text-zinc-300">Provides a powerful grind game by shuffling 5 EARTH Machines from the GY back into the deck to draw 2 cards.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Machina -->
-                <div class="card p-6">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-industry text-4xl text-amber-400 mr-4"></i>
-                        <h3 class="text-xl font-bold text-white">The Machina Engine</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Machina Citadel</h4>
-                            <p class="text-sm text-zinc-300">The primary disruption. A Main Deck boss that revives itself and provides a Quick Effect board wipe.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Machina Fortress</h4>
-                            <p class="text-sm text-zinc-300">An easy-to-summon extender that sets up the Graveyard by discarding other Machines.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Machina Redeployment</h4>
-                            <p class="text-sm text-zinc-300">A powerful search Spell that discards one card to add two "Machina" monsters.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Key Spells Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Conductors: Key Spells</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="card p-6">
-                    <h3 class="text-lg font-bold text-accent mb-2">Revolving Switchyard</h3>
-                    <p class="text-zinc-300">A cornerstone setup card. Discards 1 card to Special Summon a Level 4 EARTH Machine from the deck (like Ruffian Railcar). Its restriction (no Battle Phase) makes it a perfect Turn 1 play.</p>
-                </div>
-                <div class="card p-6">
-                    <h3 class="text-lg font-bold text-accent mb-2">Urgent Schedule</h3>
-                    <p class="text-zinc-300">One of the best "going-second" Spells in the game. If your opponent controls more monsters, you summon two EARTH Machines (one high, one low) from your deck, instantly setting up Xyz or Link plays.</p>
-                </div>
-                <div class="card p-6">
-                    <h3 class="text-lg font-bold text-accent mb-2">Heavy Forward</h3>
-                    <p class="text-zinc-300">A vital consistency tool. It's simple: add 1 "Infinitrack" monster from deck to hand. This is effectively 3 more copies of your best starter, Infinitrack Harvester, and good bait for hand traps.</p>
-                </div>
-            </div>
-        </section>
+        <!-- TABS UI -->
+        <div class="flex border-b border-zinc-700 mb-8 justify-center">
+            <button class="tab-btn active" onclick="switchTab('modern')">
+                <i class="fas fa-rocket mr-2"></i>Modern Engine (Post-BLZD)
+            </button>
+            <button class="tab-btn" onclick="switchTab('legacy')">
+                <i class="fas fa-history mr-2"></i>Legacy Engine (Pre-BLZD)
+            </button>
+        </div>
 
-        <!-- Core Combo Walkthrough Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Blueprint for Victory: The Harvester Combo</h2>
-            <p class="text-zinc-300 mb-8 text-center max-w-2xl mx-auto">This is the deck's most fundamental and crucial combo, demonstrating how <strong class="text-accent">Infinitrack Harvester</strong> converts a single Normal Summon into access to your entire toolbox.</p>
-            <div class="flex flex-col items-center gap-6">
-                <!-- Step 1 -->
-                <div class="card p-6 combo-step-card w-full max-w-lg">
-                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                        <div id="harvester-img" class="card-image-container flex-shrink-0 card-placeholder">Infinitrack Harvester</div>
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <span class="bg-[#18181b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
-                                <h3 class="text-lg font-bold">Normal Summon & Search</h3>
-                            </div>
-                            <p class="text-zinc-300">Normal Summon <strong class="text-accent">Infinitrack Harvester</strong>. Activate its effect to search <strong class="text-accent">Infinitrack Brutal Dozer</strong>.</p>
-                        </div>
+        <!-- ========================================== -->
+        <!-- TAB 2: MODERN STRATEGY (POST-BLAZING DOMINION) -->
+        <!-- ========================================== -->
+        <div id="modern-content" class="tab-content active animate-fadeIn">
+            
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Blazing Dominion Arsenal</h2>
+                <p class="text-center text-zinc-300 mb-8 max-w-3xl mx-auto">Five pivotal cards rectify the deck's historical vulnerabilities: a lack of proactive Turn 1 plays, vulnerability to hand traps, and reliance on unsearchable 2-card combos.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Exceptional Schedule -->
+                    <div class="card p-6 flex flex-col items-center">
+                        <div id="exceptional-schedule-img" class="arsenal-card-img">Exceptional Schedule</div>
+                        <h3 class="text-lg font-bold text-accent mb-2 text-center">Exceptional Schedule</h3>
+                        <p class="text-sm text-zinc-300 text-center"><strong>The Supreme Enabler.</strong> Searches <em>Urgent Schedule</em> and optionally summons a 3000/3000 Token to the opponent's field. This artificially fulfills Urgent Schedule's requirement on Turn 1, making it a proactive starter.</p>
                     </div>
-                </div>
-                <!-- Arrow -->
-                <div class="w-full flex justify-center">
-                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                </div>
-                <!-- Step 2 -->
-                <div class="card p-6 combo-step-card w-full max-w-lg">
-                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                        <div id="brutal-dozer-img" class="card-image-container flex-shrink-0 card-placeholder">Infinitrack Brutal Dozer</div>
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <span class="bg-[#18181b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
-                                <h3 class="text-lg font-bold">Extend & Summon from Deck</h3>
-                            </div>
-                            <p class="text-zinc-300">Activate <strong class="text-accent">Brutal Dozer</strong> in hand, Tributing Harvester to Special Summon itself. Its on-summon effect triggers, Special Summoning <strong class="text-accent">Infinitrack Trencher</strong> from the deck.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Arrow -->
-                <div class="w-full flex justify-center">
-                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                </div>
-                <!-- Step 3 -->
-                <div class="card p-6 combo-step-card w-full max-w-lg">
-                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                        <div id="river-stormer-img" class="card-image-container flex-shrink-0 card-placeholder">Infinitrack River Stormer</div>
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <span class="bg-[#18181b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
-                                <h3 class="text-lg font-bold">Xyz Summon & Full Search</h3>
-                            </div>
-                            <p class="text-zinc-300">Overlay the Level 5 Dozer and Trencher to Xyz Summon <strong class="text-accent">Infinitrack River Stormer</strong>. Activate its effect (detaching 1) to search <strong class="text-accent">any EARTH Machine</strong> from your deck (e.g., Bullet Train for an OTK, or Machina Citadel for setup).</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- Endboard Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Terminus: Final Board States</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-6xl">
-                <!-- Going First -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-white mb-4 text-center">Going First: The Fortress</h3>
-                    <div class="flex justify-center mb-4">
-                        <div id="super-dora-img" class="card-image-container card-placeholder">Number 81: Superdreadnought Rail Cannon Super Dora</div>
+                    <!-- Bleu Traveler -->
+                    <div class="card p-6 flex flex-col items-center">
+                        <div id="bleu-traveler-img" class="arsenal-card-img">Noctilucent Train Bleu Traveler</div>
+                        <h3 class="text-lg font-bold text-accent mb-2 text-center">Noctilucent Train Bleu Traveler</h3>
+                        <p class="text-sm text-zinc-300 text-center"><strong>1.5 Card Combo.</strong> Discard to search <em>Revolving Switchyard</em>. Its GY effect acts as a localized Soul Charge, reviving itself and another Level 10 to instantly make a Rank 10.</p>
                     </div>
-                    <ul class="list-disc list-inside space-y-2 text-zinc-300">
-                        <li><strong class="text-accent">Number 81: Super Dora:</strong> The ultimate defensive wall.</li>
-                        <li><strong class="text-accent">4000 DEF:</strong> Extremely difficult to remove by battle.</li>
-                        <li><strong class="text-accent">Quick Effect:</strong> Can make itself (or another card) completely unaffected by other card effects for the turn.</li>
-                    </ul>
-                </div>
-                <!-- Going Second -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-white mb-4 text-center">Going Second: The OTK Express</h3>
-                    <div class="flex justify-center mb-4">
-                        <div id="juggernaut-liebe-img" class="card-image-container card-placeholder">Superdreadnought Rail Cannon Juggernaut Liebe</div>
-                    </div>
-                    <ul class="list-disc list-inside space-y-2 text-zinc-300">
-                        <li><strong class="text-accent">The Finisher:</strong> The deck's primary win condition.</li>
-                        <li><strong class="text-accent">6000 ATK:</strong> Summons itself over Gustav Max, detaches 1 to gain 2000 ATK.</li>
-                        <li><strong class="text-accent">Multiple Attacks:</strong> Can attack monsters multiple times, clearing a board and dealing massive damage.</li>
-                    </ul>
-                </div>
-                <!-- Grind Game -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-white mb-4 text-center">Grind Game: The Reset</h3>
-                    <div class="flex justify-center mb-4">
-                        <div id="zeus-img" class="card-image-container card-placeholder">Divine Arsenal AA-ZEUS - Sky Thunder</div>
-                    </div>
-                    <ul class="list-disc list-inside space-y-2 text-zinc-300">
-                        <li><strong class="text-accent">Divine Arsenal AA-ZEUS:</strong> The ultimate panic button.</li>
-                        <li><strong class="text-accent">Easy to Summon:</strong> Made after any Xyz monster battles.</li>
-                        <li><strong class="text-accent">Quick Effect:</strong> Detach 2 materials to send <strong class="font-bold">all other cards</strong> on the field to the Graveyard.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
 
-        <!-- Pros, Cons Section -->
-        <section class="mb-10 md:mb-16">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Strengths Card -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
-                    <ul class="list-disc list-inside space-y-2 text-zinc-300">
-                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Consistency:</strong> Numerous 1-card starters (Harvester, Heavy Forward, etc.) lead to full combos.</li>
-                        <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Explosive OTK Potential:</strong> The Gustav Max (2000 burn) into a 6000 ATK Juggernaut Liebe is a reliable 8000+ damage combo.</li>
-                        <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Resilience & Recovery:</strong> The deck has a strong grind game thanks to Citadel, Bullet Train, and Tunneller.</li>
-                        <li><span class="pro-icon"><i class="fas fa-random"></i></span> <strong class="text-green-400">Strategic Flexibility:</strong> Can pivot between a "go-first" defensive board and a "go-second" OTK with ease.</li>
-                    </ul>
+                    <!-- Babel Decker -->
+                    <div class="card p-6 flex flex-col items-center">
+                        <div id="babel-decker-img" class="arsenal-card-img">Heavy Knight Babel Decker</div>
+                        <h3 class="text-lg font-bold text-accent mb-2 text-center">Heavy Knight Babel Decker</h3>
+                        <p class="text-sm text-zinc-300 text-center"><strong>Anti-Interruption Vector.</strong> With 500 ATK, it's easily searchable by <em>Ancient Gear Box</em>. If your opponent uses <em>any</em> effect, you can Xyz summon a Rank 10 using <strong>only</strong> this card as material.</p>
+                    </div>
+
+                    <!-- Flying Launcher + Gustav Rocket — centered in the last row -->
+                    <div class="lg:col-span-3 flex flex-wrap justify-center gap-6">
+                        <div class="card p-6 flex flex-col items-center w-full max-w-xs">
+                            <div id="flying-launcher-img" class="arsenal-card-img">Superdreadnought Rail Cannon Flying Launcher</div>
+                            <h3 class="text-lg font-bold text-accent mb-2 text-center">Superdreadnought Rail Cannon Flying Launcher</h3>
+                            <p class="text-sm text-zinc-300 text-center"><strong>The Engine Bridge.</strong> Searches any Earth Machine (like Infinitrack Harvester) and grants a secondary Normal Summon. Detaches materials to destroy Spells/Traps, clearing redundant field spells.</p>
+                        </div>
+
+                        <div class="card p-6 flex flex-col items-center w-full max-w-xs">
+                            <div id="gustav-rocket-img" class="arsenal-card-img">Superdreadnought Rail Cannon Gustav Rocket</div>
+                            <h3 class="text-lg font-bold text-accent mb-2 text-center">Superdreadnought Rail Cannon Gustav Rocket</h3>
+                            <p class="text-sm text-zinc-300 text-center"><strong>The Apex Predator.</strong> 5000 ATK. Summoned by discarding 1 card and upgrading <em>Gustav Max</em>. Quick Effect: Negates a monster effect, destroys it, and inflicts 1000 burn damage.</p>
+                        </div>
+                    </div>
                 </div>
-                <!-- Weaknesses Card -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
-                    <ul class="list-disc list-inside space-y-2 text-zinc-300">
-                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Key Choke Points:</strong> The deck is highly linear. Negating the search effect of <strong class="text-accent">Infinitrack River Stormer</strong> can often end the turn.</li>
-                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Floodgate Vulnerability:</strong> Highly susceptible to cards like <strong class="text-accent">Gozen Match</strong> (locks to 1 Attribute) and <strong class="text-accent">Rivalry of Warlords</strong> (locks to 1 Type).</li>
-                        <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400">Extra Deck Reliance:</strong> Cards that prevent Special Summoning from the Extra Deck (like <strong class="text-accent">Dimension Barrier</strong>) are crippling.</li>
-                    </ul>
+            </section>
+
+            <!-- Modern Combos -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Modern Routing: FTK & Control Architectures</h2>
+
+                <!-- Combo Switcher Buttons -->
+                <div class="flex gap-2 mb-6 p-1 bg-zinc-800 rounded-xl border border-zinc-700 max-w-2xl mx-auto">
+                    <button id="combo-btn-exceptional" onclick="switchCombo('exceptional')" class="combo-btn active flex-1 py-3 px-4 font-bold text-sm text-center">
+                        <i class="fas fa-bolt mr-2"></i>Exceptional Schedule
+                        <span class="block text-xs font-normal opacity-75 mt-0.5">1-Card Sequence</span>
+                    </button>
+                    <button id="combo-btn-bleu" onclick="switchCombo('bleu')" class="combo-btn flex-1 py-3 px-4 font-bold text-sm text-center">
+                        <i class="fas fa-train mr-2"></i>Bleu Traveler
+                        <span class="block text-xs font-normal opacity-75 mt-0.5">1.5-Card Recovery Line</span>
+                    </button>
                 </div>
-            </div>
-        </section>
+
+                <!-- ===== Exceptional Schedule Panel ===== -->
+                <div id="combo-panel-exceptional" class="combo-panel active">
+                    <div class="card p-4 border-l-4 border-l-green-500 mb-4">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">1 Card</span>
+                            <h3 class="text-xl font-bold text-white">The "Exceptional Schedule" Sequence</h3>
+                        </div>
+                        <p class="text-zinc-400 text-sm">Requires: <strong class="text-accent">1× Exceptional Schedule</strong> in hand.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- Step 1 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-ex-sched-img" class="combo-step-img">Exceptional Schedule</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-amber-600 text-black rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">1</span>
+                                    <h4 class="font-bold text-white text-sm">Open With Exceptional Schedule</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Activate <strong class="text-accent">Exceptional Schedule</strong>. Summon a 3000/3000 Token to the opponent's field — they now control more monsters, instantly fulfilling <em>Urgent Schedule</em>'s requirement. Search Urgent Schedule from deck.</p>
+                            </div>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-urgent-sched-img" class="combo-step-img">Urgent Schedule</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-amber-600 text-black rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">2</span>
+                                    <h4 class="font-bold text-white text-sm">Activate Urgent Schedule</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Activate <strong class="text-accent">Urgent Schedule</strong> directly from deck. Special Summon <em>Noctilucent Train Bleu Traveler</em> and <em>Infinitrack Harvester</em> from deck to your field.</p>
+                            </div>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-qliphort-img" class="combo-step-img">Qliphort Genius</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-amber-600 text-black rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">3</span>
+                                    <h4 class="font-bold text-white text-sm">Link Summon & Double Search</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Link Summon <strong class="text-accent">Qliphort Genius</strong> using Bleu Traveler + Harvester. Chain block: Harvester searches <em>Infinitrack Brutal Dozer</em>; Genius searches <em>Therion "King" Regulus</em>.</p>
+                            </div>
+                        </div>
+                        <!-- Step 4 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-ballista-img" class="combo-step-img">Ancient Gear Ballista</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-amber-600 text-black rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">4</span>
+                                    <h4 class="font-bold text-white text-sm">Link Climb to Ballista</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Link climb through <strong class="text-accent">Infinitrack Goliath</strong> into <strong class="text-accent">Ancient Gear Ballista</strong>. Ballista searches <em>Ancient Gear Box</em>, which auto-triggers to search <strong class="text-accent">Heavy Knight Babel Decker</strong> from deck.</p>
+                            </div>
+                        </div>
+                        <!-- Step 5 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-babel-img" class="combo-step-img">Heavy Knight Babel Decker</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-amber-600 text-black rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">5</span>
+                                    <h4 class="font-bold text-white text-sm">Extend the Board</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Special Summon <strong class="text-accent">Brutal Dozer</strong> from hand (tributing Harvester) — it summons <em>Infinitrack Trencher</em> from deck. Normal summon <strong class="text-accent">Babel Decker</strong>. Opponent interrupting here triggers Babel Decker's Rank 10 response.</p>
+                            </div>
+                        </div>
+                        <!-- Step 6 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-river-stormer-img" class="combo-step-img">Infinitrack River Stormer</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-amber-600 text-black rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">6</span>
+                                    <h4 class="font-bold text-white text-sm">Xyz into River Stormer & Burn</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Overlay Dozer + Trencher into <strong class="text-accent">Infinitrack River Stormer</strong>. Search <em>Flying Pegasus Railroad Stampede</em>. Via GY revivals, stack into <em>Superdreadnought Rail Cannon Gustav Max</em> for <strong class="text-red-400">2000 burn damage</strong>.</p>
+                            </div>
+                        </div>
+                        <!-- Step 7 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-flying-launcher-img" class="combo-step-img">Superdreadnought Rail Cannon Flying Launcher</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-amber-600 text-black rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">7</span>
+                                    <h4 class="font-bold text-white text-sm">Flying Launcher + Pegasus</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Xyz Summon <strong class="text-accent">Flying Launcher</strong>. Detach a material to destroy an equip, triggering Infinitrack Goliath's protection effect. Use Launcher's granted extra Normal Summon to play <em>Flying Pegasus</em>.</p>
+                            </div>
+                        </div>
+                        <!-- End Board -->
+                        <div class="card p-5 border border-amber-500/40 bg-amber-950/20 rounded-xl">
+                            <div class="flex items-center gap-2 mb-4">
+                                <i class="fas fa-flag-checkered text-amber-400"></i>
+                                <h4 class="font-bold text-amber-400 text-sm uppercase tracking-widest">End Board</h4>
+                            </div>
+                            <div class="flex flex-wrap gap-6 justify-center mb-4">
+                                <div class="text-center">
+                                    <div id="combo-gustav-rocket-img" class="combo-step-img mx-auto mb-2">Superdreadnought Rail Cannon Gustav Rocket</div>
+                                    <p class="text-xs text-zinc-400 font-semibold">Gustav Rocket</p>
+                                    <p class="text-xs text-green-400 italic">Monster Negate + 1000 Burn</p>
+                                </div>
+                                <div class="text-center">
+                                    <div id="combo-super-dora-img" class="combo-step-img mx-auto mb-2">Number 81: Superdreadnought Rail Cannon Super Dora</div>
+                                    <p class="text-xs text-zinc-400 font-semibold">Super Dora</p>
+                                    <p class="text-xs text-blue-400 italic">Tower Immunity</p>
+                                </div>
+                                <div class="text-center">
+                                    <div id="combo-therion-img" class="combo-step-img mx-auto mb-2">Therion "King" Regulus</div>
+                                    <p class="text-xs text-zinc-400 font-semibold">Therion Regulus</p>
+                                    <p class="text-xs text-purple-400 italic">Omni-Negate</p>
+                                </div>
+                            </div>
+                            <p class="text-zinc-300 text-sm text-center">Often leads to a Turn 1 FTK via accumulated burn damage. Babel Decker's passive punishes any opponent interruption attempt throughout the sequence.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== Bleu Traveler Panel ===== -->
+                <div id="combo-panel-bleu" class="combo-panel">
+                    <div class="card p-4 border-l-4 border-l-blue-500 mb-4">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">1.5 Cards</span>
+                            <h3 class="text-xl font-bold text-white">The "Bleu Traveler" Recovery Line</h3>
+                        </div>
+                        <p class="text-zinc-400 text-sm">Requires: <strong class="text-accent">1× Noctilucent Train Bleu Traveler</strong> + <strong class="text-accent">1 Discard</strong>.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- Step 1 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-bleu-1-img" class="combo-step-img">Noctilucent Train Bleu Traveler</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-blue-600 text-white rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">1</span>
+                                    <h4 class="font-bold text-white text-sm">Discard Bleu Traveler</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Discard <strong class="text-accent">Noctilucent Train Bleu Traveler</strong> to activate its hand effect. Search <em>Revolving Switchyard</em> from deck. Bleu Traveler is now set up in the GY for later.</p>
+                            </div>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-switchyard-img" class="combo-step-img">Revolving Switchyard</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-blue-600 text-white rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">2</span>
+                                    <h4 class="font-bold text-white text-sm">Activate Revolving Switchyard</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Activate <strong class="text-accent">Revolving Switchyard</strong>. Pay its discard cost to Special Summon <em>Heavy Knight Babel Decker</em> directly from deck to your field.</p>
+                            </div>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-bleu-babel-img" class="combo-step-img">Heavy Knight Babel Decker</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-blue-600 text-white rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">3</span>
+                                    <h4 class="font-bold text-white text-sm">Link Off Babel Decker</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Use <strong class="text-accent">Babel Decker</strong> as Link material (e.g., into <em>Qliphort Genius</em>). This frees a monster zone and sets up the co-revival in the next step.</p>
+                            </div>
+                        </div>
+                        <!-- Step 4 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-bleu-gy-img" class="combo-step-img">Noctilucent Train Bleu Traveler</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-blue-600 text-white rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">4</span>
+                                    <h4 class="font-bold text-white text-sm">Bleu Traveler GY Revival</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Activate <strong class="text-accent">Bleu Traveler's</strong> "Once per Duel" GY effect. Simultaneously revive both itself <em>and</em> Babel Decker — two Level 10 bodies appear on field at once.</p>
+                            </div>
+                        </div>
+                        <!-- Step 5 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-bleu-launcher-img" class="combo-step-img">Superdreadnought Rail Cannon Flying Launcher</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-blue-600 text-white rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">5</span>
+                                    <h4 class="font-bold text-white text-sm">Xyz into Flying Launcher</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Overlay the revived Bleu Traveler + Babel Decker into <strong class="text-accent">Superdreadnought Rail Cannon Flying Launcher</strong>. Detach to search <em>Infinitrack Harvester</em> via its effect.</p>
+                            </div>
+                        </div>
+                        <!-- Step 6 -->
+                        <div class="flex items-start gap-4 card p-4 combo-step-card">
+                            <div id="combo-bleu-harvester-img" class="combo-step-img">Infinitrack Harvester</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-blue-600 text-white rounded-full h-6 w-6 flex items-center justify-center font-bold text-xs flex-shrink-0">6</span>
+                                    <h4 class="font-bold text-white text-sm">Clear Switchyard & Extend</h4>
+                                </div>
+                                <p class="text-zinc-300 text-sm">Use Launcher's detach effect to destroy the now-redundant <em>Revolving Switchyard</em>. Use Launcher's granted extra Normal Summon to play <strong class="text-accent">Infinitrack Harvester</strong> and continue into standard Infinitrack extension chains.</p>
+                            </div>
+                        </div>
+                        <!-- End Board -->
+                        <div class="card p-5 border border-blue-500/40 bg-blue-950/20 rounded-xl">
+                            <div class="flex items-center gap-2 mb-4">
+                                <i class="fas fa-flag-checkered text-blue-400"></i>
+                                <h4 class="font-bold text-blue-400 text-sm uppercase tracking-widest">End Board</h4>
+                            </div>
+                            <div class="flex flex-wrap gap-6 justify-center mb-4">
+                                <div class="text-center">
+                                    <div id="combo-bleu-rocket-img" class="combo-step-img mx-auto mb-2">Superdreadnought Rail Cannon Gustav Rocket</div>
+                                    <p class="text-xs text-zinc-400 font-semibold">Gustav Rocket</p>
+                                    <p class="text-xs text-green-400 italic">Monster Negate + Burn</p>
+                                </div>
+                                <div class="text-center">
+                                    <div id="combo-bleu-therion-img" class="combo-step-img mx-auto mb-2">Therion "King" Regulus</div>
+                                    <p class="text-xs text-zinc-400 font-semibold">Therion Regulus</p>
+                                    <p class="text-xs text-purple-400 italic">Omni-Negate</p>
+                                </div>
+                            </div>
+                            <p class="text-zinc-300 text-sm text-center">A reliable recovery line from a disrupted or limited hand. Continues into standard Infinitrack chains, culminating in Gustav Rocket + Therion Regulus disruption.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Meta Context & Ratios -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Metagame Positioning & Construction</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-green-400 mb-4">Post-BLZD Strengths</h3>
+                        <ul class="list-disc list-inside space-y-2 text-zinc-300">
+                            <li><span class="pro-icon"><i class="fas fa-shield-alt"></i></span> <strong>Handtrap Immunity:</strong> Babel Decker punishing interactivity shifts the psychological burden entirely to the opponent.</li>
+                            <li><span class="pro-icon"><i class="fas fa-fire"></i></span> <strong>Going First Dominance:</strong> Gustav Rocket provides an active, highly lethal monster negation that drains life points while hiding behind 5000 ATK.</li>
+                            <li><span class="pro-icon"><i class="fas fa-ghost"></i></span> <strong>Nibiru Resilient:</strong> Exceptional Schedule's GY effect allows massive board rebuilds even after a board wipe.</li>
+                        </ul>
+                    </div>
+                    <div class="card p-6 pro-con-card border-red-500">
+                        <h3 class="text-xl font-bold text-red-400 mb-4">Critical Vulnerabilities</h3>
+                        <ul class="list-disc list-inside space-y-2 text-zinc-300">
+                            <li><span class="con-icon"><i class="fas fa-lock"></i></span> <strong>Droll & Lock Bird:</strong> The complex combo architecture requires sequential searching. A resolved Droll severely truncates combo lines.</li>
+                            <li><span class="con-icon"><i class="fas fa-chess-knight"></i></span> <strong>Contingency Planning:</strong> If Drolled, pilots MUST rely on a hard-drawn Babel Decker to establish baseline defense.</li>
+                            <li><span class="con-icon"><i class="fas fa-users"></i></span> <strong>Board Space:</strong> Token generation can sometimes clash with specific floodgates if misplayed.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: LEGACY STRATEGY (PRE-BLAZING DOMINION) -->
+        <!-- ========================================== -->
+        <div id="legacy-content" class="tab-content">
+            
+            <!-- The Main Deck Engines Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Assembling the Machine: The Three Engines</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Railway -->
+                    <div class="card p-6">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-train text-4xl text-amber-400 mr-4"></i>
+                            <h3 class="text-xl font-bold text-white">The Railway Core</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Heavy Freight Train Derricrane</h4>
+                                <p class="text-sm text-zinc-300">The premier extender. Special Summons itself and destroys a card when detached from an Xyz monster.</p>
+                            </div>
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Night Express Knight</h4>
+                                <p class="text-sm text-zinc-300">The simplest starter. A Level 10 body that can be Normal Summoned without tributing.</p>
+                            </div>
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Super Express Bullet Train</h4>
+                                <p class="text-sm text-zinc-300">Another extender that also provides resource recovery from the Graveyard during the End Phase.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Infinitrack -->
+                    <div class="card p-6">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-cogs text-4xl text-amber-400 mr-4"></i>
+                            <h3 class="text-xl font-bold text-white">The Infinitrack Engine</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Infinitrack Harvester</h4>
+                                <p class="text-sm text-zinc-300">The deck's most important one-card starter. Searches any "Infinitrack" monster on summon.</p>
+                            </div>
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Infinitrack Anchor Drill</h4>
+                                <p class="text-sm text-zinc-300">An extender that Special Summons an EARTH Machine from your hand on its summon.</p>
+                            </div>
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Infinitrack Tunneller</h4>
+                                <p class="text-sm text-zinc-300">Provides a powerful grind game by shuffling 5 EARTH Machines from the GY back into the deck to draw 2 cards.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Machina -->
+                    <div class="card p-6">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-industry text-4xl text-amber-400 mr-4"></i>
+                            <h3 class="text-xl font-bold text-white">The Machina Engine</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Machina Citadel</h4>
+                                <p class="text-sm text-zinc-300">The primary disruption. A Main Deck boss that revives itself and provides a Quick Effect board wipe.</p>
+                            </div>
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Machina Fortress</h4>
+                                <p class="text-sm text-zinc-300">An easy-to-summon extender that sets up the Graveyard by discarding other Machines.</p>
+                            </div>
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Machina Redeployment</h4>
+                                <p class="text-sm text-zinc-300">A powerful search Spell that discards one card to add two "Machina" monsters.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Key Spells Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Conductors: Key Spells</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card p-6">
+                        <h3 class="text-lg font-bold text-accent mb-2">Revolving Switchyard</h3>
+                        <p class="text-zinc-300">A cornerstone setup card. Discards 1 card to Special Summon a Level 4 EARTH Machine from the deck (like Ruffian Railcar). Its restriction (no Battle Phase) makes it a perfect Turn 1 play.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-lg font-bold text-accent mb-2">Urgent Schedule</h3>
+                        <p class="text-zinc-300">One of the best "going-second" Spells in the game. If your opponent controls more monsters, you summon two EARTH Machines (one high, one low) from your deck, instantly setting up Xyz or Link plays.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-lg font-bold text-accent mb-2">Heavy Forward</h3>
+                        <p class="text-zinc-300">A vital consistency tool. It's simple: add 1 "Infinitrack" monster from deck to hand. This is effectively 3 more copies of your best starter, Infinitrack Harvester, and good bait for hand traps.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Core Combo Walkthrough Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Blueprint for Victory: The Legacy Harvester Combo</h2>
+                <p class="text-zinc-300 mb-8 text-center max-w-2xl mx-auto">This is the deck's historical fundamental combo, demonstrating how <strong class="text-accent">Infinitrack Harvester</strong> converts a single Normal Summon into access to your entire toolbox.</p>
+                <div class="flex flex-col items-center gap-6">
+                    <!-- Step 1 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="harvester-img" class="card-image-container flex-shrink-0 card-placeholder">Infinitrack Harvester</div>
+                            <div>
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-[#18181b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                    <h3 class="text-lg font-bold">Normal Summon & Search</h3>
+                                </div>
+                                <p class="text-zinc-300">Normal Summon <strong class="text-accent">Infinitrack Harvester</strong>. Activate its effect to search <strong class="text-accent">Infinitrack Brutal Dozer</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg">
+                         <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="brutal-dozer-img" class="card-image-container flex-shrink-0 card-placeholder">Infinitrack Brutal Dozer</div>
+                            <div>
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-[#18181b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                    <h3 class="text-lg font-bold">Extend & Summon from Deck</h3>
+                                </div>
+                                <p class="text-zinc-300">Activate <strong class="text-accent">Brutal Dozer</strong> in hand, Tributing Harvester to Special Summon itself. Its on-summon effect triggers, Special Summoning <strong class="text-accent">Infinitrack Trencher</strong> from the deck.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg">
+                         <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="river-stormer-img" class="card-image-container flex-shrink-0 card-placeholder">Infinitrack River Stormer</div>
+                            <div>
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-[#18181b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                    <h3 class="text-lg font-bold">Xyz Summon & Full Search</h3>
+                                </div>
+                                <p class="text-zinc-300">Overlay the Level 5 Dozer and Trencher to Xyz Summon <strong class="text-accent">Infinitrack River Stormer</strong>. Activate its effect (detaching 1) to search <strong class="text-accent">any EARTH Machine</strong> from your deck (e.g., Bullet Train for an OTK, or Machina Citadel for setup).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Endboard Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Terminus: Legacy Final Boards</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-6xl">
+                    <!-- Going First -->
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">Going First: The Fortress</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="super-dora-img" class="card-image-container card-placeholder">Number 81: Superdreadnought Rail Cannon Super Dora</div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-zinc-300">
+                            <li><strong class="text-accent">Number 81: Super Dora:</strong> The ultimate defensive wall.</li>
+                            <li><strong class="text-accent">4000 DEF:</strong> Extremely difficult to remove by battle.</li>
+                            <li><strong class="text-accent">Quick Effect:</strong> Can make itself (or another card) completely unaffected by other card effects for the turn.</li>
+                        </ul>
+                    </div>
+                    <!-- Going Second -->
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">Going Second: The OTK Express</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="juggernaut-liebe-img" class="card-image-container card-placeholder">Superdreadnought Rail Cannon Juggernaut Liebe</div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-zinc-300">
+                            <li><strong class="text-accent">The Finisher:</strong> The deck's primary win condition.</li>
+                            <li><strong class="text-accent">6000 ATK:</strong> Summons itself over Gustav Max, detaches 1 to gain 2000 ATK.</li>
+                            <li><strong class="text-accent">Multiple Attacks:</strong> Can attack monsters multiple times, clearing a board and dealing massive damage.</li>
+                        </ul>
+                    </div>
+                    <!-- Grind Game -->
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">Grind Game: The Reset</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="zeus-img" class="card-image-container card-placeholder">Divine Arsenal AA-ZEUS - Sky Thunder</div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-zinc-300">
+                            <li><strong class="text-accent">Divine Arsenal AA-ZEUS:</strong> The ultimate panic button.</li>
+                            <li><strong class="text-accent">Easy to Summon:</strong> Made after any Xyz monster battles.</li>
+                            <li><strong class="text-accent">Quick Effect:</strong> Detach 2 materials to send <strong class="font-bold">all other cards</strong> on the field to the Graveyard.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pros, Cons Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Legacy Competitive Analysis</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Strengths Card -->
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                        <ul class="list-disc list-inside space-y-2 text-zinc-300">
+                            <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-400">High Consistency:</strong> Numerous 1-card starters (Harvester, Heavy Forward, etc.) lead to full combos.</li>
+                            <li><span class="pro-icon"><i class="fas fa-bolt"></i></span> <strong class="text-green-400">Explosive OTK Potential:</strong> The Gustav Max (2000 burn) into a 6000 ATK Juggernaut Liebe is a reliable 8000+ damage combo.</li>
+                            <li><span class="pro-icon"><i class="fas fa-recycle"></i></span> <strong class="text-green-400">Resilience & Recovery:</strong> The deck has a strong grind game thanks to Citadel, Bullet Train, and Tunneller.</li>
+                            <li><span class="pro-icon"><i class="fas fa-random"></i></span> <strong class="text-green-400">Strategic Flexibility:</strong> Can pivot between a "go-first" defensive board and a "go-second" OTK with ease.</li>
+                        </ul>
+                    </div>
+                    <!-- Weaknesses Card -->
+                    <div class="card p-6 pro-con-card border-red-500">
+                        <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                        <ul class="list-disc list-inside space-y-2 text-zinc-300">
+                            <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-400">Key Choke Points:</strong> The deck is highly linear. Negating the search effect of <strong class="text-accent">Infinitrack River Stormer</strong> can often end the turn.</li>
+                            <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-400">Floodgate Vulnerability:</strong> Highly susceptible to cards like <strong class="text-accent">Gozen Match</strong> (locks to 1 Attribute) and <strong class="text-accent">Rivalry of Warlords</strong> (locks to 1 Type).</li>
+                            <li><span class="con-icon"><i class="fas fa-exclamation-triangle"></i></span> <strong class="text-red-400">Extra Deck Reliance:</strong> Cards that prevent Special Summoning from the Extra Deck (like <strong class="text-accent">Dimension Barrier</strong>) are crippling.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
 
         <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16">
             <div id="banlist-status"></div>
         </section>
-
 
         <!-- Deck Resources Section -->
         <section>
@@ -498,17 +901,71 @@
         </section>
     </div>
     
-    <!-- Card Loader Script -->
+    <!-- Scripts -->
     <script>
+        // Combo panel switcher
+        function switchCombo(comboId) {
+            document.querySelectorAll('.combo-panel').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.combo-btn').forEach(el => el.classList.remove('active', 'bleu-active'));
+            document.getElementById('combo-panel-' + comboId).classList.add('active');
+            const btn = document.getElementById('combo-btn-' + comboId);
+            btn.classList.add(comboId === 'bleu' ? 'bleu-active' : 'active');
+        }
+
+        // Tab switching logic
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active', 'animate-fadeIn');
+            });
+            // Remove active state from all buttons
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected tab content with animation
+            const content = document.getElementById(tabId + '-content');
+            content.classList.add('active', 'animate-fadeIn');
+            
+            // Add active state to clicked button
+            event.currentTarget.classList.add('active');
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
-            // Map of container IDs to card names
+            // Map of container IDs to card names (Updated with Blazing Dominion cards)
             const cardsToLoad = {
                 'harvester-img': 'Infinitrack Harvester',
                 'brutal-dozer-img': 'Infinitrack Brutal Dozer',
                 'river-stormer-img': 'Infinitrack River Stormer',
                 'super-dora-img': 'Number 81: Superdreadnought Rail Cannon Super Dora',
                 'juggernaut-liebe-img': 'Superdreadnought Rail Cannon Juggernaut Liebe',
-                'zeus-img': 'Divine Arsenal AA-ZEUS - Sky Thunder'
+                'zeus-img': 'Divine Arsenal AA-ZEUS - Sky Thunder',
+                // Blazing Dominion Arsenal cards
+                'exceptional-schedule-img': 'Exceptional Schedule',
+                'bleu-traveler-img': 'Noctilucent Train Bleu Traveler',
+                'babel-decker-img': 'Heavy Knight Babel Decker',
+                'flying-launcher-img': 'Superdreadnought Rail Cannon Flying Launcher',
+                'gustav-rocket-img': 'Superdreadnought Rail Cannon Gustav Rocket',
+                // Exceptional Schedule combo steps
+                'combo-ex-sched-img': 'Exceptional Schedule',
+                'combo-urgent-sched-img': 'Urgent Schedule',
+                'combo-qliphort-img': 'Qliphort Genius',
+                'combo-ballista-img': 'Ancient Gear Ballista',
+                'combo-babel-img': 'Heavy Knight Babel Decker',
+                'combo-river-stormer-img': 'Infinitrack River Stormer',
+                'combo-flying-launcher-img': 'Superdreadnought Rail Cannon Flying Launcher',
+                'combo-gustav-rocket-img': 'Superdreadnought Rail Cannon Gustav Rocket',
+                'combo-super-dora-img': 'Number 81: Superdreadnought Rail Cannon Super Dora',
+                'combo-therion-img': 'Therion "King" Regulus',
+                // Bleu Traveler combo steps
+                'combo-bleu-1-img': 'Noctilucent Train Bleu Traveler',
+                'combo-switchyard-img': 'Revolving Switchyard',
+                'combo-bleu-babel-img': 'Heavy Knight Babel Decker',
+                'combo-bleu-gy-img': 'Noctilucent Train Bleu Traveler',
+                'combo-bleu-launcher-img': 'Superdreadnought Rail Cannon Flying Launcher',
+                'combo-bleu-harvester-img': 'Infinitrack Harvester',
+                'combo-bleu-rocket-img': 'Superdreadnought Rail Cannon Gustav Rocket',
+                'combo-bleu-therion-img': 'Therion "King" Regulus'
             };
             
             // Load card images
@@ -517,57 +974,44 @@
             // Render banlist section with comprehensive related cards
             await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Trains', {
                 relatedCards: [
+                    // New Blazing Dominion Support
+                    'Exceptional Schedule',
+                    'Noctilucent Train Bleu Traveler',
+                    'Heavy Knight Babel Decker',
+                    'Superdreadnought Rail Cannon Flying Launcher',
+                    'Superdreadnought Rail Cannon Gustav Rocket',
                     // Infinitrack engine
                     'Infinitrack Harvester',
                     'Infinitrack Anchor Drill',
                     'Infinitrack Tunneller',
                     'Infinitrack Brutal Dozer',
                     'Infinitrack Trencher',
-                    'Infinitrack Crab Crane',
-                    'Infinitrack Drag Shovel',
                     'Infinitrack River Stormer',
-                    'Infinitrack Earth Slicer',
                     'Infinitrack Goliath',
                     // Machina engine
                     'Machina Citadel',
                     'Machina Fortress',
-                    'Machina Metalcruncher',
-                    'Machina Megaform',
-                    'Machina Gearframe',
-                    'Machina Irradiator',
                     'Machina Redeployment',
-                    'Machina Overdrive',
                     // Generic EARTH Machine support
-                    'Platinum Gadget',
                     'Heavy Forward',
-                    'Outrigger Extension',
                     'Therion "King" Regulus',
-                    'Therion "Lily" Borea',
                     // Key Extra Deck monsters
                     'Divine Arsenal AA-ZEUS - Sky Thunder',
-                    'Baronne de Fleur',
-                    'Apollousa, Bow of the Goddess',
-                    'Borreload Savage Dragon',
-                    'I:P Masquerena',
-                    'S:P Little Knight',
+                    'Superdreadnought Rail Cannon Juggernaut Liebe',
+                    'Number 81: Superdreadnought Rail Cannon Super Dora',
                     // Generic staples
                     'Ash Blossom & Joyous Spring',
-                    'Maxx "C"',
-                    'Nibiru, the Primal Being',
-                    'Infinite Impermanence',
-                    'Called by the Grave',
-                    'Crossout Designator',
-                    'Triple Tactics Talent',
-                    'D.D. Crow',
-                    'Droll & Lock Bird'
+                    'Mulcharmy Fuwalos',
+                    'Droll & Lock Bird',
+                    'Nibiru, the Primal Being'
                 ],
                 archetypeTraits: {
-                    coreMechanic: 'Rank 10 EARTH Machine Xyz strategy focused on overwhelming OTK potential through massive boss monsters like Superdreadnought Rail Cannon Juggernaut Liebe, functioning as the offensive core of the Earth Machine engine',
-                    supportReliance: 'Moderate - while Railway cards form the payoff, the deck is heavily integrated with Infinitrack (search and extension) and Machina (disruption and grind) engines, creating a cohesive Earth Machine strategy',
-                    adaptability: 'High adaptability - can pivot between going-first defensive boards (Super Dora, Machina Citadel) and going-second OTK strategies (Juggernaut Liebe), with flexible deckbuilding options for various meta environments',
-                    resilience: 'Strong resilience - multiple one-card starters (Harvester, Heavy Forward, Urgent Schedule), powerful grind game through Tunneller and Bullet Train, and ability to recover resources makes the deck difficult to fully shut down',
-                    keyLoss: 'Currently unrestricted, but potential hits to Infinitrack Harvester or Urgent Schedule would severely impact consistency, while limiting Rank 10 bosses would reduce finishing power',
-                    alternativeStrategy: 'Modern builds can incorporate Therion package for additional disruption, focus on Zeus turbo for board-breaking capabilities, or emphasize Machina Citadel control strategies when OTK plans are disrupted'
+                    coreMechanic: 'Post-Blazing Dominion, the strategy operates as a robust FTK and Control powerhouse, heavily utilizing Token generation via Exceptional Schedule and anti-interruption mechanics via Babel Decker to secure Rank 10 setup.',
+                    supportReliance: 'High - Integrates Train, Infinitrack, and Machina seamlessly, utilizing Flying Launcher to bridge the Normal Summon requirements between Infinitrack and Train engines.',
+                    adaptability: 'Extreme adaptability - The new support rectifies historical vulnerabilities, allowing seamless pivoting from an aggressive Turn 1 control state (Gustav Rocket) into lethal Turn 2/3 damage pushing.',
+                    resilience: 'Strong resilience - Exceptional Schedule provides incredible GY recursion post-board wipe. Handtraps are heavily punished by Babel Decker, though linear searching leaves it susceptible to Droll & Lock Bird.',
+                    keyLoss: 'Currently unrestricted. The deck relies heavily on resolving early spell cards (Exceptional/Urgent Schedule) and surviving specific handtraps like Droll to complete its loop.',
+                    alternativeStrategy: 'Players maintain the ability to easily revert to the legacy Blind-Second OTK variant, utilizing Varudras as a generic negate alongside the localized Gustav Rocket dominance.'
                 }
             });
 

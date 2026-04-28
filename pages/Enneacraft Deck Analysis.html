@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enneacraft: The Mechanics of Obscurity</title>
+    <title>Enneacraft: The Mechanics of Obscurity & Applied Statistics</title>
     <script src="../assets/js/google-analytics.js"></script>
     <!-- Tailwind CSS -->
     <link href="../output.css" rel="stylesheet">
@@ -25,12 +25,10 @@
     <style>
         :root {
             --bg-color: #0b0f19;
-            /* Very dark slate/black */
             --card-bg: #151b2b;
             --accent-cyan: #06b6d4;
-            /* For "Craft" / Machine */
             --accent-sin: #f43f5e;
-            /* For "Sin" / Burn */
+            --accent-gold: #fbbf24;
             --text-primary: #e2e8f0;
             --text-secondary: #94a3b8;
             --grid-color: rgba(6, 182, 212, 0.05);
@@ -85,6 +83,10 @@
             color: var(--accent-cyan);
         }
 
+        .text-gold {
+            color: var(--accent-gold);
+        }
+
         .heading-tech {
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -127,27 +129,72 @@
             text-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
         }
 
-        /* Combo Buttons */
-        .combo-btn {
+        /* Interactive Buttons */
+        .tech-btn {
             background: rgba(6, 182, 212, 0.1);
             border: 1px solid var(--accent-cyan);
             color: var(--accent-cyan);
             transition: all 0.3s;
             font-family: 'Roboto Mono', monospace;
             font-size: 0.9rem;
+            cursor: pointer;
         }
 
-        .combo-btn:hover,
-        .combo-btn.active {
+        .tech-btn:hover,
+        .tech-btn.active {
             background: var(--accent-cyan);
             color: #000;
             box-shadow: 0 0 15px var(--accent-cyan);
         }
 
+        .era-btn {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .era-btn:hover {
+            border-color: var(--accent-gold);
+            color: var(--text-primary);
+        }
+
+        .era-btn.active {
+            background: rgba(251, 191, 36, 0.1);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+        }
+
+        /* Table */
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .matrix-table th {
+            background-color: rgba(15, 23, 42, 0.8);
+            color: var(--accent-cyan);
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 2px solid #334155;
+        }
+
+        .matrix-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #1e293b;
+            color: var(--text-primary);
+        }
+
+        .matrix-table tr:hover td {
+            background-color: rgba(6, 182, 212, 0.05);
+        }
+
         /* Card Loader Placeholders */
         .card-placeholder {
             background: #0f172a;
-            border: 1px dashed var(--accent-secondary);
+            border: 1px dashed #334155;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -182,7 +229,6 @@
             transform: scale(1.1);
         }
 
-        /* Tooltip Link */
         .archive-link {
             color: var(--accent-sin);
             text-decoration: none;
@@ -228,12 +274,15 @@
             <canvas id="ennea-canvas"></canvas>
             <div class="banner-content">
                 <h1 class="text-4xl md:text-6xl font-bold mb-2 tracking-widest uppercase">Enneacraft</h1>
-                <p class="text-xl md:text-2xl text-cyan-200 font-mono-code">System: Reactive Obscurity // Status:
+                <p class="text-xl md:text-2xl text-cyan-200 font-mono-code mb-2">System: Reactive Obscurity // Status:
                     Face-Down</p>
-                <div class="mt-4 flex justify-center gap-4 text-sm text-sin font-bold">
-                    <span><i class="fas fa-exclamation-triangle mr-2"></i>PENDULUM</span>
-                    <span><i class="fas fa-sync mr-2"></i>FLIP</span>
-                    <span><i class="fas fa-fire mr-2"></i>BURN</span>
+                <p class="text-md text-gold font-mono-code italic opacity-80">"Applied Statistics & Simultaneous
+                    Equation Canon"</p>
+                <div class="mt-6 flex justify-center gap-6 text-sm font-bold flex-wrap">
+                    <span class="text-sin"><i class="fas fa-exclamation-triangle mr-2"></i>PENDULUM</span>
+                    <span class="text-cyan-400"><i class="fas fa-sync mr-2"></i>FLIP</span>
+                    <span class="text-sin"><i class="fas fa-fire mr-2"></i>BURN</span>
+                    <span class="text-gold"><i class="fas fa-calculator mr-2"></i>DETERMINISTIC</span>
                 </div>
             </div>
         </header>
@@ -243,270 +292,524 @@
             <div
                 class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-indigo-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
                 <div id="deck-resources-compact" class="flex items-center"></div>
-
                 <!-- Vertical Divider (Desktop) -->
                 <div class="hidden md:block w-px h-6 bg-indigo-500/30 mx-1"></div>
-
                 <div id="archetype-cards-browser" class="flex justify-center"></div>
             </div>
-            <!-- Glow effect behind -->
             <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none">
             </div>
         </div>
 
-        <!-- Intro -->
-
         <!-- Lore / Thematic Intro Section -->
         <section class="max-w-4xl mx-auto mb-12 px-4">
-            <div class="relative bg-[#111]/80 backdrop-blur-md border-l-4 border-indigo-500 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+            <div
+                class="relative bg-[#111]/80 backdrop-blur-md border-l-4 border-indigo-500 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#111] flex-shrink-0">
+                    <div
+                        class="bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#111] flex-shrink-0">
                         <i class="fas fa-book-open"></i>
                     </div>
                     <h2 class="text-xl md:text-2xl font-bold text-indigo-500 tracking-wide uppercase">Lore Archive</h2>
                 </div>
                 <p class="text-gray-300 leading-relaxed italic text-lg md:text-xl font-serif">
-                    "The Enneacraft are architects of dimensional geometry, each monster representing a vertex in a nine-pointed star of cosmic significance. Their formations create mathematical resonances that amplify power exponentially, channeling the sacred geometry of the universe itself into devastating battlefield configurations."
+                    "The Enneacraft are architects of dimensional geometry, each monster representing a vertex in a
+                    nine-pointed star of cosmic significance. With the advent of the Blazing Dominion protocols, their
+                    formations have evolved from reactive traps into a formalized doctrine of applied
+                    statistics—reducing opponent actions to mathematically zeroed variables."
                 </p>
             </div>
         </section>
+
         <section class="mb-12 ennea-card rounded-xl p-8 animate-fadeIn">
             <h2 class="heading-tech text-2xl font-bold text-white"><i
                     class="fas fa-terminal mr-3 text-craft"></i>Executive Summary</h2>
-            <p class="text-gray-300 leading-relaxed text-lg">
-                The <strong class="text-craft">Enneacraft</strong> archetype introduces a paradigm shift known as
-                "Reactive Obscurity." By fusing the disparate mechanics of Pendulum Summoning and Flip Effects, the deck
-                functions as a psychological minefield. The deck subverts the "Face-Up" nature of modern Yu-Gi-Oh! by
-                forcing a game state where threats are hidden in Face-Down Defense Position, effectively "blanking"
-                common interactions like <em>Infinite Impermanence</em>.
-            </p>
-            <p class="mt-4 text-gray-300">
-                The core win condition revolves around the <strong class="text-sin">Sinquisition Counters</strong>. As
-                opponents trigger hidden threats, they generate counters which are converted into massive burn damage
-                (900 per counter) during the End Phase via the field spell, <a
-                    href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Enneacraft&stype=1"
-                    target="_blank" class="archive-link">accessing the Enneacraft Archives</a> for lethal damage without
-                ever declaring an attack.
-            </p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold text-craft mb-3">Phase 1: Reactive Obscurity</h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        The original <strong class="text-craft">Enneacraft</strong> archetype functions as a
+                        psychological minefield. By fusing Pendulum Summoning and Flip Effects, the deck subverts the
+                        "Face-Up" nature of modern play. Threats are hidden in Face-Down Defense Position, effectively
+                        "blanking" common interactions like <em>Infinite Impermanence</em>. Opponent interactions
+                        generate <strong>E.C. Counters</strong>, converting into massive end-phase burn damage via <a
+                            href="#" class="archive-link">Enneapolis</a>.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gold mb-3">Phase 2: Blazing Dominion Advancements</h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        The recent <em>Blazing Dominion</em> core expansion elevated the deck into a "Full Gas" engine
+                        of attrition. The strategy pivots sharply away from probability toward a doctrine of
+                        <strong>"applied statistics"</strong>. Utilizing the new multi-layered tools, the deck
+                        calculates interactions as a "Simultaneous Equation Canon"—systematically nullifying opposing
+                        variables, dictating Chain Links, and evading targeted removal entirely.
+                    </p>
+                </div>
+            </div>
         </section>
 
         <!-- Mechanics Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <h2 class="heading-tech text-2xl font-bold text-white mb-6"><i class="fas fa-microchip mr-3 text-craft"></i>Core
+            Operational Mechanics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
             <!-- Mechanic 1 -->
             <section class="ennea-card rounded-xl p-6">
-                <h3 class="text-xl font-bold text-white mb-4 border-l-4 border-sin pl-3">The Face-Down Lock</h3>
-                <p class="text-gray-400 text-sm mb-4">
-                    "You cannot Special Summon... except in Face-Down Defense Position."
-                </p>
-                <p class="text-gray-300">
-                    This restriction prevents Link, Synchro, or Xyz plays for the turn but insulates the player from
-                    "Turn 0" interruptions. Monsters never hit the field face-up, meaning target-based negates have no
-                    legal targets.
+                <h3 class="text-xl font-bold text-white mb-3 border-l-4 border-craft pl-3">The Face-Down Lock</h3>
+                <p class="text-gray-400 text-sm mb-3">"You cannot Special Summon... except in Face-Down Defense
+                    Position."</p>
+                <p class="text-gray-300 text-sm">
+                    This restriction prevents native Extra Deck plays but completely insulates the player from "Turn 0"
+                    hand traps. Monsters never hit the field face-up, meaning target-based negates have no legal
+                    targets.
                 </p>
             </section>
             <!-- Mechanic 2 -->
             <section class="ennea-card rounded-xl p-6">
-                <h3 class="text-xl font-bold text-white mb-4 border-l-4 border-sin pl-3">The Sinquisition Economy</h3>
-                <p class="text-gray-400 text-sm mb-4">
-                    1 Counter = 900 Damage
+                <h3 class="text-xl font-bold text-white mb-3 border-l-4 border-sin pl-3">The Sinquisition Economy</h3>
+                <p class="text-gray-400 text-sm mb-3">Formula: D = 900 × n (where n = E.C. Counters)</p>
+                <p class="text-gray-300 text-sm">
+                    Counters are generated whenever ANY monster is flipped face-up. <strong>Enneapolis</strong> forcibly
+                    removes these counters in the End Phase to inflict 900 damage each, shifting the win condition to an
+                    inescapable mathematical clock.
                 </p>
-                <p class="text-gray-300">
-                    Counters are generated when monsters flip face-up. The field spell, <strong
-                        class="text-craft">Enneapolis</strong>, removes these counters to inflict 900 damage each. A
-                    typical turn cycle can generate 3000+ burn damage simply by surviving.
+            </section>
+            <!-- Mechanic 3 -->
+            <section class="ennea-card rounded-xl p-6">
+                <h3 class="text-xl font-bold text-white mb-3 border-l-4 border-gold pl-3">Deterministic Searching</h3>
+                <p class="text-gray-400 text-sm mb-3">The Illusion of Probability (Rule of Threes)</p>
+                <p class="text-gray-300 text-sm">
+                    By paying 900 LP (exactly one counter's worth of damage) with <strong>exapatisIA</strong>, you
+                    reveal 3 cards for the opponent to "randomly" pick. Revealing 3 identical copies guarantees a 100%
+                    acquisition rate for critical pieces, creating mathematical certainty.
+                </p>
+            </section>
+            <!-- Mechanic 4 -->
+            <section class="ennea-card rounded-xl p-6">
+                <h3 class="text-xl font-bold text-white mb-3 border-l-4 border-purple-500 pl-3">Sovereignty Over The
+                    Stack</h3>
+                <p class="text-gray-400 text-sm mb-3">Chain Link Erasure & Response Lock</p>
+                <p class="text-gray-300 text-sm">
+                    <strong>Atil.SPIA</strong> punishes high-complexity stacks. By flipping on Chain Link 3+, it negates
+                    and destroys all prior opponent effects in the chain. Its continuous effect prevents the opponent
+                    from chaining to their own cards, destroying SEGOC (Chain Blocking) tactics.
                 </p>
             </section>
         </div>
 
-        <!-- Card Breakdown -->
+        <!-- Card Breakdown with Tabs -->
         <section class="mb-12">
-            <h2 class="heading-tech text-2xl font-bold text-white"><i class="fas fa-cogs mr-3 text-craft"></i>System
-                Components</h2>
+            <h2 class="heading-tech text-2xl font-bold text-white flex justify-between items-end">
+                <span><i class="fas fa-cogs mr-3 text-craft"></i>System Components</span>
+            </h2>
 
-            <!-- Level 1 Engine -->
-            <div class="mb-8">
-                <h3 class="text-xl text-craft font-bold mb-4 font-mono-code">// LEVEL 1: THE REACTIVE ENGINE</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- orgIA -->
-                    <div class="ennea-card p-4">
-                        <div id="orgia-img" class="card-placeholder mb-3">Enneacraft a' orgIA</div>
-                        <h4 class="text-white font-bold">Proto Enneacraft - "orgIA"</h4>
-                        <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: Hand Effect</p>
-                        <p class="text-sm text-gray-400 mt-2">The anti-starter. Flips when opponent activates a monster
-                            effect in Hand. Destroys 1 monster.</p>
+            <!-- Era Tabs -->
+            <div class="flex flex-wrap gap-2 mb-8 bg-[#0f172a] p-2 rounded-lg border border-gray-800 w-max mx-auto">
+                <button class="era-btn px-6 py-2 rounded font-bold font-mono-code active"
+                    onclick="switchEra('blzd', event)">
+                    <i class="fas fa-fire-alt mr-2 text-gold"></i>Blazing Dominion (New)
+                </button>
+                <button class="era-btn px-6 py-2 rounded font-bold font-mono-code"
+                    onclick="switchEra('original', event)">
+                    <i class="fas fa-ghost mr-2 text-craft"></i>Phantom Revenge (Core)
+                </button>
+            </div>
+
+            <!-- TAB 1: BLAZING DOMINION (Default) -->
+            <div id="era-blzd" class="era-section animate-fadeIn">
+                <div
+                    class="mb-6 bg-gradient-to-r from-yellow-900/20 to-transparent p-4 border-l-4 border-gold rounded-r-lg">
+                    <p class="text-gray-300"><strong class="text-gold">Update Briefing:</strong> The Blazing Dominion
+                        (BLZD) package completes the archetype. It provides an apex enforcer, deterministic searching,
+                        and crucial graveyard recursion to evade spot removal.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- exapatisIA -->
+                    <div class="ennea-card p-5 flex flex-col">
+                        <div class="flex gap-4 mb-4">
+                            <div id="exapatisia-img" class="card-placeholder w-24 h-32 flex-shrink-0">exapatisIA</div>
+                            <div>
+                                <h4 class="text-white font-bold text-lg">Trito Enneacraft - "exapatisIA"</h4>
+                                <p class="text-xs text-gold mt-1 font-mono-code">LVL 1 | SCALE 0 | CONNECTIVE TISSUE</p>
+                                <p class="text-sm text-gray-300 mt-2"><strong>Pendulum:</strong> Pay 900 LP; reveal 3
+                                    Enneacraft cards, opponent randomly picks 1 to add to hand.</p>
+                            </div>
+                        </div>
+                        <ul class="text-sm text-gray-400 space-y-2 border-t border-gray-700 pt-3 flex-grow">
+                            <li><span class="text-craft">Hand:</span> Reveal to SS 1 monster Face-Down.</li>
+                            <li><span class="text-craft">Quick Effect:</span> If opponent Sets a card -> flip face-up,
+                                search 1 Enneacraft card.</li>
+                            <li><span class="text-craft">FLIP:</span> Destroy 1 S/T, SS 1 from hand Face-Down.</li>
+                        </ul>
                     </div>
-                    <!-- alazoneIA -->
-                    <div class="ennea-card p-4">
-                        <div id="alazoneia-img" class="card-placeholder mb-3">Deftero Enneacraft - "alazoneIA"</div>
-                        <h4 class="text-white font-bold">Deftero Enneacraft - "alazoneIA"</h4>
-                        <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: Search</p>
-                        <p class="text-sm text-gray-400 mt-2">Punishes Greed. Flips when opponent adds from Deck to
-                            Hand. Banishes 1 random hand card.</p>
+
+                    <!-- Atil.SPIA -->
+                    <div class="ennea-card p-5 flex flex-col border-gold/30">
+                        <div class="flex gap-4 mb-4">
+                            <div id="atilspia-img" class="card-placeholder w-24 h-32 flex-shrink-0">Atil.SPIA</div>
+                            <div>
+                                <h4 class="text-white font-bold text-lg">Enneacraft - Atil.SPIA</h4>
+                                <p class="text-xs text-gold mt-1 font-mono-code">LVL 9 | SCALE 0 | APEX PREDATOR</p>
+                                <p class="text-sm text-gray-300 mt-2"><strong>Pendulum:</strong> End of Battle Phase;
+                                    destroy 1 opp monster with ATK < 3000 unconditionally.</p>
+                            </div>
+                        </div>
+                        <ul class="text-sm text-gray-400 space-y-2 border-t border-gray-700 pt-3 flex-grow">
+                            <li><span class="text-purple-400">Quick Effect:</span> Opponent activates Chain Link 3+ ->
+                                Flip face-up; negate & destroy all prior opp effects in chain.</li>
+                            <li><span class="text-purple-400">Continuous:</span> Opponent cannot activate cards/effects
+                                in response to their own activations.</li>
+                        </ul>
                     </div>
-                    <!-- tromarIA -->
-                    <div class="ennea-card p-4">
-                        <div id="tromaria-img" class="card-placeholder mb-3">Enneacraft ?' tromarIA</div>
-                        <h4 class="text-white font-bold">Ekto Enneacraft - "tromarIA"</h4>
-                        <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: Special Summon</p>
-                        <p class="text-sm text-gray-400 mt-2">The Negate. Flips on Special Summon. Negates 1 face-up
-                            monster's effects.</p>
+                </div>
+
+                <!-- Reset & Table -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Reset -->
+                    <div class="ennea-card p-5 lg:col-span-1">
+                        <div id="reset-img" class="card-placeholder w-40 md:w-48 mx-auto h-auto mb-4">Enneacraft Reset</div>
+                        <h4 class="font-bold text-lg text-white"><i
+                                class="fas fa-file-contract mr-2 text-gold"></i>Enneacraft Reset</h4>
+                        <p class="text-xs text-gray-500 font-mono-code mb-2">NORMAL SPELL</p>
+                        <p class="text-sm text-gray-300 mb-3"><strong>Primary:</strong> Place Enneapolis directly from
+                            Deck/GY, OR negate face-up cards up to your Pendulum Scales.</p>
+                        <p class="text-sm text-gray-300 border-t border-gray-700 pt-2"><strong class="text-craft">GY
+                                Evasion Loop:</strong> Banish from GY (Quick Effect) when opp activates effect -> change
+                            your face-up monsters to Face-Down Defense. Evades targeting and "reloads" flip effects.</p>
                     </div>
-                    <!-- oknirIA -->
-                    <div class="ennea-card p-4">
-                        <div id="okniria-img" class="card-placeholder mb-3">Enneacraft ?' oknirIA</div>
-                        <h4 class="text-white font-bold">Enato Enneacraft - "oknirIA"</h4>
-                        <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: GY Effect</p>
-                        <p class="text-sm text-gray-400 mt-2">GY Control. Flips on GY activation. Shuffles 3 cards from
-                            opponent's GY/Banishment.</p>
+
+                    <!-- Feature Matrix -->
+                    <div class="ennea-card p-5 lg:col-span-2 overflow-x-auto">
+                        <h4 class="font-bold text-lg text-white mb-3 font-mono-code">// BLAZING DOMINION FEATURE MATRIX
+                        </h4>
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Trito - "exapatisIA"</th>
+                                    <th>Atil.SPIA</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Deployment</strong></td>
+                                    <td>SS Face-Down from hand</td>
+                                    <td>SS Face-Down from hand</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Pendulum Zone</strong></td>
+                                    <td>Deterministic Search (LP Cost)</td>
+                                    <td>End of BP Execution (< 3000 ATK)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Interrogation</strong></td>
+                                    <td>Triggers when Opponent Sets</td>
+                                    <td>Triggers on Chain Link 3+</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Lethal Payload</strong></td>
+                                    <td>S/T Removal + Board Swarm</td>
+                                    <td>Stack Wipe + Response Lock</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Level 9 Bosses -->
-            <div class="mb-8">
-                <h3 class="text-xl text-sin font-bold mb-4 font-mono-code">// LEVEL 9: THE BEHEMOTHS</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Atori.MAR -->
-                    <div class="ennea-card p-4 flex gap-4">
-                        <div id="atori-img" class="card-placeholder w-32 h-48 flex-shrink-0">Atori.MAR</div>
-                        <div>
-                            <h4 class="text-white font-bold text-lg">Enneacraft - Atori.MAR</h4>
-                            <p class="text-xs text-craft mt-1 font-mono-code">FIELD MARSHAL</p>
-                            <p class="text-sm text-gray-300 mt-2">Triggers on ANY card activation on field. Flips to
-                                change <strong>ALL</strong> opponent's monsters to Face-Down Defense Position (cannot
-                                change battle position). Hard counter to Link/Synchro.</p>
+            <!-- TAB 2: PHANTOM REVENGE (Original) -->
+            <div id="era-original" class="era-section hidden animate-fadeIn">
+                <!-- Level 1 Engine -->
+                <div class="mb-8">
+                    <h3 class="text-xl text-craft font-bold mb-4 font-mono-code">// LEVEL 1: THE REACTIVE CORE</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="ennea-card p-4">
+                            <div id="orgia-img" class="card-placeholder mb-3">Proto Enneacraft</div>
+                            <h4 class="text-white font-bold">Proto Enneacraft - "orgIA"</h4>
+                            <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: Hand Effect</p>
+                            <p class="text-sm text-gray-400 mt-2">The anti-starter. Flips when opp activates monster
+                                effect in Hand. Destroys 1 monster.</p>
                         </div>
-                    </div>
-                    <!-- Archa.TAIL -->
-                    <div class="ennea-card p-4 flex gap-4">
-                        <div id="archa-img" class="card-placeholder w-32 h-48 flex-shrink-0">Archa.TAIL</div>
-                        <div>
-                            <h4 class="text-white font-bold text-lg">Enneacraft - Archa.TAIL</h4>
-                            <p class="text-xs text-craft mt-1 font-mono-code">THE FORTRESS</p>
-                            <p class="text-sm text-gray-300 mt-2">Triggers on destruction effects. Grants blanket
-                                destruction immunity to Monsters AND Enneacraft Spells. Burns for every monster sent to
-                                opponent's GY.</p>
+                        <div class="ennea-card p-4">
+                            <div id="alazoneia-img" class="card-placeholder mb-3">Deftero Enneacraft</div>
+                            <h4 class="text-white font-bold">Deftero Enneacraft - "alazoneIA"</h4>
+                            <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: Search</p>
+                            <p class="text-sm text-gray-400 mt-2">Punishes Greed. Flips when opp adds from Deck to Hand.
+                                Banishes 1 random hand card.</p>
+                        </div>
+                        <div class="ennea-card p-4">
+                            <div id="tromaria-img" class="card-placeholder mb-3">Ekto Enneacraft</div>
+                            <h4 class="text-white font-bold">Ekto Enneacraft - "tromarIA"</h4>
+                            <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: Special Summon</p>
+                            <p class="text-sm text-gray-400 mt-2">The Negate. Flips on Special Summon. Negates 1 face-up
+                                monster's effects.</p>
+                        </div>
+                        <div class="ennea-card p-4">
+                            <div id="okniria-img" class="card-placeholder mb-3">Enato Enneacraft</div>
+                            <h4 class="text-white font-bold">Enato Enneacraft - "oknirIA"</h4>
+                            <p class="text-xs text-sin mt-1 font-mono-code">TRIGGER: GY Effect</p>
+                            <p class="text-sm text-gray-400 mt-2">GY Control. Flips on GY activation. Shuffles 3 cards
+                                from opp's GY/Banishment.</p>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Spells -->
-            <div class="mb-8">
-                <h3 class="text-xl text-white font-bold mb-4 font-mono-code">// INFRASTRUCTURE</h3>
-                <div class="grid grid-cols-1 gap-4">
-                    <!-- Release -->
-                    <div class="ennea-card p-4 flex gap-4 items-center">
-                        <div id="release-img" class="card-placeholder w-24 h-32 flex-shrink-0">Release</div>
-                        <div class="flex-grow">
-                            <h4 class="font-bold text-lg text-craft"><i class="fas fa-magic mr-2"></i>Enneacraft -
-                                Release</h4>
-                            <p class="text-xs text-gray-500 font-mono-code mb-1">NORMAL SPELL</p>
-                            <p class="text-sm text-gray-300">The consistency engine. Places an Enneacraft Pendulum
-                                Monster directly from Deck to Scale. <span class="text-sin">Bypasses Droll & Lock
-                                    Bird</span> entirely.</p>
+                <!-- Level 9 Bosses & Spells -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl text-sin font-bold mb-4 font-mono-code">// LEVEL 9: FORTRESS BEHEMOTHS</h3>
+                        <div class="space-y-4">
+                            <div class="ennea-card p-4 flex gap-4">
+                                <div id="atori-img" class="card-placeholder w-24 h-32 flex-shrink-0">Atori.MAR</div>
+                                <div>
+                                    <h4 class="text-white font-bold text-lg">Enneacraft - Atori.MAR</h4>
+                                    <p class="text-xs text-craft mt-1 font-mono-code">FIELD MARSHAL</p>
+                                    <p class="text-sm text-gray-300 mt-2">Triggers on ANY card activation on field.
+                                        Flips to change <strong>ALL</strong> opp's monsters to Face-Down Defense.</p>
+                                </div>
+                            </div>
+                            <div class="ennea-card p-4 flex gap-4">
+                                <div id="archa-img" class="card-placeholder w-24 h-32 flex-shrink-0">Archa.TAIL</div>
+                                <div>
+                                    <h4 class="text-white font-bold text-lg">Enneacraft - Archa.TAIL</h4>
+                                    <p class="text-xs text-craft mt-1 font-mono-code">THE FORTRESS</p>
+                                    <p class="text-sm text-gray-300 mt-2">Triggers on destruction. Grants blanket
+                                        immunity to Enneacraft. Burns per monster sent to opp's GY.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <!-- Enneapolis -->
-                    <div class="ennea-card p-4 flex gap-4 items-center">
-                        <div id="enneapolis-img" class="card-placeholder w-24 h-32 flex-shrink-0">Enneapolis</div>
-                        <div class="flex-grow">
-                            <h4 class="font-bold text-lg text-sin"><i class="fas fa-city mr-2"></i>Enneapolis,
-                                Sinquisition City</h4>
-                            <p class="text-xs text-gray-500 font-mono-code mb-1">FIELD SPELL</p>
-                            <p class="text-sm text-gray-300">The kill condition. Bounces scales to hand to reuse
-                                effects. Recycles flipped monsters. <span class="text-sin">Converts counters into 900
-                                    burn damage each.</span></p>
-                        </div>
-                    </div>
-                    <!-- Rebirth -->
-                    <div class="ennea-card p-4 flex gap-4 items-center">
-                        <div id="rebirth-img" class="card-placeholder w-24 h-32 flex-shrink-0">Rebirth</div>
-                        <div class="flex-grow">
-                            <h4 class="font-bold text-lg text-craft"><i class="fas fa-sync-alt mr-2"></i>Enneacraft -
-                                Reset</h4>
-                            <p class="text-xs text-gray-500 font-mono-code mb-1">QUICK-PLAY SPELL</p>
-                            <p class="text-sm text-gray-300">Hand mulligan tool. GY effect allows you to <span
-                                    class="text-craft">manually flip</span> your own monsters face-up to force their
-                                trigger effects on your terms.</p>
+                    <div>
+                        <h3 class="text-xl text-white font-bold mb-4 font-mono-code">// ORIGINAL INFRASTRUCTURE</h3>
+                        <div class="space-y-4">
+                            <div class="ennea-card p-4 flex gap-4 items-center">
+                                <div id="release-img" class="card-placeholder w-20 h-28 flex-shrink-0">Release</div>
+                                <div>
+                                    <h4 class="font-bold text-lg text-craft">Enneacraft Release</h4>
+                                    <p class="text-sm text-gray-300">Places Pendulum directly from Deck to Scale. <span
+                                            class="text-sin">Bypasses Droll.</span></p>
+                                </div>
+                            </div>
+                            <div class="ennea-card p-4 flex gap-4 items-center">
+                                <div id="enneapolis-img" class="card-placeholder w-20 h-28 flex-shrink-0">Enneapolis
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg text-sin">Enneapolis</h4>
+                                    <p class="text-sm text-gray-300">The kill condition. Recycles scales. <span
+                                            class="text-sin">Converts E.C. Counters into 900 burn dmg each during End
+                                            Phase.</span></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </section>
+
+        <!-- Tactical Sequences -->
+        <section class="mb-12">
             <h2 class="heading-tech text-2xl font-bold text-white"><i
                     class="fas fa-project-diagram mr-3 text-craft"></i>Tactical Sequences</h2>
 
             <div class="flex flex-wrap gap-4 mb-6">
-                <button class="combo-btn px-6 py-2 rounded font-bold active" onclick="showCombo('standard')">Standard
-                    Release Line</button>
-                <button class="combo-btn px-6 py-2 rounded font-bold" onclick="showCombo('zaborg')">Zaborg
-                    Aggro Line</button>
+                <button class="tech-btn px-6 py-2 rounded font-bold active" onclick="showCombo('equation', event)">The
+                    Equation (BLZD)</button>
+                <button class="tech-btn px-6 py-2 rounded font-bold" onclick="showCombo('standard', event)">Release Line
+                    (Core)</button>
+                <button class="tech-btn px-6 py-2 rounded font-bold" onclick="showCombo('zaborg', event)">Zaborg
+                    Aggro</button>
             </div>
 
-            <!-- Standard Combo -->
-            <div id="combo-standard" class="ennea-card p-6 rounded-xl">
-                <h3 class="text-xl font-bold text-white mb-4">The "Release" Line (1.5 Card Combo)</h3>
-                <p class="text-gray-400 mb-4">The safest setup that plays around Droll & Lock Bird.</p>
-                <ol class="space-y-4 font-mono-code text-sm md:text-base">
-                    <li class="flex items-start">
-                        <span class="text-craft mr-2">01.</span>
-                        <span>Activate <strong class="text-white">Enneacraft - Release</strong>. Place
-                            <strong class="text-craft">orgIA</strong> directly into Pendulum Zone.</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-craft mr-2">02.</span>
-                        <span>Activate <strong class="text-craft">orgIA</strong> Scale Effect: Pay 900 LP.
-                            Reveal 3 <strong class="text-sin">Enneapolis</strong>. Add 1 to hand.</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-craft mr-2">03.</span>
-                        <span>Activate Field Spell <strong class="text-sin">Enneapolis</strong>. Use effect
-                            to bounce <strong class="text-craft">orgIA</strong> from Scale to Hand.</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-craft mr-2">04.</span>
-                        <span>Reveal <strong class="text-craft">orgIA</strong> in hand to Special Summon
-                            another Enneacraft from hand (Face-Down).</span>
-                    </li>
-                    <li class="flex items-start mt-4 pt-4 border-t border-gray-700">
-                        <span class="text-sin font-bold mr-2">END BOARD:</span>
-                        <span class="text-gray-300">Field Spell active + 1 Face-Down Monster + <strong
-                                class="text-craft">orgIA</strong> in hand (Anti-Hand Trap live).</span>
-                    </li>
-                </ol>
+            <!-- ====== COMBO 1: The "Simultaneous Equation" Line (BLZD) ====== -->
+            <div id="combo-equation" class="combo-section">
+                <div class="ennea-card p-6 rounded-xl border-t-4 border-t-gold mb-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The "Simultaneous Equation" Line</h3>
+                    <p class="text-gray-400">Leverages Blazing Dominion's deterministic search and recursion loop.</p>
+                </div>
+
+                <div class="flex flex-col items-center gap-4">
+                    <!-- Step 1 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5">
+                        <div id="combo-eq-reset-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Enneacraft Reset</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-yellow-500/20 text-gold border border-gold/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-sm">01</span>
+                                <h4 class="text-lg font-bold text-white">Activate Enneacraft Reset</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Activate <strong class="text-white">Enneacraft Reset</strong> from hand. Directly place <strong class="text-sin">Enneapolis</strong> into Field Zone from the Deck or Graveyard.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="flex justify-center"><svg class="h-8 w-8 text-gold opacity-60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+
+                    <!-- Step 2 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5">
+                        <div id="combo-eq-exapatisia-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">exapatisIA</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-yellow-500/20 text-gold border border-gold/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-sm">02</span>
+                                <h4 class="text-lg font-bold text-white">Deploy exapatisIA Face-Down</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Use <strong class="text-craft">exapatisIA's</strong> in-hand effect. Reveal it to Special Summon itself in Face-Down Defense Position.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="flex justify-center"><svg class="h-8 w-8 text-gold opacity-60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+
+                    <!-- Step 3 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5">
+                        <div id="combo-eq-enneapolis-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Enneapolis</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-yellow-500/20 text-gold border border-gold/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-sm">03</span>
+                                <h4 class="text-lg font-bold text-white">Set Pendulum Scales & Pass</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Set Pendulum Scales using your available Enneacraft monsters. Pass turn with the Face-Down field established.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="flex justify-center"><svg class="h-8 w-8 text-sin opacity-60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+
+                    <!-- Step 4: Opponent's Turn -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5 border border-sin/30">
+                        <div id="combo-eq-atilspia-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Atil.SPIA</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-red-500/20 text-sin border border-sin/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-xs"><i class="fas fa-shield-alt"></i></span>
+                                <h4 class="text-lg font-bold text-sin">Opponent's Turn — React</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Wait for opponent to attempt <strong class="text-white">Chain Link 3+</strong> → Flip <strong class="text-gold">Atil.SPIA</strong> to negate the entire chain. If targeted for removal, banish <strong class="text-white">Enneacraft Reset</strong> from Graveyard to flip Atil.SPIA Face-Down — evading the target and reloading its flip effect.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Zaborg Combo -->
-            <div id="combo-zaborg" class="ennea-card p-6 rounded-xl hidden">
-                <h3 class="text-xl font-bold text-white mb-4">The "Spirit + Zaborg" Aggro Line</h3>
-                <p class="text-gray-400 mb-4">High risk, game-ending reward by ripping the opponent's Extra
-                    Deck.</p>
-                <ol class="space-y-4 font-mono-code text-sm md:text-base">
-                    <li class="flex items-start">
-                        <span class="text-craft mr-2">01.</span>
-                        <span>Normal Summon <strong class="text-white">Spirit of the Fall Wind</strong>.
-                            Search any Enneacraft.</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-craft mr-2">02.</span>
-                        <span>Reveal Enneacraft in hand to Special Summon another body Face-Down.</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-craft mr-2">03.</span>
-                        <span>Tribute Summon <strong class="text-sin">Zaborg the Mega Monarch</strong>.
-                            Target self to destroy.</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-craft mr-2">04.</span>
-                        <span>Send 8 cards from BOTH Extra Decks to GY.</span>
-                        <ul class="ml-8 mt-2 text-gray-400 list-disc">
-                            <li>You send: 3x <strong class="text-white">Elder Entity N'tss</strong> (Pop 3),
-                                1x <strong class="text-white">Garura</strong> (Draw 1).</li>
-                            <li>Opponent sends: Their entire engine (Promethean Princess, Albion, etc.).
-                            </li>
-                        </ul>
-                    </li>
-                </ol>
+            <!-- ====== COMBO 2: The "Release" Line (Core) ====== -->
+            <div id="combo-standard" class="combo-section hidden">
+                <div class="ennea-card p-6 rounded-xl border-t-4 border-t-cyan-500 mb-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The "Release" Line <span class="text-sm text-gray-400">(1.5 Card Combo)</span></h3>
+                    <p class="text-gray-400">The safest setup that plays around Droll & Lock Bird.</p>
+                </div>
+
+                <div class="flex flex-col items-center gap-4">
+                    <!-- Step 1 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5">
+                        <div id="combo-rel-release-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Enneacraft Release</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-cyan-500/20 text-craft border border-craft/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-sm">01</span>
+                                <h4 class="text-lg font-bold text-white">Activate Enneacraft Release</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Activate <strong class="text-white">Enneacraft Release</strong>. Place <strong class="text-craft">orgIA</strong> directly into a Pendulum Zone from the Deck. <span class="text-sin font-bold">Bypasses Droll & Lock Bird.</span></p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="flex justify-center"><svg class="h-8 w-8 text-craft opacity-60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+
+                    <!-- Step 2 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5">
+                        <div id="combo-rel-orgia-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Proto Enneacraft</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-cyan-500/20 text-craft border border-craft/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-sm">02</span>
+                                <h4 class="text-lg font-bold text-white">Deterministic Search via orgIA</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Activate <strong class="text-craft">orgIA</strong> Scale Effect: Pay 900 LP. Reveal 3 copies of <strong class="text-sin">Enneapolis</strong>. Opponent randomly picks 1 — guaranteed 100% acquisition rate.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="flex justify-center"><svg class="h-8 w-8 text-craft opacity-60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+
+                    <!-- Step 3 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5">
+                        <div id="combo-rel-enneapolis-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Enneapolis</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-cyan-500/20 text-craft border border-craft/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-sm">03</span>
+                                <h4 class="text-lg font-bold text-white">Activate Enneapolis & Recycle</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Activate Field Spell <strong class="text-sin">Enneapolis</strong>. Use its effect to bounce <strong class="text-craft">orgIA</strong> from the Pendulum Zone back to hand, recycling it for re-use.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="flex justify-center"><svg class="h-8 w-8 text-craft opacity-60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+
+                    <!-- Step 4 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5">
+                        <div id="combo-rel-orgia2-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Proto Enneacraft</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-cyan-500/20 text-craft border border-craft/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-sm">04</span>
+                                <h4 class="text-lg font-bold text-white">Deploy Body Face-Down</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Reveal <strong class="text-craft">orgIA</strong> in hand to Special Summon another Enneacraft monster from hand in <strong class="text-white">Face-Down Defense Position</strong>. Your reactive minefield is live.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== COMBO 3: The "Spirit + Zaborg" Aggro Line ====== -->
+            <div id="combo-zaborg" class="combo-section hidden">
+                <div class="ennea-card p-6 rounded-xl border-t-4 border-t-purple-500 mb-6">
+                    <h3 class="text-xl font-bold text-white mb-2">The "Spirit + Zaborg" Aggro Line</h3>
+                    <p class="text-gray-400">High risk, game-ending reward by ripping the opponent's Extra Deck.</p>
+                </div>
+
+                <div class="flex flex-col items-center gap-4">
+                    <!-- Step 1 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5">
+                        <div id="combo-zab-spirit-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Spirit of the Fall Wind</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-sm">01</span>
+                                <h4 class="text-lg font-bold text-white">Normal Summon Spirit of the Fall Wind</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Normal Summon <strong class="text-white">Spirit of the Fall Wind</strong>. Use its effect to search any Enneacraft monster from the Deck.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="flex justify-center"><svg class="h-8 w-8 text-purple-400 opacity-60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+
+                    <!-- Step 2 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5">
+                        <div id="combo-zab-ennea-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Enneacraft</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-sm">02</span>
+                                <h4 class="text-lg font-bold text-white">Deploy Enneacraft Face-Down</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Reveal the searched Enneacraft to Special Summon another body in <strong class="text-white">Face-Down Defense Position</strong>. This provides tribute material for the next step.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="flex justify-center"><svg class="h-8 w-8 text-purple-400 opacity-60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+
+                    <!-- Step 3 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5">
+                        <div id="combo-zab-zaborg-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Zaborg the Mega Monarch</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-sm">03</span>
+                                <h4 class="text-lg font-bold text-white">Tribute Summon Zaborg</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Tribute Summon <strong class="text-sin">Zaborg the Mega Monarch</strong>. Target itself to destroy — triggering its effect to send 8 cards from <strong class="text-white">BOTH</strong> Extra Decks to the Graveyard.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="flex justify-center"><svg class="h-8 w-8 text-purple-400 opacity-60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg></div>
+
+                    <!-- Step 4 -->
+                    <div class="ennea-card rounded-xl p-5 w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-5 border border-sin/30">
+                        <div id="combo-zab-ntss-img" class="card-placeholder w-32 md:w-40 h-44 md:h-52 flex-shrink-0 rounded-lg">Herald of the Arc Light</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-red-500/20 text-sin border border-sin/30 rounded-full h-9 w-9 flex items-center justify-center font-bold mr-3 font-mono-code text-xs"><i class="fas fa-skull-crossbones"></i></span>
+                                <h4 class="text-lg font-bold text-sin">Payload — Extra Deck Devastation</h4>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed">Sending targets like <strong class="text-white">N'tss</strong> and <strong class="text-white">Garura</strong> from the Extra Deck generates free advantage: pop 3 cards with N'tss triggers and draw 1 with Garura. The opponent's Extra Deck is left gutted.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -516,22 +819,22 @@
                 <h3 class="text-lg font-bold text-craft mb-4">Strengths</h3>
                 <ul class="space-y-2 text-gray-300 text-sm">
                     <li><i class="fas fa-check text-green-500 mr-2"></i><strong>Turn 0 Immunity:</strong> Cannot be hit
-                        by Impermanence/Veiler while setting up.</li>
-                    <li><i class="fas fa-check text-green-500 mr-2"></i><strong>Extra Deck Lock:</strong> Atori.MAR
-                        flips boards face-down, preventing Link/Synchro/Xyz summons.</li>
-                    <li><i class="fas fa-check text-green-500 mr-2"></i><strong>Burn Damage:</strong> Does not need to
-                        attack to win; ignores high ATK boards.</li>
+                        by Impermanence/Veiler while setting up Face-Down.</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i><strong>Stack Dictation:</strong> Atil.SPIA
+                        physically prevents opponents from Chain-Blocking (SEGOC).</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i><strong>Recursive Evasion:</strong> Enneacraft
+                        Reset in GY dodges targeted wipes like Forbidden Droplet.</li>
                 </ul>
             </div>
             <div class="ennea-card p-6 rounded-xl">
                 <h3 class="text-lg font-bold text-sin mb-4">Weaknesses</h3>
                 <ul class="space-y-2 text-gray-300 text-sm">
-                    <li><i class="fas fa-times text-red-500 mr-2"></i><strong>Droll & Lock Bird:</strong> Hard counter
-                        to the searching loop.</li>
-                    <li><i class="fas fa-times text-red-500 mr-2"></i><strong>Non-Destruction Removal:</strong>
-                        Snake-Eye (placing in S/T zone) bypasses Archa.TAIL protection.</li>
-                    <li><i class="fas fa-times text-red-500 mr-2"></i><strong>Slow Tempo:</strong> Requires "Set and
-                        Pass," vulnerable to time rules if burn doesn't kill fast enough.</li>
+                    <li><i class="fas fa-times text-red-500 mr-2"></i><strong>Droll & Lock Bird:</strong> Remains a
+                        critical chokepoint if searching starts early.</li>
+                    <li><i class="fas fa-times text-red-500 mr-2"></i><strong>Non-Destruction Removal:</strong> Placing
+                        cards in S/T zones bypasses standard Archa.TAIL protection.</li>
+                    <li><i class="fas fa-times text-red-500 mr-2"></i><strong>Pacing/Time:</strong> Highly reactive
+                        nature makes it vulnerable to tournament end-of-match procedures.</li>
                 </ul>
             </div>
         </section>
@@ -546,16 +849,11 @@
                     <iframe width="315" height="560" src="https://www.youtube.com/embed/7_9Lqj2t2m4"
                         title="Enneacraft Deck Showcase" frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen style="display: block;">
-                    </iframe>
+                        allowfullscreen style="display: block;"></iframe>
                 </div>
                 <p style="text-align: center; color: #94a3b8; font-size: 0.875rem; margin-top: 0.75rem;">
                     <i class="fas fa-play-circle" style="margin-right: 4px; color: var(--accent-cyan);"></i> See
                     Enneacraft in action
-                </p>
-                <p style="text-align: center; color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">
-                    <i class="fas fa-calendar-alt" style="margin-right: 4px;"></i> Video Date: <span
-                        style="color: #9ca3af;">Dec 19, 2025</span>
                 </p>
             </div>
         </section>
@@ -565,18 +863,13 @@
             <h2 class="heading-tech text-2xl font-bold text-white"><i
                     class="fas fa-gavel mr-3 text-craft"></i>Regulation Status</h2>
             <div id="banlist-status" class="ennea-card p-6 rounded-xl">
-                <!-- Banlist content will be dynamically generated here by CardLoader -->
-                <div class="text-center text-cyan-500 font-mono-code animate-pulse">
-                    Scanning F&L Database...
-                </div>
+                <div class="text-center text-cyan-500 font-mono-code animate-pulse">Scanning F&L Database...</div>
             </div>
         </section>
 
         <!-- Deck Resources Section -->
         <section class="mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
-            <div id="deck-resources-container">
-                <!-- Deck search resources will be dynamically generated here -->
-            </div>
+            <div id="deck-resources-container"></div>
         </section>
 
     </div>
@@ -586,7 +879,6 @@
         // Banner Animation
         const canvas = document.getElementById('ennea-canvas');
         const ctx = canvas.getContext('2d');
-
         let width, height;
         let particles = [];
 
@@ -596,17 +888,16 @@
         }
 
         class Particle {
-            constructor() {
-                this.reset();
-            }
+            constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
                 this.vx = (Math.random() - 0.5) * 0.5;
                 this.vy = (Math.random() - 0.5) * 0.5;
                 this.size = Math.random() * 2 + 1;
-                // Random between Cyan and Sin Red
-                this.color = Math.random() > 0.5 ? 'rgba(6, 182, 212, ' : 'rgba(244, 63, 94, ';
+                // Random between Cyan, Sin Red, and Gold
+                const randColor = Math.random();
+                this.color = randColor > 0.66 ? 'rgba(6, 182, 212, ' : randColor > 0.33 ? 'rgba(244, 63, 94, ' : 'rgba(251, 191, 36, ';
                 this.alpha = Math.random() * 0.5 + 0.1;
             }
             update() {
@@ -620,7 +911,6 @@
                 ctx.fillStyle = this.color + this.alpha + ')';
                 ctx.fill();
 
-                // Draw connections
                 particles.forEach(p => {
                     const dx = p.x - this.x;
                     const dy = p.y - this.y;
@@ -638,15 +928,12 @@
 
         function initParticles() {
             particles = [];
-            for (let i = 0; i < 60; i++) particles.push(new Particle());
+            for (let i = 0; i < 70; i++) particles.push(new Particle());
         }
 
         function animate() {
             ctx.clearRect(0, 0, width, height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
+            particles.forEach(p => { p.update(); p.draw(); });
             requestAnimationFrame(animate);
         }
 
@@ -655,17 +942,31 @@
         initParticles();
         animate();
 
-        // Combo Tab Logic
-        function showCombo(id) {
-            document.querySelectorAll('[id^="combo-"]').forEach(el => el.classList.add('hidden'));
+        // UI Tabs Logic
+        function switchEra(era, eventObj) {
+            document.querySelectorAll('.era-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('era-' + era).classList.remove('hidden');
+
+            document.querySelectorAll('.era-btn').forEach(btn => btn.classList.remove('active'));
+            if (eventObj && eventObj.currentTarget) {
+                eventObj.currentTarget.classList.add('active');
+            }
+        }
+
+        // Combo Logic
+        function showCombo(id, eventObj) {
+            document.querySelectorAll('.combo-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('combo-' + id).classList.remove('hidden');
 
-            document.querySelectorAll('.combo-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelectorAll('.tech-btn').forEach(btn => btn.classList.remove('active'));
+            if (eventObj && eventObj.currentTarget) {
+                eventObj.currentTarget.classList.add('active');
+            }
         }
 
         // Card Loader Integration
         document.addEventListener('DOMContentLoaded', async () => {
+            // Load Old + New Cards
             CardLoader.loadCards({
                 'orgia-img': 'Proto Enneacraft - "orgIA"',
                 'alazoneia-img': 'Deftero Enneacraft - "alazoneIA"',
@@ -675,38 +976,52 @@
                 'archa-img': 'Enneacraft - Archa.TAIL',
                 'release-img': 'Enneacraft Release',
                 'enneapolis-img': 'Enneapolis',
-                'rebirth-img': 'Enneacraft Reset'
+                'reset-img': 'Enneacraft Reset',
+                'exapatisia-img': 'Trito Enneacraft - "exapatisIA"',
+                'atilspia-img': 'Enneacraft - Atil.SPIA',
+                // Combo 1: Equation (BLZD)
+                'combo-eq-reset-img': 'Enneacraft Reset',
+                'combo-eq-exapatisia-img': 'Trito Enneacraft - "exapatisIA"',
+                'combo-eq-enneapolis-img': 'Enneapolis',
+                'combo-eq-atilspia-img': 'Enneacraft - Atil.SPIA',
+                // Combo 2: Release Line (Core)
+                'combo-rel-release-img': 'Enneacraft Release',
+                'combo-rel-orgia-img': 'Proto Enneacraft - "orgIA"',
+                'combo-rel-enneapolis-img': 'Enneapolis',
+                'combo-rel-orgia2-img': 'Proto Enneacraft - "orgIA"',
+                // Combo 3: Zaborg Aggro
+                'combo-zab-spirit-img': 'Spirit of the Fall Wind',
+                'combo-zab-ennea-img': 'Proto Enneacraft - "orgIA"',
+                'combo-zab-zaborg-img': 'Zaborg the Mega Monarch',
+                'combo-zab-ntss-img': 'N\'tss'
             });
 
-            // Render Banlist Section
+            // Render Banlist Section with updated core inclusions
             await CardLoader.renderBanlistSection('banlist-status', [
                 'Proto Enneacraft - "orgIA"',
                 'Deftero Enneacraft - "alazoneIA"',
-                'Ekto Enneacraft - "tromarIA"',
                 'Enneacraft - Atori.MAR',
+                'Enneacraft - Atil.SPIA',
+                'Trito Enneacraft - "exapatisIA"',
                 'Enneacraft - Release',
                 'Enneapolis, the Sinquisition City',
                 'Zaborg the Mega Monarch',
-                'Spirit of the Fall Wind',
                 'Pot of Extravagance',
                 'Droll & Lock Bird'
             ], {
                 archetypeName: 'Enneacraft',
                 archetypeTraits: {
-                    coreMechanic: 'Pendulum/Flip hybrid relying on face-down mechanics and burn damage',
-                    supportReliance: 'Uses generic Flip support (Spirit of the Fall Wind) and Tribute engines (Zaborg)',
-                    adaptability: 'Specialized control strategy; struggles to pivot into standard Extra Deck combos due to archetype lock',
-                    resilience: 'High immunity to targeting/destruction; vulnerable to search negation (Droll)'
+                    coreMechanic: 'Pendulum/Flip hybrid relying on face-down mechanics, applied statistics, and burn damage',
+                    supportReliance: 'Heavily reliant on field spell infrastructure and graveyard evasion loops',
+                    adaptability: 'Strict archetype locks, functions best as an unchained control deck dictating game pace',
+                    resilience: 'Absolute immunity to targeting via Reset; highly resilient stack manipulation'
                 }
             });
 
-            // Render compact deck resources in header
+            // Render compact deck resources
             await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Enneacraft');
 
-            // Render compact deck resources in header
-            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Enneacraft');
-
-            // Render archetype cards browser (compact mode at top)
+            // Render archetype cards browser
             await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Enneacraft', {
                 compact: true,
                 buttonColor: 'from-purple-600 to-indigo-600',

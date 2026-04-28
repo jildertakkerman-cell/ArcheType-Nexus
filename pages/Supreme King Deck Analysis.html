@@ -22,6 +22,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #0a041a; /* Deep dark purple */
             color: #e0e7ff; /* Light lavender */
+            overflow-x: hidden;
         }
         .container {
             max-width: 1024px;
@@ -31,6 +32,11 @@
             border-radius: 1rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
             border: 1px solid #4c3d8e; /* Purple border */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(106, 90, 205, 0.3);
         }
         .combo-step-card, .pro-con-card {
             background-color: #2a1a5c; /* Slightly lighter violet */
@@ -257,6 +263,44 @@
             font-family: 'Orbitron', sans-serif;
             color: #a78bfa;
         }
+
+        /* Tabs Styles */
+        .tab-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+            color: white;
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+            border-color: #a78bfa;
+        }
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; left: 0; right: 0; height: 3px;
+            background-color: transparent;
+            transition: background-color 0.3s;
+        }
+        .tab-btn.active::after {
+            background-color: #fff;
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        .stat-badge {
+            background: rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(167, 139, 250, 0.4);
+            border-radius: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.875rem;
+        }
     </style>
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
 </head>
@@ -290,228 +334,400 @@
             <!-- Glow effect behind -->
             <div class="absolute inset-0 bg-indigo-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none"></div>
 
-        <!-- Lore / Thematic Intro Section -->
-        <section class="max-w-4xl mx-auto mb-12 px-4">
-            <div class="relative bg-[#111]/80 backdrop-blur-md border-l-4 border-purple-700 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#111] flex-shrink-0">
-                        <i class="fas fa-book-open"></i>
+            <!-- Lore / Thematic Intro Section -->
+            <section class="max-w-4xl mx-auto mb-12 px-4 mt-8">
+                <div class="relative bg-[#111]/80 backdrop-blur-md border-l-4 border-purple-700 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#111] flex-shrink-0">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-purple-700 tracking-wide uppercase">Lore Archive</h2>
                     </div>
-                    <h2 class="text-xl md:text-2xl font-bold text-purple-700 tracking-wide uppercase">Lore Archive</h2>
+                    <p class="text-gray-300 leading-relaxed italic text-lg md:text-xl font-serif">
+                        "The Supreme King's dark army wields the corrupted Pendulum and Fusion mechanics of the Dimensional War. The introduction of the Blazing Dominion era catalyzes a structural renaissance, synthesizing the identities of Starving Venom and Clear Wing into an absolute apex predator. His reign is absolute."
+                    </p>
                 </div>
-                <p class="text-gray-300 leading-relaxed italic text-lg md:text-xl font-serif">
-                    "The Supreme King's dark army wields the corrupted Pendulum and Fusion mechanics of the Dimensional War. Supreme King Dragon Starving Venom copies names and effects, while Z-ARC—the ultimate fusion of all four dimension dragons—cannot be destroyed by any conventional means. His reign is absolute."
-                </p>
-            </div>
-        </section>
+            </section>
         </div>
 
-                <!-- Executive Summary Section -->
-        <section class="mb-10 md:mb-16 animate-fadeIn">
-            <div class="card p-6">
-                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
-                <p class="text-indigo-200">
-                    The <strong class="text-accent font-bold">"Supreme King"</strong> archetype has transformed from a lore-centric concept into a formidable competitive force. Initially defined by its boss monster, <strong class="text-accent font-bold">Supreme King Z-ARC</strong>, the archetype now functions as a highly consistent and powerful Pendulum engine. This engine excels when hybridized with other archetypes, most notably "Pendulum Magicians," to create a complex, high-skill deck. For years, this engine was capable of constructing some of the most oppressive end boards in the game. However, recent, severe hits on the TCG Forbidden & Limited List have <a href="#banlist-impact" class="lore-link">forced the deck to evolve</a>, moving away from generic negate boards to focus on its own powerful in-archetype traps.
+        <!-- TAB NAVIGATION -->
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-10 border-b border-[#4c3d8e] pb-4">
+            <button id="tab-classic" class="tab-btn px-6 py-3 rounded-xl font-bold text-[#a78bfa] hover:text-white hover:bg-[#2a1a5c] transition-all w-full sm:w-auto">
+                <i class="fas fa-scroll mr-2"></i> Classic Engine & History
+            </button>
+            <button id="tab-modern" class="tab-btn active px-6 py-3 rounded-xl font-bold text-white transition-all w-full sm:w-auto">
+                <i class="fas fa-fire-alt mr-2 text-orange-400"></i> 2026: Blazing Dominion Update
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: CLASSIC ENGINE (OLD CONTENT)        -->
+        <!-- ========================================== -->
+        <div id="content-classic" class="tab-content">
+            <!-- Executive Summary Section -->
+            <section class="mb-10 md:mb-16">
+                <div class="card p-6">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
+                    <p class="text-indigo-200">
+                        The <strong class="text-accent font-bold">"Supreme King"</strong> archetype has transformed from a lore-centric concept into a formidable competitive force. Initially defined by its boss monster, <strong class="text-accent font-bold">Supreme King Z-ARC</strong>, the archetype now functions as a highly consistent and powerful Pendulum engine. This engine excels when hybridized with other archetypes, most notably "Pendulum Magicians," to create a complex, high-skill deck. For years, this engine was capable of constructing some of the most oppressive end boards in the game. However, recent, severe hits on the TCG Forbidden & Limited List have <a href="#banlist-status" class="lore-link">forced the deck to evolve</a>, moving away from generic negate boards to focus on its own powerful in-archetype traps.
+                    </p>
+                </div>
+            </section>
+
+            <!-- The Supreme King's Court Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Supreme King's Court</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Monsters -->
+                    <div class="card p-6">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-dragon text-4xl text-purple-300 mr-4"></i>
+                            <h3 class="text-xl font-bold text-white">Dragons of Domination</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Supreme King Dragon Darkwurm</h4>
+                                <p class="text-sm text-indigo-200">The heart of the engine. A one-card starter via `Foolish Burial` or `Dragon Shrine`. Summons itself from the GY and searches a "Supreme King Gate" monster.</p>
+                            </div>
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Supreme King Dragon Lightwurm</h4>
+                                <p class="text-sm text-indigo-200">A vital Level 4 Tuner and extender. Recycles "Supreme King" Pendulum monsters from the Extra Deck to the hand and enables Synchro/Xyz plays.</p>
+                            </div>
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Supreme King Gate Magician</h4>
+                                <p class="text-sm text-indigo-200">The critical bridge. Summons itself from hand and searches for the archetype's game-changing trap cards, primarily `Soul of the Supreme Celestial King`.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Spells & Traps -->
+                    <div class="card p-6">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-scroll text-4xl text-purple-300 mr-4"></i>
+                            <h3 class="text-xl font-bold text-white">The Overlord's Edicts</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Supreme King Gate Zero</h4>
+                                <p class="text-sm text-indigo-200">The primary low-scale (Scale 0) target, set by `Gate Magician` to complete the Pendulum Scales for a massive summon.</p>
+                            </div>
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Wings of Light</h4>
+                                <p class="text-sm text-indigo-200">A flexible Quick-Play Spell that searches any "Supreme King" Dragon or Gate monster, adding another layer of consistency to the deck.</p>
+                            </div>
+                            <div class="card combo-step-card p-4">
+                                <h4 class="text-lg font-bold text-accent mb-1">Soul of the Supreme Celestial King</h4>
+                                <p class="text-sm text-indigo-200">The modern win condition. This trap tributes a Spellcaster to Fusion Summon `Supreme King Z-ARC` during the opponent's turn, triggering its effect to wipe the entire field.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Core Combo Walkthrough (Historical) Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Historical Combo: The Electrumite Loop</h2>
+                <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                    For years, the deck's power was defined by its access to <strong class="text-accent">Heavymetalfoes Electrumite</strong>. This combo is **NO LONGER LEGAL** in the TCG but is essential for understanding the deck's design.
                 </p>
-            </div>
-        </section>
+                <div class="flex flex-col items-center gap-6">
+                    <!-- Step 1 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="darkwurm-img-container" class="card-image-container flex-shrink-0 card-placeholder">Supreme King Dragon Darkwurm</div>
+                            <div>
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-[#1b0f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                    <h3 class="text-lg font-bold">The Starter</h3>
+                                </div>
+                                <p class="text-indigo-200">Start by sending <strong class="text-accent">Darkwurm</strong> to the GY (e.g., with `Dragon Shrine`). <strong class="text-accent">Darkwurm</strong> revives itself and searches <strong class="text-accent">Gate Magician</strong>, which in turn summons itself and searches a trap.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg bg-red-900 bg-opacity-30 border-red-500">
+                         <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="electrumite-img-container" class="card-image-container flex-shrink-0 card-placeholder">Heavymetalfoes Electrumite</div>
+                            <div>
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-[#1b0f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                    <h3 class="text-lg font-bold text-red-400">The Engine <span class="text-red-400">(FORBIDDEN)</span></h3>
+                                </div>
+                                <p class="text-indigo-200">Link Summon <strong class="text-red-400">Heavymetalfoes Electrumite</strong>. Use its effect to send <strong class="text-accent">Astrograph Sorcerer</strong> to the Extra Deck. This was the deck's primary advantage engine.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="card p-6 combo-step-card w-full max-w-lg bg-red-900 bg-opacity-30 border-red-500">
+                         <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                            <div id="astrograph-img-container" class="card-image-container flex-shrink-0 card-placeholder">Astrograph Sorcerer</div>
+                            <div>
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-[#1b0f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                    <h3 class="text-lg font-bold text-yellow-400">The Loop <span class="text-yellow-400">(LIMITED)</span></h3>
+                                </div>
+                                <p class="text-indigo-200">Use <strong class="text-red-400">Electrumite</strong> to destroy a scale, add <strong class="text-yellow-400">Astrograph Sorcerer</strong> back to hand, and trigger Astrograph to summon itself. This loop generated massive card advantage, leading to end boards of multiple negates.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Modern Endboard Section -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Modern End Board: The Z-ARC Trap</h2>
+                <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                    With its historical combo pieces banned, the deck now focuses on a more direct, archetype-focused end board. The goal is to consistently set up the devastating trap card <strong class="text-accent">Soul of the Supreme Celestial King</strong>.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-4xl">
+                    <!-- Exceed the Pendulum -->
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">Exceed the Pendulum</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="exceed-img-container" class="card-image-container card-placeholder">Exceed the Pendulum</div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                            <li>The primary Link monster post-Electrumite.</li>
+                            <li>Recurs key Pendulum monsters from the Extra Deck.</li>
+                        </ul>
+                    </div>
+                    <!-- Odd-Eyes Vortex Dragon -->
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">Odd-Eyes Vortex Dragon</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="vortex-img-container" class="card-image-container card-placeholder">Odd-Eyes Vortex Dragon</div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                            <li>Summoned via `Odd-Eyes Absolute Dragon`.</li>
+                            <li>Provides a reliable, reusable omni-negate.</li>
+                        </ul>
+                    </div>
+                    <!-- The Z-ARC Trap -->
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">The Z-ARC Trap</h3>
+                        <div class="flex justify-center mb-4">
+                            <div id="trap-img-container" class="card-image-container card-placeholder">Soul of the Supreme Celestial King</div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-2 text-indigo-200">
+                            <li>The deck's main disruption.</li>
+                            <li>Summons `Z-ARC` on the opponent's turn to wipe their board.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
 
-        <!-- The Supreme King's Court Section -->
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">The Supreme King's Court</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Monsters -->
-                <div class="card p-6">
+        <!-- ========================================== -->
+        <!-- TAB 2: 2026 BLAZING DOMINION (NEW CONTENT) -->
+        <!-- ========================================== -->
+        <div id="content-modern" class="tab-content active">
+            <!-- Strategic Overview -->
+            <section class="mb-10 md:mb-16">
+                <div class="card p-6 bg-gradient-to-br from-[#1b0f3b] to-[#2a1a5c]">
                     <div class="flex items-center mb-4">
-                        <i class="fas fa-dragon text-4xl text-purple-300 mr-4"></i>
-                        <h3 class="text-xl font-bold text-white">Dragons of Domination</h3>
+                        <i class="fas fa-meteor text-4xl text-orange-400 mr-4"></i>
+                        <h2 class="text-2xl md:text-3xl font-bold text-white">The 2026 Renaissance</h2>
                     </div>
-                    <div class="space-y-4">
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Supreme King Dragon Darkwurm</h4>
-                            <p class="text-sm text-indigo-200">The heart of the engine. A one-card starter via `Foolish Burial` or `Dragon Shrine`. Summons itself from the GY and searches a "Supreme King Gate" monster.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Supreme King Dragon Lightwurm</h4>
-                            <p class="text-sm text-indigo-200">A vital Level 4 Tuner and extender. Recycles "Supreme King" Pendulum monsters from the Extra Deck to the hand and enables Synchro/Xyz plays.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Supreme King Gate Magician</h4>
-                            <p class="text-sm text-indigo-200">The critical bridge. Summons itself from hand and searches for the archetype's game-changing trap cards, primarily `Soul of the Supreme Celestial King`.</p>
-                        </div>
-                    </div>
+                    <p class="text-indigo-200 text-lg leading-relaxed mb-4">
+                        The introduction of the <strong class="text-orange-400">Blazing Dominion (BLZD)</strong> core booster set fundamentally recalibrates the Supreme King strategy. Moving away from generic Extra Deck climbing, the metagame now demands reactive, multi-layered disruption capable of stymieing complex combos while providing aggressive board breaking. 
+                    </p>
+                    <p class="text-indigo-200 text-lg leading-relaxed">
+                        The archetype achieves this strategic mandate through its highly anticipated new boss monster: <strong class="text-accent font-bold">Starving Venom Wing Dragon</strong>. By perfectly synthesizing the mechanical identities of the "Starving Venom" and "Clear Wing" lineages, it introduces a sophisticated matrix of targeted resource recycling and asymmetrical floodgating.
+                    </p>
                 </div>
-                <!-- Spells & Traps -->
-                <div class="card p-6">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-scroll text-4xl text-purple-300 mr-4"></i>
-                        <h3 class="text-xl font-bold text-white">The Overlord's Edicts</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Supreme King Gate Zero</h4>
-                            <p class="text-sm text-indigo-200">The primary low-scale (Scale 0) target, set by `Gate Magician` to complete the Pendulum Scales for a massive summon.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Wings of Light</h4>
-                            <p class="text-sm text-indigo-200">A flexible Quick-Play Spell that searches any "Supreme King" Dragon or Gate monster, adding another layer of consistency to the deck.</p>
-                        </div>
-                        <div class="card combo-step-card p-4">
-                            <h4 class="text-lg font-bold text-accent mb-1">Soul of the Supreme Celestial King</h4>
-                            <p class="text-sm text-indigo-200">The modern win condition. This trap tributes a Spellcaster to Fusion Summon `Supreme King Z-ARC` during the opponent's turn, triggering its effect to wipe the entire field.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Core Combo Walkthrough (Historical) Section -->
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Historical Combo: The Electrumite Loop</h2>
-            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
-                For years, the deck's power was defined by its access to <strong class="text-accent">Heavymetalfoes Electrumite</strong>. This combo is **NO LONGER LEGAL** in the TCG but is essential for understanding the deck's design.
-            </p>
-            <div class="flex flex-col items-center gap-6">
-                <!-- Step 1 -->
-                <div class="card p-6 combo-step-card w-full max-w-lg">
-                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                        <div id="darkwurm-img-container" class="card-image-container flex-shrink-0 card-placeholder">Supreme King Dragon Darkwurm</div>
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <span class="bg-[#1b0f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
-                                <h3 class="text-lg font-bold">The Starter</h3>
-                            </div>
-                            <p class="text-indigo-200">Start by sending <strong class="text-accent">Darkwurm</strong> to the GY (e.g., with `Dragon Shrine`). <strong class="text-accent">Darkwurm</strong> revives itself and searches <strong class="text-accent">Gate Magician</strong>, which in turn summons itself and searches a trap.</p>
+            <!-- Ontological Analysis -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-8 text-center heading-underline">Ontological Analysis: Starving Venom Wing Dragon</h2>
+                
+                <div class="flex flex-col lg:flex-row gap-8 items-start">
+                    <!-- Boss Monster Card Display -->
+                    <div class="w-full lg:w-1/3 flex flex-col items-center">
+                        <div class="card p-4 w-full flex justify-center mb-4 shadow-[0_0_20px_rgba(167,139,250,0.5)] border-2 border-purple-500">
+                            <div id="sv-wing-dragon-img-container" class="card-image-container card-placeholder" style="max-width: 250px; min-height: 360px;">Starving Venom Wing Dragon</div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 justify-center">
+                            <span class="stat-badge"><i class="fas fa-star text-yellow-400"></i> Level 10</span>
+                            <span class="stat-badge"><i class="fas fa-moon text-purple-400"></i> DARK</span>
+                            <span class="stat-badge"><i class="fas fa-dragon text-red-400"></i> Dragon/Fusion/Pendulum</span>
+                            <span class="stat-badge"><i class="fas fa-balance-scale text-blue-400"></i> Scale 10</span>
+                            <span class="stat-badge text-green-300">ATK 3300 / DEF 2500</span>
                         </div>
                     </div>
-                </div>
-                <!-- Arrow -->
-                <div class="w-full flex justify-center">
-                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                </div>
-                <!-- Step 2 -->
-                <div class="card p-6 combo-step-card w-full max-w-lg bg-red-900 bg-opacity-30 border-red-500">
-                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                        <div id="electrumite-img-container" class="card-image-container flex-shrink-0 card-placeholder">Heavymetalfoes Electrumite</div>
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <span class="bg-[#1b0f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
-                                <h3 class="text-lg font-bold text-red-400">The Engine <span class="text-red-400">(FORBIDDEN)</span></h3>
-                            </div>
-                            <p class="text-indigo-200">Link Summon <strong class="text-red-400">Heavymetalfoes Electrumite</strong>. Use its effect to send <strong class="text-accent">Astrograph Sorcerer</strong> to the Extra Deck. This was the deck's primary advantage engine.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Arrow -->
-                <div class="w-full flex justify-center">
-                    <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                </div>
-                <!-- Step 3 -->
-                <div class="card p-6 combo-step-card w-full max-w-lg bg-red-900 bg-opacity-30 border-red-500">
-                     <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                        <div id="astrograph-img-container" class="card-image-container flex-shrink-0 card-placeholder">Astrograph Sorcerer</div>
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <span class="bg-[#1b0f3b] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
-                                <h3 class="text-lg font-bold text-yellow-400">The Loop <span class="text-yellow-400">(LIMITED)</span></h3>
-                            </div>
-                            <p class="text-indigo-200">Use <strong class="text-red-400">Electrumite</strong> to destroy a scale, add <strong class="text-yellow-400">Astrograph Sorcerer</strong> back to hand, and trigger Astrograph to summon itself. This loop generated massive card advantage, leading to end boards of multiple negates.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Modern Endboard Section -->
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Modern End Board: The Z-ARC Trap</h2>
-            <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
-                With its historical combo pieces banned, the deck now focuses on a more direct, archetype-focused end board. The goal is to consistently set up the devastating trap card <strong class="text-accent">Soul of the Supreme Celestial King</strong>.
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto max-w-4xl">
-                <!-- Exceed the Pendulum -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-white mb-4 text-center">Exceed the Pendulum</h3>
-                    <div class="flex justify-center mb-4">
-                        <div id="exceed-img-container" class="card-image-container card-placeholder">Exceed the Pendulum</div>
-                    </div>
-                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
-                        <li>The primary Link monster post-Electrumite.</li>
-                        <li>Recurs key Pendulum monsters from the Extra Deck.</li>
-                    </ul>
-                </div>
-                <!-- Odd-Eyes Vortex Dragon -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-white mb-4 text-center">Odd-Eyes Vortex Dragon</h3>
-                    <div class="flex justify-center mb-4">
-                        <div id="vortex-img-container" class="card-image-container card-placeholder">Odd-Eyes Vortex Dragon</div>
-                    </div>
-                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
-                        <li>Summoned via `Odd-Eyes Absolute Dragon`.</li>
-                        <li>Provides a reliable, reusable omni-negate.</li>
-                    </ul>
-                </div>
-                <!-- The Z-ARC Trap -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-white mb-4 text-center">The Z-ARC Trap</h3>
-                    <div class="flex justify-center mb-4">
-                        <div id="trap-img-container" class="card-image-container card-placeholder">Soul of the Supreme Celestial King</div>
-                    </div>
-                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
-                        <li>The deck's main disruption.</li>
-                        <li>Summons `Z-ARC` on the opponent's turn to wipe their board.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
 
-        <!-- Competitive Analysis Section -->
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Competitive Analysis</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Strengths Card -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
-                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
-                        <li><span class="pro-icon"><i class="fas fa-check-circle"></i></span> <strong class="text-green-300">High Consistency:</strong> Multiple one-card starters (`Darkwurm`, `Dragon Shrine`, `Wings of Light`) ensure the engine starts.</li>
-                        <li><span class="pro-icon"><i class="fas fa-layer-group"></i></span> <strong class="text-green-300">Redundancy:</strong> Overlapping search effects allow the deck to play through one or two interruptions.</li>
-                        <li><span class="pro-icon"><i class="fas fa-bomb"></i></span> <strong class="text-green-300">High-Impact Trap:</strong> The `Z-ARC` board wipe is one of the most powerful, game-ending traps in Yu-Gi-Oh!</li>
-                    </ul>
-                </div>
-                <!-- Weaknesses Card -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
-                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
-                        <li><span class="con-icon"><i class="fas fa-ban"></i></span> <strong class="text-red-300">Crippled by Banlist:</strong> The loss of `Electrumite` and `Apollousa` destroyed the deck's ability to build multi-negate boards.</li>
-                        <li><span class="con-icon"><i class="fas fa-hand-paper"></i></span> <strong class="text-red-300">Floodgate Vulnerability:</strong> Extremely weak to `Anti-Spell Fragrance` and `Droll & Lock Bird`.</li>
-                        <li><span class="con-icon"><i class="fas fa-ghost"></i></span> <strong class="text-red-300">Grave Hate:</strong> Relies on `Darkwurm` in the GY, making it vulnerable to `Bystial` monsters or `D.D. Crow`.</li>
-                    </ul>
-                </div>
-                <!-- Synergies -->
-                <div class="card p-6 pro-con-card">
-                    <h3 class="text-xl font-bold text-white mb-4">Core Synergies</h3>
-                    <ul class="list-disc list-inside space-y-2 text-indigo-200">
-                        <li><span class="neutral-icon"><i class="fas fa-theater-masks"></i></span> <strong class="text-accent">Pendulum Magicians:</strong> The deck's premier partner, providing extenders and destruction triggers (`Double Iris`, `Purple Poison`).</li>
-                        <li><span class="neutral-icon"><i class="fas fa-dragon"></i></span> <strong class="text-accent">Odd-Eyes:</strong> Used to access the powerful `Odd-Eyes Vortex Dragon` negate via `Odd-Eyes Absolute Dragon`.</li>
-                        <li><span class="neutral-icon"><i class="fas fa-cog"></i></span> <strong class="text-accent">Generic Pendulum:</strong> Relies on generic support like `Exceed the Pendulum` and `Beyond the Pendulum` to function.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>      
+                    <!-- Mechanics Breakdown -->
+                    <div class="w-full lg:w-2/3 space-y-6">
+                        <div class="card p-6 border-l-4 border-l-red-500">
+                            <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-shield-alt text-red-400 mr-2"></i> The Interception Protocol (Monster Zone)</h3>
+                            <p class="text-indigo-200">
+                                Acts as a highly targeted reactive disruption. <strong class="text-white">Once per turn, if your opponent Special Summons:</strong> You can target that monster to negate its effects AND absorb its ATK until the end of the turn. This routinely pushes the dragon well past 6000 ATK. Crucially, it triggers automatically in response to the summon, not an ignition effect.
+                            </p>
+                            <p class="text-indigo-200 mt-2">
+                                <strong class="text-accent">Omnidirectional Quick Effect:</strong> Once per turn, when another card activates a Quick Effect, it can simply destroy 1 card on the field. You can even trigger this yourself using your own effects.
+                            </p>
+                        </div>
 
-        <!-- TCG Banlist Impact Section -->
+                        <div class="card p-6 border-l-4 border-l-blue-500">
+                            <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-lock text-blue-400 mr-2"></i> Asymmetrical Floodgate (Pendulum Zone)</h3>
+                            <p class="text-indigo-200">
+                                Upon destruction, the massive 3300 ATK threat doesn't die—it moves to the Pendulum Zone. Here, it establishes a continuous lock via <strong class="text-accent">Predator Counters</strong>.
+                            </p>
+                            <p class="text-indigo-200 mt-2">
+                                Each time the opponent Special Summons, a counter is placed on the monster. Any monster with a counter that is Level 2 or higher is <strong class="text-red-400 font-bold">forced to Level 1</strong>. This paralyzes Synchro and Xyz reliant strategies, acting as a one-sided "Skill Drain" specifically against level-based Extra Deck mechanics.
+                            </p>
+                        </div>
+
+                        <div class="card p-6 border-l-4 border-l-yellow-500 bg-[#2a1a5c]">
+                            <h3 class="text-xl font-bold text-yellow-400 mb-2"><i class="fas fa-history text-yellow-400 mr-2"></i> Historical Design Fix: Eradicating the FTK</h3>
+                            <div class="flex items-center gap-4">
+                                <div id="skd-starving-venom-img-container" class="card-image-container card-placeholder" style="max-width: 80px; min-height: 120px;">Supreme King Dragon Starving Venom</div>
+                                <p class="text-indigo-200 text-sm">
+                                    Unlike its banned predecessor (<strong class="text-red-400">Supreme King Dragon Starving Venom</strong>), which proactively copied graveyard effects to enable degenerate burn loops (like Lyrilusc - Independent Nightingale FTKs), the new Wing Dragon relies entirely on <strong class="text-white">reactive engagement</strong> and hard once-per-turn clauses.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- The Super Duper Polymerization & Attribute Trap -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Super Duper Polymerization" Catalyst Engine</h2>
+                <p class="text-indigo-200 mb-8 text-center max-w-3xl mx-auto">
+                    Fusing a Fusion Monster and a "Clear Wing" monster is an arduous task. The Supreme King/Predaplant engine solves this using a revolutionary Spell Speed 4 normal spell: <strong class="text-accent">Super Duper Polymerization</strong> (Chouitsu Yuugou).
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- The Spell -->
+                    <div class="card p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                        <div id="apex-fusion-img-container" class="card-image-container card-placeholder flex-shrink-0" style="max-width: 120px; min-height: 175px;">Super Duper Polymerization</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">The 2000 LP Economic Tax</h3>
+                            <p class="text-indigo-200 text-sm">
+                                "Neither player can activate cards or effects in response." You pay 2000 LP, target a monster you control, and Special Summon an Extra Deck monster with the same Type/Attribute but different Level, then immediately fuse them.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- The Paradox Loophole -->
+                    <div class="card p-6 combo-step-card border-2 border-red-500/50">
+                        <h3 class="text-xl font-bold text-red-400 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i> The "Attribute Trap" Paradox</h3>
+                        <p class="text-indigo-200 mb-4">
+                            To summon Wing Dragon using Super Duper Polymerization, players hit a roadblock. They need to target <strong class="text-white">Starving Venom Fusion Dragon (DARK)</strong> to summon <strong class="text-green-300">Clear Wing Synchro Dragon (WIND)</strong>. But Super Duper Polymerization requires the same attribute.
+                        </p>
+                        <div class="bg-[#1b0f3b] p-4 rounded-lg border border-purple-500 flex items-center gap-4">
+                            <div id="skd-clear-wing-img-container" class="card-image-container card-placeholder" style="max-width: 80px; min-height: 120px;">SKD Clear Wing</div>
+                            <div>
+                                <h4 class="font-bold text-accent">The Supreme King Loophole</h4>
+                                <p class="text-xs text-indigo-200">
+                                    The archetype provides the elegant answer: <strong class="text-white">Supreme King Dragon Clear Wing</strong>. Because its attribute was intentionally altered to <strong class="text-purple-400">DARK</strong> during its design, it perfectly satisfies Super Duper Polymerization's strict requirement, allowing the un-interruptible summon sequence to resolve.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Predaplant Combo Route -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Primary Predaplant Combo Architecture</h2>
+                <p class="text-indigo-200 mb-8 text-center max-w-2xl mx-auto">
+                    The Blazing Dominion Predaplant support provides a highly focused combo path to manually bypass attribute constraints without relying solely on the Supreme King loophole. <br>
+                    <span class="text-sm text-orange-300 font-bold">Requirement: Predaplant Ophrys Scorpio + 1 Discard</span>
+                </p>
+
+                <div class="space-y-4 max-w-4xl mx-auto relative">
+                    <!-- Vertical Line for Timeline -->
+                    <div class="hidden md:block absolute left-12 top-8 bottom-8 w-1 bg-purple-600/30"></div>
+
+                    <!-- Step 1 -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-4 relative z-10">
+                        <div class="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center font-bold text-white border-4 border-[#0a041a] flex-shrink-0 z-10">1</div>
+                        <div id="scorpio-img-container" class="card-image-container card-placeholder hidden md:flex" style="max-width: 80px; min-height: 120px;">Scorpio</div>
+                        <div>
+                            <h4 class="text-lg font-bold text-accent">The Starter Assembly</h4>
+                            <p class="text-indigo-200 text-sm">Normal Summon <strong class="text-white">Ophrys Scorpio</strong>, discard to Special Summon <strong class="text-white">Darlingtonia Cobra</strong> from Deck. Search <strong class="text-accent">Predaprimitive</strong>.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-4 relative z-10">
+                        <div class="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center font-bold text-white border-4 border-[#0a041a] flex-shrink-0 z-10">2</div>
+                        <div class="hidden md:flex card-image-container card-placeholder flex-col justify-center items-center" style="max-width: 80px; min-height: 120px;">
+                            <i class="fas fa-magic text-2xl text-purple-400 mb-1"></i><span class="text-[10px]">Predaprimitive</span>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-accent">Extension & Searching</h4>
+                            <p class="text-indigo-200 text-sm">Activate Predaprimitive, sending Byblisp to GY to search <strong class="text-white">Ultra Polymerization</strong> and the new <strong class="text-white">Lilizard</strong>. Special Summon Lilizard to search basic Polymerization.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-4 relative z-10">
+                        <div class="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center font-bold text-white border-4 border-[#0a041a] flex-shrink-0 z-10">3</div>
+                        <div id="clear-wing-synchro-img-container" class="card-image-container card-placeholder hidden md:flex" style="max-width: 80px; min-height: 120px;">Clear Wing</div>
+                        <div>
+                            <h4 class="text-lg font-bold text-accent">Manual Attribute Modification</h4>
+                            <p class="text-indigo-200 text-sm">Use Ultra Poly for Ambulomelides, revive materials, synchro into <strong class="text-green-300">Clear Wing Synchro Dragon</strong>. <strong class="text-red-400">CRITICAL:</strong> Use Lilizard's effect to manually rewrite Clear Wing's WIND attribute to <strong class="text-purple-400">DARK</strong> on the field.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="card p-4 flex flex-col md:flex-row items-center gap-4 relative z-10">
+                        <div class="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center font-bold text-white border-4 border-[#0a041a] flex-shrink-0 shadow-[0_0_15px_rgba(249,115,22,0.6)] z-10">4</div>
+                        <div id="starving-venom-fusion-img-container" class="card-image-container card-placeholder hidden md:flex" style="max-width: 80px; min-height: 120px;">Starving Venom</div>
+                        <div>
+                            <h4 class="text-lg font-bold text-orange-400">The Capstone Resolution</h4>
+                            <p class="text-indigo-200 text-sm">Fuse the newly DARK Clear Wing with another DARK monster for <strong class="text-white">Starving Venom Fusion Dragon</strong>. Finally, trigger <strong class="text-orange-400">Super Duper Polymerization</strong> to synthesize both into the ultimate <strong class="text-white">Starving Venom Wing Dragon</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Deck Construction Theory -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">2026 Deck Construction Theory</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-layer-group text-blue-400 mr-2"></i> The 60-Card Paradigm</h3>
+                        <p class="text-indigo-200 text-sm leading-relaxed">
+                            Modern iterations adopt a massive 60-card Main Deck structure. While traditionally reducing consistency, the sheer volume of redundant searchers (3x Gate Magician, 3x Darkwurm) and overlapping Predaplant/Magician starters actively negates this drawback, allowing the deck to play through multiple layers of hand traps without "bricking."
+                        </p>
+                    </div>
+                    <div class="card p-6 pro-con-card">
+                        <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-exchange-alt text-green-400 mr-2"></i> Side Deck Placement</h3>
+                        <p class="text-indigo-200 text-sm leading-relaxed">
+                            A striking tactical trend is placing <strong class="text-accent">Starving Venom Wing Dragon</strong> strictly in the Side Deck for Game 1. Because Link-based strategies (like Cyberse) completely ignore the Level 1 Predator Counter floodgate, competitive players preserve Extra Deck space for generic utility, only weaponizing Wing Dragon in Games 2/3 when mathematically certain the opponent relies on Synchro/Xyz mechanics.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- ========================================== -->
+        <!-- END OF TABS                                -->
+        <!-- ========================================== -->
+
+
+        <!-- TCG Banlist Impact Section (Global) -->
         <section>
             <div id="banlist-status">
                 <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
             </div>
         </section>
 
-
-        <!-- Deck Resources Section -->
+        <!-- Deck Resources Section (Global) -->
         <section>
             <div id="deck-resources-container">
                 <!-- Deck search section will be populated by CardLoader.renderDeckSearchSection -->
@@ -519,8 +735,34 @@
         </section>
 
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+
+            // --- TAB SWITCHING LOGIC ---
+            const tabClassic = document.getElementById('tab-classic');
+            const tabModern = document.getElementById('tab-modern');
+            const contentClassic = document.getElementById('content-classic');
+            const contentModern = document.getElementById('content-modern');
+
+            function switchTab(tabToActivate) {
+                if(tabToActivate === 'classic') {
+                    tabClassic.classList.add('active');
+                    tabModern.classList.remove('active');
+                    contentClassic.classList.add('active');
+                    contentModern.classList.remove('active');
+                } else {
+                    tabModern.classList.add('active');
+                    tabClassic.classList.remove('active');
+                    contentModern.classList.add('active');
+                    contentClassic.classList.remove('active');
+                }
+            }
+
+            tabClassic.addEventListener('click', () => switchTab('classic'));
+            tabModern.addEventListener('click', () => switchTab('modern'));
+
+
             // --- SUPREME KING VORTEX ANIMATION ---
             const canvas = document.getElementById('vortex-canvas');
             if (canvas) {
@@ -627,7 +869,7 @@
             // --- CARD LOADING ---
             // Use the CardLoader.js functions
             CardLoader.loadCards({
-                // Core Cards
+                // Core Cards (Classic)
                 'darkwurm-img-container': 'Supreme King Dragon Darkwurm',
                 'lightwurm-img-container': 'Supreme King Dragon Lightwurm',
                 'gate-magician-img-container': 'Supreme King Gate Magician',
@@ -645,17 +887,27 @@
                 'savage-img-container': 'Borreload Savage Dragon',
                 'absolute-img-container': 'Odd-Eyes Absolute Dragon',
                 'ip-img-container': 'I:P Masquerena',
-                'apollousa-img-container': 'Apollousa, Bow of the Goddess'
+                'apollousa-img-container': 'Apollousa, Bow of the Goddess',
+                
+                // NEW BLZD CARDS (2026 Update)
+                'sv-wing-dragon-img-container': 'Starving Venom Wing Dragon',
+                'skd-starving-venom-img-container': 'Supreme King Dragon Starving Venom',
+                'apex-fusion-img-container': 'Super Duper Polymerization',
+                'skd-clear-wing-img-container': 'Supreme King Dragon Clear Wing',
+                'scorpio-img-container': 'Predaplant Ophrys Scorpio',
+                'clear-wing-synchro-img-container': 'Clear Wing Synchro Dragon',
+                'starving-venom-fusion-img-container': 'Starving Venom Fusion Dragon'
             });
 
             // Render banlist section
             await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Supreme King', {
                 relatedCards: [
-                    // Forbidden cards that crippled the deck
+                    // Forbidden cards that crippled the deck historically
                     'Heavymetalfoes Electrumite',
                     'Astrograph Sorcerer',
                     'Apollousa, Bow of the Goddess',
                     'Borreload Savage Dragon',
+                    'Supreme King Dragon Starving Venom', // Added based on new lore
                     // Limited I:P Masquerena
                     'I:P Masquerena',
                     // Pendulum Magician synergy
@@ -690,12 +942,12 @@
                     'D.D. Crow'
                 ],
                 archetypeTraits: {
-                    coreMechanic: 'Pendulum Summoning engine focused on generating advantage through Darkwurm\'s instant Spell/Trap Zone setup and Gate Zero\'s consistent searching, originally designed to enable explosive multi-summon boards',
-                    supportReliance: 'Extremely high - completely dependent on Pendulum Magician synergy and generic Pendulum support, with the loss of Electrumite severely limiting consistency and board-building potential',
-                    adaptability: 'Limited adaptability - the archetype functions almost exclusively as a Pendulum engine within hybrid builds, primarily Pendulum Magician variants, with minimal standalone viability',
-                    resilience: 'Very poor resilience - linear combo structure with heavy reliance on Normal Summon and Pendulum Zones makes the deck extremely vulnerable to hand traps like Ash Blossom and Nibiru, with minimal recovery options once disrupted',
-                    keyLoss: 'Electrumite Forbidden status eliminated the deck\'s primary consistency tool and Extra Deck searcher, while Apollousa and Borreload Savage Dragon bans removed the ability to create multi-negate boards, forcing reliance on archetype-specific traps',
-                    alternativeStrategy: 'Post-banlist builds focus on Wings of Light and Soul of the Supreme Celestial King as disruption tools, with Odd-Eyes Vortex Dragon serving as the primary negate, shifting from generic boss monster spam to archetype-specific control strategies'
+                    coreMechanic: 'Pendulum Summoning engine focused on generating advantage through Darkwurm\'s instant Spell/Trap Zone setup and Gate Zero\'s consistent searching, evolving in 2026 to integrate reactive Fusion floodgates.',
+                    supportReliance: 'Extremely high - completely dependent on Pendulum Magician and Predaplant synergy. The loss of Electrumite severely limited early consistency, forcing adaptation to BLZD combo lines.',
+                    adaptability: 'High adaptability in 2026 - the archetype functions efficiently within 60-card hybrid builds alongside Predaplants to execute complex, unrespondable fusion chains via Super Duper Polymerization.',
+                    resilience: 'Moderate resilience - linear combo structure remains vulnerable to Ash Blossom, but the new reactive nature of Starving Venom Wing Dragon provides immense punishment for opponent combo extensions.',
+                    keyLoss: 'Electrumite Forbidden status eliminated early generic climbing, and Supreme King Dragon Starving Venom was famously banned for non-interactive FTK burn loops involving Independent Nightingale.',
+                    alternativeStrategy: 'Post-2026 builds pivot drastically, utilizing Super Duper Polymerization and Supreme King Dragon Clear Wing loopholes to construct impenetrable, asymmetrical floodgate boards targeting Synchro and Xyz mechanics.'
                 }
             });
 
