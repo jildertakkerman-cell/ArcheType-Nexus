@@ -876,6 +876,7 @@ class DuelSimulator {
                 <button class="sim-btn sim-btn-nav btn-next"><i class="fas fa-step-forward"></i></button>
                 <button class="sim-btn sim-btn-nav btn-gy" title="View Graveyard"><i class="fas fa-skull"></i> GY</button>
                 <button class="sim-btn sim-btn-nav btn-banish" title="View Banished Cards"><i class="fas fa-fire"></i> Banish</button>
+                <button class="sim-btn sim-btn-sound btn-sound" title="Sound On"><i class="fas fa-volume-up"></i></button>
             </div>
             <div class="sim-log"><div class="log-entry" style="color:#94a3b8">Ready to duel.</div></div>
         `;
@@ -891,6 +892,16 @@ class DuelSimulator {
         container.querySelector('.btn-play').onclick = () => this.togglePlay();
         container.querySelector('.btn-gy').onclick = () => this.showGraveyardContents();
         container.querySelector('.btn-banish').onclick = () => this.showBanishedContents();
+        const soundBtn = container.querySelector('.btn-sound');
+        if (soundBtn) {
+            soundBtn.onclick = () => {
+                if (typeof ComboSounds === 'undefined') return;
+                const muted = ComboSounds.toggleMute();
+                soundBtn.innerHTML = muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+                soundBtn.title = muted ? 'Sound Off' : 'Sound On';
+                soundBtn.classList.toggle('sound-muted', muted);
+            };
+        }
     }
 
     loadCombo(id) {
@@ -1234,9 +1245,36 @@ class DuelSimulator {
             }
 
             this.currentStep++;
+
+            // Sound effects — fires if combo-sounds.js is loaded on the page
+            if (typeof ComboSounds !== 'undefined') {
+                const lowerText = s.text ? s.text.toLowerCase() : '';
+                let soundEvent;
+                if (summonType) {
+                    soundEvent = summonType;
+                } else if (lowerText.includes('equip')) {
+                    soundEvent = 'equip';
+                } else if (isEffectActivation) {
+                    soundEvent = 'effect';
+                } else if (lowerText.includes('normal summon')) {
+                    soundEvent = 'normal-summon';
+                } else if (lowerText.includes('special summon')) {
+                    soundEvent = 'special-summon';
+                } else if (!s.actions && s.to === 'zone-gy') {
+                    soundEvent = 'to-gy';
+                } else if (!s.actions && s.to === 'zone-banish') {
+                    soundEvent = 'to-banish';
+                } else if (!s.actions && s.to === 'zone-hand') {
+                    soundEvent = 'draw';
+                } else {
+                    soundEvent = 'step';
+                }
+                ComboSounds.play(soundEvent);
+            }
         } else {
             this.log("Combo Complete!");
             this.togglePlay(false);
+            if (typeof ComboSounds !== 'undefined') ComboSounds.play('combo-complete');
         }
     }
 
@@ -1254,6 +1292,9 @@ class DuelSimulator {
         if (lowerText.includes('contact fusion')) return 'contact-fusion';
         if (lowerText.includes('fusion summon') || lowerText.includes('fusion')) return 'fusion';
         if (lowerText.includes('link summon')) return 'link';
+        if (lowerText.includes('ritual summon')) return 'ritual';
+        if (lowerText.includes('pendulum summon')) return 'pendulum';
+        if (lowerText.includes('tribute summon') || lowerText.includes('advance summon')) return 'tribute';
 
         return null;
     }
