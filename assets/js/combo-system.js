@@ -555,9 +555,10 @@ class ComboGuide {
                         <p class="text-sm md:text-base leading-relaxed italic opacity-90" style="color: ${textMain}">
                             <i class="fas fa-quote-left mr-2 opacity-50"></i>${parsedDescription}<i class="fas fa-quote-right ml-2 opacity-50"></i>
                         </p>
-                        ${combo.credits ? `
-                        <p class="mt-3 text-xs font-medium opacity-70" style="color: ${accent};">
-                            <i class="fas fa-user-circle mr-1"></i>${combo.credits}
+                        ${combo.credits || combo.date ? `
+                        <p class="mt-3 text-xs font-medium opacity-70 flex flex-wrap gap-x-4 gap-y-1" style="color: ${accent};">
+                            ${combo.credits ? `<span><i class="fas fa-user-circle mr-1"></i>${combo.credits}</span>` : ''}
+                            ${combo.date ? `<span><i class="fas fa-calendar-alt mr-1"></i>${combo.date}</span>` : ''}
                         </p>
                         ` : ''}
                     </div>

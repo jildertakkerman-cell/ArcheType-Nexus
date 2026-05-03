@@ -3752,16 +3752,16 @@ window.CardLoader = (function () {
 
             warning.innerHTML = `
                 <div style="flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: rgba(251, 191, 36, 0.2); border-radius: 50%; margin-top: 2px;">
-                    <i class="fas fa-robot" style="color: #fbbf24; font-size: 12px;"></i>
+                    <i class="fas fa-book-open" style="color: #fbbf24; font-size: 12px;"></i>
                 </div>
                 <div>
                     <div style="font-weight: 600; color: #fbbf24; margin-bottom: 4px;">
-                        <i class="fas fa-exclamation-triangle" style="margin-right: 6px; font-size: 0.75rem;"></i>Unverified AI Content
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 6px; font-size: 0.75rem;"></i>Combo Guide
                     </div>
                     <div style="color: ${theme.isDark ? '#d1d5db' : '#4b5563'}; font-size: 0.8rem; margin-bottom: 8px;">
-                        This combo line is AI-generated and may contain errors or illegal plays (e.g., banned cards).
+                        These combos may contain errors or use banned cards. If you spot an issue, submit a replay to help keep this guide accurate.
                     </div>
-                    <a href="Replay-Converter.html" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1f2937; font-weight: 600; font-size: 0.75rem; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);"><i class="fas fa-video"></i> Know the correct line? Submit a Replay to fix this guide <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></a>
+                    <a href="Replay-Converter.html" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1f2937; font-weight: 600; font-size: 0.75rem; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);"><i class="fas fa-video"></i> Know a better line? Submit a Replay <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></a>
                 </div>
                 </div>
                 `;
