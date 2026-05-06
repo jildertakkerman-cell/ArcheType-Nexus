@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -35,6 +35,9 @@
 
     <!-- Replay Analyzer Styles -->
     <link rel="stylesheet" href="../assets/css/replay-analyzer.css">
+
+    <!-- Visualizer / Board Styles (shared with combo simulator) -->
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
 
 </head>
 
@@ -139,6 +142,28 @@
                     <div class="stat-value neutral" id="totalTurns">0</div>
                     <div class="stat-label">Total Phases Tracked</div>
                 </div>
+            </div>
+
+            <!-- Replay Browser -->
+            <div id="replayBrowserSection" class="card" style="display:none;">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-play-circle"></i> Replay Browser</h2>
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <span style="font-size:0.75rem; color:var(--text-muted);">Step through every move of the duel</span>
+                        <button class="replay-fullscreen-btn" id="rb-fullscreen-toggle" title="Open fullscreen view">
+                            <i class="fas fa-expand"></i> Fullscreen
+                        </button>
+                    </div>
+                </div>
+                <div id="replayBrowserContainer"></div>
+            </div>
+
+            <!-- Fullscreen Overlay for Replay Browser -->
+            <div class="replay-fullscreen-overlay" id="replayFullscreenOverlay">
+                <button class="replay-fullscreen-close" id="rb-fullscreen-close" title="Exit fullscreen">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div id="replayBrowserFullscreen"></div>
             </div>
 
             <!-- Chart -->
@@ -721,18 +746,97 @@
                 </div>
             </div>
 
+            <!-- Replay Feedback Form -->
+            <div class="replay-feedback-card" id="replayFeedbackCard">
+                <div class="replay-feedback-header">
+                    <span class="replay-feedback-icon"><i class="fas fa-bug"></i></span>
+                    <div>
+                        <h3 class="replay-feedback-title">Found a bug or missing logic?</h3>
+                        <p class="replay-feedback-subtitle">Help improve the analyzer — report incorrect analysis, missing card interactions, broken chain tracking, or anything that doesn't look right.</p>
+                    </div>
+                </div>
+
+                <form id="replayFeedbackForm"
+                      name="replay-feedback"
+                      method="POST"
+                      data-netlify="true"
+                      data-netlify-honeypot="bot-field">
+
+                    <p style="display:none;"><label>Don't fill this out: <input name="bot-field"></label></p>
+                    <input type="hidden" name="page_context" value="Replay Analyzer">
+
+                    <div class="replay-feedback-field">
+                        <label for="feedback-type" class="replay-feedback-label">What kind of issue is this?</label>
+                        <select id="feedback-type" name="issue_type" class="replay-feedback-select">
+                            <option value="">— Select a category —</option>
+                            <option value="bug">Bug / Crash</option>
+                            <option value="incorrect-analysis">Incorrect analysis result</option>
+                            <option value="missing-interaction">Missing card interaction or chain logic</option>
+                            <option value="wrong-count">Wrong action / resource count</option>
+                            <option value="visual">Visual / display issue</option>
+                            <option value="suggestion">Suggestion or improvement</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="replay-feedback-field">
+                        <label for="feedback-text" class="replay-feedback-label">Describe what happened</label>
+                        <textarea id="feedback-text"
+                                  name="feedback"
+                                  required
+                                  rows="3"
+                                  class="replay-feedback-textarea"
+                                  placeholder="e.g. 'Chain block with Ash Blossom wasn't counted as an interaction' or 'Special summon counter shows 0 but there were several SS this turn'"></textarea>
+                    </div>
+
+                    <div class="replay-feedback-actions">
+                        <button type="submit" class="replay-feedback-submit">
+                            <i class="fas fa-paper-plane"></i> Send Report
+                        </button>
+                        <span class="replay-feedback-note">Anonymous · helps make the analyzer smarter</span>
+                    </div>
+                </form>
+
+                <div id="replayFeedbackThanks" style="display:none;" class="replay-feedback-thanks">
+                    <i class="fas fa-check-circle"></i> Thanks for the report — every submission helps!
+                </div>
+            </div>
+
             <!-- Card Loader -->
             <!-- Supabase CDN for gameplay tags (optional) -->
             <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
             <script src="../assets/js/supabase-config.js"></script>
             <script src="../assets/js/card-loader.js"></script>
 
+            <!-- Combo Sounds (for Replay Browser) -->
+            <script src="../assets/js/combo-sounds.js"></script>
+
             <!-- Cookie Consent Scripts -->
             <script src="../assets/js/cookie-consent.js"></script>
             <script src="../assets/js/cookie-consent-config.js"></script>
 
             <!-- Replay Analyzer Logic -->
+            <script src="../assets/js/replay-browser.js"></script>
             <script src="../assets/js/replay-analyzer.js"></script>
+
+            <script>
+                // AJAX submit for replay feedback form (avoids full page reload)
+                document.getElementById('replayFeedbackForm').addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const form = e.target;
+                    const btn = form.querySelector('.replay-feedback-submit');
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+                    try {
+                        await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(new FormData(form)).toString() });
+                        form.style.display = 'none';
+                        document.getElementById('replayFeedbackThanks').style.display = 'flex';
+                    } catch {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Report';
+                    }
+                });
+            </script>
 
 
 </body>

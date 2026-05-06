@@ -12,6 +12,7 @@ const analysisContainer = document.getElementById('analysisContainer');
 let chartInstance = null;
 let tempoChartInstance = null;
 let currentAnalysisData = null;
+let currentReplayBrowser = null;
 
 // Initialize CardLoader
 document.addEventListener('DOMContentLoaded', () => {
@@ -59,6 +60,11 @@ document.getElementById('resetBtn').addEventListener('click', () => {
         tempoChartInstance.destroy();
         tempoChartInstance = null;
     }
+    if (currentReplayBrowser) {
+        currentReplayBrowser.destroy();
+        currentReplayBrowser = null;
+    }
+    document.getElementById('replayBrowserSection').style.display = 'none';
     fileInput.value = '';
 });
 
@@ -432,6 +438,20 @@ async function displayAnalysis(data) {
     // Create Advantage chart
     createChart(snapshots, playerNames);
 
+    // Replay Browser
+    if (currentReplayBrowser) {
+        currentReplayBrowser.destroy();
+        currentReplayBrowser = null;
+    }
+    if (data.moveLog && data.moveLog.length > 0) {
+        document.getElementById('replayBrowserSection').style.display = '';
+        currentReplayBrowser = new ReplayBrowser('replayBrowserContainer', data.moveLog, [p1Name, p2Name]);
+        currentReplayBrowser.buildUI();
+        currentReplayBrowser.wireFullscreenButtons();
+    } else {
+        document.getElementById('replayBrowserSection').style.display = 'none';
+    }
+
     // Show analysis container
     analysisContainer.classList.add('visible');
 }
@@ -592,55 +612,117 @@ function switchDeckTab(playerIndex) {
 // Cache for card metadata (type, race, level, etc.) to avoid repeated fetches
 const cardMetadataCache = {};
 
-async function fetchCardMetadata(cardIds) {
-    // Filter out IDs we already have
-    const uniqueIds = [...new Set(cardIds)].filter(id => id > 0 && !cardMetadataCache[id]);
+// Passcode type helpers
+function isOmegaCard(code) {
+    const s = String(code);
+    return s.length === 9 && (s.startsWith('511') || s.startsWith('810'));
+}
 
+const PLACEHOLDER_OMEGA = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 421 614'%3E%3Crect width='421' height='614' fill='%234338ca'/%3E%3Crect x='8' y='8' width='405' height='598' rx='6' fill='none' stroke='%23818cf8' stroke-width='6' stroke-dasharray='16,8'/%3E%3Ctext x='210' y='340' fill='%23c7d2fe' font-family='serif' font-size='240' text-anchor='middle' dominant-baseline='middle'%3E%CE%A9%3C/text%3E%3C/svg%3E";
+const PLACEHOLDER_ALT_ART = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 421 614'%3E%3Crect width='421' height='614' fill='%231a1a2e'/%3E%3Ctext x='210' y='290' fill='%2394a3b8' font-family='Arial' font-size='22' text-anchor='middle'%3EAlt. Art%3C/text%3E%3Ctext x='210' y='325' fill='%2394a3b8' font-family='Arial' font-size='22' text-anchor='middle'%3E%2F No Image%3C/text%3E%3Ctext x='210' y='375' fill='%2364748b' font-family='Arial' font-size='16' text-anchor='middle'%3EOCG Only%3C/text%3E%3C/svg%3E";
+
+function makeCardImage(code, altText) {
+    const img = document.createElement('img');
+    img.alt = altText || `Card ${code}`;
+    img.loading = 'lazy';
+
+    if (isOmegaCard(code)) {
+        img.src = PLACEHOLDER_OMEGA;
+        img.dataset.cardType = 'omega';
+        return img;
+    }
+
+    const gcsUrl = `https://storage.googleapis.com/yugioh-card-images-archetype-nexus/cards/${code}.png`;
+    const ygoUrl = cardMetadataCache[code]?.ygoImageUrl || `https://images.ygoprodeck.com/images/cards/${code}.jpg`;
+
+    img.src = gcsUrl;
+    img.onerror = function () {
+        if (!this.dataset.fallback) {
+            this.dataset.fallback = 'ygo';
+            this.src = ygoUrl;
+        } else {
+            this.onerror = null;
+            this.src = PLACEHOLDER_ALT_ART;
+        }
+    };
+    return img;
+}
+
+// Fetch a list of IDs (single or batch) from YGOProDeck and store results.
+// Returns true on success. On failure marks single-ID misses with null so
+// they are not retried on subsequent calls.
+async function fetchAndStoreCards(ids) {
+    try {
+        const url = `https://db.ygoprodeck.com/api/v7/cardinfo.php?id=${ids.join(',')}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            if (ids.length === 1) cardMetadataCache[ids[0]] = null;
+            console.warn(`[DeckSort] API miss (${response.status}) for`, ids);
+            return false;
+        }
+        const json = await response.json();
+        if (json?.data) {
+            json.data.forEach(card => {
+                const meta = {
+                    id: card.id,
+                    name: card.name,
+                    type: card.type,
+                    race: card.race,
+                    level: card.level,
+                    rank: card.rank,
+                    linkval: card.linkval,
+                    atk: card.atk,
+                    def: card.def,
+                    desc: card.desc || "",
+                    card_prices: card.card_prices,
+                    card_sets: card.card_sets,
+                    misc_info: card.misc_info,
+                    ygoImageUrl: card.card_images?.[0]?.image_url || null
+                };
+                cardMetadataCache[card.id] = meta;
+
+                // Index every art variant by its own passcode so alt art
+                // passcodes resolve to the correct image URL directly
+                if (card.card_images) {
+                    card.card_images.forEach(variant => {
+                        if (!(variant.id in cardMetadataCache)) {
+                            cardMetadataCache[variant.id] = { ...meta, id: variant.id };
+                        }
+                        cardMetadataCache[variant.id].ygoImageUrl = variant.image_url;
+                    });
+                }
+
+                if (window.CardLoader?.cardDataCache) {
+                    window.CardLoader.cardDataCache[card.name] = cardMetadataCache[card.id];
+                }
+            });
+        }
+        return true;
+    } catch (e) {
+        console.error('[DeckSort] fetchAndStoreCards error', e);
+        return false;
+    }
+}
+
+async function fetchCardMetadata(cardIds) {
+    // !(id in cardMetadataCache) treats null sentinels as "already tried, skip"
+    const uniqueIds = [...new Set(cardIds)].filter(id => id > 0 && !isOmegaCard(id) && !(id in cardMetadataCache));
     if (uniqueIds.length === 0) return;
 
-    // Chunk IDs if too many. Reduced to 20 for safety.
     const chunkSize = 20;
     console.log(`[DeckSort] Fetching metadata for ${uniqueIds.length} cards...`);
 
     for (let i = 0; i < uniqueIds.length; i += chunkSize) {
         const chunk = uniqueIds.slice(i, i + chunkSize);
-        try {
-            const url = `https://db.ygoprodeck.com/api/v7/cardinfo.php?id=${chunk.join(',')}`;
-            const response = await fetch(url);
-
-            if (!response.ok) {
-                console.warn(`[DeckSort] API Error ${response.status} for chunk`, chunk);
-                continue;
+        const ok = await fetchAndStoreCards(chunk);
+        // YGOProDeck 400s the whole batch if any ID is unknown.
+        // Retry individually so normal cards in the same chunk still get cached.
+        if (!ok && chunk.length > 1) {
+            for (const id of chunk) {
+                if (!(id in cardMetadataCache)) {
+                    await fetchAndStoreCards([id]);
+                }
             }
-            const data = await response.json();
-
-            if (data && data.data) {
-                data.data.forEach(card => {
-                    // 1. Store in local cache for sorting/rendering logic
-                    cardMetadataCache[card.id] = {
-                        id: card.id,
-                        name: card.name,
-                        type: card.type,
-                        race: card.race,
-                        level: card.level,
-                        rank: card.rank,
-                        linkval: card.linkval,
-                        atk: card.atk,
-                        def: card.def,
-                        desc: card.desc || "",
-                        card_prices: card.card_prices,
-                        card_sets: card.card_sets,
-                        misc_info: card.misc_info
-                    };
-
-                    // 2. Store in global CardLoader cache for Popups
-                    if (window.CardLoader && window.CardLoader.cardDataCache) {
-                        window.CardLoader.cardDataCache[card.name] = cardMetadataCache[card.id];
-                    }
-                });
-            }
-        } catch (e) {
-            console.error("Failed to fetch card metadata chunk", e);
         }
     }
 }
@@ -724,17 +806,8 @@ function renderDeckCards(containerId, cardCodes) {
 
         if (cardData && window.CardLoader) {
             // Optimized: Render directly using cached data
-            const img = document.createElement('img');
+            const img = makeCardImage(code, cardData.name);
             img.className = 'yugioh-card';
-            img.src = `https://images.ygoprodeck.com/images/cards/${code}.jpg`;
-            img.alt = cardData.name;
-            img.loading = 'lazy';
-
-            // Fallback error handler
-            img.onerror = function () {
-                this.onerror = null;
-                this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 421 614'%3E%3Crect width='100%25' height='100%25' fill='%231a1a1a'/%3E%3Ctext x='50%25' y='50%25' fill='%23666' font-family='Arial' font-size='30' text-anchor='middle' dy='.3em'%3EIMG ERROR%3C/text%3E%3C/svg%3E";
-            };
 
             cardDiv.appendChild(img);
             cardDiv.style.cursor = 'pointer';
@@ -752,21 +825,8 @@ function renderDeckCards(containerId, cardCodes) {
             cardDiv.addEventListener('click', triggerPopup);
 
         } else {
-            // Fallback: simple image
-            const img = document.createElement('img');
-            img.src = `https://images.ygoprodeck.com/images/cards/${code}.jpg`;
-            img.alt = `Card ${code}`;
-            img.loading = 'lazy';
-
-            img.onerror = function () {
-                if (!this.dataset.fallback) {
-                    this.dataset.fallback = 'true';
-                    this.src = `https://images.ygoprodeck.com/images/cards/${code}.jpg`;
-                } else if (this.dataset.fallback === 'true') {
-                    this.dataset.fallback = 'retry';
-                    this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 421 614"><rect fill="%23222" width="421" height="614"/><text x="50%" y="50%" fill="%23555" text-anchor="middle" font-size="40">?</text></svg>';
-                }
-            };
+            // Fallback: no cached metadata
+            const img = makeCardImage(code);
             cardDiv.appendChild(img);
         }
 
@@ -909,15 +969,7 @@ async function renderHandCards(containerId, cardCodes) {
         // Use fetched metadata if available
         const cardData = cardMetadataCache[code];
 
-        const img = document.createElement('img');
-        img.src = `https://images.ygoprodeck.com/images/cards/${code}.jpg`;
-        img.alt = cardData ? cardData.name : `Card ${code}`;
-        img.loading = 'lazy';
-
-        // Fallback for image
-        img.onerror = function () {
-            this.src = 'https://images.ygoprodeck.com/images/cards/back_high.jpg';
-        };
+        const img = makeCardImage(code, cardData ? cardData.name : `Card ${code}`);
         cardDiv.appendChild(img);
 
         cardDiv.style.cursor = 'pointer';
@@ -1112,6 +1164,63 @@ function createTempoChart(perTurnMetrics, playerNames) {
     });
 }
 
+const verticalLinePlugin = {
+    id: 'verticalLine',
+    afterDraw: chart => {
+        if (chart.activeSnapshotIndex !== undefined && chart.activeSnapshotIndex >= 0) {
+            const ctx = chart.ctx;
+            const x = chart.scales.x.getPixelForValue(chart.activeSnapshotIndex);
+            const topY = chart.scales.y.top;
+            const bottomY = chart.scales.y.bottom;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, topY);
+            ctx.lineTo(x, bottomY);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+};
+
+function updateChartHighlight(turn, phase) {
+    if (!chartInstance || !currentAnalysisData?.resourceAnalysis?.snapshots) return;
+    
+    const snapshots = currentAnalysisData.resourceAnalysis.snapshots;
+    let targetIndex = -1;
+    
+    const safePhase = phase ? String(phase).trim().toLowerCase() : '';
+    
+    // Find the exact matching snapshot
+    for (let i = 0; i < snapshots.length; i++) {
+        const s = snapshots[i];
+        const sPhase = s.phase ? String(s.phase).trim().toLowerCase() : '';
+        if (s.turn === turn && sPhase === safePhase) {
+            targetIndex = i;
+            break;
+        }
+    }
+
+    // Fallback: If no exact phase match, just use the first/last snapshot of this turn
+    if (targetIndex === -1 && turn !== undefined) {
+        for (let i = 0; i < snapshots.length; i++) {
+            if (snapshots[i].turn === turn) {
+                targetIndex = i;
+                // Keep searching to find the latest phase in this turn that is <= current state? 
+                // Just breaking on the first one is fine as a fallback.
+            }
+        }
+    }
+    
+    if (targetIndex !== -1 && chartInstance.activeSnapshotIndex !== targetIndex) {
+        chartInstance.activeSnapshotIndex = targetIndex;
+        chartInstance.update('none'); // Update without animation
+    }
+}
+
 function createChart(snapshots, playerNames) {
     const ctx = document.getElementById('advantageChart').getContext('2d');
 
@@ -1129,6 +1238,7 @@ function createChart(snapshots, playerNames) {
 
     chartInstance = new Chart(ctx, {
         type: 'line',
+        plugins: [verticalLinePlugin],
         data: {
             labels,
             datasets: [
@@ -1173,6 +1283,33 @@ function createChart(snapshots, playerNames) {
             interaction: {
                 mode: 'index',
                 intersect: false
+            },
+            onClick: (e, activeElements) => {
+                if (!activeElements || activeElements.length === 0 || !currentReplayBrowser) return;
+                const index = activeElements[0].index;
+                const snapshot = snapshots[index];
+                if (!snapshot) return;
+
+                // Jump the replay browser to the start of this turn/phase
+                const targetTurn = snapshot.turn;
+                const targetPhase = snapshot.phase;
+
+                let targetStepIndex = -1;
+                for (let i = 0; i < currentReplayBrowser.moveLog.length; i++) {
+                    const step = currentReplayBrowser.moveLog[i];
+                    if (step.turn === targetTurn && step.phase === targetPhase) {
+                        targetStepIndex = i;
+                        break;
+                    }
+                }
+
+                if (targetStepIndex !== -1) {
+                    if (currentReplayBrowser.isPlaying) currentReplayBrowser.togglePlay();
+                    currentReplayBrowser._rebuildTo(targetStepIndex);
+                    currentReplayBrowser.currentIndex = targetStepIndex;
+                    // Auto-scroll to the replay browser for convenience
+                    document.getElementById('replayBrowserSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
             },
             plugins: {
                 legend: {

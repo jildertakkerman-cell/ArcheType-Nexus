@@ -61,6 +61,10 @@ class ComboSounds {
             'pendulum':       () => this._pendulum(ctx, v, out),
             'equip':          () => this._equip(ctx, v, out),
             'effect':         () => this._effect(ctx, v, out),
+            'negate':          () => this._negate(ctx, v, out),
+            'attack':          () => this._attack(ctx, v, out),
+            'lp-damage':       () => this._lpDamage(ctx, v, out),
+            'lp-recover':      () => this._lpRecover(ctx, v, out),
             'to-gy':          () => this._toGY(ctx, v, out),
             'to-banish':      () => this._toBanish(ctx, v, out),
             'combo-complete': () => this._comboComplete(ctx, v, out),
@@ -434,6 +438,97 @@ class ComboSounds {
         shg.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
         shadow.connect(shg); shg.connect(out);
         shadow.start(now); shadow.stop(now + 0.5);
+    }
+
+    // Harsh descending buzz + noise burst — effect denied / negated
+    static _negate(ctx, v, out) {
+        const now = ctx.currentTime;
+        // Descending dissonant buzz — the "NO" sound
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.25);
+        g.gain.setValueAtTime(0, now);
+        g.gain.linearRampToValueAtTime(v * 0.35, now + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+        osc.connect(g); g.connect(out);
+        osc.start(now); osc.stop(now + 0.4);
+        // Second dissonant layer — tritone for tension
+        const osc2 = ctx.createOscillator();
+        const g2 = ctx.createGain();
+        osc2.type = 'square';
+        osc2.frequency.setValueAtTime(420, now);
+        osc2.frequency.exponentialRampToValueAtTime(85, now + 0.25);
+        g2.gain.setValueAtTime(0, now);
+        g2.gain.linearRampToValueAtTime(v * 0.12, now + 0.01);
+        g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+        osc2.connect(g2); g2.connect(out);
+        osc2.start(now); osc2.stop(now + 0.35);
+        // Noise burst — the shattering of the effect
+        this._noise(ctx, v * 0.28, 0.005, 0.18, 'bandpass', 900, 0.02, out);
+    }
+
+    // Sharp whoosh + low impact — attack declaration
+    static _attack(ctx, v, out) {
+        const now = ctx.currentTime;
+        // Rising whoosh — the swing
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+        g.gain.setValueAtTime(0, now);
+        g.gain.linearRampToValueAtTime(v * 0.2, now + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+        osc.connect(g); g.connect(out);
+        osc.start(now); osc.stop(now + 0.2);
+        // Impact thud
+        const thud = ctx.createOscillator();
+        const tg = ctx.createGain();
+        thud.type = 'sine';
+        thud.frequency.setValueAtTime(150, now + 0.1);
+        thud.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+        tg.gain.setValueAtTime(0, now + 0.1);
+        tg.gain.linearRampToValueAtTime(v * 0.5, now + 0.12);
+        tg.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+        thud.connect(tg); tg.connect(out);
+        thud.start(now + 0.1); thud.stop(now + 0.45);
+        // Impact noise
+        this._noise(ctx, v * 0.2, 0.005, 0.1, 'lowpass', 400, 0.1, out);
+    }
+
+    // Low thud + descending tone — life points draining
+    static _lpDamage(ctx, v, out) {
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(55, now + 0.3);
+        g.gain.setValueAtTime(0, now);
+        g.gain.linearRampToValueAtTime(v * 0.45, now + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+        osc.connect(g); g.connect(out);
+        osc.start(now); osc.stop(now + 0.45);
+        this._noise(ctx, v * 0.15, 0.003, 0.08, 'lowpass', 300, 0, out);
+    }
+
+    // Bright ascending chime — life points restored
+    static _lpRecover(ctx, v, out) {
+        const now = ctx.currentTime;
+        [523.25, 659.25, 783.99].forEach((freq, i) => {
+            const t = now + i * 0.06;
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, t);
+            g.gain.setValueAtTime(0, t);
+            g.gain.linearRampToValueAtTime(v * 0.25, t + 0.008);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+            osc.connect(g); g.connect(out);
+            osc.start(t); osc.stop(t + 0.4);
+        });
     }
 
     // Descending whomp + soft noise swoosh — somber send-off to the graveyard
