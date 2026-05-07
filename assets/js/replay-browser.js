@@ -469,11 +469,31 @@ class ReplayBrowser {
 
         const isMobile = window.matchMedia('(max-width: 768px)').matches;
         let w = isMobile ? 48 : 90;
-        let h = isMobile ? 70 : 130;
+        let h = isMobile ? 70 : 100;
 
         if (this.isFullscreen && !isMobile) {
-            w = 96;
-            h = 140;
+            // Scale cards to fit their actual rendered zone, maintaining YGO aspect ratio (59:86).
+            // This lets the board adapt to any viewport size automatically.
+            const ASPECT = 59 / 86; // card width ÷ height ≈ 0.686
+            const isHand = zoneElId.endsWith('-hand');
+
+            if (isHand) {
+                h = Math.floor(zoneRect.height * 0.88);
+                w = Math.floor(h * ASPECT);
+            } else {
+                const maxW = Math.floor(zoneRect.width * 0.88);
+                const maxH = Math.floor(zoneRect.height * 0.88);
+                if (Math.floor(maxW / ASPECT) <= maxH) {
+                    w = maxW;
+                    h = Math.floor(w / ASPECT);
+                } else {
+                    h = maxH;
+                    w = Math.floor(h * ASPECT);
+                }
+            }
+
+            // Fallback if zone hasn't laid out yet (dimensions near zero)
+            if (w < 30 || h < 44) { w = 96; h = 140; }
         }
 
         el.style.width  = `${w}px`;
