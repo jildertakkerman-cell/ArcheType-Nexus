@@ -3365,9 +3365,7 @@ window.CardLoader = (function () {
 
         const showAllDecks = options.showAllDecks !== false;
 
-        // Custom colors for Community Decks button (defaults to Slate)
-        const communityBtnColor = options.communityButtonColor || 'from-slate-500 to-slate-600';
-        const communityBtnHover = options.communityButtonHoverColor || 'hover:from-slate-600 hover:to-slate-700';
+        const communityBtnGradient = options.communityButtonGradient || 'linear-gradient(to right, #64748b, #475569)';
 
         // Check if archetype exists by fetching cards
         const archetypeCards = await fetchArchetypeCards(archetypeName);
@@ -3412,10 +3410,9 @@ window.CardLoader = (function () {
                 
                 ${showAllDecks ? `
                 <!-- All Decks Button -->
-                <a href="${casualUrl}" target="_blank" rel="noopener noreferrer" 
-                   class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white 
-                          bg-gradient-to-r ${communityBtnColor} ${communityBtnHover}
-                          shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
+                <a href="${casualUrl}" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
+                   style="background: ${communityBtnGradient};"
                    title="View all community-submitted deck lists for ${archetypeName}">
                     <i class="fas fa-users text-xs"></i>
                     <span>Community Decks</span>
