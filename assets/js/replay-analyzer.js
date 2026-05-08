@@ -824,10 +824,28 @@ function renderDeckCards(containerId, cardCodes) {
 
             cardDiv.addEventListener('click', triggerPopup);
 
+            cardDiv.addEventListener('mouseenter', () => {
+                if (window.CardLoader && img.src && !img.src.includes('back_high')) {
+                    window.CardLoader.showCardPreview(img.currentSrc || img.src);
+                }
+            });
+            cardDiv.addEventListener('mouseleave', () => {
+                if (window.CardLoader) window.CardLoader.hideCardPreview();
+            });
+
         } else {
             // Fallback: no cached metadata
             const img = makeCardImage(code);
             cardDiv.appendChild(img);
+
+            cardDiv.addEventListener('mouseenter', () => {
+                if (window.CardLoader && img.src && !img.src.includes('back_high')) {
+                    window.CardLoader.showCardPreview(img.currentSrc || img.src);
+                }
+            });
+            cardDiv.addEventListener('mouseleave', () => {
+                if (window.CardLoader) window.CardLoader.hideCardPreview();
+            });
         }
 
         container.appendChild(cardDiv);
@@ -991,6 +1009,15 @@ async function renderHandCards(containerId, cardCodes) {
                 console.warn('Card data not available for popup. ID:', code);
             });
         }
+
+        cardDiv.addEventListener('mouseenter', () => {
+            if (window.CardLoader && img.src && !img.src.includes('back_high')) {
+                window.CardLoader.showCardPreview(img.currentSrc || img.src);
+            }
+        });
+        cardDiv.addEventListener('mouseleave', () => {
+            if (window.CardLoader) window.CardLoader.hideCardPreview();
+        });
 
         container.appendChild(cardDiv);
     });

@@ -3840,6 +3840,127 @@ window.CardLoader = (function () {
         console.log('CardLoader configuration updated:', CONFIG);
     }
 
+    // Card hover preview panel
+    function initCardPreviewPanel() {
+        if (!document.getElementById('card-preview-style')) {
+            const style = document.createElement('style');
+            style.id = 'card-preview-style';
+            style.textContent = `
+                #card-hover-preview {
+                    position: fixed;
+                    width: 260px;
+                    border-radius: 1rem;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,0,0,0.3);
+                    z-index: 9000;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.2s ease;
+                    overflow: hidden;
+                    border: 3px solid #2563eb;
+                    background: linear-gradient(135deg, #1a4d6d 0%, #0d2838 100%);
+                    font-family: 'Inter', sans-serif;
+                }
+                #card-hover-preview.visible { opacity: 1; }
+                #card-hover-preview .preview-header {
+                    font-size: 9px;
+                    font-weight: 700;
+                    letter-spacing: 0.15em;
+                    color: #93c5fd;
+                    text-align: center;
+                    padding: 6px 0 5px;
+                    background: rgba(0,0,0,0.3);
+                    text-transform: uppercase;
+                    border-bottom: 1px solid rgba(37,99,235,0.5);
+                }
+                #card-hover-preview img {
+                    width: 100%;
+                    height: auto;
+                    display: block;
+                    object-fit: contain;
+                    image-rendering: -webkit-optimize-contrast;
+                    image-rendering: high-quality;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        if (!document.getElementById('card-hover-preview')) {
+            const panel = document.createElement('div');
+            panel.id = 'card-hover-preview';
+
+            const header = document.createElement('div');
+            header.className = 'preview-header';
+            header.textContent = 'Card Preview';
+
+            const img = document.createElement('img');
+            img.alt = 'Card preview';
+
+            panel.appendChild(header);
+            panel.appendChild(img);
+            document.body.appendChild(panel);
+
+            window.addEventListener('resize', () => {
+                if (panel.classList.contains('visible')) _positionPreviewPanel(panel);
+            });
+        }
+    }
+
+    function _positionPreviewPanel(panel) {
+        // Replay browser: sidebar occupies the right — anchor to the left of the board instead
+        const sidebar = document.querySelector('.replay-sidebar');
+        if (sidebar) {
+            const board = document.querySelector('.duel-board');
+            if (board) {
+                const rect = board.getBoundingClientRect();
+                if (rect.left >= 272) {
+                    panel.style.right = (window.innerWidth - rect.left + 12) + 'px';
+                    panel.style.top = rect.top + 'px';
+                    panel.style.left = '';
+                    panel.style.bottom = '';
+                    return;
+                }
+            }
+            // Not enough left space — bottom-left corner clear of sidebar
+            panel.style.bottom = '20px';
+            panel.style.left = '20px';
+            panel.style.right = '';
+            panel.style.top = '';
+            return;
+        }
+
+        // Combo system: anchor flush to the right of the duel board
+        const board = document.querySelector('.duel-board');
+        if (board) {
+            const rect = board.getBoundingClientRect();
+            const spaceRight = window.innerWidth - rect.right;
+            if (spaceRight >= 272) {
+                panel.style.left = (rect.right + 12) + 'px';
+                panel.style.top = rect.top + 'px';
+                panel.style.bottom = '';
+                panel.style.right = '';
+                return;
+            }
+        }
+
+        panel.style.bottom = '20px';
+        panel.style.right = '20px';
+        panel.style.left = '';
+        panel.style.top = '';
+    }
+
+    function showCardPreview(imageUrl) {
+        initCardPreviewPanel();
+        const panel = document.getElementById('card-hover-preview');
+        const img = panel.querySelector('img');
+        if (img.src !== imageUrl) img.src = imageUrl;
+        _positionPreviewPanel(panel);
+        panel.classList.add('visible');
+    }
+
+    function hideCardPreview() {
+        const panel = document.getElementById('card-hover-preview');
+        if (panel) panel.classList.remove('visible');
+    }
+
     // Public API
     console.log('[CardLoader] IIFE about to return public API');
     return {
@@ -3895,7 +4016,9 @@ window.CardLoader = (function () {
             CONFIG
         }),
         showLargeImageByName: showLargeImageModal,
-        hideLargeImageModal
+        hideLargeImageModal,
+        showCardPreview,
+        hideCardPreview
     };
 })();
 

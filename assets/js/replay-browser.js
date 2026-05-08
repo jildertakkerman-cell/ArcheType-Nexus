@@ -415,7 +415,12 @@ class ReplayBrowser {
 
         if (name && typeof window.CardLoader !== 'undefined') {
             window.CardLoader.getCardImageUrl(name).then(url => {
-                if (url) el.style.backgroundImage = `url('${url}')`;
+                if (url) {
+                    el.style.backgroundImage = `url('${url}')`;
+                    if (el._hovered) {
+                        window.CardLoader.showCardPreview(url);
+                    }
+                }
             });
         }
 
@@ -430,6 +435,24 @@ class ReplayBrowser {
             e.stopPropagation();
             if (name && typeof window.CardLoader !== 'undefined') {
                 window.CardLoader.showLargeImageByName(name, e);
+            }
+        });
+
+        el.addEventListener('mouseenter', () => {
+            el._hovered = true;
+            if (typeof window.CardLoader === 'undefined') return;
+            const bgUrl = el.style.backgroundImage;
+            const m = bgUrl.match(/url\(['"]?([^'"]+)['"]?\)/);
+            const url = m ? m[1] : null;
+            if (url && !url.includes('back_high')) {
+                window.CardLoader.showCardPreview(url);
+            }
+        });
+
+        el.addEventListener('mouseleave', () => {
+            el._hovered = false;
+            if (typeof window.CardLoader !== 'undefined') {
+                window.CardLoader.hideCardPreview();
             }
         });
     }

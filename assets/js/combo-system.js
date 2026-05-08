@@ -960,6 +960,10 @@ class DuelSimulator {
                     if (token.style.transition !== 'none') {
                         token.style.transition += ', background-image 0.3s ease';
                     }
+                    // Update preview panel if mouse is already over this token
+                    if (token._hovered) {
+                        window.CardLoader.showCardPreview(url);
+                    }
                 }
             });
         }
@@ -986,6 +990,25 @@ class DuelSimulator {
             e.stopPropagation();
             if (!data.isDummy && typeof window.CardLoader !== 'undefined') {
                 window.CardLoader.showPopup(e, data.name);
+            }
+        });
+
+        // Hover preview panel
+        token.addEventListener('mouseenter', () => {
+            token._hovered = true;
+            if (data.isDummy || typeof window.CardLoader === 'undefined') return;
+            const bgUrl = token.style.backgroundImage;
+            const m = bgUrl.match(/url\(['"]?([^'"]+)['"]?\)/);
+            const url = m ? m[1] : null;
+            if (url && !url.includes('back_high')) {
+                window.CardLoader.showCardPreview(url);
+            }
+        });
+
+        token.addEventListener('mouseleave', () => {
+            token._hovered = false;
+            if (typeof window.CardLoader !== 'undefined') {
+                window.CardLoader.hideCardPreview();
             }
         });
     }
