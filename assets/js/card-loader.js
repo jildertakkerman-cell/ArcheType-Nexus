@@ -3931,6 +3931,7 @@ window.CardLoader = (function () {
         const board = document.querySelector('.duel-board');
         if (board) {
             const rect = board.getBoundingClientRect();
+            if (rect.width === 0) return; // board not yet rendered — keep current position
             const spaceRight = window.innerWidth - rect.right;
             if (spaceRight >= 272) {
                 panel.style.left = (rect.right + 12) + 'px';

@@ -1406,6 +1406,7 @@ class DuelSimulator {
         this.tokenLayer.innerHTML = '';
         this.cards = {};
         this.logEl.innerHTML = '';
+        if (typeof window.CardLoader !== 'undefined') window.CardLoader.hideCardPreview();
     }
 
     togglePlay(force) {
