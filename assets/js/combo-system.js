@@ -1189,6 +1189,21 @@ class DuelSimulator {
             c.element.style.transition = originalTransition;
         }
 
+        // When a real card is drawn from deck to hand, consume one dummy placeholder
+        if (!c.data.isDummy && targetZoneId === 'zone-hand' && c.element.getAttribute('data-zone') === 'zone-deck') {
+            const dummy = Object.values(this.cards).find(d =>
+                d.data.isDummy &&
+                d.element.getAttribute('data-zone') === 'zone-hand' &&
+                d.element.style.display !== 'none'
+            );
+            if (dummy) {
+                dummy.element.setAttribute('data-zone', 'zone-removing');
+                dummy.element.style.opacity = '0';
+                dummy.element.style.transform = 'scale(0)';
+                setTimeout(() => { dummy.element.style.display = 'none'; }, 350);
+            }
+        }
+
         c.element.setAttribute('data-zone', targetZoneId);
 
         this.setPosition(c.element, targetZoneId);
