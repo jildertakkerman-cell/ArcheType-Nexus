@@ -52,6 +52,8 @@ const REPLAY_SOUND_MAP = {
     'equip':                  'equip',
     'set':                    'normal-summon',
     'set-monster':            'normal-summon',
+    'position-change':        'step',
+    'stat-change':            'effect',
     'phase-change':           'step',
     'turn-change':            'step',
     'game-over':              'combo-complete',
@@ -96,7 +98,21 @@ class ReplayBrowser {
         this.resizeObserver = null;
     }
 
+    _injectReplayCSS() {
+        if (document.getElementById('rb-facedown-style')) return;
+        const style = document.createElement('style');
+        style.id = 'rb-facedown-style';
+        style.textContent = [
+            '.card-facedown-defense { transform: rotate(90deg); }',
+            '.p2-half .card-facedown-defense { transform: rotate(270deg); }',
+            '.card-defense-pos { transform: rotate(90deg); }',
+            '.p2-half .card-defense-pos { transform: rotate(270deg); }',
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
     buildUI() {
+        this._injectReplayCSS();
         const container = document.getElementById(this.containerId);
         if (!container) return;
         container.innerHTML = `
@@ -249,6 +265,10 @@ class ReplayBrowser {
                 icon = '<i class="fas fa-khanda" style="color: #f97316;"></i>';
             } else if (step.type === 'set' || step.type === 'set-monster') {
                 icon = '<i class="fas fa-moon" style="color: #7dd3fc;"></i>';
+            } else if (step.type === 'position-change') {
+                icon = '<i class="fas fa-sync-alt" style="color: #a78bfa;"></i>';
+            } else if (step.type === 'stat-change') {
+                icon = '<i class="fas fa-chart-bar" style="color: #fbbf24;"></i>';
             } else if (step.type.includes('summon')) {
                 icon = '<i class="fas fa-magic"></i>';
             } else if (step.type.includes('draw')) {
@@ -343,6 +363,7 @@ class ReplayBrowser {
                 // Card was face-down and is now being revealed — load the real image
                 t.faceDown = false;
                 t.el._faceDown = false;
+                t.el.classList.remove('card-facedown-defense');
                 if (name && typeof window.CardLoader !== 'undefined') {
                     window.CardLoader.getCardImageUrl(name).then(url => {
                         if (url) t.el.style.backgroundImage = `url('${url}')`;
@@ -353,6 +374,7 @@ class ReplayBrowser {
                 t.faceDown = true;
                 t.el._faceDown = true;
                 t.el.style.backgroundImage = "url('https://images.ygoprodeck.com/images/cards/back_high.jpg')";
+                if (action._stepType === 'set-monster') t.el.classList.add('card-facedown-defense');
             }
             if (code && t.code !== code) {
                 // Backend reused this ID for a different card.
@@ -425,6 +447,7 @@ class ReplayBrowser {
 
         const isFaceDown = action._stepType === 'set' || action._stepType === 'set-monster';
         el._faceDown = isFaceDown;
+        if (action._stepType === 'set-monster') el.classList.add('card-facedown-defense');
 
         layer.appendChild(el);
         this.tokens.set(id, { el, player, zone: zoneElId, code: code || 0, faceDown: isFaceDown });
@@ -498,6 +521,18 @@ class ReplayBrowser {
         t.el.setAttribute('data-zone', toElId);
         // CSS handles the 180° rotation for p2 tokens via class, so leave transform to CSS
         t.el.style.transform = '';
+
+        // Apply defense position class if action carries position info.
+        // 'def' = face-up defense, 'set' = face-down defense (already handled by card-facedown-defense).
+        // Removing the class for 'atk' covers position-change DEF→ATK.
+        if (action.position === 'def') {
+            t.el.classList.add('card-defense-pos');
+            t.el.classList.remove('card-facedown-defense');
+        } else if (action.position === 'atk') {
+            t.el.classList.remove('card-defense-pos');
+            t.el.classList.remove('card-facedown-defense');
+        }
+        // 'set' and undefined leave rotation to the facedown/CSS rules already in place
 
         this._positionToken(t.el, player, toElId);
     }
@@ -601,6 +636,34 @@ class ReplayBrowser {
             t.el.removeAttribute('data-cl');
             if (isStack) t.el.style.zIndex = '';
         }, 1350);
+    }
+
+    _applyStatChangeAnimation(action, label) {
+        const t = this.tokens.get(action.id);
+        if (!t) return;
+
+        t.el.classList.add('stat-change-glow');
+        setTimeout(() => t.el.classList.remove('stat-change-glow'), 1300);
+
+        const parts = [];
+        const re = /(ATK|DEF) \d+ → \d+ \(([+-]\d+)\)/g;
+        let m;
+        while ((m = re.exec(label)) !== null) {
+            const delta = parseInt(m[2]);
+            const sign = delta >= 0 ? '+' : '';
+            const color = delta >= 0 ? '#22c55e' : '#ef4444';
+            parts.push(`<span style="color:${color}">${m[1]} ${sign}${delta}</span>`);
+        }
+        if (parts.length === 0) return;
+
+        const rect = t.el.getBoundingClientRect();
+        const floatEl = document.createElement('div');
+        floatEl.className = 'floating-stat';
+        floatEl.innerHTML = parts.join(' ');
+        floatEl.style.left = `${rect.left + rect.width / 2}px`;
+        floatEl.style.top = `${rect.top - 10}px`;
+        document.body.appendChild(floatEl);
+        setTimeout(() => floatEl.remove(), 1500);
     }
 
     _updateLifePoints() {
@@ -744,6 +807,8 @@ class ReplayBrowser {
                             // If this activation was negated, show the negation animation instead
                             const effectType = (type === 'effect-activate' && step._isNegated) ? 'effect-negate' : type;
                             this._applyEffectAnimation(a, effectType, step.chainLink);
+                        } else if (type === 'stat-change') {
+                            this._applyStatChangeAnimation(a, step.label);
                         }
                     }
                 });
