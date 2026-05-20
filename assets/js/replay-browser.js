@@ -52,6 +52,7 @@ const REPLAY_SOUND_MAP = {
     'equip':                  'equip',
     'set':                    'normal-summon',
     'set-monster':            'normal-summon',
+    'return-to-hand':         'step',
     'position-change':        'step',
     'stat-change':            'effect',
     'phase-change':           'step',
@@ -265,6 +266,8 @@ class ReplayBrowser {
                 icon = '<i class="fas fa-khanda" style="color: #f97316;"></i>';
             } else if (step.type === 'set' || step.type === 'set-monster') {
                 icon = '<i class="fas fa-moon" style="color: #7dd3fc;"></i>';
+            } else if (step.type === 'return-to-hand') {
+                icon = '<i class="fas fa-hand-paper" style="color: #67e8f9;"></i>';
             } else if (step.type === 'position-change') {
                 icon = '<i class="fas fa-sync-alt" style="color: #a78bfa;"></i>';
             } else if (step.type === 'stat-change') {
@@ -521,6 +524,14 @@ class ReplayBrowser {
         t.el.setAttribute('data-zone', toElId);
         // CSS handles the 180° rotation for p2 tokens via class, so leave transform to CSS
         t.el.style.transform = '';
+
+        // Cards leaving the field return to vertical — strip any defense rotation classes.
+        const isOffField = toElId.includes('-gy') || toElId.includes('-banish') ||
+                           toElId.includes('-deck') || toElId.includes('-hand');
+        if (isOffField) {
+            t.el.classList.remove('card-defense-pos');
+            t.el.classList.remove('card-facedown-defense');
+        }
 
         // Apply defense position class if action carries position info.
         // 'def' = face-up defense, 'set' = face-down defense (already handled by card-facedown-defense).
