@@ -760,8 +760,19 @@ class ReplayBrowser {
             const activeItem = document.getElementById(`rb-log-item-${this.currentIndex}`);
             if (activeItem) {
                 activeItem.classList.add('active');
-                // Scroll the sidebar list if needed
-                activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                // Scroll the sidebar list if needed without scrolling the entire page
+                const container = activeItem.closest('.replay-log-container');
+                if (container) {
+                    const containerRect = container.getBoundingClientRect();
+                    const activeRect = activeItem.getBoundingClientRect();
+                    const relativeTop = activeRect.top - containerRect.top;
+                    
+                    if (relativeTop < 0) {
+                        container.scrollBy({ top: relativeTop, behavior: 'smooth' });
+                    } else if (relativeTop + activeRect.height > containerRect.height) {
+                        container.scrollBy({ top: relativeTop + activeRect.height - containerRect.height, behavior: 'smooth' });
+                    }
+                }
             }
         }
     }
