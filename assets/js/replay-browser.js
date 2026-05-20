@@ -338,8 +338,9 @@ class ReplayBrowser {
         // If token already exists, check if the card identity changed
         if (this.tokens.has(id)) {
             const t = this.tokens.get(id);
-            // Card was face-down (set) and is now being revealed — load the real image
-            if (t.faceDown && action._stepType !== 'set' && action._stepType !== 'set-monster') {
+            const isSetAction = action._stepType === 'set' || action._stepType === 'set-monster';
+            if (t.faceDown && !isSetAction) {
+                // Card was face-down and is now being revealed — load the real image
                 t.faceDown = false;
                 t.el._faceDown = false;
                 if (name && typeof window.CardLoader !== 'undefined') {
@@ -347,6 +348,11 @@ class ReplayBrowser {
                         if (url) t.el.style.backgroundImage = `url('${url}')`;
                     });
                 }
+            } else if (!t.faceDown && isSetAction) {
+                // Card is being set face-down — revert to card back
+                t.faceDown = true;
+                t.el._faceDown = true;
+                t.el.style.backgroundImage = "url('https://images.ygoprodeck.com/images/cards/back_high.jpg')";
             }
             if (code && t.code !== code) {
                 // Backend reused this ID for a different card.
