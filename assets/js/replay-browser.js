@@ -51,6 +51,7 @@ const REPLAY_SOUND_MAP = {
     'banish':                 'to-banish',
     'equip':                  'equip',
     'set':                    'normal-summon',
+    'set-monster':            'normal-summon',
     'phase-change':           'step',
     'turn-change':            'step',
     'game-over':              'combo-complete',
@@ -246,6 +247,8 @@ class ReplayBrowser {
                 icon = '<i class="fas fa-heartbeat" style="color: #38bdf8;"></i>';
             } else if (step.type === 'attack') {
                 icon = '<i class="fas fa-khanda" style="color: #f97316;"></i>';
+            } else if (step.type === 'set' || step.type === 'set-monster') {
+                icon = '<i class="fas fa-moon" style="color: #7dd3fc;"></i>';
             } else if (step.type.includes('summon')) {
                 icon = '<i class="fas fa-magic"></i>';
             } else if (step.type.includes('draw')) {
@@ -335,6 +338,16 @@ class ReplayBrowser {
         // If token already exists, check if the card identity changed
         if (this.tokens.has(id)) {
             const t = this.tokens.get(id);
+            // Card was face-down (set) and is now being revealed — load the real image
+            if (t.faceDown && action._stepType !== 'set' && action._stepType !== 'set-monster') {
+                t.faceDown = false;
+                t.el._faceDown = false;
+                if (name && typeof window.CardLoader !== 'undefined') {
+                    window.CardLoader.getCardImageUrl(name).then(url => {
+                        if (url) t.el.style.backgroundImage = `url('${url}')`;
+                    });
+                }
+            }
             if (code && t.code !== code) {
                 // Backend reused this ID for a different card.
                 // Remove any hand ghost that was separately tracking the new card code —
@@ -404,8 +417,11 @@ class ReplayBrowser {
         el.style.pointerEvents = 'auto';
         el.style.cursor = 'pointer';
 
+        const isFaceDown = action._stepType === 'set' || action._stepType === 'set-monster';
+        el._faceDown = isFaceDown;
+
         layer.appendChild(el);
-        this.tokens.set(id, { el, player, zone: zoneElId, code: code || 0 });
+        this.tokens.set(id, { el, player, zone: zoneElId, code: code || 0, faceDown: isFaceDown });
 
         this._positionToken(el, player, zoneElId);
 
@@ -413,7 +429,7 @@ class ReplayBrowser {
             el.style.transition = 'left 0.5s cubic-bezier(0.34,1.56,0.64,1), top 0.5s cubic-bezier(0.34,1.56,0.64,1), width 0.3s, height 0.3s, opacity 0.3s';
         }));
 
-        if (name && typeof window.CardLoader !== 'undefined') {
+        if (!isFaceDown && name && typeof window.CardLoader !== 'undefined') {
             window.CardLoader.getCardImageUrl(name).then(url => {
                 if (url) {
                     el.style.backgroundImage = `url('${url}')`;
@@ -440,7 +456,7 @@ class ReplayBrowser {
 
         el.addEventListener('mouseenter', () => {
             el._hovered = true;
-            if (typeof window.CardLoader === 'undefined') return;
+            if (el._faceDown || typeof window.CardLoader === 'undefined') return;
             const bgUrl = el.style.backgroundImage;
             const m = bgUrl.match(/url\(['"]?([^'"]+)['"]?\)/);
             const url = m ? m[1] : null;
