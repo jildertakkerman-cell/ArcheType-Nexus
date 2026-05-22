@@ -97,6 +97,8 @@ class ReplayBrowser {
         this.p1TokenLayer = null;
         this.p2TokenLayer = null;
         this.resizeObserver = null;
+        this._lastEffectName = null;
+        this._lastEffectDesc = null;
     }
 
     _injectReplayCSS() {
@@ -155,6 +157,16 @@ class ReplayBrowser {
                         <ul id="rb-log-list" class="replay-action-list">
                             <!-- Javascript will populate this -->
                         </ul>
+                    </div>
+
+                    <!-- Sticky Last Effect Panel -->
+                    <div class="rb-last-effect-panel" id="rb-last-effect" style="display:none;">
+                        <div class="rb-last-effect-header">
+                            <span><i class="fas fa-bolt" style="font-size:0.65rem;margin-right:0.35rem;color:#38bdf8;"></i>Last Effect</span>
+                            <button class="rb-last-effect-close" onclick="document.getElementById('rb-last-effect').style.display='none'" title="Dismiss">×</button>
+                        </div>
+                        <div class="rb-last-effect-cardname" id="rb-last-effect-name"></div>
+                        <div class="rb-last-effect-text" id="rb-last-effect-text"></div>
                     </div>
 
                     <!-- Active Action Details / Quick Info -->
@@ -248,6 +260,7 @@ class ReplayBrowser {
             }
         });
 
+        const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let html = '';
         this.moveLog.forEach((step, i) => {
             const turnStr = step.turn ? `T${step.turn}` : '';
@@ -302,6 +315,7 @@ class ReplayBrowser {
                 <span class="log-turn">${turnStr}</span>
                 <span class="log-icon">${icon}</span>
                 <span class="log-text" style="${textStyle}">${step.label || 'Action'}</span>
+                ${step.effectText ? `<div class="log-effect-preview">${esc(step.effectText)}</div>` : ''}
             </li>`;
         });
         list.innerHTML = html;
@@ -773,7 +787,7 @@ class ReplayBrowser {
     }
 
     _applyStep(step, silent = false) {
-        const { type, turn, phase, label, actions } = step;
+        const { type, turn, phase, label, effectText, actions } = step;
 
         if (turn !== undefined) {
             const turnEl = document.getElementById('rb-turn-label');
@@ -785,6 +799,10 @@ class ReplayBrowser {
         }
 
         if (!silent && label) this._log(label);
+        if (!silent && type === 'effect-activate' && effectText) {
+            const cardName = actions?.[0]?.name ?? '';
+            this._showLastEffect(cardName, effectText);
+        }
 
         // Update Life Points based on the timeline position
         this._updateLifePoints();
@@ -836,7 +854,27 @@ class ReplayBrowser {
 
     _log(text) {
         const el = document.getElementById('rb-log');
-        if (el) el.textContent = text;
+        if (el) el.innerHTML = `<span class="rb-log-label">${text}</span>`;
+    }
+
+    _showLastEffect(cardName, effectText) {
+        this._lastEffectName = cardName;
+        this._lastEffectDesc = effectText;
+        const panel = document.getElementById('rb-last-effect');
+        const nameEl = document.getElementById('rb-last-effect-name');
+        const textEl = document.getElementById('rb-last-effect-text');
+        if (!panel || !nameEl || !textEl) return;
+        const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        nameEl.textContent = cardName;
+        textEl.innerHTML = esc(effectText);
+        panel.style.display = '';
+    }
+
+    _clearLastEffect() {
+        this._lastEffectName = null;
+        this._lastEffectDesc = null;
+        const panel = document.getElementById('rb-last-effect');
+        if (panel) panel.style.display = 'none';
     }
 
     _updateCounter() {
@@ -908,6 +946,18 @@ class ReplayBrowser {
         this._updateCounter();
         setTimeout(() => this._repositionAll(), 30);
         if (targetIndex >= 0) this._log(this.moveLog[targetIndex].label || '');
+
+        // Restore last-effect panel to match state at targetIndex
+        let foundEffect = false;
+        for (let i = targetIndex; i >= 0; i--) {
+            const s = this.moveLog[i];
+            if (s.type === 'effect-activate' && s.effectText) {
+                this._showLastEffect(s.actions?.[0]?.name ?? '', s.effectText);
+                foundEffect = true;
+                break;
+            }
+        }
+        if (!foundEffect) this._clearLastEffect();
     }
 
     _nextTurn() {
