@@ -32387,8 +32387,8 @@ const archetypes = [
                         </svg>`
     },
     {
-        name: "Shaddol",
-        description: "A deck analysis for the Shaddol archetype.",
+        name: "Shaddoll",
+        description: "A deck analysis for the Shaddoll archetype.",
         filepath: "pages/Shaddol Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>

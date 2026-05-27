@@ -1122,42 +1122,76 @@ window.CardLoader = (function () {
      * Tries Supabase first, falls back to YGOProDeck API
      */
     async function fetchCardData(cardName) {
-        // First, try to fetch from Supabase database
-        const supabaseData = await fetchCardDataFromSupabase(cardName);
+        // Fallback name mapping to handle YGO API discrepancies seamlessly
+        const nameFallbacks = {
+            'Thorns of Violet Poison': 'Thorn Fangs of Violet Poison',
+            'Thorn Fangs of Violet Poison': 'Thorns of Violet Poison',
+            'Gagaga Girl — Zero Zero Call': 'Gagaga Girl - Cell Phone Subtraction',
+            'Gagaga Girl - Zero Zero Call': 'Gagaga Girl - Cell Phone Subtraction',
+            'Gagaga Girl - Cell Phone Subtraction': 'Gagaga Girl - Zero Zero Call',
+            'The Endymion Empire': 'Endymion Empire',
+            'Endymion Empire': 'The Endymion Empire',
+            'Magia Magic - Thunder of Judgment': 'Magia Magic – Thunder of Judgment',
+            'Magia Magic – Thunder of Judgment': 'Magia Magic - Thunder of Judgment',
+            'Stellarnova Binding': 'Stellarnova Bonds',
+            'Stellarnova Bonds': 'Stellarnova Binding'
+        };
 
-        if (supabaseData) {
-            // Enriched Supabase data with Sets/Prices from API if missing
-            // This covers the case where Supabase has core data but not prices/sets yet
-            if (!supabaseData.card_sets || !supabaseData.card_prices) {
-                try {
-                    const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}&misc=yes`;
-                    const response = await fetch(apiUrl);
-                    if (response.ok) {
-                        const apiJson = await response.json();
-                        const apiData = apiJson?.data?.[0];
-                        if (apiData) {
-                            if (!supabaseData.card_sets) supabaseData.card_sets = apiData.card_sets;
-                            if (!supabaseData.card_prices) supabaseData.card_prices = apiData.card_prices;
+        async function attemptFetch(name) {
+            // First, try to fetch from Supabase database
+            const supabaseData = await fetchCardDataFromSupabase(name);
+
+            if (supabaseData) {
+                // Enriched Supabase data with Sets/Prices from API if missing
+                if (!supabaseData.card_sets || !supabaseData.card_prices) {
+                    try {
+                        const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(name)}&misc=yes`;
+                        const response = await fetch(apiUrl);
+                        if (response.ok) {
+                            const apiJson = await response.json();
+                            const apiData = apiJson?.data?.[0];
+                            if (apiData) {
+                                if (!supabaseData.card_sets) supabaseData.card_sets = apiData.card_sets;
+                                if (!supabaseData.card_prices) supabaseData.card_prices = apiData.card_prices;
+                            }
                         }
+                    } catch (e) {
+                        console.warn('[CardLoader] Failed to fetch enrichment data from API:', e);
                     }
-                } catch (e) {
-                    console.warn('[CardLoader] Failed to fetch enrichment data from API:', e);
                 }
+                return supabaseData;
             }
-            return supabaseData;
+
+            // Fallback to YGOProDeck API
+            try {
+                const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(name)}&misc=yes`;
+                console.log("[CardLoader] fetchCardData called for:", name, "URL:", apiUrl);
+                const response = await fetch(apiUrl);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data?.data?.[0];
+                }
+            } catch (e) {
+                console.warn('[CardLoader] API request failed:', e);
+            }
+
+            return null;
         }
 
-        // Fallback to YGOProDeck API
-        const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(cardName)}&misc=yes`;
-        console.log("[CardLoader] fetchCardData called for:", cardName, "URL:", apiUrl);
-        const response = await fetch(apiUrl);
+        let result = await attemptFetch(cardName);
 
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+        // If the primary fetch failed and we have a fallback name, try the fallback
+        if (!result && nameFallbacks[cardName]) {
+            console.log(`[CardLoader] Card "${cardName}" not found. Trying fallback name: "${nameFallbacks[cardName]}"`);
+            result = await attemptFetch(nameFallbacks[cardName]);
         }
 
-        const data = await response.json();
-        return data?.data?.[0];
+        if (!result) {
+            throw new Error(`Card data not found for "${cardName}"`);
+        }
+
+        return result;
     }
 
     /**
