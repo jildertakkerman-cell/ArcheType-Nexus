@@ -29388,12 +29388,12 @@ const archetypes = [
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="toonGradient" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color:#ff69b4;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#00bfff;stop-opacity:1" />
+                                <stop offset="0%" style="stop-color:#ff66cc;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#9933ff;stop-opacity:1" />
                             </radialGradient>
                             <filter id="toonGlow">
                                 <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                <feMerge> 
+                                <feMerge>
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
@@ -29402,11 +29402,44 @@ const archetypes = [
                         <circle cx="50" cy="50" r="40" fill="url(#toonGradient)" filter="url(#toonGlow)">
                             <animate attributeName="r" values="40;42;40" dur="2s" repeatCount="indefinite"/>
                         </circle>
-                        <path d="M20 30 L40 20 L60 20 L80 30 L80 50 L60 60 L40 60 L20 50 Z" fill="#ffffff" stroke="#000000" stroke-width="1"/>
-                        <circle cx="35" cy="35" r="5" fill="#000000"/>
-                        <circle cx="65" cy="35" r="5" fill="#000000"/>
-                        <path d="M40 45 Q50 50 60 45" stroke="#000000" stroke-width="2" fill="none"/>
-                        <text x="50" y="85" text-anchor="middle" font-size="12" fill="#ff69b4" font-weight="bold">Toon</text>
+                        <!-- Toon World open book (lower half) -->
+                        <path d="M16 54 Q14 45 20 43 L47 41 L47 71 Q32 73 16 71 Z" fill="#fffde8" stroke="#333" stroke-width="2"/>
+                        <path d="M84 54 Q86 45 80 43 L53 41 L53 71 Q68 73 84 71 Z" fill="#fff8dc" stroke="#333" stroke-width="2"/>
+                        <rect x="47" y="41" width="6" height="30" rx="1" fill="#c8a060" stroke="#333" stroke-width="1.5"/>
+                        <!-- Comic doodles on left page: star doodle + squiggle -->
+                        <path d="M26 55 L27.5 51 L29 55 L33 55 L30 57.5 L31.5 61.5 L27.5 59 L23.5 61.5 L25 57.5 L22 55 Z" fill="#ffdd44" stroke="#aa8800" stroke-width="0.6"/>
+                        <path d="M22 65 Q27 63 32 65 Q37 67 43 65" stroke="#bbb" stroke-width="1" fill="none"/>
+                        <!-- Text lines on right page -->
+                        <line x1="56" y1="54" x2="80" y2="54" stroke="#ccc" stroke-width="1"/>
+                        <line x1="56" y1="59" x2="78" y2="59" stroke="#ccc" stroke-width="1"/>
+                        <line x1="56" y1="64" x2="80" y2="64" stroke="#ccc" stroke-width="1"/>
+                        <line x1="56" y1="69" x2="75" y2="69" stroke="#ccc" stroke-width="1"/>
+                        <!-- Cartoon dragon (Toon Blue-Eyes style) peeking from book -->
+                        <!-- Wings -->
+                        <path d="M38 45 L25 29 L33 43" fill="#aadeee" stroke="#222" stroke-width="1.5"/>
+                        <path d="M62 45 L75 29 L67 43" fill="#aadeee" stroke="#222" stroke-width="1.5"/>
+                        <!-- Neck/body above book -->
+                        <path d="M40 45 Q38 34 50 29 Q62 34 60 45" fill="#88ccee" stroke="#222" stroke-width="2"/>
+                        <!-- Head -->
+                        <ellipse cx="50" cy="27" rx="12" ry="10" fill="#88ccee" stroke="#222" stroke-width="2.5"/>
+                        <!-- Horns -->
+                        <path d="M42 20 L39 13 L44 19" fill="#77bbdd" stroke="#222" stroke-width="1.5"/>
+                        <path d="M58 20 L61 13 L56 19" fill="#77bbdd" stroke="#222" stroke-width="1.5"/>
+                        <!-- Left eye -->
+                        <ellipse cx="44" cy="25" rx="4.5" ry="5" fill="white" stroke="#222" stroke-width="2"/>
+                        <circle cx="44.5" cy="25.5" r="3" fill="#111"/>
+                        <circle cx="46" cy="24" r="1" fill="white"/>
+                        <!-- Right eye -->
+                        <ellipse cx="56" cy="25" rx="4.5" ry="5" fill="white" stroke="#222" stroke-width="2"/>
+                        <circle cx="55.5" cy="25.5" r="3" fill="#111"/>
+                        <circle cx="57" cy="24" r="1" fill="white"/>
+                        <!-- Smile with teeth -->
+                        <path d="M43 32 Q50 37 57 32" fill="#dd2244" stroke="#222" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M43 32 Q50 36 57 32 Q57 35 50 38 Q43 35 43 32 Z" fill="white" stroke="#222" stroke-width="1"/>
+                        <!-- Corner stars -->
+                        <path d="M17 18 L19 13 L21 18 L26 18 L22 21 L24 26 L19 23 L14 26 L16 21 L12 18 Z" fill="#ffe066" stroke="#cc8800" stroke-width="1"/>
+                        <path d="M79 16 L81 11 L83 16 L88 16 L84 19 L86 24 L81 21 L76 24 L78 19 L74 16 Z" fill="#ff88dd" stroke="#aa2288" stroke-width="1"/>
+                        <text x="50" y="89" text-anchor="middle" font-size="11" fill="#ffe066" font-weight="bold">Toon</text>
                     </svg>`
     },
     {
