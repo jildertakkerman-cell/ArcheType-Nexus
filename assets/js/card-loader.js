@@ -992,8 +992,15 @@ window.CardLoader = (function () {
         try {
             const cardInfo = await fetchCardData(cardName);
             if (!cardInfo) return null;
-            // Construct and return the hosted image URL using the same format as loadCard()
-            return `${CONFIG.IMAGE_BASE_URL}/${encodeURIComponent(cardInfo.id)}.png`;
+            const gcsUrl = `${CONFIG.IMAGE_BASE_URL}/${encodeURIComponent(cardInfo.id)}.png`;
+            const fallbackUrl = `https://images.ygoprodeck.com/images/cards/${cardInfo.id}.jpg`;
+            // Test GCS URL; resolve with ygoprodeck CDN if the bucket image is missing
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => resolve(gcsUrl);
+                img.onerror = () => resolve(fallbackUrl);
+                img.src = gcsUrl;
+            });
         } catch (error) {
             console.error(`Failed to get image URL for "${cardName}":`, error);
             return null;
