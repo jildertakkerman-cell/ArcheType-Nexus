@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account | Archetype Nexus</title>
+
+    <script src="../assets/js/google-analytics.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Reuse analyzer CSS variables + base styles -->
+    <link rel="stylesheet" href="../assets/css/replay-analyzer.css">
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color, #0a0a0a);
+            color: var(--text-color, #f5f5f5);
+            min-height: 100vh;
+            margin: 0;
+            padding: 3rem 1rem 3rem;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        /* ── Profile Banner ── */
+        .profile-banner {
+            position: relative;
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #1e1b4b 100%);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 1.25rem;
+            padding: 2rem 2rem 1.75rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .profile-banner::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .profile-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: 10%;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .profile-identity {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5), 0 0 20px rgba(99, 102, 241, 0.25);
+            flex-shrink: 0;
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .profile-avatar-fallback {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.3));
+            border: 2px solid rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: rgba(165, 180, 252, 0.8);
+            flex-shrink: 0;
+        }
+
+        .profile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .profile-name {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #f5f5f5;
+            margin-bottom: 0.35rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .discord-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(88, 101, 242, 0.18);
+            border: 1px solid rgba(88, 101, 242, 0.35);
+            color: #a5b4fc;
+            font-size: 0.76rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            margin-bottom: 0.4rem;
+        }
+
+        .discord-badge i {
+            color: #7289da;
+            font-size: 0.78rem;
+        }
+
+        .profile-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted, #a3a3a3);
+            margin-top: 0.1rem;
+        }
+
+        .btn-logout {
+            margin-left: auto;
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted, #a3a3a3);
+            font-size: 0.78rem;
+            font-family: inherit;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+
+        .btn-logout:hover {
+            color: #f5f5f5;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .stat-card {
+            background: rgba(23, 23, 23, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 0.875rem;
+            padding: 1rem 1.25rem;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(99, 102, 241, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted, #a3a3a3);
+        }
+
+        /* ── Section bar above the list ── */
+        .list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .list-header-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted, #a3a3a3);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        #replay-count {
+            font-size: 0.78rem;
+            color: var(--text-muted, #a3a3a3);
+        }
+
+        /* ── Replay cards ── */
+        .replay-card {
+            background: var(--glass-bg, rgba(23, 23, 23, 0.85));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 0.75rem;
+            backdrop-filter: blur(8px);
+            transition: border-color 0.2s;
+        }
+
+        .replay-card:hover {
+            border-color: rgba(99, 102, 241, 0.25);
+        }
+
+        .replay-card--win  { border-left: 3px solid rgba(34, 197, 94, 0.55); }
+        .replay-card--loss { border-left: 3px solid rgba(239, 68, 68, 0.45); }
+        .replay-card--win:hover  { border-color: rgba(34, 197, 94, 0.7); }
+        .replay-card--loss:hover { border-color: rgba(239, 68, 68, 0.6); }
+
+        .replay-card--clickable { cursor: pointer; }
+        .replay-card--clickable.loading { opacity: 0.6; pointer-events: none; }
+
+        .replay-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .replay-card-header-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .replay-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .replay-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .replay-icon-fallback {
+            font-size: 1.25rem;
+            color: rgba(165, 180, 252, 0.3);
+        }
+
+        .replay-arc {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-color, #f5f5f5);
+            margin-bottom: 0.25rem;
+        }
+
+        .replay-names {
+            font-size: 0.8rem;
+            color: var(--text-muted, #a3a3a3);
+        }
+
+        .replay-date {
+            font-size: 0.78rem;
+            color: var(--text-muted, #a3a3a3);
+            white-space: nowrap;
+            padding-top: 0.15rem;
+        }
+
+        .replay-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .btn-reanalyze {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 0.45rem 0.9rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .btn-reanalyze:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.22);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-reanalyze:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .vis-select {
+            background: rgba(23, 23, 23, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-muted, #a3a3a3);
+            font-size: 0.78rem;
+            padding: 0.35rem 0.6rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .btn-delete {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted, #a3a3a3);
+            width: 30px;
+            height: 30px;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .btn-delete:hover:not(:disabled) {
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.4);
+        }
+
+        /* ── Replay meta strip ── */
+        .replay-meta-strip {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 0;
+            margin: 0.5rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .replay-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.71rem;
+            font-weight: 600;
+            padding: 0.18rem 0.5rem;
+            border-radius: 999px;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+
+        .badge-win  { background: rgba(34,197,94,0.12);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .badge-loss { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .badge-otk  { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+        .badge-stat { background: rgba(255,255,255,0.05); color: #a3a3a3; border: 1px solid rgba(255,255,255,0.08); }
+        .badge-tag  { background: rgba(139,92,246,0.12); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.2); }
+
+        .rbadge-sep {
+            width: 1px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        /* ── Upload button ── */
+        .btn-upload {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .btn-upload:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.22);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-upload:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ── Login gate (unauthenticated state) ── */
+        .login-gate {
+            text-align: center;
+            padding: 2.5rem 1rem;
+        }
+
+        .login-gate i.fab.fa-discord {
+            font-size: 2.5rem;
+            color: #5865F2;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .login-gate p {
+            font-size: 1rem;
+            color: var(--text-color, #f5f5f5);
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Home Button -->
+    <a href="../index.html" class="home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container">
+
+        <!-- Profile Banner -->
+        <div class="profile-banner" id="profile-banner">
+            <div class="profile-identity">
+                <!-- avatar and info rendered by JS -->
+                <div class="profile-avatar-fallback" id="profile-avatar-wrap">
+                    <i class="fab fa-discord"></i>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name" id="profile-name">Loading…</div>
+                    <div class="discord-badge" id="profile-discord-badge" style="display:none;">
+                        <i class="fab fa-discord"></i>
+                        <span id="profile-discord-tag"></span>
+                    </div>
+                    <div class="profile-meta" id="profile-since"></div>
+                </div>
+                <button class="btn-logout" id="btn-logout" style="display:none;" onclick="window.Auth.signOut()">
+                    <i class="fas fa-sign-out-alt" style="margin-right:0.3rem;font-size:0.72rem;"></i>Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar" id="stats-bar" style="display:none;">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total">—</div>
+                <div class="stat-label">Replays</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-public">—</div>
+                <div class="stat-label">Public</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-archetypes">—</div>
+                <div class="stat-label">Archetypes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-latest">—</div>
+                <div class="stat-label">Latest Upload</div>
+            </div>
+        </div>
+
+        <!-- Hidden file input for replay upload -->
+        <input type="file" id="replay-upload-input" accept=".yrpx" style="display:none;">
+
+        <!-- Replay list section -->
+        <div class="list-header" id="list-header" style="display:none;">
+            <span class="list-header-title"><i class="fas fa-history" style="margin-right:0.4rem;opacity:0.6;"></i>Saved Replays</span>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <button class="btn-upload" onclick="document.getElementById('replay-upload-input').click()">
+                    <i class="fas fa-upload"></i> Upload Replay
+                </button>
+                <span id="replay-count"></span>
+            </div>
+        </div>
+
+        <div id="replay-list"></div>
+
+    </div>
+
+    <script src="../assets/js/archetypes-data.js"></script>
+    <script src="../assets/js/my-replays.js"></script>
+    <script src="../assets/js/cookie-consent.js"></script>
+    <script src="../assets/js/cookie-consent-config.js"></script>
+</body>
+</html>

@@ -21,6 +21,9 @@
     <!-- Supabase Config (for CardLoader tags) -->
     <script src="../assets/js/supabase-config.js"></script>
 
+    <!-- Auth module (Discord OAuth) -->
+    <script src="../assets/js/auth.js"></script>
+
     <!-- Card Loader (for tabbed popups) -->
     <script src="../assets/js/card-loader.js"></script>
 
@@ -39,6 +42,110 @@
     <!-- Visualizer / Board Styles (shared with combo simulator) -->
     <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
 
+    <style>
+        /* ── Login CTA ── */
+        .login-cta-card {
+            background: linear-gradient(135deg, rgba(88,101,242,0.08), rgba(99,102,241,0.05));
+            border: 1px solid rgba(88,101,242,0.3);
+            border-radius: 0.875rem;
+            padding: 1.1rem 1.4rem;
+            margin-bottom: 1rem;
+        }
+        .login-cta-body {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .login-cta-icon {
+            font-size: 1.75rem;
+            color: #7289da;
+            flex-shrink: 0;
+        }
+        .login-cta-text {
+            flex: 1;
+            min-width: 180px;
+        }
+        .login-cta-text strong {
+            color: #f5f5f5;
+            font-size: 0.9rem;
+        }
+        .login-cta-text ul {
+            margin: 0.3rem 0 0;
+            padding-left: 1.1rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            line-height: 1.6;
+        }
+        .login-cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(to right, #5865F2, #4752C4);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            box-shadow: 0 0 14px rgba(88,101,242,0.4);
+            font-family: inherit;
+            flex-shrink: 0;
+            transition: box-shadow 0.2s;
+        }
+        .login-cta-btn:hover {
+            box-shadow: 0 0 22px rgba(88,101,242,0.65);
+        }
+
+        /* ── Community share footnote ── */
+        .contribute-footnote {
+            margin-top: 0.6rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+        .contribute-footnote label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+        }
+        .contribute-footnote details {
+            margin-top: 0.3rem;
+            padding-left: 1.4rem;
+        }
+        .contribute-footnote summary {
+            cursor: pointer;
+            opacity: 0.7;
+            font-size: 0.74rem;
+        }
+        .contribute-footnote details p {
+            margin-top: 0.25rem;
+            font-size: 0.74rem;
+            line-height: 1.5;
+            opacity: 0.7;
+        }
+
+        /* ── Analyzer header ── */
+        header {
+            position: relative;
+            text-align: center;
+            padding: 2.5rem 2rem 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .analyzer-banner-icon {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent-color, #ef4444), var(--accent-secondary, #f59e0b));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            display: block;
+            opacity: 0.85;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -49,14 +156,13 @@
 
     <div class="container">
         <header>
-            <h1><i class="fas fa-chart-line mr-3"></i>Replay Analyzer</h1>
+            <span class="analyzer-banner-icon"><i class="fas fa-chart-line"></i></span>
+            <h1>Replay Analyzer</h1>
             <p class="subtitle">Upload your .yrpX replay for deep strategic insights<br>
                 <span style="font-size: 0.85rem; opacity: 0.8;">(Commonly found at:
                     <code>C:\ProjectIgnis\replay</code>)</span>
             </p>
-            <div id="archetype-cards-browser" class="mt-6 flex justify-center relative z-10">
-                <!-- Button will be injected here -->
-            </div>
+            <div id="header-account-link" style="display:none; position:absolute; top:1.25rem; right:1.25rem;"></div>
         </header>
 
         <!-- What are YRPX files (Collapsible or just a card) -->
@@ -86,25 +192,22 @@
             </div>
         </details>
 
-        <!-- Contribution Opt-in -->
-        <div class="contribution-option">
-            <label class="contribution-label">
-                <input type="checkbox" id="contribute-checkbox" checked>
-                <span>
-                    <strong><i class="fas fa-heart" style="margin-right: 4px;"></i>Share with the community</strong><br>
-                    Help other players learn combos by contributing this replay to our library.
-                    <span style="color: var(--text-muted); font-size: 0.8rem;">(Uncheck to opt out)</span>
-                </span>
-            </label>
-            <details class="contribution-details">
-                <summary>What gets shared?</summary>
-                <p>
-                    Only the card sequences from your replay are used to enhance our
-                    <strong style="color: var(--accent-color);">Combo Visualizer</strong>. Your data is fully
-                    anonymized.
-                    Unchecking this box ensures your replay is processed but not saved.
-                </p>
-            </details>
+        <!-- Login CTA (hidden once logged in via inline script below) -->
+        <div id="login-cta" class="login-cta-card">
+            <div class="login-cta-body">
+                <i class="fab fa-discord login-cta-icon"></i>
+                <div class="login-cta-text">
+                    <strong>Save replays to your account</strong>
+                    <ul>
+                        <li>Re-analyze any saved replay from your profile</li>
+                        <li>Track your win/loss record and archetypes</li>
+                        <li>Access your library from any device</li>
+                    </ul>
+                </div>
+                <button class="login-cta-btn" onclick="window.Auth.signInWithDiscord(window.location.href)">
+                    <i class="fab fa-discord"></i> Login with Discord
+                </button>
+            </div>
         </div>
 
         <div class="drop-zone" id="dropZone">
@@ -114,6 +217,18 @@
             </svg>
             <p>Drop your .yrpx replay file here or click to upload</p>
             <input type="file" id="fileInput" accept=".yrpx,.yrpX">
+        </div>
+
+        <!-- Community share (demoted footnote) -->
+        <div class="contribute-footnote">
+            <label>
+                <input type="checkbox" id="contribute-checkbox" checked>
+                Share replay sequences with the community
+            </label>
+            <details>
+                <summary>What gets shared?</summary>
+                <p>Only card sequences are used for the Combo Visualizer. Data is fully anonymized. Uncheck to process without saving.</p>
+            </details>
         </div>
 
         <div class="loading" id="loadingState" style="display: none;">
@@ -838,6 +953,44 @@
                 });
             </script>
 
+
+            <script>
+                document.addEventListener('DOMContentLoaded', async () => {
+                    if (!window.Auth) return;
+                    const session = await window.Auth.getSession();
+                    if (session) {
+                        const cta = document.getElementById('login-cta');
+                        if (cta) cta.style.display = 'none';
+
+                        const m = session.user.user_metadata || {};
+                        const name = m.full_name || m.name || m.user_name || 'Duelist';
+                        const avatar = m.avatar_url;
+                        const chip = document.getElementById('header-account-link');
+                        if (chip) {
+                            chip.style.display = '';
+                            chip.innerHTML = `
+                                <a href="My-Replays.html"
+                                   style="display:inline-flex;align-items:center;gap:0.5rem;
+                                          background:rgba(23,23,23,0.9);
+                                          border:1px solid rgba(245,158,11,0.4);
+                                          border-radius:0.75rem;padding:0.5rem 1rem;
+                                          text-decoration:none;color:#f5f5f5;font-size:0.82rem;font-weight:600;
+                                          box-shadow:0 0 14px rgba(245,158,11,0.15);
+                                          transition:border-color 0.2s,box-shadow 0.2s;"
+                                   onmouseover="this.style.borderColor='rgba(245,158,11,0.7)';this.style.boxShadow='0 0 20px rgba(245,158,11,0.28)'"
+                                   onmouseout="this.style.borderColor='rgba(245,158,11,0.4)';this.style.boxShadow='0 0 14px rgba(245,158,11,0.15)'">
+                                    ${avatar
+                                        ? `<img src="${avatar}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;">`
+                                        : `<i class="fab fa-discord" style="color:#5865F2;"></i>`}
+                                    ${name}
+                                    <span style="opacity:0.5;margin:0 0.1rem;">·</span>
+                                    <span style="color:#f59e0b;">My Account</span>
+                                    <i class="fas fa-arrow-right" style="font-size:0.65rem;opacity:0.6;"></i>
+                                </a>`;
+                        }
+                    }
+                });
+            </script>
 
 </body>
 

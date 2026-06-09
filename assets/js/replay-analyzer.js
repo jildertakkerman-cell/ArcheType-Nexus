@@ -14,10 +14,26 @@ let tempoChartInstance = null;
 let currentAnalysisData = null;
 let currentReplayBrowser = null;
 
-// Initialize CardLoader
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize CardLoader + check for pre-loaded replay JSON from My Replays page
+document.addEventListener('DOMContentLoaded', async () => {
     if (window.CardLoader) {
         window.CardLoader.init();
+    }
+
+    const preload = sessionStorage.getItem('replayPreload');
+    if (preload) {
+        sessionStorage.removeItem('replayPreload');
+        try {
+            const data = JSON.parse(preload);
+            dropZone.style.display = 'none';
+            loadingState.style.display = 'block';
+            currentAnalysisData = data;
+            await displayAnalysis(data);
+        } catch (e) {
+            console.error('[replayPreload] Failed to parse preloaded data', e);
+        } finally {
+            loadingState.style.display = 'none';
+        }
     }
 });
 
@@ -100,9 +116,16 @@ async function handleFile(file) {
         const headers = { 'Content-Type': 'application/octet-stream' };
         const contributeCheckbox = document.getElementById('contribute-checkbox');
 
-        if (contributeCheckbox && contributeCheckbox.checked) {
+        // Attach JWT when logged in so the parser can write a replays row
+        let userToken = null;
+        if (window.Auth) {
+            userToken = await window.Auth.getToken();
+            if (userToken) headers['Authorization'] = `Bearer ${userToken}`;
+        }
+
+        // Save replay when: checkbox is checked (anonymous community share) OR user is logged in (personal library)
+        if ((contributeCheckbox && contributeCheckbox.checked) || userToken) {
             headers['x-save-replay'] = 'true';
-            // Sanitize filename just in case, though backend usually handles it
             headers['x-filename'] = file.name;
         }
 
@@ -122,6 +145,10 @@ async function handleFile(file) {
         console.log('Analysis data:', data);
         currentAnalysisData = data;
         await displayAnalysis(data);
+
+        if (data.replayid) {
+            showSavedToast();
+        }
     } catch (error) {
         console.error('Analysis error:', error);
 
@@ -145,6 +172,22 @@ async function handleFile(file) {
 function showError(message) {
     errorMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
     errorMessage.style.display = 'block';
+}
+
+function showSavedToast() {
+    const toast = document.createElement('div');
+    toast.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> Saved to your replay library';
+    Object.assign(toast.style, {
+        position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: '9999',
+        background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.4)',
+        color: '#f5f5f5', padding: '0.75rem 1.25rem', borderRadius: '0.75rem',
+        fontSize: '0.875rem', fontWeight: '600', backdropFilter: 'blur(8px)',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.4)', transition: 'opacity 0.4s',
+        display: 'flex', alignItems: 'center', gap: '0.5rem'
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+    setTimeout(() => toast.remove(), 3500);
 }
 
 async function displayAnalysis(data) {
