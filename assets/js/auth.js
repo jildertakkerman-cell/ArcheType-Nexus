@@ -18,6 +18,9 @@
         return _client;
     }
 
+    // Init client eagerly so PKCE code exchange starts immediately on redirect
+    _getClient();
+
     window.Auth = {
         _getClient,
 
@@ -41,10 +44,19 @@
         async signInWithDiscord(redirectTo) {
             const c = _getClient();
             if (!c) return;
-            // Determine correct path for My-Replays depending on caller location
-            const dest = redirectTo || window.location.href;
+            const dest = redirectTo || (window.location.origin + window.location.pathname);
             return c.auth.signInWithOAuth({
                 provider: 'discord',
+                options: { redirectTo: dest }
+            });
+        },
+
+        async signInWithGoogle(redirectTo) {
+            const c = _getClient();
+            if (!c) return;
+            const dest = redirectTo || (window.location.origin + window.location.pathname);
+            return c.auth.signInWithOAuth({
+                provider: 'google',
                 options: { redirectTo: dest }
             });
         },
@@ -69,19 +81,35 @@
 
     function loginBtn() {
         return `
-            <button
-                onclick="window.Auth.signInWithDiscord()"
-                style="display:inline-flex;align-items:center;gap:0.5rem;
-                       background:linear-gradient(to right,#5865F2,#4752C4);
-                       color:#fff;font-weight:700;font-size:0.82rem;
-                       padding:0.5rem 1rem;border-radius:0.75rem;
-                       border:1px solid rgba(255,255,255,0.2);cursor:pointer;
-                       box-shadow:0 0 14px rgba(88,101,242,0.45);
-                       font-family:inherit;transition:box-shadow 0.2s;"
-                onmouseover="this.style.boxShadow='0 0 22px rgba(88,101,242,0.75)'"
-                onmouseout="this.style.boxShadow='0 0 14px rgba(88,101,242,0.45)'">
-                <i class="fab fa-discord"></i> Login with Discord
-            </button>`;
+            <div style="display:inline-flex;gap:0.5rem;align-items:center;">
+                <button
+                    onclick="window.Auth.signInWithDiscord()"
+                    style="display:inline-flex;align-items:center;gap:0.5rem;
+                           background:linear-gradient(to right,#5865F2,#4752C4);
+                           color:#fff;font-weight:700;font-size:0.82rem;
+                           padding:0.5rem 1rem;border-radius:0.75rem;
+                           border:1px solid rgba(255,255,255,0.2);cursor:pointer;
+                           box-shadow:0 0 14px rgba(88,101,242,0.45);
+                           font-family:inherit;transition:box-shadow 0.2s;"
+                    onmouseover="this.style.boxShadow='0 0 22px rgba(88,101,242,0.75)'"
+                    onmouseout="this.style.boxShadow='0 0 14px rgba(88,101,242,0.45)'">
+                    <i class="fab fa-discord"></i> Discord
+                </button>
+                <button
+                    onclick="window.Auth.signInWithGoogle()"
+                    style="display:inline-flex;align-items:center;gap:0.5rem;
+                           background:linear-gradient(to right,#4285F4,#2563EB);
+                           color:#fff;font-weight:700;font-size:0.82rem;
+                           padding:0.5rem 1rem;border-radius:0.75rem;
+                           border:1px solid rgba(255,255,255,0.2);cursor:pointer;
+                           box-shadow:0 0 14px rgba(66,133,244,0.45);
+                           font-family:inherit;transition:box-shadow 0.2s;"
+                    onmouseover="this.style.boxShadow='0 0 22px rgba(66,133,244,0.75)'"
+                    onmouseout="this.style.boxShadow='0 0 14px rgba(66,133,244,0.45)'">
+                    <svg width="14" height="14" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#fff" d="M43.6 20H24v8h11.3C33.7 32.8 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-9 20-20 0-1.3-.1-2.7-.4-4z"/></svg>
+                    Google
+                </button>
+            </div>`;
     }
 
     function userChip(name, avatar, isIndex) {
@@ -93,7 +121,7 @@
                         padding:0.4rem 0.875rem;backdrop-filter:blur(10px);">
                 ${avatar
                     ? `<img src="${avatar}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">`
-                    : `<i class="fab fa-discord" style="color:#5865F2;"></i>`}
+                    : `<i class="fas fa-user-circle" style="color:#a3a3a3;font-size:1.2rem;"></i>`}
                 <span style="color:#f5f5f5;font-size:0.82rem;font-weight:600;">${name}</span>
                 <a href="${myReplaysHref}"
                    style="color:#f59e0b;font-size:0.78rem;font-weight:600;text-decoration:none;"
@@ -107,21 +135,32 @@
             </div>`;
     }
 
-    async function renderBar(el) {
-        // data-auth-index="true" signals we are on index.html (paths differ)
+    async function renderBar(el, session) {
         const isIndex = el.dataset.authIndex === 'true';
-        const session = await window.Auth.getSession();
-        if (session) {
-            const m = session.user.user_metadata || {};
+        const s = session !== undefined ? session : await window.Auth.getSession();
+        if (s) {
+            const m = s.user.user_metadata || {};
             const name = m.full_name || m.name || m.user_name || 'Duelist';
-            const avatar = m.avatar_url || null;
+            const avatar = m.avatar_url || m.picture || null;
             el.innerHTML = userChip(name, avatar, isIndex);
         } else {
             el.innerHTML = loginBtn();
         }
     }
 
+    function renderAllBars(session) {
+        document.querySelectorAll('[data-auth-bar]').forEach(el => renderBar(el, session));
+    }
+
+    // Register listener eagerly so PKCE SIGNED_IN fires before DOMContentLoaded
+    const _earlyClient = _getClient();
+    if (_earlyClient) {
+        _earlyClient.auth.onAuthStateChange((_event, session) => {
+            document.querySelectorAll('[data-auth-bar]').forEach(el => renderBar(el, session));
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('[data-auth-bar]').forEach(renderBar);
+        renderAllBars();
     });
 })();

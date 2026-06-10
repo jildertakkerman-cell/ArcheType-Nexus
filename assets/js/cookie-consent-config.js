@@ -74,7 +74,7 @@ silktideCookieBannerManager.updateCookieBannerConfig({
     ],
     text: {
         banner: {
-            description: "<p>We use cookies on our site to enhance your user experience, provide personalized content, and analyze our traffic. <a href=\"https://archetypesnexus.com/cookie_policy.html\" target=\"_blank\">Cookie Policy.</a></p>",
+            description: "<p>We use cookies on our site to enhance your user experience, provide personalized content, and analyze our traffic. <a href=\"https://archetypesnexus.com/cookie_policy.html\" target=\"_blank\">Cookie Policy</a> · <a href=\"https://archetypesnexus.com/pages/Privacy-Policy.html\" target=\"_blank\">Privacy Policy</a></p>",
             acceptAllButtonText: "Accept all",
             acceptAllButtonAccessibleLabel: "Accept all cookies",
             rejectNonEssentialButtonText: "Reject non-essential",

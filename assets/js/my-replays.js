@@ -122,23 +122,35 @@
         if (nameEl) nameEl.textContent = 'Sign in to view your profile';
 
         const since = document.getElementById('profile-since');
-        if (since) since.textContent = 'Connect your Discord account to get started';
+        if (since) since.textContent = 'Connect your account to get started';
 
         const list = document.getElementById('replay-list');
         if (!list) return;
         list.innerHTML = `
             <div class="login-gate">
-                <i class="fab fa-discord"></i>
+                <i class="fas fa-user-circle"></i>
                 <p>Login to view your saved replays</p>
-                <button onclick="window.Auth.signInWithDiscord(window.location.href)"
-                        style="display:inline-flex;align-items:center;gap:0.5rem;
-                               background:linear-gradient(to right,#5865F2,#4752C4);
-                               color:#fff;font-weight:700;font-size:0.9rem;
-                               padding:0.75rem 1.5rem;border-radius:0.75rem;
-                               border:1px solid rgba(255,255,255,0.2);cursor:pointer;
-                               box-shadow:0 0 16px rgba(88,101,242,0.5);font-family:inherit;">
-                    <i class="fab fa-discord"></i> Login with Discord
-                </button>
+                <div style="display:inline-flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;">
+                    <button onclick="window.Auth.signInWithDiscord(window.location.href)"
+                            style="display:inline-flex;align-items:center;gap:0.5rem;
+                                   background:linear-gradient(to right,#5865F2,#4752C4);
+                                   color:#fff;font-weight:700;font-size:0.9rem;
+                                   padding:0.75rem 1.5rem;border-radius:0.75rem;
+                                   border:1px solid rgba(255,255,255,0.2);cursor:pointer;
+                                   box-shadow:0 0 16px rgba(88,101,242,0.5);font-family:inherit;">
+                        <i class="fab fa-discord"></i> Discord
+                    </button>
+                    <button onclick="window.Auth.signInWithGoogle(window.location.href)"
+                            style="display:inline-flex;align-items:center;gap:0.5rem;
+                                   background:linear-gradient(to right,#4285F4,#2563EB);
+                                   color:#fff;font-weight:700;font-size:0.9rem;
+                                   padding:0.75rem 1.5rem;border-radius:0.75rem;
+                                   border:1px solid rgba(255,255,255,0.2);cursor:pointer;
+                                   box-shadow:0 0 16px rgba(66,133,244,0.5);font-family:inherit;">
+                        <svg width="16" height="16" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#fff" d="M43.6 20H24v8h11.3C33.7 32.8 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-9 20-20 0-1.3-.1-2.7-.4-4z"/></svg>
+                        Google
+                    </button>
+                </div>
             </div>`;
     }
 
