@@ -10,6 +10,7 @@
     const ANALYZER_API = 'https://yrp-10714964039.europe-west1.run.app/analyze';
 
     let replayCache = [];
+    let combosByReplayId = {};
 
     // ------------------------------------------------------------------
     // Helpers
@@ -215,7 +216,61 @@
         return items.length ? `<div class="replay-meta-strip">${items.join('')}</div>` : '';
     }
 
-    function replayCard(replay) {
+    function buildComboSection(replay, combo, hasJson) {
+        if (!hasJson) return '';
+        if (!combo) {
+            const arc = (replay.metadata?.archetype || '').replace(/"/g, '&quot;');
+            return `<button class="btn-combo-submit"
+                        data-id="${replay.replayid}"
+                        data-archetype="${arc}"
+                        onclick="openComboModal(this)"
+                        title="Share this replay as a community combo guide on the archetype page"
+                        style="display:inline-flex;align-items:center;gap:0.4rem;
+                               background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);
+                               color:#f59e0b;font-size:0.78rem;font-weight:600;
+                               padding:0.35rem 0.75rem;border-radius:0.5rem;cursor:pointer;font-family:inherit;">
+                        <i class="fas fa-star" style="font-size:0.65rem;"></i> Submit as Combo Guide
+                    </button>`;
+        }
+        const score = Array.isArray(combo.combovotes)
+            ? combo.combovotes.reduce((s, v) => s + v.value, 0) : 0;
+        const scoreStr = score > 0 ? `▲ ${score}` : score < 0 ? `▼ ${Math.abs(score)}` : '· 0';
+        if (combo.status === 'pending') {
+            return `<span style="display:inline-flex;align-items:center;gap:0.35rem;
+                                 background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);
+                                 color:#f59e0b;font-size:0.75rem;font-weight:600;
+                                 padding:0.3rem 0.65rem;border-radius:0.5rem;"
+                         title="Awaiting moderator approval">
+                        <i class="fas fa-clock" style="font-size:0.65rem;"></i> Pending review
+                    </span>`;
+        }
+        if (combo.status === 'approved') {
+            const arc = replay.metadata?.archetype;
+            const arcText = arc ? ` on the ${arc} archetype page` : '';
+            const voteLabel = score === 0 ? 'No votes yet' : score > 0 ? `+${score} votes` : `${score} votes`;
+            return `<span style="display:inline-flex;align-items:center;gap:0.35rem;
+                                 background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);
+                                 color:#4ade80;font-size:0.75rem;font-weight:600;
+                                 padding:0.3rem 0.65rem;border-radius:0.5rem;cursor:help;"
+                         title="Published as a combo guide${arcText}. ${voteLabel}.">
+                        <i class="fas fa-check-circle" style="font-size:0.65rem;"></i> Combo guide ${scoreStr}
+                    </span>`;
+        }
+        if (combo.status === 'rejected') {
+            const rejectNote = (combo.modnotes || 'No reason was provided by the moderator.').replace(/"/g, '&quot;');
+            return `<span style="display:inline-flex;align-items:center;gap:0.35rem;
+                                 background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+                                 color:#f87171;font-size:0.75rem;font-weight:600;
+                                 padding:0.3rem 0.65rem;border-radius:0.5rem;cursor:help;"
+                         title="Rejected: ${rejectNote}">
+                        <i class="fas fa-times-circle" style="font-size:0.65rem;"></i> Rejected
+                        <i class="fas fa-info-circle" style="font-size:0.6rem;opacity:0.7;"></i>
+                    </span>`;
+        }
+        return '';
+    }
+
+    function replayCard(replay, combo) {
         const m = replay.metadata || {};
         const names = playerNames(replay);
         const date = formatDate(replay.createdon);
@@ -256,11 +311,14 @@
                 </div>
                 ${metaStrip}
                 <div class="replay-card-footer">
+                    <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
                     ${hasJson
                         ? `<button class="btn-reanalyze" data-path="${replay.gcsjsonpath}" onclick="reAnalyze(this)">
                                <i class="fas fa-chart-line"></i> Re-analyze
                            </button>`
                         : `<span style="color:var(--text-muted);font-size:0.8rem;">Analysis not stored</span>`}
+                    ${buildComboSection(replay, combo, hasJson)}
+                    </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">
                         <select class="vis-select" data-id="${replay.replayid}"
                                 onchange="updateVisibility(this)"
@@ -277,7 +335,7 @@
             </div>`;
     }
 
-    function renderList(container, replays) {
+    function renderList(container, replays, comboMap) {
         if (!replays || replays.length === 0) {
             renderEmpty(container);
             return;
@@ -286,7 +344,17 @@
         const count = document.getElementById('replay-count');
         if (header) header.style.display = '';
         if (count) count.textContent = replays.length === 1 ? '1 replay' : `${replays.length} replays`;
-        container.innerHTML = replays.map(replayCard).join('');
+
+        const hasEligible = replays.some(r => r.gcsjsonpath && !comboMap?.[r.replayid]);
+        const tip = hasEligible ? `
+            <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.18);
+                        border-radius:0.75rem;padding:0.7rem 1rem;margin-bottom:1rem;
+                        font-size:0.8rem;color:#a3a3a3;display:flex;align-items:flex-start;gap:0.6rem;">
+                <i class="fas fa-lightbulb" style="color:#f59e0b;margin-top:0.1rem;flex-shrink:0;font-size:0.8rem;"></i>
+                <span>Replays with a full analysis can be shared as <strong style="color:#f5f5f5;">combo guides</strong> on the archetype page — look for the <strong style="color:#f59e0b;">Submit as Combo Guide</strong> button on each card. The community can then vote on and learn from your line.</span>
+            </div>` : '';
+
+        container.innerHTML = tip + replays.map(r => replayCard(r, comboMap?.[r.replayid])).join('');
     }
 
     // ------------------------------------------------------------------
@@ -382,6 +450,213 @@
     };
 
     // ------------------------------------------------------------------
+    // Combo guide modal
+    // ------------------------------------------------------------------
+
+    let archetypeList = null;
+
+    function injectModal() {
+        if (document.getElementById('combo-modal')) return;
+        const el = document.createElement('div');
+        el.id = 'combo-modal';
+        el.style.cssText = 'display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;';
+        el.innerHTML = `
+            <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.12);border-radius:1rem;
+                        padding:1.75rem;width:min(440px,90vw);box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+                <h3 style="margin:0 0 0.5rem;font-size:1.05rem;font-weight:700;color:#f5f5f5;">
+                    <i class="fas fa-star" style="color:#f59e0b;margin-right:0.5rem;"></i>Submit Combo Guide
+                </h3>
+                <p style="margin:0 0 1.1rem;font-size:0.82rem;color:#a3a3a3;line-height:1.55;">
+                    Combo guides appear on the archetype page where other players can study the line, vote on it, and use it as a learning reference. A moderator reviews each submission before it goes live.
+                </p>
+                <label style="display:block;font-size:0.8rem;color:#a3a3a3;margin-bottom:0.3rem;">Title</label>
+                <input id="combo-modal-title" type="text" maxlength="100"
+                       style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);
+                              border:1px solid rgba(255,255,255,0.15);border-radius:0.5rem;
+                              color:#f5f5f5;font-size:0.88rem;padding:0.55rem 0.75rem;
+                              font-family:inherit;margin-bottom:0.9rem;"
+                       placeholder="e.g. Dark Magician Full Combo – 4 cards">
+                <label style="display:block;font-size:0.8rem;color:#a3a3a3;margin-bottom:0.3rem;">
+                    Description <span style="opacity:0.45;font-size:0.75rem;">(optional)</span>
+                </label>
+                <textarea id="combo-modal-description" maxlength="500" rows="4"
+                          placeholder="e.g. Requires 2 starters in hand. Goes first only. End board: [list end board here]. Key combo pieces: …"
+                          style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);
+                                 border:1px solid rgba(255,255,255,0.15);border-radius:0.5rem;
+                                 color:#f5f5f5;font-size:0.88rem;padding:0.55rem 0.75rem;
+                                 font-family:inherit;resize:vertical;margin-bottom:0.9rem;"></textarea>
+                <label style="display:block;font-size:0.8rem;color:#a3a3a3;margin-bottom:0.3rem;">Archetype</label>
+                <div style="position:relative;margin-bottom:1.25rem;">
+                    <input id="combo-modal-archetype-search" type="text" autocomplete="off"
+                           placeholder="Search archetypes…"
+                           style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);
+                                  border:1px solid rgba(255,255,255,0.15);border-radius:0.5rem;
+                                  color:#f5f5f5;font-size:0.88rem;padding:0.55rem 0.75rem;
+                                  font-family:inherit;">
+                    <input id="combo-modal-archetype" type="hidden" value="">
+                    <div id="combo-modal-suggestions"
+                         style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;
+                                background:#1e1e1e;border:1px solid rgba(255,255,255,0.15);
+                                border-top:none;border-radius:0 0 0.5rem 0.5rem;
+                                max-height:200px;overflow-y:auto;"></div>
+                </div>
+                <p style="font-size:0.75rem;color:#737373;margin:0 0 1.25rem;">
+                    <i class="fas fa-info-circle" style="margin-right:0.3rem;"></i>
+                    Once approved, this replay will be visible on the archetype page as a community combo guide. You can track the review status from this page.
+                </p>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                    <button onclick="closeComboModal()"
+                            style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a3a3a3;
+                                   padding:0.5rem 1rem;border-radius:0.6rem;cursor:pointer;font-family:inherit;font-size:0.85rem;">
+                        Cancel
+                    </button>
+                    <button id="combo-modal-submit" onclick="submitComboGuide()"
+                            style="background:linear-gradient(to right,#f59e0b,#d97706);color:#000;
+                                   font-weight:700;padding:0.5rem 1.25rem;border-radius:0.6rem;
+                                   border:none;cursor:pointer;font-family:inherit;font-size:0.85rem;">
+                        Submit for review
+                    </button>
+                </div>
+            </div>`;
+        document.body.appendChild(el);
+        el.addEventListener('click', e => { if (e.target === el) closeComboModal(); });
+    }
+
+    window.openComboModal = async function (btn) {
+        const modal = document.getElementById('combo-modal');
+        if (!modal) return;
+        modal._replayId = btn.dataset.id;
+        const titleInput = document.getElementById('combo-modal-title');
+        if (titleInput) titleInput.value = btn.dataset.archetype
+            ? `${btn.dataset.archetype} Combo Guide`
+            : 'Combo Guide';
+        modal.style.display = 'flex';
+
+        if (!archetypeList) {
+            const client = window.Auth._getClient();
+            const { data } = await client.from('archetypes').select('archetypeid, archetypename').order('archetypename');
+            const all = data || [];
+            // Only offer archetypes that have a page on the site
+            const withPages = typeof archetypes !== 'undefined'
+                ? new Set(archetypes.map(a => a.name.toLowerCase()))
+                : null;
+            archetypeList = withPages
+                ? all.filter(a => withPages.has(a.archetypename.toLowerCase()))
+                : all;
+        }
+
+        // Pre-fill search if archetype is known
+        const preselect = (btn.dataset.archetype || '').toLowerCase();
+        const searchInput = document.getElementById('combo-modal-archetype-search');
+        const hiddenInput = document.getElementById('combo-modal-archetype');
+        const suggestions = document.getElementById('combo-modal-suggestions');
+        if (searchInput && hiddenInput) {
+            const match = archetypeList.find(a => a.archetypename.toLowerCase() === preselect);
+            searchInput.value = match ? match.archetypename : '';
+            hiddenInput.value = match ? match.archetypeid : '';
+
+            // Wire up autocomplete (only once)
+            if (!searchInput._wired) {
+                searchInput._wired = true;
+                searchInput.addEventListener('input', () => {
+                    const q = searchInput.value.toLowerCase();
+                    hiddenInput.value = '';
+                    if (!q) { suggestions.style.display = 'none'; return; }
+                    const hits = archetypeList.filter(a => a.archetypename.toLowerCase().includes(q)).slice(0, 20);
+                    if (!hits.length) { suggestions.style.display = 'none'; return; }
+                    suggestions.innerHTML = hits.map(a =>
+                        `<div data-id="${a.archetypeid}" data-name="${a.archetypename.replace(/"/g, '&quot;')}"
+                              style="padding:0.5rem 0.75rem;font-size:0.85rem;color:#f5f5f5;cursor:pointer;"
+                              onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                              onmouseout="this.style.background=''"
+                              onclick="document.getElementById('combo-modal-archetype').value=this.dataset.id;
+                                       document.getElementById('combo-modal-archetype-search').value=this.dataset.name;
+                                       document.getElementById('combo-modal-suggestions').style.display='none';">
+                             ${a.archetypename}
+                         </div>`
+                    ).join('');
+                    suggestions.style.display = '';
+                });
+                searchInput.addEventListener('blur', () => {
+                    setTimeout(() => { suggestions.style.display = 'none'; }, 150);
+                });
+            }
+        }
+    };
+
+    window.closeComboModal = function () {
+        const modal = document.getElementById('combo-modal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.submitComboGuide = async function () {
+        const modal = document.getElementById('combo-modal');
+        const replayId = modal?._replayId;
+        const title = document.getElementById('combo-modal-title')?.value?.trim();
+        const archetypeId = document.getElementById('combo-modal-archetype')?.value;
+        const description = document.getElementById('combo-modal-description')?.value?.trim() || null;
+        if (!replayId || !title || !archetypeId) {
+            alert('Please fill in all fields.');
+            return;
+        }
+        const submitBtn = document.getElementById('combo-modal-submit');
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting…'; }
+        try {
+            const client = window.Auth._getClient();
+            const session = await window.Auth.getSession();
+            const { error } = await client.from('combos').insert({
+                userid: session.user.id,
+                replayid: replayId,
+                archetypeid: parseInt(archetypeId, 10),
+                title,
+                description,
+                status: 'pending',
+                steps: [],
+                startinghand: [],
+                endboard: {}
+            });
+            if (error) throw error;
+
+            // Fetch the newly created combo to get its comboid
+            const { data: combo } = await client
+                .from('combos')
+                .select('replayid, comboid, status, modnotes, combovotes(value)')
+                .eq('replayid', replayId)
+                .single();
+
+            closeComboModal();
+
+            if (combo) {
+                combosByReplayId[replayId] = combo;
+                const card = document.querySelector(`.replay-card[data-id="${replayId}"]`);
+                if (card) {
+                    const replay = replayCache.find(r => r.replayid === replayId);
+                    if (replay) card.outerHTML = replayCard(replay, combo);
+                }
+
+                // Fire-and-forget: generate DuelSimulator combo JSON in the background
+                const replay = replayCache.find(r => r.replayid === replayId);
+                if (replay?.gcsrawpath && combo.comboid) {
+                    const token = await window.Auth.getToken?.();
+                    if (token) {
+                        fetch('https://yrp-10714964039.europe-west1.run.app/generate-combo-json', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({ rawpath: replay.gcsrawpath, comboid: combo.comboid }),
+                        }).catch(err => console.warn('[submitComboGuide] combo JSON generation failed:', err));
+                    }
+                }
+            }
+        } catch (e) {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit for review'; }
+            alert('Could not submit: ' + e.message);
+        }
+    };
+
+    // ------------------------------------------------------------------
     // Boot
     // ------------------------------------------------------------------
 
@@ -399,6 +674,22 @@
 
         renderProfile(session);
 
+        // Show admin link for moderators/admins
+        (async () => {
+            const c = window.Auth._getClient();
+            const { data: profile } = await c.from('profiles').select('role').eq('userid', session.user.id).single();
+            if (profile && ['moderator', 'admin'].includes(profile.role)) {
+                const logoutBtn = document.getElementById('btn-logout');
+                if (logoutBtn) {
+                    const link = document.createElement('a');
+                    link.href = '../pages/Admin.html';
+                    link.innerHTML = '<i class="fas fa-shield-alt" style="margin-right:0.35rem;font-size:0.75rem;"></i>Admin';
+                    link.style.cssText = 'color:#f59e0b;font-size:0.8rem;font-weight:600;text-decoration:none;margin-right:0.75rem;';
+                    logoutBtn.parentNode.insertBefore(link, logoutBtn);
+                }
+            }
+        })();
+
         // Show the section bar and wire up the file input
         const listHeader = document.getElementById('list-header');
         if (listHeader) listHeader.style.display = '';
@@ -411,17 +702,31 @@
             });
         }
 
+        injectModal();
+
         try {
             const client = window.Auth._getClient();
             const { data, error } = await client
                 .from('replays')
-                .select('replayid, gcsjsonpath, metadata, visibility, createdon')
+                .select('replayid, gcsjsonpath, gcsrawpath, metadata, visibility, createdon')
                 .order('createdon', { ascending: false });
 
             if (error) throw error;
             replayCache = data;
+
+            // Fetch combo status for all loaded replays in one query
+            if (replayCache.length) {
+                const ids = replayCache.map(r => r.replayid);
+                const { data: combos } = await client
+                    .from('combos')
+                    .select('replayid, comboid, status, modnotes, combovotes(value)')
+                    .in('replayid', ids);
+                combosByReplayId = {};
+                if (combos) combos.forEach(c => { combosByReplayId[c.replayid] = c; });
+            }
+
             renderStats(replayCache);
-            renderList(list, replayCache);
+            renderList(list, replayCache, combosByReplayId);
         } catch (e) {
             renderError(list, 'Failed to load replays: ' + e.message);
         }
