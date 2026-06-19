@@ -651,6 +651,66 @@ class ComboGuide {
                 });
             }
 
+            // Fixed collapse button — lives on document.body to escape overflow:hidden
+            const fixedCollapseBtn = document.createElement('button');
+            // Set each style individually to avoid any cssText parsing failures
+            Object.assign(fixedCollapseBtn.style, {
+                position: 'fixed',
+                bottom: '28px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: '9999',
+                display: 'none',
+                alignItems: 'center',
+                gap: '0.5rem',
+                background: 'rgba(8,6,20,0.94)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: '#ffffff',
+                fontSize: '0.875rem',
+                fontWeight: '700',
+                padding: '0.6rem 1.4rem',
+                borderRadius: '999px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                backdropFilter: 'blur(14px)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)',
+                transition: 'transform 0.15s, box-shadow 0.15s',
+                whiteSpace: 'nowrap',
+            });
+            fixedCollapseBtn.innerHTML = '<i class="fas fa-chevron-up" style="font-size:0.7rem;"></i>&nbsp;Collapse combo';
+            fixedCollapseBtn.onmouseenter = () => {
+                fixedCollapseBtn.style.transform = 'translateX(-50%) translateY(-2px)';
+                fixedCollapseBtn.style.boxShadow = '0 6px 28px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.1)';
+            };
+            fixedCollapseBtn.onmouseleave = () => {
+                fixedCollapseBtn.style.transform = 'translateX(-50%)';
+                fixedCollapseBtn.style.boxShadow = '0 4px 24px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)';
+            };
+            fixedCollapseBtn.onclick = () => {
+                // Capture header position before the page shrinks
+                const headerTop = header.getBoundingClientRect().top + window.pageYOffset;
+                stepsWrapper.classList.add('hidden');
+                fixedCollapseBtn.style.display = 'none';
+                const icon = document.getElementById(`guide-icon-${key}`);
+                if (icon) icon.style.transform = 'rotate(0deg)';
+                window.scrollTo({ top: headerTop });
+            };
+            document.body.appendChild(fixedCollapseBtn);
+
+            function syncCollapseBtn() {
+                const stepsOpen = !stepsWrapper.classList.contains('hidden');
+                const headerGone = header.getBoundingClientRect().bottom < 0;
+                console.log('[CollapseBtn] stepsOpen:', stepsOpen, 'headerGone:', headerGone);
+                fixedCollapseBtn.style.display = (stepsOpen && headerGone) ? 'inline-flex' : 'none';
+            }
+
+            window.addEventListener('scroll', syncCollapseBtn, { passive: true });
+            document.addEventListener('scroll', syncCollapseBtn, { passive: true });
+            // Re-check after header click (toggle open/close)
+            header.addEventListener('click', () => setTimeout(syncCollapseBtn, 0));
+            // Initial check in case the combo loads while page is already scrolled
+            setTimeout(syncCollapseBtn, 500);
+
             guideContainer.appendChild(stepsWrapper);
             comboSection.appendChild(guideContainer);
 
@@ -1041,11 +1101,15 @@ class DuelSimulator {
             const handTokens = Array.from(this.tokenLayer.children).filter(t => t.getAttribute('data-zone') === 'zone-hand');
             const idx = handTokens.indexOf(token);
             const total = handTokens.length;
-            const spacing = 5;
-            const startX = (zoneRect.width - (total * w + (total - 1) * spacing)) / 2;
+            // Fan cards when hand is large: compress step so all cards stay within the zone
+            const normalStep = w + 5;
+            const step = total > 1 ? Math.min(normalStep, (zoneRect.width - w) / (total - 1)) : normalStep;
+            const totalWidth = total > 1 ? (total - 1) * step + w : w;
+            const startX = (zoneRect.width - totalWidth) / 2;
 
-            token.style.left = (zoneRect.left - boardRect.left + startX + (idx * (w + spacing))) + 'px';
+            token.style.left = (zoneRect.left - boardRect.left + startX + (idx * step)) + 'px';
             token.style.top = (zoneRect.top - boardRect.top + (zoneRect.height - h) / 2) + 'px';
+            token.style.zIndex = String(10 + idx);
         } else {
             const jX = (zoneId.includes('gy') || zoneId.includes('deck') || zoneId.includes('banish')) ? (Math.random() * 4 - 2) : 0;
             const jY = (zoneId.includes('gy') || zoneId.includes('deck') || zoneId.includes('banish')) ? (Math.random() * 4 - 2) : 0;

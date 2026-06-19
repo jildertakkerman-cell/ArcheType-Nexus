@@ -275,6 +275,7 @@
         const names = playerNames(replay);
         const date = formatDate(replay.createdon);
         const hasJson = !!replay.gcsjsonpath;
+        const hasRaw  = !!replay.gcsrawpath;
 
         // Use per-player archetype array if available, otherwise fall back to combined field
         const p1Arcs = Array.isArray(m.archetypes?.player1) && m.archetypes.player1.length
@@ -317,6 +318,11 @@
                                <i class="fas fa-chart-line"></i> Re-analyze
                            </button>`
                         : `<span style="color:var(--text-muted);font-size:0.8rem;">Analysis not stored</span>`}
+                    ${hasRaw
+                        ? `<button class="btn-pdf" data-path="${replay.gcsrawpath}" onclick="createPdf(this)">
+                               <i class="fas fa-file-pdf"></i> Create PDF
+                           </button>`
+                        : ''}
                     ${buildComboSection(replay, combo, hasJson)}
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">
@@ -401,6 +407,43 @@
         const path = btn.dataset.path;
         if (!path) return;
         await loadAndNavigate(path, btn);
+    };
+
+    const PDF_API = 'https://yrp-10714964039.europe-west1.run.app/yrpx-to-pdf';
+
+    window.createPdf = async function (btn) {
+        const path = btn.dataset.path;
+        if (!path) return;
+        const orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating…';
+        try {
+            const rawRes = await fetch(GCS_BASE + path);
+            if (!rawRes.ok) throw new Error(`Could not load replay (HTTP ${rawRes.status})`);
+            const rawBlob = await rawRes.blob();
+
+            const pdfRes = await fetch(PDF_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/octet-stream' },
+                body: rawBlob
+            });
+            if (!pdfRes.ok) {
+                const msg = await pdfRes.text().catch(() => 'Conversion failed');
+                throw new Error(msg);
+            }
+            const pdfBlob = await pdfRes.blob();
+            const url = URL.createObjectURL(pdfBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = path.split('/').pop().replace(/\.[^/.]+$/, '') + '.pdf';
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert('PDF generation failed: ' + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = orig;
+        }
     };
 
     window.replayCardClick = async function (e, card) {
