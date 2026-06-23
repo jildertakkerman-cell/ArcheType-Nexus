@@ -20437,9 +20437,9 @@ const archetypes = [
         latestReleaseDate: None
     },
     {
-        name: 'Mystical Beasts of the Forest',
+        name: 'Mystical Beast of the Forest',
         description: 'A Beast archetype focused on continuous effects, field control, and synergy with other Beast monsters.',
-        filepath: 'Mystical Beasts of the Forest Deck Analysis.html',
+        filepath: 'Mystical Beast of the Forest Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="forestAura" cx="50%" cy="50%" r="60%">

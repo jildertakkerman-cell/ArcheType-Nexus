@@ -24243,43 +24243,83 @@ const archetypes = [
 
     },
     {
-        name: 'Mystical Beasts of the Forest',
+        name: 'Mystical Beast of the Forest',
         description: 'A Beast archetype focused on continuous effects, field control, and synergy with other Beast monsters.',
-        filepath: 'pages/Mystical Beasts of the Forest Deck Analysis.html',
+        filepath: 'pages/Mystical Beast of the Forest Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="forestAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#d9f99d" stop-opacity="0.7"/>
-                                <stop offset="50%" stop-color="#38b000" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#155d27" stop-opacity="0.8"/>
+                            <radialGradient id="mbfBg" cx="50%" cy="65%" r="60%">
+                                <stop offset="0%" stop-color="#1a4a1a"/>
+                                <stop offset="100%" stop-color="#071207"/>
                             </radialGradient>
-                            <linearGradient id="beastGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#d9f99d"/>
-                                <stop offset="100%" stop-color="#155d27"/>
-                            </linearGradient>
-                            <filter id="forestShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
+                            <radialGradient id="mbfEyeGrad" cx="30%" cy="30%" r="70%">
+                                <stop offset="0%" stop-color="#fef08a"/>
+                                <stop offset="100%" stop-color="#d97706"/>
+                            </radialGradient>
+                            <filter id="mbfGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                            <filter id="mbfEyeGlow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#forestAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
+                        <!-- Background -->
+                        <circle cx="50" cy="50" r="47" fill="url(#mbfBg)" stroke="#2d6a2d" stroke-width="2"/>
+                        <!-- Misty ground glow -->
+                        <ellipse cx="50" cy="70" rx="35" ry="12" fill="#4ade80" opacity="0.07">
+                            <animate attributeName="opacity" values="0.04;0.12;0.04" dur="4s" repeatCount="indefinite"/>
                         </ellipse>
-                        <g filter="url(#forestShadow)">
-                            <path d="M50 35 Q65 55 50 80 Q35 55 50 35 Z" fill="url(#beastGlow)" stroke="#155d27" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="7" fill="#d9f99d" stroke="#38b000" stroke-width="2"/>
-                            <ellipse cx="50" cy="65" rx="5" ry="3" fill="#38b000" stroke="#155d27" stroke-width="2"/>
-                        </g>
-                        <circle cx="35" cy="70" r="2" fill="#38b000">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        <!-- Pine trees left -->
+                        <polygon points="14,82 21,52 28,82" fill="#155d27" opacity="0.85"/>
+                        <polygon points="18,82 24,60 30,82" fill="#0f3d0f"/>
+                        <!-- Pine trees right -->
+                        <polygon points="72,82 79,52 86,82" fill="#155d27" opacity="0.85"/>
+                        <polygon points="70,82 76,60 82,82" fill="#0f3d0f"/>
+                        <!-- Beast ears -->
+                        <polygon points="33,47 36,25 45,42" fill="#112811" stroke="#2d6a2d" stroke-width="1"/>
+                        <polygon points="55,42 64,25 67,47" fill="#112811" stroke="#2d6a2d" stroke-width="1"/>
+                        <polygon points="35,45 38,32 43,42" fill="#1f5c1f" opacity="0.7"/>
+                        <polygon points="57,42 62,32 65,45" fill="#1f5c1f" opacity="0.7"/>
+                        <!-- Beast head -->
+                        <ellipse cx="50" cy="56" rx="21" ry="20" fill="#112811" stroke="#2d6a2d" stroke-width="1.5" filter="url(#mbfGlow)"/>
+                        <!-- Muzzle -->
+                        <ellipse cx="50" cy="65" rx="9" ry="7" fill="#0d220d"/>
+                        <!-- Nose -->
+                        <ellipse cx="50" cy="61" rx="3.5" ry="2.5" fill="#080808" stroke="#222" stroke-width="0.5"/>
+                        <!-- Eye glow halos -->
+                        <ellipse cx="42" cy="52" rx="6" ry="4.5" fill="#d97706" filter="url(#mbfEyeGlow)" opacity="0.5">
+                            <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <ellipse cx="58" cy="52" rx="6" ry="4.5" fill="#d97706" filter="url(#mbfEyeGlow)" opacity="0.5">
+                            <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <!-- Eyes iris -->
+                        <ellipse cx="42" cy="52" rx="4.5" ry="3.2" fill="url(#mbfEyeGrad)"/>
+                        <ellipse cx="58" cy="52" rx="4.5" ry="3.2" fill="url(#mbfEyeGrad)"/>
+                        <!-- Slit pupils -->
+                        <ellipse cx="42" cy="52" rx="1.2" ry="3" fill="#050505"/>
+                        <ellipse cx="58" cy="52" rx="1.2" ry="3" fill="#050505"/>
+                        <!-- Floating forest spores -->
+                        <circle cx="30" cy="30" r="2" fill="#4ade80" opacity="0.8">
+                            <animate attributeName="cy" values="30;22;30" dur="3s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.8;0.1;0.8" dur="3s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="70" r="2" fill="#155d27">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        <circle cx="70" cy="26" r="1.5" fill="#86efac" opacity="0.7">
+                            <animate attributeName="cy" values="26;18;26" dur="4s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.7;0.1;0.7" dur="4s" repeatCount="indefinite"/>
                         </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#155d27" font-weight="bold">Mystical Beasts</text>
+                        <circle cx="50" cy="18" r="1.5" fill="#4ade80" opacity="0.6">
+                            <animate attributeName="cy" values="18;11;18" dur="3.5s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.6;0.1;0.6" dur="3.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Ground -->
+                        <ellipse cx="50" cy="83" rx="33" ry="5" fill="#0a2a0a" opacity="0.9"/>
+                        <!-- Pulsing border -->
+                        <circle cx="50" cy="50" r="46" fill="none" stroke="#4ade80" stroke-width="0.5" opacity="0.3">
+                            <animate attributeName="opacity" values="0.15;0.45;0.15" dur="3s" repeatCount="indefinite"/>
+                        </circle>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
