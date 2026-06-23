@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="combos-verified" content="true">
+    <title>Angelechy: The Celestial Chessboard</title>
+    <script src="../assets/js/google-analytics.js"></script>
+        <!-- Supabase CDN for gameplay tags -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+    <script src="../assets/js/community-combos.js"></script>íí
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="../output.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: linear-gradient(145deg, #ffffff, #f1f5f9);
+            --card-border: #e2e8f0;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1);
+            --accent-gold: #d4af37;
+            --accent-deep-gold: #b48600;
+            --gradient-halo: linear-gradient(135deg, rgba(212, 175, 55, 0.4), transparent 50%, rgba(212, 175, 55, 0.4));
+            --bg-glow-1: rgba(212, 175, 55, 0.08);
+            --bg-glow-2: rgba(241, 245, 249, 0.8);
+            --banner-shadow: 0 10px 30px rgba(212, 175, 55, 0.1);
+            --heading-color: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --pro-con-bg: #ffffff;
+        }
+
+        body.dark-theme {
+            --bg-color: #050505;
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --card-bg: linear-gradient(145deg, #111111, #0a0a0a);
+            --card-border: #333333;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            --accent-gold: #e11d48;
+            /* Crimson */
+            --accent-deep-gold: #be123c;
+            --gradient-halo: linear-gradient(135deg, rgba(225, 29, 72, 0.4), transparent 50%, rgba(225, 29, 72, 0.4));
+            --bg-glow-1: rgba(225, 29, 72, 0.08);
+            --bg-glow-2: rgba(5, 5, 5, 0.8);
+            --banner-shadow: 0 10px 30px rgba(225, 29, 72, 0.1);
+            --heading-color: #f8fafc;
+            --glass-bg: rgba(10, 10, 10, 0.8);
+            --pro-con-bg: #0a0a0a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            position: relative;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* Marble/Divine Aura Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 0%, var(--bg-glow-1) 0%, transparent 60%),
+                linear-gradient(180deg, transparent 0%, var(--bg-glow-2) 100%);
+            z-index: -1;
+            pointer-events: none;
+            transition: background 0.5s ease;
+        }
+
+        .container {
+            max-width: 1024px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Celestial Marble Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 0.75rem;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--card-border);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: var(--accent-gold);
+        }
+
+        .card>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .pro-con-card {
+            background: var(--pro-con-bg);
+            border-left: 4px solid var(--accent-gold) !important;
+            box-shadow: var(--card-shadow);
+        }
+
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* Divine Halo Glow */
+        .card-image-container::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.4), transparent 50%, rgba(212, 175, 55, 0.4));
+            border-radius: 0.5rem;
+            z-index: -1;
+            filter: blur(8px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card-image-container:hover::after {
+            opacity: 1;
+        }
+
+        .card-image {
+            width: 100%;
+            border-radius: 0.25rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 2px solid var(--card-border);
+        }
+
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: floatIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Ethereal Placeholder */
+        .card-placeholder {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border: 2px dashed #cbd5e1;
+            color: #94a3b8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.2rem;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            position: relative;
+        }
+
+        .pro-icon {
+            color: #10b981;
+        }
+
+        .con-icon {
+            color: #ef4444;
+        }
+
+        .neutral-icon {
+            color: #8b5cf6;
+        }
+
+        .text-accent {
+            color: var(--accent-deep-gold);
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+        }
+
+        .text-accent-secondary {
+            color: #6366f1;
+            /* Soft Indigo */
+        }
+
+        .heading-underline {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+            font-family: 'Cinzel', serif;
+            color: var(--heading-color);
+        }
+
+        .heading-underline::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+        }
+
+        .lore-link {
+            color: var(--accent-deep-gold);
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted var(--accent-deep-gold);
+            transition: all 0.3s;
+        }
+
+        .lore-link:hover {
+            color: var(--accent-gold);
+            text-shadow: 0 0 5px var(--bg-glow-1);
+            border-bottom-color: transparent;
+        }
+
+        /* --- ANGELECHY ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            height: 250px;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--card-border);
+            background-color: var(--pro-con-bg);
+            box-shadow: var(--banner-shadow);
+        }
+
+        #chess-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header h1 {
+            font-family: 'Cinzel', serif;
+            z-index: 2;
+            color: var(--heading-color);
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-shadow: 0 4px 15px var(--glass-bg), 0 0 30px var(--bg-glow-1);
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.2) 0%, rgba(248, 250, 252, 0.9) 100%);
+            z-index: 2;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+            color: #0f172a;
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+            border-color: #b48600;
+        }
+
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            color: #d4af37;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'Cinzel', serif;
+            color: #d4af37;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 1px solid #d4af37;
+            border-radius: 0.75rem;
+            color: #1e293b;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+
+        #card-popup h3 {
+            font-family: 'Cinzel', serif;
+            color: #b48600;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+
+        #card-popup-stats {
+            font-family: 'Inter', sans-serif;
+            color: #6366f1;
+            font-weight: bold;
+        }
+
+        /* --- Board State Toggle --- */
+        .theme-toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--card-bg);
+            color: var(--heading-color);
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px var(--bg-glow-1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px var(--bg-glow-1);
+            border-color: var(--accent-deep-gold);
+        }
+
+        .theme-toggle-btn i {
+            font-size: 22px;
+            color: var(--accent-gold);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.5s ease;
+        }
+
+        .theme-toggle-btn .toggle-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'Cinzel', serif;
+            color: var(--accent-gold);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .theme-toggle-btn:hover .toggle-text {
+            opacity: 1;
+        }
+
+        body.dark-theme .theme-toggle-btn i {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+    <div id="card-popup"></div>
+    <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+
+    <!-- Theme Toggle (Board State) -->
+    <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Board State">
+        <i class="fas fa-chess-board"></i>
+        <span class="toggle-text">BOARD STATE</span>
+    </button>
+
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center mb-6 md:mb-8">
+            <canvas id="chess-canvas"></canvas>
+            <h1>Angelechy</h1>
+        </header>
+
+        <!-- Deck Resources & Card Browser -->
+        <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
+            <div
+                class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-white/80 backdrop-blur-md border border-yellow-500/30 shadow-[0_8px_30px_rgb(212,175,55,0.15)]">
+                <div id="deck-resources-compact" class="flex items-center"></div>
+                <div class="hidden md:block w-px h-6 bg-yellow-500/30 mx-1"></div>
+                <div id="archetype-cards-browser" class="flex justify-center"></div>
+            </div>
+            <div class="absolute inset-0 bg-yellow-200/30 blur-xl -z-10 rounded-full opacity-50 pointer-events-none">
+            </div>
+        </div>
+
+        <!-- Lore Section -->
+        <section class="max-w-4xl mx-auto mb-12 px-4">
+            <div
+                class="relative bg-white/90 backdrop-blur-md border-l-4 border-yellow-500 p-6 md:p-8 rounded-r-xl shadow-lg">
+                <div class="flex items-center gap-3 mb-3">
+                    <div
+                        class="bg-yellow-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md border-2 border-yellow-100 flex-shrink-0">
+                        <i class="fas fa-chess-knight"></i>
+                    </div>
+                    <h2 class="text-xl md:text-2xl font-bold text-yellow-600 tracking-wide uppercase font-cinzel">Lore
+                        Archive</h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed italic text-lg md:text-xl font-serif">
+                    "Descending from the celestial plane, the <strong class="text-yellow-600">Angelechy</strong> are
+                    divine architects of the battlefield. Manifesting as ethereal, white-marble chess pieces, they view
+                    combat not as a brawl, but as a calculated grandmaster's game. To oppose them is to find oneself
+                    trapped in a '4D chess' match, where the very zones of the battlefield are shifted, conquered, and
+                    locked away by their precise, inevitable movements."
+                </p>
+            </div>
+        </section>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6 border-l-4 border-yellow-500">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-800 mb-4 font-cinzel">Executive Summary: The
+                    Grandmasters</h2>
+                <p class="text-slate-600 mb-4">
+                    The <strong class="text-accent font-bold">Angelechy</strong> archetype is a sophisticated,
+                    Synchro-focused strategy that introduces a revolutionary layer of positional awareness to the
+                    Yu-Gi-Oh! TCG. Representing angelic chess pieces, these monsters demand spatial mastery—moving
+                    across columns and transitioning seamlessly between Monster Zones and Spell & Trap Zones.
+                </p>
+                <p class="text-slate-600">
+                    Their defining trait is the <strong class="text-accent">"Turn 0" interaction</strong>. By utilizing
+                    specialized traps like <strong class="text-accent-secondary">Angelechy Opening to E4</strong>
+                    directly from the hand, players can begin setting up their board and disrupting the opponent before
+                    their own first turn has even started.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold mb-6 text-center heading-underline">Tactical Mechanics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-slate-800 mb-2 font-cinzel"><i
+                            class="fas fa-chess-board mr-2 text-yellow-500"></i>Zone Interaction</h3>
+                    <p class="text-slate-600">Angelechy monsters are not bound to standard rules of engagement. They
+                        possess the unique ability to step back into your Spell & Trap Zones, where they are treated as
+                        Continuous Spells. From this vantage point, they offer passive protection, search capabilities,
+                        and the threat of re-deploying to the front lines at a moment's notice.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-slate-800 mb-2 font-cinzel"><i
+                            class="fas fa-stopwatch mr-2 text-indigo-500"></i>Turn 0 Openings</h3>
+                    <p class="text-slate-600">True to their theme, Angelechy players always control the opening moves.
+                        Certain archetype Trap cards can be activated directly from the hand during the opponent's first
+                        turn. This allows the deck to bypass the inherent disadvantage of going second, establishing an
+                        immediate presence on the board.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Core Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold mb-6 text-center heading-underline">The Celestial Pieces</h2>
+
+            <div class="space-y-6 mb-12">
+                <!-- Shatranga -->
+                <div
+                    class="card flex flex-col md:flex-row items-center gap-6 p-6 transition-all duration-300 hover:shadow-xl hover:border-yellow-300">
+                    <div id="shatranga-img" class="card-image-container card-placeholder">Angelechy Shatranga</div>
+                    <div class="flex-1">
+                        <h4 class="text-2xl font-bold text-accent mb-1">Angelechy Shatranga</h4>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Synchro Boss
+                            / The King</span>
+                        <p class="text-slate-600 mb-2 leading-relaxed"><strong>Effect:</strong> The crowning achievement of the
+                            archetype's Synchro climb. When placed on the field, it exerts massive pressure by shifting
+                            zones to dodge targeting effects, while orchestrating the movement of lesser pieces to lock
+                            down opposing columns.</p>
+                    </div>
+                </div>
+
+                <!-- Bastion -->
+                <div
+                    class="card flex flex-col md:flex-row-reverse items-center gap-6 p-6 transition-all duration-300 hover:shadow-xl hover:border-yellow-300">
+                    <div id="bastion-img" class="card-image-container card-placeholder">Angelechy Bastion</div>
+                    <div class="flex-1 md:text-right">
+                        <h4 class="text-2xl font-bold text-accent mb-1">Angelechy Bastion</h4>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Level 4 /
+                            The Rook</span>
+                        <p class="text-slate-600 mb-2 leading-relaxed"><strong>Effect:</strong> The deck's primary defensive wall.
+                            Bastion can place itself into the Spell/Trap zone to shield other Angelechy monsters from
+                            destruction, and can Special Summon itself to block direct attacks in the corresponding
+                            column.</p>
+                    </div>
+                </div>
+
+                <!-- Destrier -->
+                <div
+                    class="card flex flex-col md:flex-row items-center gap-6 p-6 transition-all duration-300 hover:shadow-xl hover:border-yellow-300">
+                    <div id="destrier-img" class="card-image-container card-placeholder">Angelechy Destrier</div>
+                    <div class="flex-1">
+                        <h4 class="text-2xl font-bold text-accent mb-1">Angelechy Destrier</h4>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Level 3 /
+                            Tuner / The Knight</span>
+                        <p class="text-slate-600 mb-2 leading-relaxed"><strong>Effect:</strong> The tactical jumper. Destrier
+                            facilitates the archetype's Synchro plays by Special Summoning itself when an Angelechy
+                            moves zones, and can "jump" over cards to target and disable backrow.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supporting Spells & Traps -->
+            <h2 class="text-xl md:text-3xl font-bold mb-6 text-center heading-underline">Strategic Gambits</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Trap -->
+                <div class="card p-6 border-l-4 border-indigo-400 flex flex-col items-center">
+                    <div id="opening-img" class="card-image-container card-placeholder mx-auto mb-4"
+                        style="height: 240px; display: flex; align-items: center; justify-content: center;">Angelechy
+                        Opening to E4</div>
+                    <h4 class="text-lg font-bold text-slate-800 mt-2 font-cinzel">Angelechy Opening to E4</h4>
+                    <p class="text-sm text-slate-600 mt-2 text-left leading-relaxed">The defining "Turn 0" Trap card. If you control
+                        no monsters, it can be activated from the hand. It immediately sets up an Enlisted token and
+                        pulls a core piece from the deck, ensuring your defense is ready before the opponent's first
+                        Main Phase.</p>
+                </div>
+                <!-- Token/Pawn -->
+                <div class="card p-6 border-l-4 border-indigo-400 flex flex-col items-center">
+                    <div id="enlisted-img" class="card-image-container card-placeholder mx-auto mb-4"
+                        style="height: 240px; display: flex; align-items: center; justify-content: center;">Angelechy
+                        Enlisted</div>
+                    <h4 class="text-lg font-bold text-slate-800 mt-2 font-cinzel">Angelechy Enlisted</h4>
+                    <p class="text-sm text-slate-600 mt-2 text-left leading-relaxed">The pawns of the strategy. Often generated as
+                        tokens or low-level swarming monsters, they provide the necessary bodies for Synchro climbing
+                        into Shatranga and fuel the archetype's zone-shifting costs.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deep Dive & Notebook Insights -->
+        <section class="mb-8 animate-fadeIn" style="animation-delay: 0.5s;">
+            <div class="card p-4 border-t-4 border-indigo-500 bg-white">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3"><i class="fas fa-film mr-1"></i> Deep Dive: Grandmaster's Guide</p>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Video Embed -->
+                    <div class="w-full md:w-1/3 flex-shrink-0">
+                        <h3 class="text-sm font-bold text-slate-800 mb-2 font-cinzel">Explainer Video</h3>
+                        <video class="w-full rounded-lg shadow-md border border-slate-200" controls>
+                            <source src="../assets/data/angelechy/explainer_video.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <p class="text-sm text-slate-500 mt-3 italic leading-relaxed">Insights gathered from NotebookLM analysis
+                            covering the core mechanics and board pacing.</p>
+                    </div>
+                    <!-- Key Insights -->
+                    <div class="w-full md:w-1/2">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 font-cinzel">Tactical Maneuvers</h3>
+                        <ul class="space-y-4">
+                            <li class="bg-slate-50 p-4 rounded-lg border-l-4 border-yellow-500 shadow-sm">
+                                <h4 class="font-bold text-accent">The "Castling" Paradigm</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">Resolve <strong
+                                        class="text-indigo-500">Bastion</strong> to place the <strong
+                                        class="text-indigo-500">Shatranga</strong> King directly from the Extra Deck
+                                    into the S/T Zone. This shields the King while enforcing a hard 5-effect activation
+                                    floodgate on the opponent.</p>
+                            </li>
+                            <li class="bg-slate-50 p-4 rounded-lg border-l-4 border-yellow-500 shadow-sm">
+                                <h4 class="font-bold text-accent">Pawn Promotion Loop</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">Use <strong class="text-indigo-500">Enlisted</strong>
+                                    to banish an adjacent enemy and swap control. Upon control change, it returns to the
+                                    Extra Deck to immediately "promote" and summon a Boss piece without level matching.
+                                </p>
+                            </li>
+                            <li class="bg-slate-50 p-4 rounded-lg border-l-4 border-yellow-500 shadow-sm">
+                                <h4 class="font-bold text-accent">The Nullgainer Bridge</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">Integrate <strong class="text-indigo-500">Glitch
+                                        Clutch Nullgainer</strong> and <strong class="text-indigo-500">Witness of the
+                                        Ancient</strong> for generic Level 8 Synchro climbs and a seamless pivot into
+                                    <em>Ultimaya Tzolkin</em>.</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
+            <h2 class="text-xl md:text-3xl font-bold mb-6 text-center heading-underline">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card" style="border-left-color: #10b981;">
+                    <h3 class="text-xl font-bold text-emerald-600 mb-4 font-cinzel">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600">
+                        <li><i class="fas fa-stopwatch pro-icon"></i> <strong>Turn 0 Resilience:</strong> Near immunity
+                            to the "going second" disadvantage thanks to hand-trap starters.</li>
+                        <li><i class="fas fa-arrows-alt pro-icon"></i> <strong>Evasive Boards:</strong> Zone-shifting
+                            allows pieces to easily dodge targeting and column-based removal.</li>
+                        <li><i class="fas fa-chess-king pro-icon"></i> <strong>Grind Game:</strong> Storing monsters as
+                            Continuous Spells provides excellent resource recursion.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card" style="border-left-color: #ef4444;">
+                    <h3 class="text-xl font-bold text-red-500 mb-4 font-cinzel">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600">
+                        <li><i class="fas fa-wind con-icon"></i> <strong>Backrow Vulnerability:</strong> Heavy reliance
+                            on the Spell/Trap zone makes them uniquely weak to Harpie's Feather Duster and Evenly
+                            Matched.</li>
+                        <li><i class="fas fa-brain con-icon"></i> <strong>High Skill Ceiling:</strong> Mismanaging
+                            columns or zone placements can easily result in self-inflicted bottlenecks.</li>
+                        <li><i class="fas fa-ban con-icon"></i> <strong>Anti-Synchro Hate:</strong> Dimensional Barrier
+                            completely shuts down their endgame capabilities.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card" style="border-left-color: #8b5cf6;">
+                    <h3 class="text-xl font-bold text-indigo-500 mb-4 font-cinzel">Synergies & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600">
+                        <li><i class="fas fa-cogs neutral-icon"></i> <strong>Synchron Engine:</strong> Frequently paired
+                            with Synchron tuners to accelerate their powerful Synchro boss plays.</li>
+                        <li><i class="fas fa-music neutral-icon"></i> <strong>Elfnote:</strong> The archetype blends
+                            well with Elfnote's melodic swarming capabilities.</li>
+                        <li><i class="fas fa-shield-alt neutral-icon"></i> <strong>Anti-Spell Fragrance:</strong> Since
+                            Angelechy pieces treat *themselves* as Spells (bypassing activation), they can safely run
+                            this floodgate.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6 border-l-4 border-yellow-500">
+                <!-- Banlist content will be dynamically generated here -->
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Theme Toggle Logic ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            if (localStorage.getItem('angelechy-theme') === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-theme');
+                    const isDark = document.body.classList.contains('dark-theme');
+                    localStorage.setItem('angelechy-theme', isDark ? 'dark' : 'light');
+                });
+            }
+
+            // --- CELESTIAL CHESSBOARD ANIMATION ---
+            const canvas = document.getElementById('chess-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let time = 0;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                function drawGrid() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Perspective transform for the chessboard
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height * 0.7; // Vanishing point height
+                    const fov = 300;
+
+                    const isDark = document.body.classList.contains('dark-theme');
+                    const colorPrefix = isDark ? "rgba(225, 29, 72, " : "rgba(212, 175, 55, ";
+
+                    ctx.strokeStyle = `${colorPrefix}0.15)`;
+                    ctx.lineWidth = 1;
+
+                    // Draw moving grid lines (depth)
+                    const speed = 0.5;
+                    const spacing = 40;
+
+                    for (let z = 10; z < 500; z += spacing) {
+                        const zMod = ((z - time * speed) % 500 + 500) % 500;
+                        if (zMod < 10) continue;
+
+                        const scale = fov / zMod;
+                        const y = centerY + 100 * scale;
+
+                        ctx.beginPath();
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(canvas.width, y);
+
+                        // Fade out in distance
+                        ctx.strokeStyle = `${colorPrefix}${Math.min(0.2, zMod / 200)})`;
+                        ctx.stroke();
+                    }
+
+                    // Draw radiating vertical lines
+                    ctx.strokeStyle = `${colorPrefix}0.1)`;
+                    for (let x = -10; x <= 10; x++) {
+                        ctx.beginPath();
+                        ctx.moveTo(centerX, centerY);
+                        ctx.lineTo(centerX + x * 100, canvas.height);
+                        ctx.stroke();
+                    }
+
+                    // Add floating dust motes
+                    for (let i = 0; i < 30; i++) {
+                        const px = (Math.sin(time * 0.01 + i) * 0.5 + 0.5) * canvas.width;
+                        const py = (Math.cos(time * 0.015 + i * 2) * 0.5 + 0.5) * canvas.height;
+                        const size = Math.sin(time * 0.05 + i) * 2 + 2;
+
+                        ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, Math.sin(time * 0.02 + i)) * 0.5})`;
+                        ctx.beginPath();
+                        ctx.arc(px, py, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    time++;
+                    requestAnimationFrame(drawGrid);
+                }
+
+                setCanvasSize();
+                drawGrid();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                });
+            }
+
+            // Render Banlist Section
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Angelechy Shatranga',
+                'Angelechy Bastion',
+                'Angelechy Destrier',
+                'Angelechy Opening to E4',
+                'Angelechy Enlisted'
+            ], {
+                archetypeName: 'Angelechy',
+                relatedCards: ['Junk Synchron', 'Elfnote Soprano', 'Anti-Spell Fragrance'],
+                archetypeTraits: {
+                    coreMechanic: 'Synchro summoning and Spell/Trap Zone interaction',
+                    supportReliance: 'independent Turn 0 capabilities',
+                    adaptability: 'high positional awareness and evasion',
+                    resilience: 'weak to mass backrow removal'
+                }
+            });
+
+            // Render compact deck resources in header
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Angelechy');
+
+            // Render archetype cards browser (compact mode at top)
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Angelechy', {
+                compact: true,
+                buttonColor: 'from-yellow-500 to-yellow-600',
+                buttonHoverColor: 'from-yellow-600 to-yellow-700'
+            });
+
+            // Load Images for all cards
+            CardLoader.loadCards({
+                'shatranga-img': 'Angelechy Shatranga',
+                'bastion-img': 'Angelechy Bastion',
+                'destrier-img': 'Angelechy Destrier',
+                'opening-img': 'Angelechy Opening to E4',
+                'enlisted-img': 'Angelechy Enlisted'
+            });
+        });
+    </script>
+
+    <!-- Community Combo Guides -->
+    <section class="mb-12">
+        <div id="community-combos-wrapper"></div>
+    </section>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof initCommunityCombos === 'function') {
+                initCommunityCombos('community-combos-wrapper', 'Angelechy');
+            }
+        });
+    </script>
+</body>
+
+</html>

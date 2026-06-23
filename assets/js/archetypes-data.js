@@ -6,6 +6,61 @@
 
 const archetypes = [
     {
+        name: 'Angelechy',
+        description: 'A Synchro-focused strategy themed around angelic chess pieces, mastering positional mechanics and dominating with Turn 0 Trap interactions from the hand.',
+        filepath: 'pages/Angelechy Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <radialGradient id="angelechyAura" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+            <stop offset="60%" stop-color="#f8fafc" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#e2e8f0" stop-opacity="0.5"/>
+        </radialGradient>
+        <linearGradient id="angelechyGold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#fbbf24"/>
+            <stop offset="50%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b48600"/>
+        </linearGradient>
+    </defs>
+    <circle cx="50" cy="50" r="45" fill="url(#angelechyAura)" stroke="url(#angelechyGold)" stroke-width="3"/>
+    <!-- Angelic Wings -->
+    <path d="M50 40 Q30 20 15 35 Q25 45 40 45 Z" fill="url(#angelechyGold)" opacity="0.7"/>
+    <path d="M50 40 Q70 20 85 35 Q75 45 60 45 Z" fill="url(#angelechyGold)" opacity="0.7"/>
+    <!-- Chess Knight Profile -->
+    <path d="M45 75 L55 75 L55 65 Q65 60 60 45 Q50 30 40 35 Q40 50 45 55 Z" fill="#1e293b"/>
+    <!-- Halo -->
+    <ellipse cx="50" cy="25" rx="15" ry="5" fill="none" stroke="url(#angelechyGold)" stroke-width="2"/>
+</svg>`,
+        firstReleaseDate: '2026-06-01',
+        latestReleaseDate: '2026-06-01'
+    },
+    {
+        name: 'Blitzclique',
+        description: 'A Thunder archetype that operates primarily from the hand, utilizing card destruction and an "except from hand" lock for highly disruptive Turn 0 plays.',
+        filepath: 'pages/Blitzclique Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <radialGradient id="blitzcliqueGrad" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stop-color="#1f2937"/>
+            <stop offset="100%" stop-color="#111827"/>
+        </radialGradient>
+        <linearGradient id="blitzcliqueLightning" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3b82f6"/>
+            <stop offset="100%" stop-color="#60a5fa"/>
+        </linearGradient>
+    </defs>
+    <rect x="10" y="10" width="80" height="80" rx="15" fill="url(#blitzcliqueGrad)" stroke="#4b5563" stroke-width="2"/>
+    <path d="M30 80 L30 60 L40 60 L40 40 L60 40 L60 60 L70 60 L70 80 Z" fill="#374151" stroke="#ea580c" stroke-width="1.5"/>
+    <path d="M55 20 L40 50 L50 50 L45 80 L65 45 L55 45 Z" fill="url(#blitzcliqueLightning)"/>
+    <circle cx="25" cy="35" r="2.5" fill="#ea580c"/>
+    <circle cx="75" cy="35" r="2" fill="#ea580c"/>
+    <circle cx="35" cy="25" r="1.5" fill="#3b82f6"/>
+    <circle cx="80" cy="55" r="2" fill="#3b82f6"/>
+</svg>`,
+        firstReleaseDate: '2026-07-02',
+        latestReleaseDate: '2026-07-02'
+    },
+    {
         name: 'Clown Crew',
         description: 'A meta-defining strategy that subverts Tribute Summoning, projecting Extra Deck monsters as consumable ammunition for a massive resource engine.',
         filepath: 'pages/Clown Crew Deck Analysis.html',
@@ -50,6 +105,27 @@ const archetypes = [
         </svg>`,
         firstReleaseDate: '2026-01-01',
         latestReleaseDate: '2026-01-01'
+    },
+    {
+        name: 'Light and Darkness Ritual',
+        description: 'An engineering marvel focused on an unbreakable, recursive engine that treats the Graveyard as a second hand to summon Black Luster Soldier.',
+        filepath: 'pages/Light and Darkness Ritual Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="ldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f9fafb"/>
+                    <stop offset="49%" stop-color="#eab308"/>
+                    <stop offset="51%" stop-color="#a855f7"/>
+                    <stop offset="100%" stop-color="#111827"/>
+                </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="40" fill="url(#ldGradient)" stroke="#eab308" stroke-width="2"/>
+            <path d="M50 10 A40 40 0 0 1 50 90 A20 20 0 0 0 50 50 A20 20 0 0 1 50 10 Z" fill="#f9fafb"/>
+            <circle cx="50" cy="30" r="8" fill="#111827"/>
+            <circle cx="50" cy="70" r="8" fill="#f9fafb"/>
+        </svg>`,
+        firstReleaseDate: '2026-07-01',
+        latestReleaseDate: '2026-07-01'
     },
     {
         name: "WAKE CUP!",

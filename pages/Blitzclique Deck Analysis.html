@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="combos-verified" content="true">
+    <title>Blitzclique: Kowloon's Sky Scavengers</title>
+    <script src="../assets/js/google-analytics.js"></script>
+        <!-- Supabase CDN for gameplay tags (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+    <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="../output.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19; /* Deep Stormy Night */
+            color: #d1d5db;
+            position: relative;
+        }
+
+        /* CRT/Scanline Overlay for the mechanical vibe */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 6px 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1024px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Scavenged Metal Cards */
+        .card {
+            background: linear-gradient(145deg, #1e2532, #141b25);
+            border-radius: 0.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.05);
+            border: 1px solid #2d3748;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle metallic noise texture on cards */
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/></filter><rect width="200" height="200" filter="url(%23noise)" opacity="0.04"/></svg>');
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .combo-step-card,
+        .pro-con-card {
+            background: linear-gradient(145deg, #1e2532, #141b25);
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-image-container {
+            width: 100%;
+            max-width: 180px;
+            flex-shrink: 0;
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* Holographic/Neon image glow */
+        .card-image-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.2);
+            border-radius: 0.25rem;
+            pointer-events: none;
+        }
+
+        .card-image {
+            width: 100%;
+            border-radius: 0.25rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Mechanical Slot Placeholder */
+        .card-placeholder {
+            background-color: #0f141e;
+            border: 2px solid #2d3748;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            color: #4a5568;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            line-height: 1.2rem;
+            height: 100%;
+            min-height: 250px;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-placeholder::before {
+            content: 'NO DATA';
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: rgba(255,255,255,0.02);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .pro-icon { color: #4ade80; filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.5)); }
+        .con-icon { color: #f87171; filter: drop-shadow(0 0 4px rgba(248, 113, 113, 0.5)); }
+        .neutral-icon { color: #60a5fa; filter: drop-shadow(0 0 4px rgba(96, 165, 250, 0.5)); }
+
+        .text-accent {
+            color: #60a5fa;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+        }
+
+        .text-accent-secondary {
+            color: #f97316;
+            text-shadow: 0 0 10px rgba(234, 88, 12, 0.6);
+        }
+
+        .arrow-color { color: #3b82f6; }
+
+        /* Glowing Tech Underline */
+        .heading-underline {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 0.75rem;
+        }
+        .heading-underline::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+            box-shadow: 0 0 10px #3b82f6, 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .lore-link {
+            color: #ea580c;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dotted #ea580c;
+            transition: all 0.3s;
+        }
+
+        .lore-link:hover {
+            color: #fff;
+            text-shadow: 0 0 8px #ea580c;
+            border-bottom-color: #fff;
+        }
+
+        /* --- BLITZCLIQUE ANIMATED BANNER --- */
+        .banner-header {
+            position: relative;
+            height: 200px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #4b5563;
+            background-color: #0f172a;
+        }
+
+        #blueprint-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .banner-header h1 {
+            font-family: 'Roboto Mono', monospace;
+            z-index: 2;
+            color: #fff;
+            font-size: 3rem;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 15px rgba(59, 130, 246, 0.9), 0 0 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .banner-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at bottom, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
+            z-index: 2;
+        }
+
+        /* --- Yu-Gi-Oh! Themed Home Button Styles --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: white;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+        }
+
+        .ygo-home-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: ygoButtonPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow:
+                0 8px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #8b5cf6;
+        }
+
+        .ygo-home-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .ygo-home-button i {
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            animation: ygoIconGlow 2s ease-in-out infinite alternate;
+        }
+
+        .ygo-home-button .ygo-home-text {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: #a5b4fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .ygo-home-button:hover .ygo-home-text {
+            opacity: 1;
+        }
+
+        @keyframes ygoButtonPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes ygoIconGlow {
+            0% {
+                text-shadow:
+                    0 0 10px rgba(99, 102, 241, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.4);
+            }
+            100% {
+                text-shadow:
+                    0 0 15px rgba(99, 102, 241, 1),
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(59, 130, 246, 0.3);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ygo-home-button {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            .ygo-home-button i {
+                font-size: 18px;
+            }
+        }
+
+        /* Card Popup Styles */
+        #card-popup {
+            position: fixed;
+            display: none;
+            opacity: 0;
+            padding: 1rem;
+            background-color: rgba(17, 24, 39, 0.95);
+            border: 1px solid #3b82f6;
+            border-radius: 0.75rem;
+            color: #d1d5db;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            font-size: 0.875rem;
+        }
+
+        #card-popup h3 {
+            font-family: 'Roboto Mono', monospace;
+            color: #3b82f6;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+
+        #card-popup p {
+            margin-top: 0.5rem;
+        }
+
+        #card-popup-stats {
+            font-family: 'Roboto Mono', monospace;
+            color: #ea580c;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+</head>
+
+<body class="p-4 md:p-8">
+    <!-- Card Popup -->
+    <div id="card-popup"></div>
+    <!-- Yu-Gi-Oh! Themed Home Button -->
+    <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+        <span class="ygo-home-text">NEXUS</span>
+    </a>
+    
+    <div class="container mx-auto">
+        <!-- Title Section -->
+        <header class="banner-header text-center mb-6 md:mb-8 shadow-[0_8px_30px_rgba(59,130,246,0.3)]">
+            <canvas id="blueprint-canvas"></canvas>
+            <h1>Blitzclique</h1>
+        </header>
+
+        <!-- Deck Resources & Card Browser (Dock Design) -->
+        <div class="relative z-10 -mt-8 mb-12 mx-auto max-w-fit">
+            <div class="flex flex-wrap items-center justify-center gap-4 p-3 rounded-2xl bg-[#0f172a]/80 backdrop-blur-md border border-blue-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                <div id="deck-resources-compact" class="flex items-center"></div>
+                <!-- Vertical Divider (Desktop) -->
+                <div class="hidden md:block w-px h-6 bg-blue-500/30 mx-1"></div>
+                <div id="archetype-cards-browser" class="flex justify-center"></div>
+            </div>
+            <!-- Glow effect behind -->
+            <div class="absolute inset-0 bg-blue-500/20 blur-xl -z-10 rounded-full opacity-50 pointer-events-none"></div>
+        </div>
+
+        <!-- Lore / Thematic Intro Section -->
+        <section class="max-w-4xl mx-auto mb-12 px-4">
+            <div class="relative bg-[#1f2937]/80 backdrop-blur-md border-l-4 border-orange-600 p-6 md:p-8 rounded-r-xl shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="bg-orange-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-[#111] flex-shrink-0">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h2 class="text-xl md:text-2xl font-bold text-orange-500 tracking-wide uppercase">Lore Archive</h2>
+                </div>
+                <p class="text-gray-300 leading-relaxed italic text-lg md:text-xl font-serif">
+                    "High above the desolate sands, the Blitzclique family ekes out a meager existence on a floating celestial fortress known as <strong class="text-orange-400">Kowloon, Citadel of the Sky</strong>. They are a close-knit clan of EARTH and Thunder-type scavengers. Whenever uncontrollable mechanical beasts emerge from the wastes below, the family springs into action, executing rapid strikes with scavenged weapons and returning to their haven unscathed. Their bonds of family and survival are as fierce as the lightning they wield."
+                </p>
+            </div>
+        </section>
+
+        <!-- Executive Summary Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn">
+            <div class="card p-6 border-l-4 border-blue-500">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary: The Sky Scavengers</h2>
+                <p class="text-gray-300 mb-4">
+                    The <strong class="text-accent font-bold">Blitzclique</strong> archetype represents a paradigm shift in competitive play, minimizing Extra Deck reliance in favor of explosive, reactive, hand-activated control. Designed with a "slice of life" aesthetic, the deck relies heavily on <strong class="text-accent">"Turn 0" disruption</strong>—building its defensive board and generating resources directly on the opponent's first turn.
+                </p>
+                <p class="text-gray-300">
+                    Mechanically, the strategy is defined by a strict division of labor: Monsters destroy cards from the hand to Special Summon themselves, and trigger search effects when they witness another card being destroyed on the field. Because of the archetype's generic "Special Summon 1 Thunder monster from your hand" mechanic, it often acts as a delivery system for oppressive floodgates like <strong class="text-accent-secondary">Thunder King Rai-Oh</strong> or <strong class="text-accent-secondary">Zap Mustung</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Foundational Mechanics Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Foundational Mechanics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-bolt mr-2 text-accent"></i>Hand-Activated Destruction</h3>
+                    <p class="text-gray-300">The core engine operates strictly from the hand. Monsters like <strong class="text-accent">Crackle Blitzclique</strong> and <strong class="text-accent">Grain Blitzclique</strong> reveal themselves, destroy a targeted card on the field, and then Special Summon a Thunder monster from the hand. This targeted destruction is the catalyst that fuels the entire deck's search matrix.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-lock mr-2 text-accent-secondary"></i>The Summoning Lock</h3>
+                    <p class="text-gray-300">Activating any Blitzclique hand effect imposes a severe bottleneck: <strong class="text-red-400">"You cannot Special Summon Effect Monsters for the rest of this turn, except from the hand."</strong> This heavily penalizes Extra Deck reliance and forces the player into a hand-to-field resource loop, requiring careful sequencing of Link/Synchro plays prior to engine activation.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Core Engine Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Scavenger Arsenal</h2>
+            
+            <div class="space-y-6 mb-12">
+                <!-- Whisker Blitzclique -->
+                <div class="card flex flex-col md:flex-row items-center gap-6 p-6 transition-all duration-300 hover:shadow-2xl hover:border-blue-500">
+                    <div id="whisker-blitzclique-img" class="card-image-container card-placeholder">Whisker Blitzclique</div>
+                    <div class="flex-1">
+                        <h4 class="text-2xl font-bold text-accent mb-1">Whisker Blitzclique</h4>
+                        <span class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block leading-relaxed">Level 8 / Boss Monster</span>
+                        <p class="text-gray-400 mb-2"><strong>Hand Effect:</strong> If a card was destroyed by a Blitzclique effect this turn, reveal to Special Summon up to 3 Thunders from hand, then destroy up to 3 cards on the field.</p>
+                        <p class="text-gray-400"><strong>Field Effect:</strong> Return a controlled Thunder to hand to negate and destroy an opponent's activating monster effect.</p>
+                    </div>
+                </div>
+
+                <!-- Crackle Blitzclique -->
+                <div class="card flex flex-col md:flex-row-reverse items-center gap-6 p-6 transition-all duration-300 hover:shadow-2xl hover:border-blue-500">
+                    <div id="crackle-blitzclique-img" class="card-image-container card-placeholder">Crackle Blitzclique</div>
+                    <div class="flex-1 md:text-right">
+                        <h4 class="text-2xl font-bold text-accent mb-1">Crackle Blitzclique</h4>
+                        <span class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block leading-relaxed">Level 3 / Turn 0 Interruption</span>
+                        <p class="text-gray-400 mb-2"><strong>Hand Effect:</strong> (Quick Effect) Reveal to destroy an opponent's activating monster, then Special Summon 1 Thunder from hand.</p>
+                        <p class="text-gray-400"><strong>Field Effect:</strong> When another card is destroyed, send 1 Blitzclique Spell/Trap directly from Deck to GY.</p>
+                    </div>
+                </div>
+
+                <!-- Surge Blitzclique -->
+                <div class="card flex flex-col md:flex-row items-center gap-6 p-6 transition-all duration-300 hover:shadow-2xl hover:border-blue-500">
+                    <div id="surge-blitzclique-img" class="card-image-container card-placeholder">Surge Blitzclique</div>
+                    <div class="flex-1">
+                        <h4 class="text-2xl font-bold text-accent mb-1">Surge Blitzclique</h4>
+                        <span class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block leading-relaxed">Level 4 / Monster Searcher</span>
+                        <p class="text-gray-400 mb-2"><strong>Hand Effect:</strong> Target and destroy 1 monster to Special Summon 1 Thunder from hand.</p>
+                        <p class="text-gray-400"><strong>Field Effect:</strong> When another card is destroyed, add 1 Blitzclique monster from Deck to hand.</p>
+                    </div>
+                </div>
+
+                <!-- Grain Blitzclique -->
+                <div class="card flex flex-col md:flex-row-reverse items-center gap-6 p-6 transition-all duration-300 hover:shadow-2xl hover:border-blue-500">
+                    <div id="grain-blitzclique-img" class="card-image-container card-placeholder">Grain Blitzclique</div>
+                    <div class="flex-1 md:text-right">
+                        <h4 class="text-2xl font-bold text-accent mb-1">Grain Blitzclique</h4>
+                        <span class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block leading-relaxed">Level 2 / S/T Destroyer</span>
+                        <p class="text-gray-400 mb-2"><strong>Hand Effect:</strong> Target and destroy 1 Spell/Trap to Special Summon 1 Thunder from hand.</p>
+                        <p class="text-gray-400"><strong>Field Effect:</strong> When another card is destroyed, add 1 Blitzclique Spell or Coulomb from Deck to hand.</p>
+                    </div>
+                </div>
+
+                <!-- Emi Blitzclique -->
+                <div class="card flex flex-col md:flex-row items-center gap-6 p-6 transition-all duration-300 hover:shadow-2xl hover:border-blue-500">
+                    <div id="emi-blitzclique-img" class="card-image-container card-placeholder">Emi Blitzclique</div>
+                    <div class="flex-1">
+                        <h4 class="text-2xl font-bold text-accent mb-1">Emi Blitzclique</h4>
+                        <span class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block leading-relaxed">Level 1 / Trap Searcher</span>
+                        <p class="text-gray-400 mb-2"><strong>Hand Effect:</strong> If added to hand (except by drawing), reveal to destroy 1 card and Special Summon 1 Thunder from hand.</p>
+                        <p class="text-gray-400"><strong>Field Effect:</strong> When another card is destroyed, add 1 Blitzclique Trap from Deck to hand.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supporting Spells & Traps -->
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Fortress Defenses</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Field Spell -->
+                <div class="card p-6 border-l-4 border-orange-500 flex flex-col items-center">
+                    <div id="hideout-coulomb-img" class="card-image-container card-placeholder mx-auto mb-4" style="height: 240px; display: flex; align-items: center; justify-content: center;">Hideout in the Sky, Coulomb</div>
+                    <h4 class="text-lg font-bold text-white mt-2">Hideout in the Sky, Coulomb</h4>
+                    <p class="text-sm text-gray-400 mt-2 text-center">Summons a Level 6 "Mechbeast Token" to the opponent's field and searches a monster. Provides targets for your hand-destruction effects while buffing hand-summoned Thunders by 500 ATK/DEF.</p>
+                </div>
+                <!-- Continuous Trap -->
+                <div class="card p-6 border-l-4 border-orange-500 flex flex-col items-center">
+                    <div id="alternator-img" class="card-image-container card-placeholder mx-auto mb-4" style="height: 240px; display: flex; align-items: center; justify-content: center;">Blitzclique Alternator</div>
+                    <h4 class="text-lg font-bold text-white mt-2">Blitzclique Alternator</h4>
+                    <p class="text-sm text-gray-400 mt-2 text-center">Debuffs the opponent by 300 ATK/DEF per Thunder. Shuffles a Blitzclique card away to search *any* Thunder monster from the Deck, easily enabling floodgates like Zap Mustung.</p>
+                </div>
+                <!-- Quick-Play Spell -->
+                <div class="card p-6 border-l-4 border-orange-500 flex flex-col items-center">
+                    <div id="breakaway-img" class="card-image-container card-placeholder mx-auto mb-4" style="height: 240px; display: flex; align-items: center; justify-content: center;">Blitzclique - Breakaway</div>
+                    <h4 class="text-lg font-bold text-white mt-2">Blitzclique - Breakaway</h4>
+                    <p class="text-sm text-gray-400 mt-2 text-center">Places an archetypal Continuous Trap face-up from the Deck, or bounces a controlled Thunder to hand to destroy a card. Recurs to hand from GY on destruction.</p>
+                </div>
+                <!-- Continuous Spell -->
+                <div class="card p-6 border-l-4 border-orange-500 flex flex-col items-center">
+                    <div id="steppleader-img" class="card-image-container card-placeholder mx-auto mb-4" style="height: 240px; display: flex; align-items: center; justify-content: center;">Blitzclique - Steppleader</div>
+                    <h4 class="text-lg font-bold text-white mt-2">Blitzclique - Steppleader</h4>
+                    <p class="text-sm text-gray-400 mt-2 text-center">Recovers a Thunder monster from GY to hand on destruction. Summons a Thunder from hand during the Main Phase then self-destructs.</p>
+                </div>
+                <!-- Continuous Trap -->
+                <div class="card p-6 border-l-4 border-orange-500 flex flex-col items-center">
+                    <div id="return-stroke-img" class="card-image-container card-placeholder mx-auto mb-4" style="height: 240px; display: flex; align-items: center; justify-content: center;">Blitzclique Return Stroke</div>
+                    <h4 class="text-lg font-bold text-white mt-2">Blitzclique Return Stroke</h4>
+                    <p class="text-sm text-gray-400 mt-2 text-center">Grants effect destruction immunity. Returns a controlled Blitzclique monster to hand to negate an opponent's Spell or effect. Recycles from GY.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deep Dive & Notebook Insights -->
+        <section class="mb-8 animate-fadeIn" style="animation-delay: 0.6s;">
+            <div class="card p-4 border-t-4 border-orange-500">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3"><i class="fas fa-film mr-1"></i> Deep Dive: Scavenger's Guide</p>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Video Embed -->
+                    <div class="w-full md:w-1/3 flex-shrink-0">
+                        <h3 class="text-sm font-bold text-white mb-2">Explainer Video</h3>
+                        <video class="w-full rounded-lg shadow-md border border-gray-700" controls>
+                            <source src="../assets/data/blitzclique/explainer_video.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <p class="text-sm text-gray-400 mt-3 italic">Insights gathered from NotebookLM analysis covering the core loop and Turn 0 timing.</p>
+                    </div>
+                    <!-- Key Insights -->
+                    <div class="w-full md:w-1/2">
+                        <h3 class="text-xl font-bold text-white mb-4">Tactical Maneuvers</h3>
+                        <ul class="space-y-4">
+                            <li class="bg-[#1a2235] p-4 rounded-lg border-l-4 border-blue-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                                <h4 class="font-bold text-accent">The Infinite Scavenging Loop</h4>
+                                <p class="text-sm text-gray-300">Convert every destruction event into an immediate search. Recycle cards like <strong class="text-blue-400">Coulomb</strong> and <strong class="text-blue-400">Steppleader</strong> directly from your GY when archetypal effects destroy a card.</p>
+                            </li>
+                            <li class="bg-[#1a2235] p-4 rounded-lg border-l-4 border-blue-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                                <h4 class="font-bold text-accent">Turn 0 "Wisca-Crackle-Surge"</h4>
+                                <p class="text-sm text-gray-300">Start the destruction chain from your hand with <strong class="text-blue-400">Crackle</strong> on your opponent's turn. Follow up with <strong class="text-blue-400">Surge</strong> and finally drop <strong class="text-blue-400">Wisca</strong> to clear their board and establish a monster negate before they finish their play.</p>
+                            </li>
+                            <li class="bg-[#1a2235] p-4 rounded-lg border-l-4 border-blue-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                                <h4 class="font-bold text-accent">Thunder Dragon Integration</h4>
+                                <p class="text-sm text-gray-300">Exploit the hand-activation synergy to easily drop <strong class="text-blue-400">Thunder Dragon Colossus</strong>. Also seamlessly pairs with <strong class="text-blue-400">Pot of Sloth</strong> to perfectly sculpt your opening hand going second.</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitive Analysis -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.8s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Competitive Analysis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6 pro-con-card">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Strengths</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><i class="fas fa-bolt pro-icon"></i> <strong class="text-green-300">Turn 0 Interruption:</strong> Using Crackle and Whisker, the deck can build an entire defensive board and trigger 3+ searches before their first draw phase.</li>
+                        <li><i class="fas fa-lock pro-icon"></i> <strong class="text-green-300">Floodgate Delivery:</strong> Easily cheats out generic powerhouses like Thunder King Rai-Oh, Lightning Rod Lord, and Zap Mustung on the opponent's turn.</li>
+                        <li><i class="fas fa-shield-alt pro-icon"></i> <strong class="text-green-300">Non-Linear Resilience:</strong> Heavily reactive playstyle that avoids traditional Extra Deck choke points like Nibiru.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card" style="border-left-color: #ef4444;">
+                    <h3 class="text-xl font-bold text-red-400 mb-4">Weaknesses</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><i class="fas fa-ban con-icon"></i> <strong class="text-red-300">Normal Summon Awkwardness:</strong> Zero monsters benefit from a Normal Summon, leading to clunky hands if you don't open the Field Spell or a target generator.</li>
+                        <li><i class="fas fa-link con-icon"></i> <strong class="text-red-300">Extra Deck Lockout:</strong> The strict "except from hand" lock prevents utilizing generic Extra Deck toolboxes to solve specific board states.</li>
+                        <li><i class="fas fa-skull con-icon"></i> <strong class="text-red-300">Destruction Immunity:</strong> The engine grinds to a halt against boss monsters that cannot be targeted or destroyed by card effects.</li>
+                    </ul>
+                </div>
+                <div class="card p-6 pro-con-card" style="border-left-color: #f59e0b;">
+                    <h3 class="text-xl font-bold text-yellow-400 mb-4">Synergies & Tech</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li><i class="fas fa-plug neutral-icon"></i> <strong class="text-yellow-300">Spright Engine:</strong> Grain is a Level 2 Thunder, providing a perfect gateway to early Spright Red/Carrot protection before locking the Extra Deck.</li>
+                        <li><i class="fas fa-hourglass-half neutral-icon"></i> <strong class="text-yellow-300">Pot of Sloth:</strong> A format staple that acts as a "perfect mulligan" going second, allowing you to sculpt the exact reactive hand needed to break boards.</li>
+                        <li><i class="fas fa-music neutral-icon"></i> <strong class="text-yellow-300">Fydraulis Harmonia:</strong> A generic handtrap that destroys an opponent's monster, acting as a perfect activator for on-field Blitzclique triggers.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.9s;">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
+            <div id="banlist-status" class="card p-6 border-l-4 border-orange-500">
+                <!-- Banlist content will be dynamically generated here -->
+            </div>
+        </section>
+
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- FLOATING CITADEL / ELECTRICAL SCRAP ANIMATION ---
+            const canvas = document.getElementById('blueprint-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const numParticles = 60;
+
+                const setCanvasSize = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+
+                class ScrapParticle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.vx = (Math.random() - 0.5) * 0.8;
+                        this.vy = (Math.random() - 0.5) * 0.8 - 0.2; // slight upward drift
+                        this.size = Math.random() * 3 + 1;
+                        this.isElectric = Math.random() > 0.8;
+                        this.color = this.isElectric ? `rgba(59, 130, 246, ${Math.random() * 0.6 + 0.4})` : `rgba(107, 114, 128, ${Math.random() * 0.5 + 0.1})`;
+                    }
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+
+                        if (this.x < 0) this.x = canvas.width;
+                        if (this.x > canvas.width) this.x = 0;
+                        if (this.y < 0) this.y = canvas.height;
+                        if (this.y > canvas.height) this.y = 0;
+                    }
+                    draw() {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        if (this.isElectric) {
+                            ctx.arc(this.x, this.y, this.size * 1.5, 0, Math.PI * 2);
+                            ctx.shadowBlur = 10;
+                            ctx.shadowColor = "#3b82f6";
+                        } else {
+                            // Draw irregular polygon for scrap
+                            ctx.moveTo(this.x, this.y - this.size);
+                            ctx.lineTo(this.x + this.size, this.y);
+                            ctx.lineTo(this.x, this.y + this.size);
+                            ctx.lineTo(this.x - this.size, this.y);
+                            ctx.shadowBlur = 0;
+                        }
+                        ctx.fill();
+                        ctx.shadowBlur = 0; // reset
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        particles.push(new ScrapParticle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Update and draw particles
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+
+                        // Draw electrical arcs
+                        if (particles[i].isElectric) {
+                            for (let j = i + 1; j < particles.length; j++) {
+                                const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+                                if (dist < 120 && Math.random() > 0.95) { // Occasional arcing
+                                    ctx.beginPath();
+                                    ctx.moveTo(particles[i].x, particles[i].y);
+                                    
+                                    // Add jaggedness to the lightning line
+                                    let midX = (particles[i].x + particles[j].x) / 2 + (Math.random() - 0.5) * 20;
+                                    let midY = (particles[i].y + particles[j].y) / 2 + (Math.random() - 0.5) * 20;
+                                    
+                                    ctx.lineTo(midX, midY);
+                                    ctx.lineTo(particles[j].x, particles[j].y);
+                                    
+                                    ctx.strokeStyle = `rgba(59, 130, 246, ${1 - dist / 120})`;
+                                    ctx.lineWidth = Math.random() * 1.5 + 0.5;
+                                    ctx.stroke();
+                                }
+                            }
+                        }
+                    }
+
+                    requestAnimationFrame(animate);
+                }
+
+                setCanvasSize();
+                initParticles();
+                animate();
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    initParticles();
+                });
+            }
+
+            // Render Banlist Section
+            await CardLoader.renderBanlistSection('banlist-status', [
+                'Whisker Blitzclique',
+                'Hideout in the Sky, Coulomb',
+                'Crackle Blitzclique',
+                'Pot of Sloth',
+                'Thunder King Rai-Oh'
+            ], {
+                archetypeName: 'Blitzclique',
+                relatedCards: ['Thunder King Rai-Oh', 'Spright Blue', 'Fydraulis Harmonia'],
+                archetypeTraits: {
+                    coreMechanic: 'Hand-activated destruction and Thunder summoning',
+                    supportReliance: 'reliance on generic Thunder-type floodgates',
+                    adaptability: 'excellent going-second Turn 0 interruption',
+                    resilience: 'weak to destruction immunity and Normal Summon locks'
+                }
+            });
+
+            // Render compact deck resources in header
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Blitzclique');
+
+            // Render archetype cards browser (compact mode at top)
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Blitzclique', {
+                compact: true,
+                buttonColor: 'from-orange-600 to-red-600',
+                buttonHoverColor: 'from-orange-700 to-red-700'
+            });
+
+            // Load Images for all cards
+            CardLoader.loadCards({
+                'whisker-blitzclique-img': 'Whisker Blitzclique',
+                'crackle-blitzclique-img': 'Crackle Blitzclique',
+                'surge-blitzclique-img': 'Surge Blitzclique',
+                'grain-blitzclique-img': 'Grain Blitzclique',
+                'emi-blitzclique-img': 'Emi Blitzclique',
+                'hideout-coulomb-img': 'Hideout in the Sky, Coulomb',
+                'alternator-img': 'Blitzclique Alternator',
+                'breakaway-img': 'Blitzclique - Breakaway',
+                'steppleader-img': 'Blitzclique - Steppleader',
+                'return-stroke-img': 'Blitzclique Return Stroke'
+            });
+        });
+    </script>
+
+    <!-- Community Combo Guides -->
+    <section class="mb-12">
+        <div id="community-combos-wrapper"></div>
+    </section>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof initCommunityCombos === 'function') {
+                initCommunityCombos('community-combos-wrapper', 'Blitzclique');
+            }
+        });
+    </script>
+</body>
+</html>

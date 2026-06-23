@@ -612,7 +612,8 @@ window.CardLoader = (function () {
 
         largeImageModal = document.createElement('div');
         largeImageModal.id = 'large-image-modal';
-        largeImageModal.className = 'fixed inset-0 z-[10002] bg-black/85 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-sm';
+        largeImageModal.className = 'fixed inset-0 bg-black/85 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-sm';
+        largeImageModal.style.zIndex = '99999';
 
         // Close on ANY click
         largeImageModal.onclick = () => hideLargeImageModal();
