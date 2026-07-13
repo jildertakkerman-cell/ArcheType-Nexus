@@ -15,11 +15,17 @@ class ComboLoader {
         try {
             const response = await fetch(`../assets/data/combos/${archetypeName.toLowerCase()}-combos.json`);
             if (!response.ok) {
-                throw new Error(`Failed to load combos for ${archetypeName}: ${response.statusText}`);
+                const error = new Error(`Failed to load combos for ${archetypeName}: ${response.statusText}`);
+                error.notFound = response.status === 404;
+                throw error;
             }
             return await response.json();
         } catch (error) {
-            console.error(`Error loading combo data for ${archetypeName}:`, error);
+            // A missing combo file just means no interactive combos have been authored yet for
+            // this archetype - that's an expected, quiet case, not a real error to log loudly.
+            if (!error.notFound) {
+                console.error(`Error loading combo data for ${archetypeName}:`, error);
+            }
             throw error;
         }
     }
@@ -163,14 +169,22 @@ class ComboLoader {
             };
 
         } catch (error) {
-            console.error(`[ComboLoader] Failed to render combo system for ${archetypeName}:`, error);
-            container.innerHTML = `
-                <div class="p-6 text-center text-red-400">
-                    <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
-                    <p>Failed to load combo system for ${archetypeName}</p>
-                    <p class="text-sm mt-2 opacity-75">${error.message}</p>
-                </div>
-            `;
+            if (error.notFound) {
+                // No interactive combo data authored yet for this archetype - remove the
+                // section quietly instead of showing a scary error box for a normal state.
+                console.info(`[ComboLoader] No combo data for ${archetypeName}; hiding interactive combo section.`);
+                const section = container.closest('section') || container;
+                section.remove();
+            } else {
+                console.error(`[ComboLoader] Failed to render combo system for ${archetypeName}:`, error);
+                container.innerHTML = `
+                    <div class="p-6 text-center text-red-400">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <p>Failed to load combo system for ${archetypeName}</p>
+                        <p class="text-sm mt-2 opacity-75">${error.message}</p>
+                    </div>
+                `;
+            }
             return null;
         }
     }

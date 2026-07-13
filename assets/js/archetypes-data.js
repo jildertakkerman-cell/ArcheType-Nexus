@@ -33822,6 +33822,40 @@ const archetypes = [
         firstReleaseDate: null,
         latestReleaseDate: null,
 
+    },
+    {
+        name: 'Red Dragon Archfiend',
+        description: 'Jack Atlas\'s Blazing Dominion Synchro-climbing vanguard, chaining Fiend Tuner "Resonators" into gargantuan DARK Dragon boss monsters.',
+        filepath: 'pages/Red Dragon Archfiend Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="rdaBg" cx="50%" cy="40%" r="65%">
+                                <stop offset="0%" stop-color="#f97316"/>
+                                <stop offset="50%" stop-color="#9a3412"/>
+                                <stop offset="100%" stop-color="#1c0701"/>
+                            </radialGradient>
+                            <filter id="rdaGlow">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        <circle cx="50" cy="50" r="46" fill="url(#rdaBg)" stroke="#fed7aa" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="#fdba74" stroke-width="1.5" opacity="0.5" stroke-dasharray="5 3">
+                            <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="8s" repeatCount="indefinite"/>
+                        </circle>
+                        <g filter="url(#rdaGlow)">
+                            <path d="M50 20 L62 45 L88 50 L62 55 L50 80 L38 55 L12 50 L38 45 Z" fill="#fde68a" stroke="#dc2626" stroke-width="2"/>
+                        </g>
+                        <circle cx="30" cy="35" r="2.5" fill="#fbbf24" opacity="0.8">
+                            <animate attributeName="opacity" values="0.4;1;0.4" dur="1.6s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="70" cy="35" r="2.5" fill="#fbbf24" opacity="0.8">
+                            <animate attributeName="opacity" values="1;0.4;1" dur="1.6s" repeatCount="indefinite"/>
+                        </circle>
+                    </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: null,
+
     }
 ];// Export for use in main script
 if (typeof module !== 'undefined' && module.exports) {

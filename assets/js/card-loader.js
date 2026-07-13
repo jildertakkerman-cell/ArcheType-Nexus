@@ -1112,6 +1112,15 @@ window.CardLoader = (function () {
             }
 
             const card = data[0];
+
+            // Some rows are incomplete stubs (e.g. anime-exclusive placeholders with no
+            // real print data - passcode/cardtype null). Treat those as "not found" so
+            // we fall back to the YGOProDeck API instead of rendering a blank card.
+            if (!card.passcode || !card.cardtype) {
+                console.warn(`[CardLoader] Supabase row for "${card.cardname}" is incomplete (passcode/cardtype missing); falling back to API.`);
+                return null;
+            }
+
             console.log('[CardLoader] Card found in Supabase:', card.cardname);
 
             return mapSupabaseCardToApiFormat(card);
