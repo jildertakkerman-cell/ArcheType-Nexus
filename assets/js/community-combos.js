@@ -11,11 +11,41 @@
  *     });
  *   </script>
  *
- * Requires: supabase-config.js, auth.js, combo-system.js loaded first.
+ * Requires: supabase-config.js, auth.js, combo-system.js, text-utils.js loaded first.
  */
+
+// Fallback: most archetype pages load this file without text-utils.js —
+// rendering user-submitted text must never depend on that load order.
+if (typeof window.escapeHtml !== 'function') {
+    window.escapeHtml = function (str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+}
 
 const GCS_BASE_CC = 'https://storage.googleapis.com/yugioh-card-images-archetype-nexus/';
 const ANALYZER_URL_CC = '../pages/Replay-Analyzer.html';
+
+// Favorite-archetype badge next to a submitter's name. Self-contained CSS
+// injection: most pages loading this file don't have synergy-tags.css, and an
+// unconstrained inline SVG would render enormous.
+function _ccFavBadge(profile) {
+    if (profile?.hidefavbadge) return '';
+    const fav = profile?.favorite;
+    if (!fav?.iconsvg) return '';
+    if (!document.getElementById('cc-fav-badge-style')) {
+        const style = document.createElement('style');
+        style.id = 'cc-fav-badge-style';
+        style.textContent = '.fav-badge{display:inline-flex;width:14px;height:14px;border-radius:50%;overflow:hidden;vertical-align:middle;margin-left:0.3rem;background:#111827;}.fav-badge svg{width:100%;height:100%;}';
+        document.head.appendChild(style);
+    }
+    return `<span class="fav-badge" title="${window.escapeHtml(fav.archetypename)} fan">${fav.iconsvg}</span>`;
+}
 
 async function initCommunityCombos(containerId, archetypeName) {
     // Fetch approved community combos from Supabase.
@@ -35,7 +65,9 @@ async function initCommunityCombos(containerId, archetypeName) {
         .from('combos')
         .select(`
             comboid, title, createdon, gcscombojsonpath,
-            profiles!combos_userid_fkey ( displayname ),
+            profiles!combos_userid_fkey ( displayname, hidefavbadge,
+                favorite:archetypes!profiles_favoritearchetypeid_fkey ( archetypename, iconsvg )
+            ),
             replays!combos_replayid_fkey ( gcsjsonpath, metadata, gcsrawpath ),
             combovotes ( userid, value )
         `)
@@ -87,16 +119,16 @@ function _injectGuideEntry(container, key, combo, session) {
             <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.07);">
                 <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
                     <i class="fas fa-star" style="color:#f59e0b;font-size:0.75rem;"></i>
-                    <span style="font-size:0.85rem;font-weight:700;color:#f5f5f5;">${combo.title}</span>
+                    <span style="font-size:0.85rem;font-weight:700;color:#f5f5f5;">${window.escapeHtml(combo.title)}</span>
                 </div>
                 ${metaItems.length ? `<div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;">${metaItems.join('')}</div>` : ''}
                 <div style="font-size:0.78rem;color:#737373;">
-                    ${playerNames ? `${playerNames} · ` : ''}Submitted by <span style="color:#a3a3a3;font-weight:600;">${combo.profiles?.displayname || 'Duelist'}</span> · ${date}
+                    ${playerNames ? `${window.escapeHtml(playerNames)} · ` : ''}Submitted by <span style="color:#a3a3a3;font-weight:600;">${window.escapeHtml(combo.profiles?.displayname || 'Duelist')}</span>${_ccFavBadge(combo.profiles)} · ${date}
                 </div>
                 ${combo.description ? `
                 <div style="margin-top:0.65rem;padding-top:0.65rem;border-top:1px solid rgba(255,255,255,0.06);">
                     <p style="margin:0;font-size:0.82rem;color:#a3a3a3;font-style:italic;line-height:1.55;">
-                        <i class="fas fa-quote-left" style="margin-right:0.35rem;opacity:0.4;font-size:0.65rem;vertical-align:middle;"></i>${combo.description}<i class="fas fa-quote-right" style="margin-left:0.35rem;opacity:0.4;font-size:0.65rem;vertical-align:middle;"></i>
+                        <i class="fas fa-quote-left" style="margin-right:0.35rem;opacity:0.4;font-size:0.65rem;vertical-align:middle;"></i>${window.escapeHtml(combo.description)}<i class="fas fa-quote-right" style="margin-left:0.35rem;opacity:0.4;font-size:0.65rem;vertical-align:middle;"></i>
                     </p>
                 </div>` : ''}
             </div>
@@ -147,7 +179,7 @@ function _injectGuideEntry(container, key, combo, session) {
                     <i class="fas fa-chevron-down" style="transition:transform 0.2s;"></i>
                 </button>
                 <div id="${simId}" style="display:none;padding:0 0.75rem 0.75rem;"
-                     data-combo-title="${combo.title.replace(/"/g, '&quot;')}"></div>
+                     data-combo-title="${window.escapeHtml(combo.title)}"></div>
             </div>` : ''}
         </div>`;
     container.appendChild(div);
@@ -190,7 +222,7 @@ function _buildStandaloneSection(containerId, combos, session, archetypeName) {
                             const isTop = score === topScore && topScore > 0;
                             const scoreStr = score !== 0 ? ` (${score > 0 ? '+' : ''}${score})` : '';
                             return `<option value="${i}" style="background:#1a1a2e;color:#f5f5f5;">
-                                ${isTop ? '★ ' : ''}${combo.title}${scoreStr}
+                                ${isTop ? '★ ' : ''}${window.escapeHtml(combo.title)}${scoreStr}
                             </option>`;
                         }).join('')}
                     </select>

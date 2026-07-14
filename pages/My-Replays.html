@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../assets/js/supabase-config.js"></script>
     <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/text-utils.js"></script>
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,8 +34,154 @@
         }
 
         .container {
-            max-width: 960px;
+            max-width: 1140px;
             margin: 0 auto;
+        }
+
+        /* ── Account Layout (Google-Account style: sidebar + content) ── */
+        .account-layout {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        .account-nav {
+            flex: 0 0 230px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            position: sticky;
+            top: 1.5rem;
+        }
+        .account-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.45rem 1rem 0.45rem 0.5rem;
+            border: none;
+            background: none;
+            border-radius: 999px;
+            color: #e5e5e5;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: left;
+            transition: background 0.15s;
+            width: 100%;
+        }
+        .account-nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+        .account-nav-item.active {
+            background: rgba(59, 88, 152, 0.35);
+            color: #bfdbfe;
+        }
+        .account-nav-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            color: #0f172a;
+        }
+        .nav-icon-home      { background: #93c5fd; }
+        .nav-icon-settings  { background: #86efac; }
+        .nav-icon-replays   { background: #c4b5fd; }
+        .nav-icon-synergies { background: #67e8f9; }
+        .nav-icon-admin     { background: #fcd34d; }
+        .nav-icon-logout    { background: #fda4af; }
+
+        /* ── Synergy Activity panel ── */
+        .activity-section {
+            background: rgba(23, 23, 23, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 0.875rem;
+            padding: 1rem 1.25rem 1.1rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(8px);
+        }
+        .activity-heading {
+            font-size: 0.85rem; font-weight: 700; color: #f5f5f5; margin-bottom: 0.75rem;
+        }
+        .activity-heading i { color: #67e8f9; margin-right: 0.45rem; }
+        .activity-empty { font-size: 0.78rem; color: #737373; padding: 0.3rem 0; }
+
+        /* Grouped-by-pairing layout: one header per pairing, sub-rows beneath */
+        .activity-group { padding: 0.85rem 0; border-top: 1px solid rgba(255,255,255,0.06); }
+        .activity-group:first-child { border-top: none; padding-top: 0.25rem; }
+        .activity-group-header {
+            display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+            font-size: 0.9rem; margin-bottom: 0.45rem;
+        }
+        .activity-group-header .status-chip { margin-top: 0; }
+        .activity-group-meta { margin-left: auto; font-size: 0.7rem; color: #737373; white-space: nowrap; }
+        .activity-group-notes { font-size: 0.72rem; color: #b0847a; margin: -0.2rem 0 0.4rem; }
+        .activity-subrow {
+            display: grid; grid-template-columns: 18px 1fr auto;
+            gap: 0.55rem; align-items: start;
+            padding: 0.3rem 0 0.3rem 0.35rem;
+            font-size: 0.8rem; color: #d4d4d4; line-height: 1.5;
+        }
+        .activity-subrow .subrow-glyph {
+            text-align: center; font-size: 0.75rem; padding-top: 0.1rem;
+        }
+        .subrow-glyph.glyph-reason { color: #67e8f9; }
+        .activity-subrow .subrow-content { min-width: 0; }
+        .activity-subrow .subrow-meta {
+            display: flex; align-items: center; gap: 0.45rem;
+            font-size: 0.7rem; color: #737373; white-space: nowrap; padding-top: 0.15rem;
+        }
+        .status-chip {
+            font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+            padding: 0.12rem 0.45rem; border-radius: 999px; flex-shrink: 0; margin-top: 0.15rem;
+        }
+        .status-chip.pending  { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35); }
+        .status-chip.approved { background: rgba(34,197,94,0.15);  color: #4ade80; border: 1px solid rgba(34,197,94,0.35); }
+        .status-chip.rejected { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.35); }
+        .vote-dir { font-weight: 800; flex-shrink: 0; margin-top: 0.1rem; }
+        .vote-dir.up { color: #FF4500; }
+        .vote-dir.down { color: #7193FF; }
+        .activity-arch {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            color: inherit; text-decoration: none; font-weight: 600;
+        }
+        a.activity-arch { color: #a5b4fc; }
+        a.activity-arch:hover { text-decoration: underline; }
+        .activity-arch-icon {
+            display: inline-flex; width: 16px; height: 16px; border-radius: 50%;
+            overflow: hidden; background: #111827; flex-shrink: 0; vertical-align: middle;
+        }
+        .activity-arch-icon svg { width: 100%; height: 100%; }
+        .activity-pair-sep { color: #67e8f9; font-weight: 400; margin: 0 0.1rem; }
+        .activity-score { font-size: 0.72rem; color: #a3a3a3; white-space: nowrap; flex-shrink: 0; margin-top: 0.2rem; }
+        .account-nav-logout { margin-top: 1rem; }
+        .account-content { flex: 1; min-width: 0; }
+        .account-panel { animation: panelIn 0.2s ease-out; }
+        @keyframes panelIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+        @media (max-width: 768px) {
+            .account-layout { flex-direction: column; gap: 1.25rem; }
+            .account-nav {
+                position: static;
+                flex: none;
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 0.25rem;
+                padding-bottom: 0.25rem;
+            }
+            .account-nav-item {
+                flex-direction: column;
+                gap: 0.3rem;
+                padding: 0.4rem 0.6rem;
+                border-radius: 0.75rem;
+                font-size: 0.68rem;
+                width: auto;
+                flex: 0 0 auto;
+            }
+            .account-nav-logout { margin-top: 0; margin-left: auto; }
         }
 
         /* ── Profile Banner ── */
@@ -145,25 +292,166 @@
             margin-top: 0.1rem;
         }
 
-        .btn-logout {
-            margin-left: auto;
-            background: none;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-muted, #a3a3a3);
-            font-size: 0.78rem;
-            font-family: inherit;
-            padding: 0.4rem 0.8rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: color 0.2s, border-color 0.2s;
-            flex-shrink: 0;
-            align-self: flex-start;
+        /* ── Duelist Summary ── */
+        .summary-card {
+            display: flex;
+            gap: 2rem;
+            background: rgba(23, 23, 23, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 0.875rem;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.75rem;
+            backdrop-filter: blur(8px);
+        }
+        .summary-winrate {
+            flex: 0 0 160px;
+            text-align: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.07);
+            padding-right: 2rem;
+        }
+        .summary-winrate .stat-value { font-size: 2.2rem; }
+        .summary-sub { font-size: 0.75rem; color: var(--text-muted, #a3a3a3); margin-top: 0.35rem; line-height: 1.5; }
+        .summary-most-played { flex: 1; min-width: 0; }
+        .summary-heading {
+            font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-muted, #a3a3a3); font-weight: 700; margin-bottom: 0.6rem;
+        }
+        .summary-arch-row {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.35rem 0; font-size: 0.85rem;
+        }
+        .summary-arch-icon {
+            display: inline-flex; width: 22px; height: 22px; border-radius: 50%;
+            overflow: hidden; background: #111827; flex-shrink: 0;
+            align-items: center; justify-content: center;
+        }
+        .summary-arch-icon svg { width: 100%; height: 100%; }
+        .summary-arch-meta { margin-left: auto; font-size: 0.72rem; color: var(--text-muted, #a3a3a3); white-space: nowrap; }
+
+        @media (max-width: 640px) {
+            .summary-card { flex-direction: column; gap: 1.25rem; }
+            .summary-winrate { flex: none; border-right: none; padding-right: 0; border-bottom: 1px solid rgba(255,255,255,0.07); padding-bottom: 1rem; }
         }
 
-        .btn-logout:hover {
-            color: #f5f5f5;
-            border-color: rgba(255, 255, 255, 0.25);
+        /* ── Profile Settings ── */
+        .settings-card {
+            background: rgba(23, 23, 23, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 0.875rem;
+            margin-bottom: 1.75rem;
+            backdrop-filter: blur(8px);
+            overflow: hidden;
         }
+        .settings-heading {
+            padding: 0.9rem 1.25rem 0.4rem;
+            color: #f5f5f5; font-size: 0.9rem; font-weight: 700;
+        }
+        .settings-body { padding: 0.25rem 1.25rem 1.25rem; }
+        .settings-field { margin-bottom: 1.1rem; }
+        .settings-field label {
+            display: block; font-size: 0.72rem; text-transform: uppercase;
+            letter-spacing: 0.05em; color: #a3a3a3; margin-bottom: 0.4rem; font-weight: 700;
+        }
+        .settings-field input[type="text"] {
+            width: 100%; max-width: 320px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 0.5rem;
+            color: #f5f5f5; font-size: 0.85rem; padding: 0.5rem 0.7rem; font-family: inherit;
+        }
+        .settings-field input[type="text"]:focus { outline: none; border-color: #f59e0b; }
+        .settings-name-row { display: flex; align-items: center; gap: 0.6rem; }
+        .settings-counter { font-size: 0.7rem; color: #737373; }
+        .settings-hint { font-size: 0.7rem; color: #737373; margin-top: 0.35rem; }
+        .settings-fav-row {
+            display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+            background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.3);
+            border-radius: 0.5rem; padding: 0.4rem 0.65rem; width: fit-content;
+            font-size: 0.85rem; color: #f5f5f5; font-weight: 600;
+        }
+        .settings-fav-icon, .settings-fav-result-icon {
+            display: inline-flex; width: 22px; height: 22px; border-radius: 50%;
+            overflow: hidden; background: #111827; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .settings-fav-icon svg, .settings-fav-result-icon svg { width: 100%; height: 100%; }
+        .settings-fav-clear { color: #737373; cursor: pointer; font-size: 0.8rem; margin-left: 0.25rem; }
+        .settings-fav-clear:hover { color: #f87171; }
+        .settings-fav-results { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.45rem; max-width: 320px; }
+        .settings-fav-result {
+            display: flex; align-items: center; gap: 0.55rem; padding: 0.4rem 0.6rem;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 0.5rem; cursor: pointer; font-size: 0.82rem; color: #d4d4d4;
+        }
+        .settings-fav-result:hover { border-color: #f59e0b; color: #f5f5f5; }
+        .settings-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; color: #d4d4d4; cursor: pointer; text-transform: none; letter-spacing: 0; font-weight: 500; }
+        .settings-check input { accent-color: #f59e0b; width: 1rem; height: 1rem; }
+        .settings-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; }
+        .settings-status { font-size: 0.75rem; }
+        .settings-status.ok { color: #4ade80; }
+        .settings-status.err { color: #f87171; }
+        .btn-save-settings {
+            background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.4);
+            color: #f59e0b; font-size: 0.82rem; font-weight: 700;
+            padding: 0.45rem 1.1rem; border-radius: 0.5rem; cursor: pointer; font-family: inherit;
+        }
+        .btn-save-settings:disabled { opacity: 0.5; cursor: default; }
+
+        /* Account info block */
+        .account-info-row {
+            display: flex; gap: 1rem; padding: 0.4rem 0;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.82rem; color: #d4d4d4;
+        }
+        .account-info-row:first-child { border-top: none; }
+        .account-info-label {
+            flex: 0 0 130px; font-size: 0.72rem; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--text-muted, #a3a3a3); font-weight: 700;
+            padding-top: 0.1rem;
+        }
+        .provider-chip {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-size: 0.78rem; font-weight: 700; color: #fff;
+            padding: 0.2rem 0.6rem; border-radius: 999px;
+        }
+        .provider-discord { background: linear-gradient(to right, #5865F2, #4752C4); }
+        .provider-google  { background: linear-gradient(to right, #4285F4, #2563EB); }
+        .role-chip {
+            display: inline-flex; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.04em; color: #f59e0b; background: rgba(245,158,11,0.12);
+            border: 1px solid rgba(245,158,11,0.35); padding: 0.15rem 0.55rem; border-radius: 999px;
+        }
+
+        /* Live chip preview */
+        .chip-preview-wrap { display: flex; align-items: center; margin-bottom: 0.75rem; }
+        .chip-preview {
+            display: inline-flex; align-items: center; gap: 0.625rem;
+            background: rgba(23,23,23,0.88);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 0.75rem;
+            padding: 0.4rem 0.875rem;
+            font-size: 0.82rem; font-weight: 600; color: #f5f5f5;
+        }
+        .chip-preview .chip-avatar {
+            display: inline-flex; width: 26px; height: 26px; border-radius: 50%;
+            overflow: hidden; background: #111827; border: 1px solid rgba(255,255,255,0.25);
+            align-items: center; justify-content: center;
+        }
+        .chip-preview .chip-avatar svg { width: 100%; height: 100%; }
+        .chip-preview .chip-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Danger zone */
+        .danger-zone { border-color: rgba(239, 68, 68, 0.35); }
+        .danger-zone input[type="text"] {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(239,68,68,0.35);
+            border-radius: 0.5rem; color: #f5f5f5; font-size: 0.8rem;
+            padding: 0.45rem 0.7rem; font-family: inherit;
+        }
+        .danger-zone input[type="text"]:focus { outline: none; border-color: #f87171; }
+        .btn-danger {
+            background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4);
+            color: #f87171; font-size: 0.82rem; font-weight: 700;
+            padding: 0.45rem 1rem; border-radius: 0.5rem; cursor: pointer; font-family: inherit;
+        }
+        .btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.22); }
 
         /* ── Stats Bar ── */
         .stats-bar {
@@ -301,11 +589,18 @@
             color: var(--text-muted, #a3a3a3);
         }
 
+        .replay-side {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+            padding-top: 0.15rem;
+        }
+
         .replay-date {
             font-size: 0.78rem;
             color: var(--text-muted, #a3a3a3);
             white-space: nowrap;
-            padding-top: 0.15rem;
         }
 
         .replay-card-footer {
@@ -314,27 +609,41 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 0.5rem;
+            /* Rest state: actions recede; the card is content-first */
+            opacity: 0.45;
+            transition: opacity 0.15s;
         }
 
+        .replay-card:hover .replay-card-footer,
+        .replay-card:focus-within .replay-card-footer {
+            opacity: 1;
+        }
+
+        /* Touch devices have no hover — keep actions fully visible there */
+        @media (hover: none) {
+            .replay-card-footer { opacity: 1; }
+        }
+
+        /* Quiet ghost button — actions available, not shouting */
         .btn-reanalyze {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            background: rgba(99, 102, 241, 0.12);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            color: #a5b4fc;
-            font-size: 0.82rem;
+            background: none;
+            border: none;
+            color: var(--text-muted, #a3a3a3);
+            font-size: 0.78rem;
             font-weight: 600;
-            padding: 0.45rem 0.9rem;
-            border-radius: 0.5rem;
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.4rem;
             cursor: pointer;
             font-family: inherit;
-            transition: background 0.2s, border-color 0.2s;
+            transition: color 0.15s, background 0.15s;
         }
 
         .btn-reanalyze:hover:not(:disabled) {
-            background: rgba(99, 102, 241, 0.22);
-            border-color: rgba(99, 102, 241, 0.5);
+            color: #a5b4fc;
+            background: rgba(99, 102, 241, 0.1);
         }
 
         .btn-reanalyze:disabled {
@@ -343,15 +652,16 @@
         }
 
         .vis-select {
-            background: rgba(23, 23, 23, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-muted, #a3a3a3);
-            font-size: 0.78rem;
-            padding: 0.35rem 0.6rem;
-            border-radius: 0.5rem;
+            font-size: 0.72rem;
+            padding: 0.25rem 0.4rem;
+            border-radius: 0.4rem;
             cursor: pointer;
             outline: none;
         }
+        .vis-select:hover { border-color: rgba(255, 255, 255, 0.25); }
 
         .btn-delete {
             background: none;
@@ -379,10 +689,9 @@
             flex-wrap: wrap;
             align-items: center;
             gap: 0.4rem;
-            padding: 0.6rem 0;
-            margin: 0.5rem 0;
+            padding: 0.45rem 0 0.1rem;
+            margin-top: 0.35rem;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .replay-badge {
@@ -402,6 +711,7 @@
         .badge-otk  { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
         .badge-stat { background: rgba(255,255,255,0.05); color: #a3a3a3; border: 1px solid rgba(255,255,255,0.08); }
         .badge-tag  { background: rgba(139,92,246,0.12); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.2); }
+        .badge-more { background: rgba(255,255,255,0.05); color: #a3a3a3; border: 1px solid rgba(255,255,255,0.1); cursor: help; }
 
         .rbadge-sep {
             width: 1px;
@@ -441,21 +751,21 @@
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: #f87171;
-            font-size: 0.82rem;
+            background: none;
+            border: none;
+            color: var(--text-muted, #a3a3a3);
+            font-size: 0.78rem;
             font-weight: 600;
-            padding: 0.45rem 0.9rem;
-            border-radius: 0.5rem;
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.4rem;
             cursor: pointer;
             font-family: inherit;
-            transition: background 0.2s, border-color 0.2s;
+            transition: color 0.15s, background 0.15s;
         }
 
         .btn-pdf:hover:not(:disabled) {
-            background: rgba(239, 68, 68, 0.28);
-            border-color: rgba(239, 68, 68, 0.65);
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.1);
         }
 
         .btn-pdf:disabled {
@@ -491,7 +801,41 @@
     </a>
 
     <div class="container">
+      <div class="account-layout">
 
+        <!-- Sidebar navigation (Google-Account style) -->
+        <nav class="account-nav" id="account-nav">
+            <button class="account-nav-item active" data-panel="home" type="button">
+                <span class="account-nav-icon nav-icon-home"><i class="fas fa-home"></i></span>
+                <span class="account-nav-label">Home</span>
+            </button>
+            <button class="account-nav-item" data-panel="settings" type="button">
+                <span class="account-nav-icon nav-icon-settings"><i class="fas fa-user-cog"></i></span>
+                <span class="account-nav-label">Profile settings</span>
+            </button>
+            <button class="account-nav-item" data-panel="replays" type="button">
+                <span class="account-nav-icon nav-icon-replays"><i class="fas fa-history"></i></span>
+                <span class="account-nav-label">My Replays</span>
+            </button>
+            <button class="account-nav-item" data-panel="synergies" type="button">
+                <span class="account-nav-icon nav-icon-synergies"><i class="fas fa-link"></i></span>
+                <span class="account-nav-label">Synergy Activity</span>
+            </button>
+            <a class="account-nav-item" id="account-nav-admin" href="../pages/Admin.html" style="display:none;">
+                <span class="account-nav-icon nav-icon-admin"><i class="fas fa-shield-alt"></i></span>
+                <span class="account-nav-label">Admin</span>
+            </a>
+            <button class="account-nav-item account-nav-logout" id="account-nav-logout" type="button">
+                <span class="account-nav-icon nav-icon-logout"><i class="fas fa-sign-out-alt"></i></span>
+                <span class="account-nav-label">Logout</span>
+            </button>
+        </nav>
+
+        <!-- Content panels -->
+        <div class="account-content">
+
+        <!-- ── Panel: Home ── -->
+        <div class="account-panel" id="panel-home">
         <!-- Profile Banner -->
         <div class="profile-banner" id="profile-banner">
             <div class="profile-identity">
@@ -506,10 +850,8 @@
                         <span id="profile-discord-tag"></span>
                     </div>
                     <div class="profile-meta" id="profile-since"></div>
+                    <div class="profile-meta" id="profile-favorite" style="display:none;"></div>
                 </div>
-                <button class="btn-logout" id="btn-logout" style="display:none;" onclick="window.Auth.signOut()">
-                    <i class="fas fa-sign-out-alt" style="margin-right:0.3rem;font-size:0.72rem;"></i>Logout
-                </button>
             </div>
         </div>
 
@@ -533,6 +875,132 @@
             </div>
         </div>
 
+        <!-- Duelist Summary (win rate + most played, from replay metadata) -->
+        <div class="summary-card" id="duelist-summary" style="display:none;">
+            <div class="summary-block summary-winrate">
+                <div class="stat-value" id="summary-winrate">—</div>
+                <div class="stat-label">Win rate</div>
+                <div class="summary-sub" id="summary-record"></div>
+            </div>
+            <div class="summary-block summary-most-played">
+                <div class="summary-heading">Most played</div>
+                <div id="summary-archetypes"></div>
+            </div>
+        </div>
+        </div>
+
+        <!-- ── Panel: Profile Settings ── -->
+        <div class="account-panel" id="panel-settings" style="display:none;">
+
+        <!-- Account info (read-only) -->
+        <div class="settings-card" id="account-info-card" style="display:none;">
+            <div class="settings-heading">
+                <i class="fas fa-id-card" style="margin-right:0.5rem;color:#93c5fd;"></i>Account
+            </div>
+            <div class="settings-body">
+                <div class="account-info-row"><span class="account-info-label">Signed in with</span><span id="account-provider">—</span></div>
+                <div class="account-info-row"><span class="account-info-label">Email</span><span id="account-email">—</span></div>
+                <div class="account-info-row"><span class="account-info-label">Member since</span><span id="account-since">—</span></div>
+                <div class="account-info-row" id="account-role-row" style="display:none;"><span class="account-info-label">Role</span><span id="account-role"></span></div>
+                <div class="account-info-row"><span class="account-info-label">Name change</span><span id="account-namechange">—</span></div>
+            </div>
+        </div>
+
+        <div class="settings-card" id="settings-card" style="display:none;">
+            <div class="settings-heading">
+                <i class="fas fa-user-cog" style="margin-right:0.5rem;color:#f59e0b;"></i>Profile Settings
+            </div>
+            <div class="chip-preview-wrap">
+                <span class="settings-hint" style="margin:0 0.5rem 0 1.25rem;">Preview:</span>
+                <span class="chip-preview" id="chip-preview"></span>
+            </div>
+            <div class="settings-body" id="settings-body">
+                <div class="settings-field">
+                    <label for="setting-displayname">Display name</label>
+                    <div class="settings-name-row">
+                        <input type="text" id="setting-displayname" maxlength="24" autocomplete="off">
+                        <span class="settings-counter" id="setting-name-counter"></span>
+                    </div>
+                    <div class="settings-hint">3–24 characters · can be changed once per week · shown on all your submissions</div>
+                </div>
+
+                <div class="settings-field">
+                    <label for="setting-favorite-search">Favorite archetype</label>
+                    <div class="settings-fav-row" id="setting-fav-selected" style="display:none;">
+                        <span class="settings-fav-icon" id="setting-fav-icon"></span>
+                        <span id="setting-fav-name"></span>
+                        <span class="settings-fav-clear" id="setting-fav-clear" title="Clear favorite">✕</span>
+                    </div>
+                    <input type="text" id="setting-favorite-search" placeholder="Search archetypes…" autocomplete="off">
+                    <div class="settings-fav-results" id="setting-fav-results"></div>
+                </div>
+
+                <div class="settings-field">
+                    <label class="settings-check">
+                        <input type="checkbox" id="setting-archetype-avatar">
+                        Use my favorite archetype's icon as my avatar
+                    </label>
+                </div>
+
+                <div class="settings-field">
+                    <label class="settings-check">
+                        <input type="checkbox" id="setting-hide-badge">
+                        Hide my favorite archetype on public submissions
+                    </label>
+                </div>
+
+                <div class="settings-actions">
+                    <span class="settings-status" id="setting-status"></span>
+                    <button class="btn-save-settings" id="btn-save-settings" type="button">
+                        <i class="fas fa-save" style="margin-right:0.35rem;"></i>Save
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Replay privacy (bulk) -->
+        <div class="settings-card" id="replay-privacy-card" style="display:none;">
+            <div class="settings-heading">
+                <i class="fas fa-eye" style="margin-right:0.5rem;color:#86efac;"></i>Replay Privacy
+            </div>
+            <div class="settings-body">
+                <div class="settings-hint" id="privacy-summary" style="margin-bottom:0.7rem;">—</div>
+                <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+                    <button class="btn-save-settings" id="btn-all-public" type="button">
+                        <i class="fas fa-globe" style="margin-right:0.35rem;"></i>Make all public
+                    </button>
+                    <button class="btn-save-settings" id="btn-all-private" type="button">
+                        <i class="fas fa-lock" style="margin-right:0.35rem;"></i>Make all private
+                    </button>
+                    <span class="settings-status" id="privacy-status"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="settings-card danger-zone" id="danger-zone-card" style="display:none;">
+            <div class="settings-heading" style="color:#f87171;">
+                <i class="fas fa-triangle-exclamation" style="margin-right:0.5rem;"></i>Danger Zone
+            </div>
+            <div class="settings-body">
+                <div class="settings-hint" style="margin-bottom:0.7rem;">
+                    Permanently delete <strong id="danger-count">all</strong> of your replays. This cannot be undone.
+                    Combo guides you've already submitted stay published — they just lose their linked replay.
+                </div>
+                <div style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center;">
+                    <input type="text" id="danger-confirm" placeholder='Type "DELETE" to confirm' autocomplete="off"
+                           style="max-width:220px;">
+                    <button class="btn-danger" id="btn-delete-all" type="button" disabled>
+                        <i class="fas fa-trash-alt" style="margin-right:0.35rem;"></i>Delete all replays
+                    </button>
+                    <span class="settings-status" id="danger-status"></span>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- ── Panel: My Replays ── -->
+        <div class="account-panel" id="panel-replays" style="display:none;">
         <!-- Hidden file input for replay upload -->
         <input type="file" id="replay-upload-input" accept=".yrpx" style="display:none;">
 
@@ -548,7 +1016,18 @@
         </div>
 
         <div id="replay-list"></div>
+        </div>
 
+        <!-- ── Panel: Synergy Activity ── -->
+        <div class="account-panel" id="panel-synergies" style="display:none;">
+            <div class="activity-section">
+                <div class="activity-heading"><i class="fas fa-link"></i>Synergy Activity</div>
+                <div id="activity-groups"><div class="activity-empty">Loading…</div></div>
+            </div>
+        </div>
+
+        </div><!-- /.account-content -->
+      </div><!-- /.account-layout -->
     </div>
 
     <script src="../assets/js/archetypes-data.js"></script>

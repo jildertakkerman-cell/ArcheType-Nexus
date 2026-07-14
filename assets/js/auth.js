@@ -7,6 +7,16 @@
     'use strict';
 
     let _client = null;
+    let _profileCache = null; // one profiles fetch per page load, cleared on auth change
+
+    // auth.js runs on every page; text-utils.js doesn't — never depend on it.
+    function _esc(str) {
+        if (typeof window.escapeHtml === 'function') return window.escapeHtml(str);
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
 
     function _getClient() {
         if (!_client && window.supabase && window.SUPABASE_CONFIG) {
@@ -39,6 +49,41 @@
         async getUser() {
             const s = await this.getSession();
             return s?.user ?? null;
+        },
+
+        /**
+         * Cached profiles row for the signed-in user (displayname, role,
+         * favorite archetype + its icon). One query per page load.
+         */
+        async getProfile() {
+            const s = await this.getSession();
+            if (!s) return null;
+            if (_profileCache) return _profileCache;
+            const c = _getClient();
+            const { data } = await c
+                .from('profiles')
+                .select(`
+                    displayname, role, favoritearchetypeid, usearchetypeavatar,
+                    namechangedon, hidefavbadge,
+                    favorite:archetypes!profiles_favoritearchetypeid_fkey ( archetypename, iconsvg )
+                `)
+                .eq('userid', s.user.id)
+                .maybeSingle();
+            _profileCache = data || null;
+            return _profileCache;
+        },
+
+        /** Clear the cached profile and re-render auth bars (after settings save). */
+        async refreshProfile() {
+            _profileCache = null;
+            const session = await this.getSession();
+            document.querySelectorAll('[data-auth-bar]').forEach(el => renderBar(el, session));
+            return this.getProfile();
+        },
+
+        async isModerator() {
+            const p = await this.getProfile();
+            return p?.role === 'moderator' || p?.role === 'admin';
         },
 
         async signInWithDiscord(redirectTo) {
@@ -112,17 +157,27 @@
             </div>`;
     }
 
-    function userChip(name, avatar, isIndex) {
-        const myReplaysHref = isIndex ? 'pages/My-Replays.html' : '../pages/My-Replays.html';
+    function userChip(name, avatar, avatarSvg, isIndex) {
+        // #replays lands directly on the replay-list panel of the account page
+        const myReplaysHref = (isIndex ? 'pages/My-Replays.html' : '../pages/My-Replays.html') + '#replays';
+        let avatarHtml;
+        if (avatarSvg) {
+            // Favorite-archetype icon avatar (curated inline SVG from our own DB)
+            avatarHtml = `<span class="auth-avatar-svg" style="display:inline-flex;width:26px;height:26px;border-radius:50%;
+                                overflow:hidden;background:#111827;border:1px solid rgba(255,255,255,0.25);
+                                align-items:center;justify-content:center;">${avatarSvg}</span>`;
+        } else if (avatar) {
+            avatarHtml = `<img src="${_esc(avatar)}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">`;
+        } else {
+            avatarHtml = `<i class="fas fa-user-circle" style="color:#a3a3a3;font-size:1.2rem;"></i>`;
+        }
         return `
             <div style="display:inline-flex;align-items:center;gap:0.625rem;
                         background:rgba(23,23,23,0.88);
                         border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;
                         padding:0.4rem 0.875rem;backdrop-filter:blur(10px);">
-                ${avatar
-                    ? `<img src="${avatar}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">`
-                    : `<i class="fas fa-user-circle" style="color:#a3a3a3;font-size:1.2rem;"></i>`}
-                <span style="color:#f5f5f5;font-size:0.82rem;font-weight:600;">${name}</span>
+                ${avatarHtml}
+                <span style="color:#f5f5f5;font-size:0.82rem;font-weight:600;">${_esc(name)}</span>
                 <a href="${myReplaysHref}"
                    style="color:#f59e0b;font-size:0.78rem;font-weight:600;text-decoration:none;"
                    onmouseover="this.style.opacity='0.75'"
@@ -140,9 +195,14 @@
         const s = session !== undefined ? session : await window.Auth.getSession();
         if (s) {
             const m = s.user.user_metadata || {};
-            const name = m.full_name || m.name || m.user_name || 'Duelist';
+            // profiles.displayname is the canonical name everywhere on the
+            // site (combo cards, comments, admin); OAuth metadata is only a
+            // fallback for brand-new sessions whose profile row isn't loaded.
+            const profile = await window.Auth.getProfile().catch(() => null);
+            const name = profile?.displayname || m.full_name || m.name || m.user_name || 'Duelist';
             const avatar = m.avatar_url || m.picture || null;
-            el.innerHTML = userChip(name, avatar, isIndex);
+            const avatarSvg = (profile?.usearchetypeavatar && profile?.favorite?.iconsvg) || null;
+            el.innerHTML = userChip(name, avatar, avatarSvg, isIndex);
         } else {
             el.innerHTML = loginBtn();
         }
@@ -152,10 +212,17 @@
         document.querySelectorAll('[data-auth-bar]').forEach(el => renderBar(el, session));
     }
 
+    // The archetype-icon SVGs carry their own width/height attributes —
+    // force them to fill the avatar circle.
+    const _avatarStyle = document.createElement('style');
+    _avatarStyle.textContent = '.auth-avatar-svg svg{width:100%;height:100%;}';
+    document.head.appendChild(_avatarStyle);
+
     // Register listener eagerly so PKCE SIGNED_IN fires before DOMContentLoaded
     const _earlyClient = _getClient();
     if (_earlyClient) {
         _earlyClient.auth.onAuthStateChange((_event, session) => {
+            _profileCache = null; // session changed — cached profile is stale
             document.querySelectorAll('[data-auth-bar]').forEach(el => renderBar(el, session));
         });
     }

@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../assets/js/supabase-config.js"></script>
     <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/text-utils.js"></script>
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +31,7 @@
             padding: 4rem 1rem 3rem;
         }
         .admin-wrap {
-            max-width: 860px;
+            max-width: 1100px;
             margin: 0 auto;
         }
         .admin-header {
@@ -67,6 +68,78 @@
             background: rgba(245,158,11,0.15);
             border-color: rgba(245,158,11,0.4);
             color: #f59e0b;
+        }
+        /* ── Sidebar mode nav (matches the My Account page's Google-style layout) ── */
+        .admin-layout {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        .mode-bar {
+            flex: 0 0 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            position: sticky;
+            top: 1.5rem;
+        }
+        .mode-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.45rem 1rem 0.45rem 0.5rem;
+            border: none;
+            background: none;
+            border-radius: 999px;
+            color: #e5e5e5;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            text-align: left;
+            width: 100%;
+            transition: background 0.15s;
+        }
+        .mode-btn:hover { background: rgba(255,255,255,0.06); }
+        .mode-btn.active {
+            background: rgba(59, 88, 152, 0.35);
+            color: #bfdbfe;
+        }
+        .mode-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            color: #0f172a;
+        }
+        .mode-icon-combos  { background: #c4b5fd; }
+        .mode-icon-links   { background: #fcd34d; }
+        .mode-icon-reasons { background: #86efac; }
+        .admin-content-col { flex: 1; min-width: 0; }
+
+        @media (max-width: 768px) {
+            .admin-layout { flex-direction: column; gap: 1.25rem; }
+            .mode-bar {
+                position: static;
+                flex: none;
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 0.25rem;
+            }
+            .mode-btn {
+                flex-direction: column;
+                gap: 0.3rem;
+                padding: 0.4rem 0.6rem;
+                border-radius: 0.75rem;
+                font-size: 0.68rem;
+                width: auto;
+                flex: 0 0 auto;
+            }
         }
         .combo-admin-card {
             background: rgba(255,255,255,0.03);
@@ -191,22 +264,78 @@
     </div>
 
     <div id="admin-content" style="display:none;">
-        <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab('pending', this)">
-                <i class="fas fa-clock" style="margin-right:0.35rem;"></i>Pending
-                <span id="pending-count" style="margin-left:0.35rem;opacity:0.6;"></span>
+      <div class="admin-layout">
+        <div class="mode-bar">
+            <button class="mode-btn active" onclick="switchMode('combos', this)">
+                <span class="mode-icon mode-icon-combos"><i class="fas fa-scroll"></i></span>
+                <span>Combos</span>
             </button>
-            <button class="tab-btn" onclick="switchTab('approved', this)">
-                <i class="fas fa-check-circle" style="margin-right:0.35rem;"></i>Approved
+            <button class="mode-btn" onclick="switchMode('links', this)">
+                <span class="mode-icon mode-icon-links"><i class="fas fa-link"></i></span>
+                <span>Synergy Links</span>
             </button>
-            <button class="tab-btn" onclick="switchTab('rejected', this)">
-                <i class="fas fa-times-circle" style="margin-right:0.35rem;"></i>Rejected
+            <button class="mode-btn" onclick="switchMode('reasons', this)">
+                <span class="mode-icon mode-icon-reasons"><i class="fas fa-comment-dots"></i></span>
+                <span>Synergy Reasons</span>
             </button>
         </div>
 
-        <div id="tab-pending"></div>
-        <div id="tab-approved" style="display:none;"></div>
-        <div id="tab-rejected" style="display:none;"></div>
+        <div class="admin-content-col">
+        <div id="mode-combos">
+            <div class="tab-bar">
+                <button class="tab-btn active" data-group="combos" onclick="switchTab('combos', 'pending', this)">
+                    <i class="fas fa-clock" style="margin-right:0.35rem;"></i>Pending
+                    <span id="pending-count-combos" style="margin-left:0.35rem;opacity:0.6;"></span>
+                </button>
+                <button class="tab-btn" data-group="combos" onclick="switchTab('combos', 'approved', this)">
+                    <i class="fas fa-check-circle" style="margin-right:0.35rem;"></i>Approved
+                </button>
+                <button class="tab-btn" data-group="combos" onclick="switchTab('combos', 'rejected', this)">
+                    <i class="fas fa-times-circle" style="margin-right:0.35rem;"></i>Rejected
+                </button>
+            </div>
+            <div id="tab-combos-pending"></div>
+            <div id="tab-combos-approved" style="display:none;"></div>
+            <div id="tab-combos-rejected" style="display:none;"></div>
+        </div>
+
+        <div id="mode-links" style="display:none;">
+            <div class="tab-bar">
+                <button class="tab-btn active" data-group="links" onclick="switchTab('links', 'pending', this)">
+                    <i class="fas fa-clock" style="margin-right:0.35rem;"></i>Pending
+                    <span id="pending-count-links" style="margin-left:0.35rem;opacity:0.6;"></span>
+                </button>
+                <button class="tab-btn" data-group="links" onclick="switchTab('links', 'approved', this)">
+                    <i class="fas fa-check-circle" style="margin-right:0.35rem;"></i>Approved
+                </button>
+                <button class="tab-btn" data-group="links" onclick="switchTab('links', 'rejected', this)">
+                    <i class="fas fa-times-circle" style="margin-right:0.35rem;"></i>Rejected
+                </button>
+            </div>
+            <div id="tab-links-pending"></div>
+            <div id="tab-links-approved" style="display:none;"></div>
+            <div id="tab-links-rejected" style="display:none;"></div>
+        </div>
+
+        <div id="mode-reasons" style="display:none;">
+            <div class="tab-bar">
+                <button class="tab-btn active" data-group="reasons" onclick="switchTab('reasons', 'pending', this)">
+                    <i class="fas fa-clock" style="margin-right:0.35rem;"></i>Pending
+                    <span id="pending-count-reasons" style="margin-left:0.35rem;opacity:0.6;"></span>
+                </button>
+                <button class="tab-btn" data-group="reasons" onclick="switchTab('reasons', 'approved', this)">
+                    <i class="fas fa-check-circle" style="margin-right:0.35rem;"></i>Approved
+                </button>
+                <button class="tab-btn" data-group="reasons" onclick="switchTab('reasons', 'rejected', this)">
+                    <i class="fas fa-times-circle" style="margin-right:0.35rem;"></i>Rejected
+                </button>
+            </div>
+            <div id="tab-reasons-pending"></div>
+            <div id="tab-reasons-approved" style="display:none;"></div>
+            <div id="tab-reasons-rejected" style="display:none;"></div>
+        </div>
+        </div><!-- /.admin-content-col -->
+      </div><!-- /.admin-layout -->
     </div>
 </div>
 

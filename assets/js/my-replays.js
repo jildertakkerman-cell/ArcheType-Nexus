@@ -58,23 +58,48 @@
     // Profile section
     // ------------------------------------------------------------------
 
-    function renderProfile(session) {
+    async function renderProfile(session) {
         const m = session.user.user_metadata || {};
-        const name = m.full_name || m.name || m.user_name || 'Duelist';
+        // profiles.displayname is canonical site-wide; OAuth metadata is fallback
+        const profile = await window.Auth.getProfile().catch(() => null);
+        const name = profile?.displayname || m.full_name || m.name || m.user_name || 'Duelist';
         const discordTag = m.user_name || m.preferred_username || null;
         const avatar = m.avatar_url || null;
+        const avatarSvg = (profile?.usearchetypeavatar && profile?.favorite?.iconsvg) || null;
         const since = session.user.created_at ? 'Member since ' + formatDateShort(session.user.created_at) : 'Duelist';
 
-        // Avatar
+        // Avatar — favorite-archetype icon takes precedence when opted in
         const avatarWrap = document.getElementById('profile-avatar-wrap');
         if (avatarWrap) {
-            if (avatar) {
-                avatarWrap.outerHTML = `<img id="profile-avatar-wrap" class="profile-avatar" src="${avatar}" alt="${name}">`;
+            if (avatarSvg) {
+                avatarWrap.outerHTML = `<div id="profile-avatar-wrap" class="profile-avatar profile-avatar-svg"
+                    style="overflow:hidden;background:#111827;display:flex;align-items:center;justify-content:center;">${avatarSvg}</div>
+                    <style>.profile-avatar-svg svg{width:100%;height:100%;}</style>`;
+            } else if (avatar) {
+                avatarWrap.outerHTML = `<img id="profile-avatar-wrap" class="profile-avatar" src="${avatar}" alt="">`;
+            } else {
+                avatarWrap.outerHTML = `<div class="profile-avatar-fallback" id="profile-avatar-wrap"><i class="fab fa-discord"></i></div>`;
             }
         }
 
         const nameEl = document.getElementById('profile-name');
         if (nameEl) nameEl.textContent = name;
+
+        // Favorite archetype line (icon + name) under the profile name
+        const favEl = document.getElementById('profile-favorite');
+        if (favEl) {
+            if (profile?.favorite) {
+                favEl.innerHTML = `<span class="profile-fav-icon" style="display:inline-flex;width:16px;height:16px;border-radius:50%;overflow:hidden;vertical-align:middle;margin-right:0.3rem;">${profile.favorite.iconsvg || ''}</span>
+                    <style>.profile-fav-icon svg{width:100%;height:100%;}</style>`;
+                const favName = document.createElement('span');
+                favName.textContent = profile.favorite.archetypename;
+                favEl.appendChild(favName);
+                favEl.style.display = '';
+            } else {
+                favEl.innerHTML = '';
+                favEl.style.display = 'none';
+            }
+        }
 
         const badge = document.getElementById('profile-discord-badge');
         const tagEl = document.getElementById('profile-discord-tag');
@@ -85,9 +110,6 @@
 
         const sinceEl = document.getElementById('profile-since');
         if (sinceEl) sinceEl.textContent = since;
-
-        const logoutBtn = document.getElementById('btn-logout');
-        if (logoutBtn) logoutBtn.style.display = '';
     }
 
     // ------------------------------------------------------------------
@@ -118,12 +140,86 @@
     // Render states
     // ------------------------------------------------------------------
 
+    // ------------------------------------------------------------------
+    // Duelist summary (Home panel): win rate + most played archetypes,
+    // computed client-side from the already-loaded replay metadata.
+    // ------------------------------------------------------------------
+
+    function renderDuelistSummary(replays) {
+        const card = document.getElementById('duelist-summary');
+        if (!card) return;
+        if (!replays || replays.length === 0) { card.style.display = 'none'; return; }
+
+        let wins = 0, decided = 0, otks = 0, turnsSum = 0, turnsCount = 0;
+        const tally = {}; // name -> { plays, wins }
+
+        replays.forEach(r => {
+            const m = r.metadata || {};
+            const won = m.winner ? m.winner.player === 0 : null;
+            if (m.winner) {
+                decided++;
+                if (won) wins++;
+                if (m.winner.isOTK) otks++;
+                if (m.winner.turnsToWin) { turnsSum += m.winner.turnsToWin; turnsCount++; }
+            }
+            const arcs = Array.isArray(m.archetypes?.player1) && m.archetypes.player1.length
+                ? m.archetypes.player1
+                : (m.archetype ? [m.archetype] : []);
+            arcs.forEach(name => {
+                if (!name) return;
+                if (!tally[name]) tally[name] = { plays: 0, wins: 0 };
+                tally[name].plays++;
+                if (won) tally[name].wins++;
+            });
+        });
+
+        // Win rate block
+        const rateEl = document.getElementById('summary-winrate');
+        const recordEl = document.getElementById('summary-record');
+        if (rateEl) rateEl.textContent = decided ? Math.round((wins / decided) * 100) + '%' : '—';
+        if (recordEl) {
+            const parts = [];
+            if (decided) parts.push(`${wins}W – ${decided - wins}L`);
+            if (turnsCount) parts.push(`avg ${Math.round(turnsSum / turnsCount)} turns`);
+            if (otks) parts.push(`${otks} OTK${otks === 1 ? '' : 's'}`);
+            recordEl.textContent = parts.join(' · ');
+        }
+
+        // Most played block (top 3)
+        const listEl = document.getElementById('summary-archetypes');
+        if (listEl) {
+            const top = Object.entries(tally)
+                .sort((a, b) => b[1].plays - a[1].plays)
+                .slice(0, 3);
+            listEl.innerHTML = top.length
+                ? top.map(([name, t]) => {
+                    const icon = archetypeIcon(name);
+                    const rate = t.plays ? Math.round((t.wins / t.plays) * 100) : 0;
+                    return `
+                        <div class="summary-arch-row">
+                            <span class="summary-arch-icon">${icon || '<i class="fas fa-layer-group" style="font-size:0.7rem;color:#6b7280;"></i>'}</span>
+                            ${arcLink(name)}
+                            <span class="summary-arch-meta">${t.plays} replay${t.plays === 1 ? '' : 's'} · ${rate}% wins</span>
+                        </div>`;
+                }).join('')
+                : '<div class="summary-sub">No archetype data in your replays yet.</div>';
+        }
+
+        card.style.display = '';
+    }
+
     function renderLoginGate() {
         const nameEl = document.getElementById('profile-name');
         if (nameEl) nameEl.textContent = 'Sign in to view your profile';
 
         const since = document.getElementById('profile-since');
         if (since) since.textContent = 'Connect your account to get started';
+
+        // Logged out: no sidebar nav, just banner + gate stacked
+        const nav = document.getElementById('account-nav');
+        if (nav) nav.style.display = 'none';
+        const replaysPanel = document.getElementById('panel-replays');
+        if (replaysPanel) replaysPanel.style.display = '';
 
         const list = document.getElementById('replay-list');
         if (!list) return;
@@ -183,37 +279,26 @@
             : name;
     }
 
+    // Win/loss chip lives in the card header line, next to the date
+    function buildResultChip(m) {
+        if (!m.winner) return '';
+        const isWin = m.winner.player === 0;
+        const turns = m.winner.turnsToWin ? ` · ${m.winner.turnsToWin}T` : '';
+        const otk = m.winner.isOTK ? ' · OTK' : '';
+        const cls = isWin ? 'badge-win' : 'badge-loss';
+        return `<span class="replay-badge ${cls}">${isWin ? 'WIN' : 'LOSS'}${turns}${otk}</span>`;
+    }
+
+    // Meta strip is tags-only now — cards without tags stay two rows tall
     function buildMetaStrip(m) {
-        const items = [];
-
-        if (m.winner) {
-            const isWin = m.winner.player === 0;
-            const turns = m.winner.turnsToWin ? ` · ${m.winner.turnsToWin}T` : '';
-            const icon = isWin ? 'fa-trophy' : 'fa-times-circle';
-            const cls  = isWin ? 'badge-win' : 'badge-loss';
-            const label = isWin ? 'WIN' : 'LOSS';
-            items.push(`<span class="replay-badge ${cls}"><i class="fas ${icon}" style="font-size:0.65rem;"></i> ${label}${turns}</span>`);
-            if (m.winner.isOTK) {
-                items.push(`<span class="replay-badge badge-otk">OTK</span>`);
-            }
+        if (!Array.isArray(m.tags) || !m.tags.length) return '';
+        const unique = [...new Set(m.tags)];
+        const items = unique.slice(0, 2).map(tag => `<span class="replay-badge badge-tag">${tag}</span>`);
+        if (unique.length > 2) {
+            const rest = unique.slice(2).join(', ').replace(/"/g, '&quot;');
+            items.push(`<span class="replay-badge badge-more" title="${rest}">+${unique.length - 2}</span>`);
         }
-
-        if (m.interactions && (m.interactions.chains !== undefined || m.interactions.negates !== undefined)) {
-            if (items.length) items.push('<span class="rbadge-sep"></span>');
-            if (m.interactions.chains !== undefined) {
-                items.push(`<span class="replay-badge badge-stat" title="Chains"><i class="fas fa-link" style="font-size:0.65rem;"></i> ${m.interactions.chains}</span>`);
-            }
-            if (m.interactions.negates !== undefined) {
-                items.push(`<span class="replay-badge badge-stat" title="Negates"><i class="fas fa-ban" style="font-size:0.65rem;"></i> ${m.interactions.negates}</span>`);
-            }
-        }
-
-        if (Array.isArray(m.tags) && m.tags.length) {
-            if (items.length) items.push('<span class="rbadge-sep"></span>');
-            m.tags.forEach(tag => items.push(`<span class="replay-badge badge-tag">${tag}</span>`));
-        }
-
-        return items.length ? `<div class="replay-meta-strip">${items.join('')}</div>` : '';
+        return `<div class="replay-meta-strip">${items.join('')}</div>`;
     }
 
     function buildComboSection(replay, combo, hasJson) {
@@ -308,7 +393,10 @@
                         <div class="replay-arc">${arcDisplay}</div>
                         <div class="replay-names">${names}</div>
                     </div>
-                    <div class="replay-date">${date}</div>
+                    <div class="replay-side">
+                        ${buildResultChip(m)}
+                        <span class="replay-date">${date}</span>
+                    </div>
                 </div>
                 ${metaStrip}
                 <div class="replay-card-footer">
@@ -328,9 +416,10 @@
                     <div style="display:flex;align-items:center;gap:0.75rem;">
                         <select class="vis-select" data-id="${replay.replayid}"
                                 onchange="updateVisibility(this)"
+                                title="Who can see this replay"
                                 style="font-family:inherit;">
-                            <option value="private" ${replay.visibility === 'private' ? 'selected' : ''}>🔒 Private</option>
-                            <option value="public" ${replay.visibility === 'public' ? 'selected' : ''}>🌐 Public</option>
+                            <option value="private" ${replay.visibility === 'private' ? 'selected' : ''}>Private</option>
+                            <option value="public" ${replay.visibility === 'public' ? 'selected' : ''}>Public</option>
                         </select>
                         <button class="btn-delete" data-id="${replay.replayid}" onclick="deleteReplay(this)"
                                 title="Delete replay">
@@ -703,6 +792,513 @@
     // Boot
     // ------------------------------------------------------------------
 
+    // ------------------------------------------------------------------
+    // Profile Settings (display name, favorite archetype, avatar toggle)
+    // ------------------------------------------------------------------
+
+    let _settingsFavorite = null; // { archetypeid, archetypename, iconsvg } or null
+
+    let _oauthAvatar = null; // OAuth avatar URL, for the chip preview fallback
+
+    function _setFavoriteSelection(fav) {
+        _settingsFavorite = fav;
+        const row = document.getElementById('setting-fav-selected');
+        const iconEl = document.getElementById('setting-fav-icon');
+        const nameEl = document.getElementById('setting-fav-name');
+        const avatarToggle = document.getElementById('setting-archetype-avatar');
+        if (!row) return;
+        if (fav) {
+            iconEl.innerHTML = fav.iconsvg || '';
+            nameEl.textContent = fav.archetypename;
+            row.style.display = '';
+            if (avatarToggle) avatarToggle.disabled = false;
+        } else {
+            row.style.display = 'none';
+            if (avatarToggle) { avatarToggle.checked = false; avatarToggle.disabled = true; }
+        }
+        updateChipPreview();
+    }
+
+    // Live preview of the header chip, driven by the current form state
+    function updateChipPreview() {
+        const preview = document.getElementById('chip-preview');
+        if (!preview) return;
+        const name = document.getElementById('setting-displayname')?.value.trim() || 'Duelist';
+        const useArchAvatar = document.getElementById('setting-archetype-avatar')?.checked;
+        let avatarHtml;
+        if (useArchAvatar && _settingsFavorite?.iconsvg) {
+            avatarHtml = `<span class="chip-avatar">${_settingsFavorite.iconsvg}</span>`;
+        } else if (_oauthAvatar) {
+            avatarHtml = `<span class="chip-avatar"><img src="${window.escapeHtml(_oauthAvatar)}" alt=""></span>`;
+        } else {
+            avatarHtml = `<span class="chip-avatar"><i class="fas fa-user-circle" style="color:#a3a3a3;"></i></span>`;
+        }
+        preview.innerHTML = `${avatarHtml}<span>${window.escapeHtml(name)}</span>`;
+    }
+
+    function renderAccountInfo(session, profile) {
+        const card = document.getElementById('account-info-card');
+        if (!card) return;
+        card.style.display = '';
+
+        const provider = session.user.app_metadata?.provider
+            || session.user.identities?.[0]?.provider || null;
+        const providerEl = document.getElementById('account-provider');
+        if (providerEl && provider) {
+            const isDiscord = provider === 'discord';
+            providerEl.innerHTML = `<span class="provider-chip ${isDiscord ? 'provider-discord' : 'provider-google'}">
+                <i class="${isDiscord ? 'fab fa-discord' : 'fab fa-google'}"></i>${isDiscord ? 'Discord' : 'Google'}</span>`;
+        }
+
+        const emailEl = document.getElementById('account-email');
+        if (emailEl) emailEl.textContent = session.user.email || '—';
+
+        const sinceEl = document.getElementById('account-since');
+        if (sinceEl) sinceEl.textContent = session.user.created_at ? formatDateShort(session.user.created_at) : '—';
+
+        if (profile?.role === 'moderator' || profile?.role === 'admin') {
+            const row = document.getElementById('account-role-row');
+            const roleEl = document.getElementById('account-role');
+            if (row && roleEl) {
+                roleEl.innerHTML = `<span class="role-chip">${window.escapeHtml(profile.role)}</span>`;
+                row.style.display = '';
+            }
+        }
+
+        const ncEl = document.getElementById('account-namechange');
+        if (ncEl) {
+            if (profile?.namechangedon) {
+                const nextAllowed = new Date(new Date(profile.namechangedon).getTime() + 7 * 24 * 3600 * 1000);
+                ncEl.textContent = nextAllowed > new Date()
+                    ? `Available ${nextAllowed.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
+                    : 'Available now';
+            } else {
+                ncEl.textContent = 'Available now';
+            }
+        }
+    }
+
+    function _setSettingsStatus(msg, ok) {
+        const el = document.getElementById('setting-status');
+        if (!el) return;
+        el.textContent = msg;
+        el.className = 'settings-status ' + (ok ? 'ok' : 'err');
+        if (ok) setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 4000);
+    }
+
+    async function initProfileSettings() {
+        const card = document.getElementById('settings-card');
+        if (!card) return;
+        card.style.display = '';
+
+        const session = await window.Auth.getSession();
+        _oauthAvatar = session?.user?.user_metadata?.avatar_url
+            || session?.user?.user_metadata?.picture || null;
+
+        // Populate current values
+        const profile = await window.Auth.getProfile().catch(() => null);
+        if (session) renderAccountInfo(session, profile);
+        const nameInput = document.getElementById('setting-displayname');
+        const counter = document.getElementById('setting-name-counter');
+        if (profile) {
+            nameInput.value = profile.displayname || '';
+            if (profile.favorite) {
+                _setFavoriteSelection({
+                    archetypeid: profile.favoritearchetypeid,
+                    archetypename: profile.favorite.archetypename,
+                    iconsvg: profile.favorite.iconsvg,
+                });
+            } else {
+                _setFavoriteSelection(null);
+            }
+            const avatarToggle = document.getElementById('setting-archetype-avatar');
+            avatarToggle.checked = !!profile.usearchetypeavatar;
+            avatarToggle.disabled = !profile.favorite;
+            const hideBadge = document.getElementById('setting-hide-badge');
+            if (hideBadge) hideBadge.checked = !!profile.hidefavbadge;
+        }
+
+        const updateCounter = () => { counter.textContent = `${nameInput.value.length} / 24`; };
+        nameInput.addEventListener('input', () => { updateCounter(); updateChipPreview(); });
+        document.getElementById('setting-archetype-avatar')?.addEventListener('change', updateChipPreview);
+        updateCounter();
+        updateChipPreview();
+
+        // Favorite archetype search (curated archetypes only — same rule as
+        // synergy links: iconsvg is not null)
+        const searchInput = document.getElementById('setting-favorite-search');
+        const resultsEl = document.getElementById('setting-fav-results');
+        let searchTimer = null;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(async () => {
+                const q = searchInput.value.trim();
+                if (q.length < 2) { resultsEl.innerHTML = ''; return; }
+                const client = window.Auth._getClient();
+                const { data } = await client
+                    .from('archetypes')
+                    .select('archetypeid, archetypename, iconsvg')
+                    .ilike('archetypename', `%${q}%`)
+                    .not('iconsvg', 'is', null)
+                    .limit(6);
+                resultsEl.innerHTML = (data || []).map((a, i) => `
+                    <div class="settings-fav-result" data-idx="${i}">
+                        <span class="settings-fav-result-icon">${a.iconsvg || ''}</span>
+                        <span>${window.escapeHtml(a.archetypename)}</span>
+                    </div>`).join('');
+                resultsEl.querySelectorAll('.settings-fav-result').forEach(el => {
+                    el.addEventListener('click', () => {
+                        _setFavoriteSelection(data[parseInt(el.dataset.idx, 10)]);
+                        resultsEl.innerHTML = '';
+                        searchInput.value = '';
+                    });
+                });
+            }, 250);
+        });
+
+        document.getElementById('setting-fav-clear').addEventListener('click', () => _setFavoriteSelection(null));
+
+        // Save
+        const saveBtn = document.getElementById('btn-save-settings');
+        saveBtn.addEventListener('click', async () => {
+            const session = await window.Auth.getSession();
+            if (!session) return;
+            const newName = nameInput.value.trim();
+            if (newName.length < 3 || newName.length > 24) {
+                _setSettingsStatus('Display name must be between 3 and 24 characters.', false);
+                return;
+            }
+            saveBtn.disabled = true;
+            const client = window.Auth._getClient();
+            const { error } = await client
+                .from('profiles')
+                .update({
+                    displayname: newName,
+                    favoritearchetypeid: _settingsFavorite?.archetypeid ?? null,
+                    usearchetypeavatar: document.getElementById('setting-archetype-avatar').checked,
+                    hidefavbadge: document.getElementById('setting-hide-badge')?.checked ?? false,
+                })
+                .eq('userid', session.user.id);
+            saveBtn.disabled = false;
+
+            if (error) {
+                // DB trigger messages (rate limit, length) are user-friendly — show verbatim
+                _setSettingsStatus(error.message || 'Could not save right now.', false);
+                return;
+            }
+            _setSettingsStatus('Saved!', true);
+            // Refresh the cached profile, the header chip, and the banner
+            await window.Auth.refreshProfile();
+            renderProfile(session);
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // Settings extras: bulk replay privacy + danger zone.
+    // Wired after replayCache is loaded (needs the counts / ids).
+    // ------------------------------------------------------------------
+
+    function _refreshPrivacySummary() {
+        const summaryEl = document.getElementById('privacy-summary');
+        const countEl = document.getElementById('danger-count');
+        const pub = replayCache.filter(r => r.visibility === 'public').length;
+        if (summaryEl) summaryEl.textContent = `Your replays: ${pub} public · ${replayCache.length - pub} private`;
+        if (countEl) countEl.textContent = `all ${replayCache.length}`;
+    }
+
+    async function _bulkSetVisibility(value, statusEl) {
+        const ids = replayCache.map(r => r.replayid);
+        if (!ids.length) { statusEl.textContent = 'No replays to update.'; statusEl.className = 'settings-status err'; return; }
+        if (!confirm(`Make all ${ids.length} replays ${value}?`)) return;
+        try {
+            const client = window.Auth._getClient();
+            const { error } = await client.from('replays').update({ visibility: value }).in('replayid', ids);
+            if (error) throw error;
+            replayCache.forEach(r => { r.visibility = value; });
+            renderStats(replayCache);
+            _refreshPrivacySummary();
+            const list = document.getElementById('replay-list');
+            if (list) renderList(list, replayCache, combosByReplayId);
+            statusEl.textContent = `All replays are now ${value}.`;
+            statusEl.className = 'settings-status ok';
+        } catch (e) {
+            statusEl.textContent = 'Failed: ' + e.message;
+            statusEl.className = 'settings-status err';
+        }
+    }
+
+    function initSettingsExtras() {
+        const privacyCard = document.getElementById('replay-privacy-card');
+        const dangerCard = document.getElementById('danger-zone-card');
+        if (privacyCard) privacyCard.style.display = '';
+        if (dangerCard) dangerCard.style.display = '';
+        _refreshPrivacySummary();
+
+        const privacyStatus = document.getElementById('privacy-status');
+        document.getElementById('btn-all-public')?.addEventListener('click', () => _bulkSetVisibility('public', privacyStatus));
+        document.getElementById('btn-all-private')?.addEventListener('click', () => _bulkSetVisibility('private', privacyStatus));
+
+        // Danger zone: type-to-confirm bulk delete
+        const confirmInput = document.getElementById('danger-confirm');
+        const deleteBtn = document.getElementById('btn-delete-all');
+        const dangerStatus = document.getElementById('danger-status');
+        if (confirmInput && deleteBtn) {
+            confirmInput.addEventListener('input', () => {
+                deleteBtn.disabled = confirmInput.value.trim() !== 'DELETE';
+            });
+            deleteBtn.addEventListener('click', async () => {
+                const ids = replayCache.map(r => r.replayid);
+                if (!ids.length) { dangerStatus.textContent = 'No replays to delete.'; dangerStatus.className = 'settings-status err'; return; }
+                if (!confirm(`Permanently delete all ${ids.length} replays? This cannot be undone.`)) return;
+                deleteBtn.disabled = true;
+                try {
+                    const client = window.Auth._getClient();
+                    const { error } = await client.from('replays').delete().in('replayid', ids);
+                    if (error) throw error;
+                    replayCache = [];
+                    combosByReplayId = {};
+                    renderStats(replayCache);
+                    renderDuelistSummary(replayCache);
+                    _refreshPrivacySummary();
+                    const list = document.getElementById('replay-list');
+                    if (list) renderEmpty(list);
+                    confirmInput.value = '';
+                    dangerStatus.textContent = 'All replays deleted.';
+                    dangerStatus.className = 'settings-status ok';
+                } catch (e) {
+                    deleteBtn.disabled = false;
+                    dangerStatus.textContent = 'Failed: ' + e.message;
+                    dangerStatus.className = 'settings-status err';
+                }
+            });
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Synergy Activity panel — the user's own pairings, explanations, votes.
+    // Loaded lazily on first open; RLS scopes everything to the signed-in
+    // user (own rows visible regardless of moderation status).
+    // ------------------------------------------------------------------
+
+    let _synergyActivityLoaded = false;
+
+    async function loadSynergyActivity() {
+        if (_synergyActivityLoaded) return;
+        _synergyActivityLoaded = true;
+
+        const session = await window.Auth.getSession();
+        if (!session) return;
+        const uid = session.user.id;
+        const client = window.Auth._getClient();
+        const esc = window.escapeHtml;
+
+        const A1 = 'a1:archetypes!archetypelinks_archetypeid1_fkey(archetypename, iconsvg)';
+        const A2 = 'a2:archetypes!archetypelinks_archetypeid2_fkey(archetypename, iconsvg)';
+
+        // archetypes-data.js is already loaded on this page — map archetype
+        // names to their analysis-page paths for clickable links.
+        // DB names drift from page names ("Swamp" vs "of the Swamp",
+        // "Snake-Eye" vs "Snake-Eyes"), so match in tiers: exact → normalized
+        // (letters/digits only) → unique prefix/suffix containment. A link is
+        // only produced when the match is unambiguous.
+        const pageEntries = [];
+        if (typeof archetypes !== 'undefined' && Array.isArray(archetypes)) {
+            archetypes.forEach(a => {
+                if (a.name && a.filepath) {
+                    const lower = a.name.toLowerCase();
+                    pageEntries.push({ lower, norm: lower.replace(/[^a-z0-9]/g, ''), filepath: a.filepath });
+                }
+            });
+        }
+
+        function findPage(name) {
+            const lower = name.toLowerCase();
+            let hit = pageEntries.find(p => p.lower === lower);
+            if (hit) return hit.filepath;
+            const norm = lower.replace(/[^a-z0-9]/g, '');
+            if (norm.length < 3) return null;
+            hit = pageEntries.find(p => p.norm === norm);
+            if (hit) return hit.filepath;
+            // Containment tier: guard against tiny norms producing false
+            // positives (e.g. "Fairy Tail" must not match page "F.A." via "fa")
+            const candidates = pageEntries.filter(p =>
+                p.norm.startsWith(norm) || p.norm.endsWith(norm) ||
+                (p.norm.length >= 5 && norm.startsWith(p.norm)));
+            return candidates.length === 1 ? candidates[0].filepath : null;
+        }
+
+        function archHtml(side) {
+            if (!side) return '<span>?</span>';
+            const name = side.archetypename || '?';
+            const icon = side.iconsvg ? `<span class="activity-arch-icon">${side.iconsvg}</span>` : '';
+            const filepath = findPage(name);
+            if (filepath) {
+                return `<a class="activity-arch" href="../${esc(filepath)}" title="Open the ${esc(name)} page">${icon}${esc(name)}</a>`;
+            }
+            return `<span class="activity-arch">${icon}${esc(name)}</span>`;
+        }
+
+        const pairName = l => l ? `${archHtml(l.a1)} <span class="activity-pair-sep">↔</span> ${archHtml(l.a2)}` : 'Unknown pairing';
+        const chip = s => `<span class="status-chip ${esc(s)}">${esc(s)}</span>`;
+        const container = document.getElementById('activity-groups');
+        if (!container) return;
+
+        // ---- Fetch everything, then regroup by pairing (linkid) ----------
+        let links = [], reasons = [], linkVotes = [], reasonVotes = [];
+        try {
+            [links, reasons, linkVotes, reasonVotes] = (await Promise.all([
+                client.from('archetypelinks')
+                    .select(`linkid, status, modnotes, createdon, ${A1}, ${A2}`)
+                    .eq('submittedby', uid),
+                client.from('archetypelinkreasons')
+                    .select(`reasonid, linkid, body, status, modnotes, createdon,
+                        archetypelinkreasonvotes(value),
+                        archetypelinks!archetypelinkreasons_linkid_fkey(linkid, ${A1}, ${A2})`)
+                    .eq('userid', uid),
+                client.from('archetypelinkvotes')
+                    .select(`linkid, value, createdon, archetypelinks!archetypelinkvotes_linkid_fkey(linkid, ${A1}, ${A2})`)
+                    .eq('userid', uid),
+                client.from('archetypelinkreasonvotes')
+                    .select(`value, createdon,
+                        archetypelinkreasons!archetypelinkreasonvotes_reasonid_fkey(body, linkid,
+                            archetypelinks!archetypelinkreasons_linkid_fkey(linkid, ${A1}, ${A2}))`)
+                    .eq('userid', uid),
+            ])).map(r => r.data || []);
+        } catch (e) {
+            container.innerHTML = '<div class="activity-empty">Could not load your synergy activity.</div>';
+            return;
+        }
+
+        // groups: linkid -> { pair, suggested, items[] }
+        const groups = new Map();
+        function group(linkid, pair) {
+            if (!groups.has(linkid)) groups.set(linkid, { pair, suggested: null, items: [] });
+            const g = groups.get(linkid);
+            if (!g.pair && pair) g.pair = pair;
+            return g;
+        }
+
+        links.forEach(l => { group(l.linkid, l).suggested = l; });
+        reasons.forEach(r => {
+            group(r.linkid, r.archetypelinks).items.push({
+                type: 'reason', createdon: r.createdon,
+                body: r.body, status: r.status, modnotes: r.modnotes,
+                score: (r.archetypelinkreasonvotes || []).reduce((s, v) => s + v.value, 0),
+            });
+        });
+        linkVotes.forEach(v => {
+            group(v.linkid, v.archetypelinks).items.push({ type: 'linkvote', createdon: v.createdon, value: v.value });
+        });
+        reasonVotes.forEach(v => {
+            const reason = v.archetypelinkreasons;
+            if (!reason) return;
+            group(reason.linkid, reason.archetypelinks).items.push({
+                type: 'reasonvote', createdon: v.createdon, value: v.value, body: reason.body,
+            });
+        });
+
+        if (groups.size === 0) {
+            container.innerHTML = `<div class="activity-empty">
+                No synergy activity yet — open any archetype page and hit the
+                <strong>🔗 Pairs Well With</strong> button to vote or suggest a pairing.</div>`;
+            return;
+        }
+
+        // ---- Render: newest activity first, pairing shown once per group ----
+        const newest = g => Math.max(
+            g.suggested ? Date.parse(g.suggested.createdon) : 0,
+            ...g.items.map(i => Date.parse(i.createdon) || 0)
+        );
+
+        const voteGlyph = v => `<span class="subrow-glyph vote-dir ${v === 1 ? 'up' : 'down'}">${v === 1 ? '▲' : '▼'}</span>`;
+        const clip = (s, n) => esc((s || '').slice(0, n)) + ((s || '').length > n ? '…' : '');
+
+        container.innerHTML = [...groups.values()]
+            .sort((a, b) => newest(b) - newest(a))
+            .map(g => {
+                const header = `
+                    <div class="activity-group-header">
+                        ${pairName(g.pair)}
+                        ${g.suggested ? chip(g.suggested.status) : ''}
+                        ${g.suggested ? `<span class="activity-group-meta">Suggested by you · ${formatDateShort(g.suggested.createdon)}</span>` : ''}
+                    </div>
+                    ${g.suggested?.status === 'rejected' && g.suggested.modnotes
+                        ? `<div class="activity-group-notes">Mod notes: ${esc(g.suggested.modnotes)}</div>` : ''}`;
+
+                const rows = g.items
+                    .sort((a, b) => Date.parse(b.createdon) - Date.parse(a.createdon))
+                    .map(item => {
+                        if (item.type === 'reason') {
+                            return `
+                                <div class="activity-subrow">
+                                    <span class="subrow-glyph glyph-reason">✎</span>
+                                    <div class="subrow-content">"${esc(item.body)}"
+                                        ${item.status === 'rejected' && item.modnotes ? `<div class="activity-group-notes">Mod notes: ${esc(item.modnotes)}</div>` : ''}
+                                    </div>
+                                    <div class="subrow-meta">${item.score >= 0 ? '+' : ''}${item.score} ${chip(item.status)}</div>
+                                </div>`;
+                        }
+                        if (item.type === 'linkvote') {
+                            return `
+                                <div class="activity-subrow">
+                                    ${voteGlyph(item.value)}
+                                    <div class="subrow-content">You ${item.value === 1 ? 'upvoted' : 'downvoted'} this pairing</div>
+                                    <div class="subrow-meta">${formatDateShort(item.createdon)}</div>
+                                </div>`;
+                        }
+                        return `
+                            <div class="activity-subrow">
+                                ${voteGlyph(item.value)}
+                                <div class="subrow-content">You ${item.value === 1 ? 'upvoted' : 'downvoted'} an explanation: "${clip(item.body, 60)}"</div>
+                                <div class="subrow-meta">${formatDateShort(item.createdon)}</div>
+                            </div>`;
+                    }).join('');
+
+                return `<div class="activity-group">${header}${rows}</div>`;
+            }).join('');
+    }
+
+    // ------------------------------------------------------------------
+    // Account sidebar navigation (Google-Account style panels)
+    // ------------------------------------------------------------------
+
+    function initAccountNav() {
+        const nav = document.getElementById('account-nav');
+        if (!nav) return;
+
+        const panels = { home: 'panel-home', settings: 'panel-settings', replays: 'panel-replays', synergies: 'panel-synergies' };
+
+        function show(name) {
+            if (!panels[name]) name = 'home';
+            Object.entries(panels).forEach(([key, id]) => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = key === name ? '' : 'none';
+            });
+            nav.querySelectorAll('.account-nav-item[data-panel]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.panel === name);
+            });
+            if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+            if (name === 'synergies') loadSynergyActivity();
+        }
+
+        nav.querySelectorAll('.account-nav-item[data-panel]').forEach(btn => {
+            btn.addEventListener('click', () => show(btn.dataset.panel));
+        });
+        window.addEventListener('hashchange', () => show(location.hash.slice(1) || 'home'));
+        show(location.hash.slice(1) || 'home');
+
+        // Admin item for moderators only
+        window.Auth.isModerator().then(isMod => {
+            if (isMod) {
+                const adminItem = document.getElementById('account-nav-admin');
+                if (adminItem) adminItem.style.display = '';
+            }
+        });
+
+        const logoutItem = document.getElementById('account-nav-logout');
+        if (logoutItem) logoutItem.addEventListener('click', () => window.Auth.signOut());
+    }
+
     async function init() {
         const list = document.getElementById('replay-list');
         if (!list) return;
@@ -716,22 +1312,8 @@
         }
 
         renderProfile(session);
-
-        // Show admin link for moderators/admins
-        (async () => {
-            const c = window.Auth._getClient();
-            const { data: profile } = await c.from('profiles').select('role').eq('userid', session.user.id).single();
-            if (profile && ['moderator', 'admin'].includes(profile.role)) {
-                const logoutBtn = document.getElementById('btn-logout');
-                if (logoutBtn) {
-                    const link = document.createElement('a');
-                    link.href = '../pages/Admin.html';
-                    link.innerHTML = '<i class="fas fa-shield-alt" style="margin-right:0.35rem;font-size:0.75rem;"></i>Admin';
-                    link.style.cssText = 'color:#f59e0b;font-size:0.8rem;font-weight:600;text-decoration:none;margin-right:0.75rem;';
-                    logoutBtn.parentNode.insertBefore(link, logoutBtn);
-                }
-            }
-        })();
+        initProfileSettings();
+        initAccountNav();
 
         // Show the section bar and wire up the file input
         const listHeader = document.getElementById('list-header');
@@ -769,7 +1351,9 @@
             }
 
             renderStats(replayCache);
+            renderDuelistSummary(replayCache);
             renderList(list, replayCache, combosByReplayId);
+            initSettingsExtras();
         } catch (e) {
             renderError(list, 'Failed to load replays: ' + e.message);
         }
