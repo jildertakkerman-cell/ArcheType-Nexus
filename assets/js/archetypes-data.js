@@ -18537,7 +18537,7 @@ const archetypes = [
     },
 
     {
-        name: 'Koaki Meiru',
+        name: 'Koa\'ki Meiru',
         description: 'A unique archetype focused on restriction-based gameplay, requiring players to maintain specific cards in hand to prevent their monsters from self-destructing while providing powerful elemental effects.',
         filepath: 'pages/Koaki Meiru Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">

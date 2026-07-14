@@ -39,28 +39,58 @@
 
         .synergy-popover {
             display: none;
-            position: absolute; top: calc(100% + 0.6rem); left: 50%; transform: translateX(-50%);
-            width: min(380px, 90vw); z-index: 60;
+            position: absolute; width: min(380px, 90vw); z-index: 60;
             background: #0d1210; border: 1px solid rgba(245,158,11,0.35); border-radius: 0.85rem;
             box-shadow: 0 20px 40px rgba(0,0,0,0.7);
             padding: 0.9rem 0.95rem 1.05rem;
+            
+            /* Default: Mobile bottom bar styling (pops UPWARDS) */
+            top: auto; bottom: calc(100% + 1rem); left: 50%; transform: translateX(-50%);
         }
-        .synergy-popover.open { display: block; animation: popIn 0.15s ease-out; }
-        @keyframes popIn { from { opacity: 0; transform: translateX(-50%) translateY(-6px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .synergy-popover.open { display: block; animation: popInMobile 0.15s ease-out; }
+        @keyframes popInMobile { from { opacity: 0; transform: translateX(-50%) translateY(6px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        
         .synergy-popover::before {
-            content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(45deg);
-            width: 12px; height: 12px; background: #0d1210; border-left: 1px solid rgba(245,158,11,0.35); border-top: 1px solid rgba(245,158,11,0.35);
+            content: ''; position: absolute; width: 12px; height: 12px; background: #0d1210;
+            top: auto; bottom: -6px; left: 50%; transform: translateX(-50%) rotate(45deg);
+            border-right: 1px solid rgba(245,158,11,0.35); border-bottom: 1px solid rgba(245,158,11,0.35);
+        }
+
+        @media (min-width: 1024px) {
+            .synergy-popover {
+                /* Desktop toolbar styling (drops DOWN below the resource bar) */
+                top: calc(100% + 0.9rem); bottom: auto; left: 50%; transform: translateX(-50%);
+            }
+            .synergy-popover.open { animation: popInDesktop 0.15s ease-out; }
+            @keyframes popInDesktop { from { opacity: 0; transform: translateX(-50%) translateY(-6px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+            .synergy-popover::before {
+                top: -6px; bottom: auto; left: 50%; transform: translateX(-50%) rotate(45deg);
+                border-right: none; border-bottom: none; border-left: 1px solid rgba(245,158,11,0.35); border-top: 1px solid rgba(245,158,11,0.35);
+            }
         }
         .synergy-popover-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; }
         .synergy-popover-title { font-size: 0.75rem; font-weight: 700; color: #f5f5f5; text-transform: uppercase; letter-spacing: 0.03em; }
         .synergy-popover-close { color: #6b8480; cursor: pointer; font-size: 0.95rem; line-height: 1; padding: 0.1rem; }
         .synergy-popover-close:hover { color: #cfe4e0; }
 
-        .synergy-popover .tier-list { display: flex; flex-direction: column; gap: 0.35rem; }
+        .synergy-popover .tier-list {
+            display: flex; flex-direction: column; gap: 0.35rem;
+            /* Bound the popover height: comment threads and long lists scroll
+               here instead of pushing the popover past the viewport edge. */
+            max-height: min(45vh, 380px); overflow-y: auto;
+            scrollbar-width: thin; scrollbar-color: #2a3634 transparent;
+            padding-right: 2px;
+        }
+        .synergy-popover .search-results {
+            max-height: 240px; overflow-y: auto;
+            scrollbar-width: thin; scrollbar-color: #2a3634 transparent;
+            display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;
+        }
         .synergy-popover .tier-row {
             position: relative; display: flex; align-items: stretch; min-height: 46px;
             border-radius: 0.5rem; overflow: hidden; background: #141b19; border: 1px solid #22302c;
-            cursor: pointer; transition: border-color 0.15s;
+            transition: border-color 0.15s;
         }
         .synergy-popover .tier-row:hover { border-color: #2f423c; }
         .synergy-popover .tier-bar {
@@ -83,13 +113,58 @@
             padding: 0.35rem 0.6rem; position: relative;
         }
         .synergy-popover .tier-name { font-size: 0.78rem; font-weight: 700; color: #f5f5f5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Icon + name link portion of a row (controls sit outside it, so a
+           near-miss on the vote arrows can't navigate) */
+        .synergy-popover .tier-link {
+            flex: 1; min-width: 0; display: flex; align-items: center;
+            text-decoration: none; color: inherit;
+        }
+        .synergy-popover .tier-link.has-page { cursor: pointer; }
+        .synergy-popover .tier-name-wrap { flex: 1; min-width: 0; padding: 0.4rem 0.5rem 0.4rem 0.2rem; }
+        .synergy-popover .tier-teaser {
+            font-size: 0.64rem; color: #6b8480; line-height: 1.35; margin-top: 0.12rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .synergy-popover .tier-link .goto {
+            opacity: 0; margin-left: 0.3rem; color: #fbbf24; font-size: 0.7rem; transition: opacity 0.15s;
+        }
+        .synergy-popover .tier-link.has-page:hover .goto { opacity: 1; }
+        .synergy-popover .tier-link.has-page:hover .tier-name { color: #fbbf24; }
+        .synergy-popover .reddit-controls { padding-right: 0.6rem; }
+
+        /* Native buttons (a11y) keep the old div styling */
+        .synergy-popover button { font: inherit; cursor: pointer; }
+        .synergy-popover button.vote-arrow { background: transparent; border: none; padding: 0; }
+        .synergy-popover button.add-comment-link {
+            background: transparent; border: none; padding: 0;
+            border-bottom: 1px dashed rgba(245,158,11,0.4);
+        }
+
+        .synergy-popover .show-all-link {
+            width: 100%; text-align: center; font-size: 0.68rem; font-weight: 700;
+            color: #f59e0b; background: transparent;
+            border: 1px dashed rgba(245,158,11,0.3); border-radius: 0.5rem;
+            padding: 0.35rem; margin-top: 0.1rem; flex-shrink: 0;
+        }
+        .synergy-popover .show-all-link:hover { background: rgba(245,158,11,0.07); }
+
+        .synergy-popover .syn-skeleton {
+            height: 46px; border-radius: 0.5rem; flex-shrink: 0;
+            background: linear-gradient(90deg, #141b19 25%, #1c2724 50%, #141b19 75%);
+            background-size: 200% 100%;
+            animation: synShimmer 1.1s linear infinite;
+        }
+        @keyframes synShimmer { to { background-position: -200% 0; } }
         .synergy-popover .reddit-controls { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.55rem; flex-shrink: 0; }
         .synergy-popover .vote-pill {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 0.1rem; padding: 0.1rem 0.3rem; border-radius: 999px; background: #0f1a17; border: 1px solid #22302c;
+            /* Kept compact on purpose: arrows + count must total under the
+               46px row min-height or the pill overflows the row borders. */
+            gap: 0; padding: 0.08rem 0.28rem; border-radius: 999px; background: #0f1a17; border: 1px solid #22302c;
         }
         .synergy-popover .vote-arrow {
-            width: 1rem; height: 1rem; display: flex; align-items: center; justify-content: center;
+            width: 1rem; height: 0.85rem; display: flex; align-items: center; justify-content: center;
             cursor: pointer; border-radius: 0.3rem; color: #6b8480; transition: all 0.1s;
         }
         .synergy-popover .vote-arrow:hover { background: rgba(255,255,255,0.06); color: #cfe4e0; }
@@ -98,7 +173,7 @@
         .synergy-popover .vote-arrow.down.active { color: #7193FF; }
         .synergy-popover .vote-arrow.down.active:hover { background: rgba(113,147,255,0.12); }
         .synergy-popover .vote-arrow svg { width: 0.75rem; height: 0.75rem; fill: currentColor; }
-        .synergy-popover .vote-total { font-size: 0.7rem; font-weight: 800; color: #d7dadc; min-width: 1.2rem; text-align: center; transition: color 0.15s; }
+        .synergy-popover .vote-total { font-size: 0.7rem; font-weight: 800; color: #d7dadc; min-width: 1.2rem; line-height: 1.1; text-align: center; transition: color 0.15s; }
         .synergy-popover .vote-total.up-colored { color: #FF4500; }
         .synergy-popover .vote-total.down-colored { color: #7193FF; }
         .synergy-popover .comment-pill {
@@ -218,3 +293,123 @@
             font-size: 0.66rem; color: #6b8480; cursor: pointer; margin-left: auto;
         }
         .synergy-login-prompt .login-prompt-dismiss:hover { color: #cfe4e0; }
+
+/* ============================================================
+   Deck Resources Toolbar (desktop redesign)
+   On mobile (<1024px) the nav keeps its fixed bottom-dock look,
+   driven by the Tailwind utilities in each page. On desktop the
+   rules below pull the bar out of its fixed left-sidebar position
+   and render it as an in-flow, centered pill toolbar sitting
+   directly under the page banner, matching the content column.
+   Targeted via :has() so no per-page markup changes are needed.
+   ============================================================ */
+@media (min-width: 1024px) {
+    nav:has(> #deck-resources-compact) {
+        /* relative (not static) so z-index applies: the backdrop-blurred
+           lore card below would otherwise paint over the open popover */
+        position: relative;
+        z-index: 50;
+        transform: none;
+        top: auto; bottom: auto; left: auto; right: auto;
+        display: flex; flex-direction: row; flex-wrap: wrap;
+        align-items: center; justify-content: center;
+        gap: 0.3rem;
+        width: fit-content; max-width: 56rem;
+        margin: 1.25rem auto 2.5rem;
+        padding: 0.4rem 0.55rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-top: 1px solid rgba(99, 102, 241, 0.3);
+        background: rgba(15, 23, 42, 0.85);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
+    }
+
+    /* Injected button groups flow horizontally */
+    nav:has(> #deck-resources-compact) > #deck-resources-compact,
+    nav:has(> #deck-resources-compact) > #archetype-cards-browser {
+        display: flex; flex-direction: row; align-items: center;
+        gap: 0.3rem; width: auto; margin-top: 0;
+    }
+    nav:has(> #deck-resources-compact) > #synergy-dock-wrap {
+        width: auto; margin-top: 0;
+    }
+
+    /* Buttons become compact pills: small icon chip + label */
+    nav:has(> #deck-resources-compact) a.group,
+    nav:has(> #deck-resources-compact) .synergy-sidebar-btn {
+        width: auto;
+        padding: 0.3rem 0.85rem 0.3rem 0.4rem;
+        gap: 0.5rem;
+        border-radius: 9999px;
+        justify-content: flex-start;
+    }
+    nav:has(> #deck-resources-compact) a.group > div,
+    nav:has(> #deck-resources-compact) .synergy-sidebar-btn > div {
+        width: 2rem; height: 2rem;
+        border: none; box-shadow: none;
+    }
+    nav:has(> #deck-resources-compact) a.group i,
+    nav:has(> #deck-resources-compact) .synergy-sidebar-btn i {
+        font-size: 0.95rem;
+    }
+    nav:has(> #deck-resources-compact) a.group span,
+    nav:has(> #deck-resources-compact) .synergy-sidebar-btn > span {
+        min-width: 0 !important;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+}
+
+/* Top-3 partner mini icons on the Synergies button (injected by
+   initSynergyTags). Desktop toolbar only — the mobile dock stays icon-only. */
+.synergy-sidebar-btn .mini-icons { display: none; }
+@media (min-width: 1024px) {
+    .synergy-sidebar-btn .mini-icons { display: flex; align-items: center; margin-left: 0.1rem; }
+}
+.synergy-sidebar-btn .mini-icon {
+    width: 1.1rem; height: 1.1rem; border-radius: 50%; overflow: hidden;
+    border: 1.5px solid rgba(148, 163, 184, 0.55); margin-left: -0.3rem;
+    background: #0c1412; display: flex; align-items: center; justify-content: center;
+}
+.synergy-sidebar-btn .mini-icon:first-child { margin-left: 0; }
+.synergy-sidebar-btn .mini-icon svg { width: 85%; height: 85%; }
+
+/* Content-width guard: a large number of archetype pages close their
+   `.container mx-auto` div right after the lore section, leaving every
+   later <section> a direct child of <body> at full viewport width. Cap
+   body-level sections to the same 1024px column as .container so those
+   pages read identically to the correctly nested ones. Sections with
+   their own max-w-* utility still win (higher specificity). */
+body > section {
+    max-width: 1024px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* --- "You shape this ranking" cues ---------------------------------- */
+/* Subtitle under the popover header: social proof + agency framing. */
+.synergy-popover-sub {
+    font-size: 0.66rem; color: #8aa39e; line-height: 1.4;
+    margin: -0.35rem 0 0.6rem;
+}
+.synergy-popover-sub.flash { color: #4ade80; }
+
+/* Goal-gradient chip: shown when a pairing trails the rank above by a
+   couple of votes, so one vote visibly matters. */
+.synergy-popover .gap-chip {
+    display: inline-block; font-size: 0.58rem; font-weight: 700;
+    color: #fbbf24; background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.28); border-radius: 999px;
+    padding: 0.06rem 0.42rem; margin-top: 0.18rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+
+/* Salience nudge on vote pills the signed-in user hasn't used yet:
+   a soft amber outline plus two brief glow pulses, then it stays calm. */
+.synergy-popover .vote-pill.unvoted { border-color: rgba(245, 158, 11, 0.45); }
+.synergy-popover .vote-pill.unvoted .vote-arrow { color: #9db8b2; }
+.synergy-popover .tier-row .vote-pill.unvoted { animation: synVoteNudge 1.5s ease-in-out 2; }
+@keyframes synVoteNudge {
+    0%, 100% { box-shadow: none; }
+    50% { box-shadow: 0 0 9px rgba(245, 158, 11, 0.4); }
+}

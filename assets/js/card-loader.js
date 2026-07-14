@@ -3446,42 +3446,41 @@ window.CardLoader = (function () {
             casualUrl = `https://ygoprodeck.com/deck-search/?cardcode=${encodedCardName}%7C&offset=0`;
         }
 
-        // Generate compact button HTML
+        // Generate sidebar button HTML
         const html = `
-            <div class="deck-resources-compact flex flex-wrap justify-center gap-2 md:gap-3">
-                <!-- Competitive Decks Button -->
-                <a href="${competitiveUrl}" target="_blank" rel="noopener noreferrer" 
-                   class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white 
-                          bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700
-                          shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
-                   title="View tournament and tiered deck lists for ${archetypeName}">
-                    <i class="fas fa-trophy text-xs"></i>
-                    <span>Tournament Decks</span>
-                </a>
-                
-                ${showAllDecks ? `
-                <!-- All Decks Button -->
-                <a href="${casualUrl}" target="_blank" rel="noopener noreferrer"
-                   class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
-                   style="background: ${communityBtnGradient};"
-                   title="View all community-submitted deck lists for ${archetypeName}">
-                    <i class="fas fa-users text-xs"></i>
-                    <span>Community Decks</span>
-                </a>
-                ` : ''}
-                
-                ${discordUrl ? `
-                <!-- Discord Button -->
-                <a href="${discordUrl}" target="_blank" rel="noopener noreferrer" 
-                   class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white 
-                          bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700
-                          shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
-                   title="Join the ${archetypeName} Discord community">
-                    <i class="fab fa-discord text-xs"></i>
-                    <span>Discord</span>
-                </a>
-                ` : ''}
-            </div>
+            <!-- Competitive Decks Button -->
+            <a href="${competitiveUrl}" target="_blank" rel="noopener noreferrer" 
+               class="group flex items-center justify-center lg:justify-start gap-3 w-full lg:px-4 lg:py-2 lg:rounded-full hover:bg-slate-800 transition-colors"
+               title="View tournament and tiered deck lists for ${archetypeName}">
+                <div class="relative flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-[#1e293b] text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300 shadow-md border border-indigo-500/30 lg:border-none">
+                    <i class="fas fa-trophy text-lg lg:text-xl"></i>
+                </div>
+                <span class="hidden lg:inline-block font-semibold text-gray-300 group-hover:text-white transition-colors text-left">Meta Decks</span>
+            </a>
+            
+            ${showAllDecks ? `
+            <!-- All Decks Button -->
+            <a href="${casualUrl}" target="_blank" rel="noopener noreferrer"
+               class="group flex items-center justify-center lg:justify-start gap-3 w-full lg:px-4 lg:py-2 lg:rounded-full hover:bg-slate-800 transition-colors"
+               title="View all community-submitted deck lists for ${archetypeName}">
+                <div class="relative flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-[#1e293b] text-green-400 group-hover:bg-green-500 group-hover:text-white transition-all duration-300 shadow-md border border-indigo-500/30 lg:border-none">
+                    <i class="fas fa-users text-lg lg:text-xl"></i>
+                </div>
+                <span class="hidden lg:inline-block font-semibold text-gray-300 group-hover:text-white transition-colors text-left">All Decks</span>
+            </a>
+            ` : ''}
+            
+            ${discordUrl ? `
+            <!-- Discord Button -->
+            <a href="${discordUrl}" target="_blank" rel="noopener noreferrer" 
+               class="group flex items-center justify-center lg:justify-start gap-3 w-full lg:px-4 lg:py-2 lg:rounded-full hover:bg-slate-800 transition-colors"
+               title="Join the ${archetypeName} Discord community">
+                <div class="relative flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-[#1e293b] text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300 shadow-md border border-indigo-500/30 lg:border-none">
+                    <i class="fab fa-discord text-lg lg:text-xl"></i>
+                </div>
+                <span class="hidden lg:inline-block font-semibold text-gray-300 group-hover:text-white transition-colors text-left">Discord</span>
+            </a>
+            ` : ''}
         `;
 
 
@@ -3725,22 +3724,30 @@ window.CardLoader = (function () {
             ? `relative group px-6 py-2.5 rounded-full shadow-lg text-sm font-bold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(99,102,241,0.5)] bg-gradient-to-r ${buttonColor} hover:${buttonHoverColor} flex items-center justify-center gap-2 border border-white/20 no-underline overflow-hidden`
             : `relative group w-full p-4 rounded-xl shadow-lg text-center font-bold text-white transition-all duration-300 transform hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(99,102,241,0.4)] bg-gradient-to-r ${buttonColor} hover:${buttonHoverColor} flex items-center justify-center gap-3 no-underline overflow-hidden`;
 
-        const iconSize = isCompact ? 'text-base' : 'text-xl';
+        const iconSize = isCompact ? 'text-lg lg:text-xl' : 'text-xl';
         const targetUrl = `../pages/Card-Browser.html?archetype=${encodeURIComponent(archetypeName)}`;
 
-        container.innerHTML = `
-            <a href="${targetUrl}" class="${buttonClasses}" target="_blank">
-                <!-- Inner Glow Effect -->
-                <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                
-                <!-- Border Pulse for extra attention (only if it matches the vibe) -->
-                ${isCompact ? '<div class="absolute -inset-0.5 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>' : ''}
-                
-                <i class="fas fa-layer-group ${iconSize} relative z-10 group-hover:rotate-6 transition-transform"></i>
-                <span class="relative z-10 tracking-wide">${options.buttonText || `Browse ${archetypeName} Cards`}</span>
-                ${isCompact ? '' : '<i class="fas fa-external-link-alt text-sm opacity-70 relative z-10"></i>'}
-            </a>
-        `;
+        if (isCompact) {
+            container.innerHTML = `
+                <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="group flex items-center justify-center lg:justify-start gap-3 w-full lg:px-4 lg:py-2 lg:rounded-full hover:bg-slate-800 transition-colors" title="${options.buttonText || 'Card Browser'}">
+                    <div class="relative flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-[#1e293b] text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300 shadow-md border border-indigo-500/30 lg:border-none">
+                        <i class="fas fa-layer-group ${iconSize}"></i>
+                    </div>
+                    <span class="hidden lg:inline-block font-semibold text-gray-300 group-hover:text-white transition-colors text-left">Cards</span>
+                </a>
+            `;
+        } else {
+            container.innerHTML = `
+                <a href="${targetUrl}" class="${buttonClasses}" target="_blank">
+                    <!-- Inner Glow Effect -->
+                    <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    
+                    <i class="fas fa-layer-group ${iconSize} relative z-10 group-hover:rotate-6 transition-transform"></i>
+                    <span class="relative z-10 tracking-wide hidden sm:inline">${options.buttonText || 'Card Browser'}</span>
+                    <i class="fas fa-external-link-alt text-sm opacity-70 relative z-10"></i>
+                </a>
+            `;
+        }
     }
 
     /**
