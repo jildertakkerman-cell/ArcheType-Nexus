@@ -1331,9 +1331,13 @@
 
         try {
             const client = window.Auth._getClient();
+            // Explicit owner filter: RLS lets non-owners read public replays
+            // (community combo cards need that), so a bare select would list
+            // other users' replays here too.
             const { data, error } = await client
                 .from('replays')
                 .select('replayid, gcsjsonpath, gcsrawpath, metadata, visibility, createdon')
+                .eq('userid', session.user.id)
                 .order('createdon', { ascending: false });
 
             if (error) throw error;
