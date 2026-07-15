@@ -3872,7 +3872,18 @@ window.CardLoader = (function () {
                     if (section) {
                         warningInjected = true;
                         const warning = createWarningBanner();
-                        heading.insertAdjacentElement('afterend', warning);
+                        // A matching h3 can be a step title inside a combo
+                        // walkthrough card (e.g. Veda's "Initiate the Combo"),
+                        // where the banner would wedge into the step row.
+                        // Anchor those at the section heading instead.
+                        const sectionEl = heading.closest('section');
+                        const sectionTitle = sectionEl ? sectionEl.querySelector('h2') : null;
+                        const insideCard = heading.closest('.combo-step-card, .card');
+                        if (heading.tagName === 'H3' && insideCard && sectionTitle) {
+                            sectionTitle.insertAdjacentElement('afterend', warning);
+                        } else {
+                            heading.insertAdjacentElement('afterend', warning);
+                        }
                     }
                 }
             }
