@@ -27865,6 +27865,44 @@ const archetypes = [
     },
 
     {
+        name: 'Speedroid',
+        description: 'A WIND Machine Synchro archetype built around self-summoning toy monsters and Level modulation, climbing into the Clear Wing Synchro Dragon lineage.',
+        filepath: 'pages/Speedroid Deck Analysis.html',
+        icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="speedroidGradient" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#6ee7b7;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+                            </radialGradient>
+                            <filter id="speedroidShadow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+                            </filter>
+                        </defs>
+                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#speedroidGradient)" opacity="0.7">
+                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
+                        </ellipse>
+                        <g filter="url(#speedroidShadow)">
+                            <polygon points="50,30 65,45 50,60 35,45" fill="#6ee7b7" stroke="#059669" stroke-width="2"/>
+                            <polygon points="50,60 65,75 50,90 35,75" fill="#059669" stroke="#047857" stroke-width="2"/>
+                            <line x1="50" y1="30" x2="50" y2="15" stroke="#047857" stroke-width="2"/>
+                            <circle cx="50" cy="45" r="6" fill="#047857" stroke="#6ee7b7" stroke-width="2">
+                                <animateTransform attributeName="transform" type="rotate" from="0 50 45" to="360 50 45" dur="1.2s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        <circle cx="30" cy="55" r="2" fill="#6ee7b7">
+                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="70" cy="55" r="2" fill="#6ee7b7">
+                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="50" y="97" text-anchor="middle" font-size="12" fill="#6ee7b7" font-weight="bold">Speedroid</text>
+                    </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: null,
+
+    },
+
+    {
         name: 'Sphinx',
         description: 'An ancient archetype invoking mystical powers and riddles for strategic control.',
         filepath: 'pages/Sphinx Deck Analysis.html',
