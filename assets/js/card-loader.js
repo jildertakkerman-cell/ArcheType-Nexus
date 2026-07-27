@@ -630,25 +630,8 @@ window.CardLoader = (function () {
         document.body.appendChild(largeImageModal);
     }
 
-    async function showLargeImageModal(cardName, event) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-
-        // Hide any active popup immediately
-        hidePopup();
-        if (activePopup) activePopup.style.display = 'none'; // Force hide if animation/delay issues
-
+    function displayLargeImage(imgUrl) {
         if (!largeImageModal) createLargeImageModal();
-
-        // Show loading state or placeholder if needed, but usually fast enough
-        // Fetch image URL
-        const imgUrl = await getCardImageUrl(cardName);
-        if (!imgUrl) {
-            console.error('Could not find image for', cardName);
-            return;
-        }
 
         const img = largeImageModal.querySelector('img');
         img.src = imgUrl;
@@ -669,6 +652,38 @@ window.CardLoader = (function () {
         });
     }
 
+    async function showLargeImageModal(cardName, event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        // Hide any active popup immediately
+        hidePopup();
+        if (activePopup) activePopup.style.display = 'none'; // Force hide if animation/delay issues
+
+        // Fetch image URL
+        const imgUrl = await getCardImageUrl(cardName);
+        if (!imgUrl) {
+            console.error('Could not find image for', cardName);
+            return;
+        }
+
+        displayLargeImage(imgUrl);
+    }
+
+    function showLargeImageByUrl(imgUrl, event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        hidePopup();
+        if (activePopup) activePopup.style.display = 'none';
+
+        displayLargeImage(imgUrl);
+    }
+
     function hideLargeImageModal() {
         if (!largeImageModal) return;
 
@@ -687,6 +702,7 @@ window.CardLoader = (function () {
     // Export internal functions to global CardLoader object immediately if it exists (for inline HTML handlers)
     window.CardLoader = window.CardLoader || {};
     window.CardLoader.showLargeImageByName = showLargeImageModal;
+    window.CardLoader.showLargeImageByUrl = showLargeImageByUrl;
     window.CardLoader.hideLargeImageModal = hideLargeImageModal;
     window.CardLoader.showPopupByName = showPopupByName;
 
@@ -4086,6 +4102,7 @@ window.CardLoader = (function () {
             CONFIG
         }),
         showLargeImageByName: showLargeImageModal,
+        showLargeImageByUrl,
         hideLargeImageModal,
         showCardPreview,
         hideCardPreview
