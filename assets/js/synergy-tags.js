@@ -639,13 +639,18 @@ window.initSynergyTags = async function (archetypeName) {
     const client = _client();
     if (!client) return;
 
+    // Some archetype names have duplicate rows in the DB that only differ by
+    // case (e.g. "Roid" and "roid") — an ilike match against either hits both,
+    // and .maybeSingle() throws on ambiguity instead of picking one. Fetch all
+    // matches and prefer the exact-case row so a stray duplicate can't disable
+    // the widget outright.
     async function lookup(name) {
         const { data } = await client
             .from('archetypes')
-            .select('archetypeid')
-            .ilike('archetypename', name)
-            .maybeSingle();
-        return data;
+            .select('archetypeid, archetypename')
+            .ilike('archetypename', name);
+        if (!data || data.length === 0) return null;
+        return data.find(r => r.archetypename === name) || data[0];
     }
 
     // Page names sometimes drift from DB archetypenames (e.g. the page
