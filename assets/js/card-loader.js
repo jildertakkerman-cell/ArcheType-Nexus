@@ -3816,7 +3816,7 @@ window.CardLoader = (function () {
                     <div style="color: ${theme.isDark ? '#d1d5db' : '#4b5563'}; font-size: 0.8rem; margin-bottom: 8px;">
                         These combos may contain errors or use banned cards. If you spot an issue, submit a replay to help keep this guide accurate.
                     </div>
-                    <a href="Replay-Converter.html" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1f2937; font-weight: 600; font-size: 0.75rem; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);"><i class="fas fa-video"></i> Know a better line? Submit a Replay <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></a>
+                    <a href="Replay-Analyzer.html" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1f2937; font-weight: 600; font-size: 0.75rem; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);"><i class="fas fa-video"></i> Know a better line? Submit a Replay <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></a>
                 </div>
                 </div>
                 `;

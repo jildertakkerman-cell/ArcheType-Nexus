@@ -25697,38 +25697,60 @@ const archetypes = [
         filepath: 'pages/Predaplant Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="predaAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#16a34a" stop-opacity="0.8"/>
-                                <stop offset="50%" stop-color="#15803d" stop-opacity="0.5"/>
-                                <stop offset="100%" stop-color="#14532d" stop-opacity="0.9"/>
+                            <radialGradient id="predaAura" cx="50%" cy="48%" r="62%">
+                                <stop offset="0%" stop-color="#22c55e" stop-opacity="0.85"/>
+                                <stop offset="55%" stop-color="#15803d" stop-opacity="0.4"/>
+                                <stop offset="100%" stop-color="#052e16" stop-opacity="0"/>
                             </radialGradient>
-                            <linearGradient id="predaGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#22c55e"/>
+                            <linearGradient id="predaJaw" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#4ade80"/>
                                 <stop offset="100%" stop-color="#14532d"/>
                             </linearGradient>
-                            <filter id="predaShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                            <linearGradient id="predaVine" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#16a34a"/>
+                                <stop offset="100%" stop-color="#052e16"/>
+                            </linearGradient>
+                            <radialGradient id="predaCounter" cx="40%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#fef08a"/>
+                                <stop offset="55%" stop-color="#fb923c"/>
+                                <stop offset="100%" stop-color="#c2410c"/>
+                            </radialGradient>
+                            <filter id="predaShadow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                                 <feMerge>
                                     <feMergeNode in="coloredBlur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#predaAura)" opacity="0.7">
+                        <ellipse cx="50" cy="48" rx="42" ry="32" fill="url(#predaAura)">
                             <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
                         </ellipse>
+                        <path d="M50,78 C44,84 56,90 50,94" stroke="url(#predaVine)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                        <path d="M50,84 C43,82 40,86 41,90" stroke="#16a34a" stroke-width="2" fill="none" stroke-linecap="round"/>
+                        <path d="M50,84 C57,82 60,86 59,90" stroke="#16a34a" stroke-width="2" fill="none" stroke-linecap="round"/>
                         <g filter="url(#predaShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#predaGlow)" stroke="#14532d" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#16a34a" stroke="#14532d" stroke-width="2"/>
+                            <path d="M16,50 Q22,18 50,15 Q78,18 84,50 Q50,40 16,50 Z" fill="url(#predaJaw)" stroke="#052e16" stroke-width="1.5"/>
+                            <path d="M16,52 Q22,82 50,85 Q78,82 84,52 Q50,64 16,52 Z" fill="url(#predaJaw)" stroke="#052e16" stroke-width="1.5"/>
+                            <polygon points="17,46 23,46 20,54" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="27,46 33,46 30,54" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="37,46 43,46 40,54" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="47,46 53,46 50,54" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="57,46 63,46 60,54" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="67,46 73,46 70,54" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="77,46 83,46 80,54" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="22,56 28,56 25,48" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="32,56 38,56 35,48" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="42,56 48,56 45,48" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="52,56 58,56 55,48" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="62,56 68,56 65,48" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
+                            <polygon points="72,56 78,56 75,48" fill="#fefce8" stroke="#052e16" stroke-width="0.75"/>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#16a34a">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        <circle cx="50" cy="51" r="6" fill="url(#predaCounter)">
+                            <animate attributeName="r" values="5;7;5" dur="1.4s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.85;1;0.85" dur="1.4s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#14532d">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
-                        </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#14532d" font-weight="bold">Predaplant</text>
+                        <text x="50" y="98" text-anchor="middle" font-size="11" fill="#14532d" font-weight="bold">Predaplant</text>
                     </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -27696,9 +27718,9 @@ const archetypes = [
                             <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
                         </ellipse>
                         <g filter="url(#skyStrikerShadow)">
-                            <polygon points="50,20 60,50 50,80 40,50" fill="#87ceeb" stroke="#4682b4" stroke-width="2"/>
-                            <circle cx="50" cy="50" r="8" fill="#4682b4" stroke="#5f9ea0" stroke-width="2">
-                                <animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite"/>
+                            <polygon points="50,16 54,42 82,60 56,54 62,80 50,68 38,80 44,54 18,60 46,42" fill="#87ceeb" stroke="#4682b4" stroke-width="2"/>
+                            <circle cx="50" cy="38" r="6" fill="#4682b4" stroke="#5f9ea0" stroke-width="2">
+                                <animate attributeName="r" values="6;9;6" dur="2s" repeatCount="indefinite"/>
                             </circle>
                         </g>
                         <circle cx="35" cy="75" r="2" fill="#4682b4">

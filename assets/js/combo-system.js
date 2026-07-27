@@ -145,7 +145,7 @@ class ComboLoader {
             ComboSelector.render(selectorContainerId, comboData, showCombo, selectorOptions);
 
             // 5. Render combo guide (includes simulators)
-            ComboGuide.render(guideContainerId, comboData);
+            ComboGuide.render(guideContainerId, comboData, archetypeName.toLowerCase());
 
             // 6. Initialize all DuelSimulator instances
             const simulators = {};
@@ -195,6 +195,193 @@ class ComboLoader {
  * Automatically creates a themed combo selector from combo data
  */
 class ComboSelector {
+    /**
+     * Convert a '#rrggbb'/'#rgb' hex color or an 'rgb(...)'/'rgba(...)' string
+     * into an 'rgba(r, g, b, alpha)' string. Theme accent colors can come from
+     * either format depending on how inferTheme() resolved them.
+     */
+    static colorWithAlpha(color, alpha) {
+        const fallback = `rgba(96, 165, 250, ${alpha})`;
+        if (!color) return fallback;
+        const trimmed = color.trim();
+        if (trimmed.startsWith('#')) {
+            let hex = trimmed.slice(1);
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            if (hex.length !== 6) return fallback;
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+        const parts = trimmed.match(/\d+(\.\d+)?/g);
+        if (parts && parts.length >= 3) {
+            return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${alpha})`;
+        }
+        return fallback;
+    }
+
+    /**
+     * Inject the (page-agnostic) stylesheet for the custom dropdown once.
+     * Per-instance colors are supplied via CSS custom properties on the
+     * `.combo-selector-wrapper` element itself, so this is safe to share.
+     */
+    static injectStyles() {
+        if (document.getElementById('combo-selector-dynamic-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'combo-selector-dynamic-styles';
+        style.textContent = `
+            .combo-selector-wrapper { position: relative; }
+            .combo-selector-trigger {
+                appearance: none;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 0.85rem 1.25rem;
+                background-color: var(--csel-card-bg);
+                border: 2px solid var(--csel-accent);
+                border-radius: 0.5rem;
+                color: var(--csel-text);
+                cursor: pointer;
+                transition: background-color 0.25s ease, box-shadow 0.25s ease;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                text-align: left;
+                font-family: inherit;
+            }
+            .combo-selector-trigger:hover {
+                background-color: var(--csel-bg);
+                box-shadow: 0 0 15px var(--csel-accent-40);
+            }
+            .combo-selector-trigger:focus-visible {
+                outline: none;
+                box-shadow: 0 0 0 3px var(--csel-accent-40);
+            }
+            .combo-selector-trigger-text { display: flex; flex-direction: column; min-width: 0; }
+            .combo-selector-trigger-title {
+                font-weight: 700;
+                font-size: 1.1rem;
+                line-height: 1.3;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .combo-selector-trigger-meta {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.4rem;
+                font-size: 0.75rem;
+                font-weight: 500;
+                opacity: 0.75;
+                margin-top: 0.2rem;
+            }
+            .combo-selector-meta-credits,
+            .combo-selector-meta-date,
+            .combo-selector-option-credits {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .combo-selector-meta-sep { opacity: 0.6; }
+            .combo-selector-chevron {
+                flex-shrink: 0;
+                color: var(--csel-accent);
+                transition: transform 0.25s ease;
+            }
+            .combo-selector-wrapper[data-open="true"] .combo-selector-chevron { transform: rotate(180deg); }
+            .combo-selector-menu {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: calc(100% + 0.5rem);
+                z-index: 60;
+                max-height: 22rem;
+                overflow-y: auto;
+                margin: 0;
+                padding: 0.4rem;
+                list-style: none;
+                background-color: var(--csel-card-bg);
+                border: 2px solid var(--csel-accent);
+                border-radius: 0.5rem;
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+                display: none;
+            }
+            .combo-selector-wrapper[data-open="true"] .combo-selector-menu { display: block; }
+            .combo-selector-option {
+                display: flex;
+                flex-direction: column;
+                gap: 0.3rem;
+                padding: 0.65rem 0.75rem;
+                border-radius: 0.375rem;
+                cursor: pointer;
+                color: var(--csel-text);
+                transition: background-color 0.15s ease;
+            }
+            .combo-selector-option:hover,
+            .combo-selector-option.is-active { background-color: var(--csel-accent-20); }
+            .combo-selector-option[aria-selected="true"] { background-color: var(--csel-accent-30); }
+            .combo-selector-option-title { font-weight: 600; font-size: 0.95rem; }
+            .combo-selector-option-meta {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 0.75rem;
+            }
+            .combo-selector-option-credits {
+                min-width: 0;
+                opacity: 0.75;
+                font-weight: 500;
+            }
+            .combo-selector-option-date {
+                flex-shrink: 0;
+                margin-left: auto;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                font-size: 0.7rem;
+                font-weight: 600;
+                white-space: nowrap;
+                padding: 0.2rem 0.55rem;
+                border-radius: 999px;
+                background-color: var(--csel-accent-15);
+                color: var(--csel-accent);
+            }
+            .combo-selector-option-date i { opacity: 0.8; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    /**
+     * Bind a single document-level click/Escape listener (shared across every
+     * instance) that closes any open combo-selector menu when the user clicks
+     * outside it or presses Escape.
+     */
+    static ensureGlobalListeners() {
+        if (ComboSelector._globalListenersBound) return;
+        ComboSelector._globalListenersBound = true;
+
+        const closeWrapper = (wrapper) => {
+            wrapper.setAttribute('data-open', 'false');
+            const trigger = wrapper.querySelector('.combo-selector-trigger');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        };
+
+        document.addEventListener('click', (e) => {
+            document.querySelectorAll('.combo-selector-wrapper[data-open="true"]').forEach(wrapper => {
+                if (!wrapper.contains(e.target)) closeWrapper(wrapper);
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            document.querySelectorAll('.combo-selector-wrapper[data-open="true"]').forEach(closeWrapper);
+        });
+    }
+
     static render(containerId, comboData, onChangeCallback, options = {}) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -208,57 +395,172 @@ class ComboSelector {
 
         const combos = comboData.combos || {};
         const comboNumbers = Object.keys(combos).map(key => key.replace('combo', ''));
+        const initialCombo = combos[`combo${defaultCombo}`] ? defaultCombo : (comboNumbers[0] || defaultCombo);
 
         // Infer theme to get colors
         const theme = ComboSelector.inferTheme();
         console.log('[ComboSelector] Using theme:', theme);
 
-        // Create a cleaner, more integrated selector
+        ComboSelector.injectStyles();
+        ComboSelector.ensureGlobalListeners();
+
+        const dateIconHtml = '<i class="fas fa-calendar-alt"></i>';
+        const creditsIconHtml = '<i class="fas fa-user-circle"></i>';
+        const initialComboObj = combos[`combo${initialCombo}`] || {};
+        const initialLabel = initialComboObj.title || `Combo #${initialCombo}`;
+
+        // Build the small "submitted by / on" meta line shared by the trigger
+        // button and each menu row.
+        const buildTriggerMeta = (combo) => {
+            const parts = [];
+            if (combo.credits) parts.push(`<span class="combo-selector-meta-credits">${creditsIconHtml}${combo.credits}</span>`);
+            if (combo.date) parts.push(`<span class="combo-selector-meta-date">${dateIconHtml}${combo.date}</span>`);
+            return parts.join('<span class="combo-selector-meta-sep">•</span>');
+        };
+
+        const optionsHtml = comboNumbers.map(num => {
+            const combo = combos[`combo${num}`];
+            const label = combo.title || `Combo #${num}`;
+            const isSelected = num === initialCombo;
+            const hasMeta = combo.credits || combo.date;
+            return `
+                <li role="option" class="combo-selector-option" data-value="${num}" aria-selected="${isSelected}" id="${selectorId}-option-${num}">
+                    <span class="combo-selector-option-title">${label}</span>
+                    ${hasMeta ? `
+                    <span class="combo-selector-option-meta">
+                        ${combo.credits ? `<span class="combo-selector-option-credits">${creditsIconHtml}${combo.credits}</span>` : ''}
+                        ${combo.date ? `<span class="combo-selector-option-date">${dateIconHtml}${combo.date}</span>` : ''}
+                    </span>
+                    ` : ''}
+                </li>
+            `;
+        }).join('');
+
+        // Create a cleaner, more integrated selector: a themed custom dropdown
+        // (rather than a native <select>) so each combo's title and date can be
+        // laid out separately instead of being squashed into one option string.
         container.innerHTML = `
             <div style="max-width: 32rem; margin: 0 auto 2rem auto;">
-                <label for="${selectorId}" style="display: block; text-align: center; color: ${theme.accentColor}; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                <label id="${selectorId}-label" for="${selectorId}" style="display: block; text-align: center; color: ${theme.accentColor}; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
                     <i class="${labelIcon}" style="margin-right: 0.5rem;"></i>${labelText}
                 </label>
-                <div style="position: relative;">
-                    <select id="${selectorId}" 
-                        style="
-                            appearance: none;
-                            width: 100%;
-                            padding: 1rem 3rem 1rem 1.25rem;
-                            background-color: ${theme.cardBg};
-                            border: 2px solid ${theme.accentColor};
-                            border-radius: 0.5rem;
-                            color: ${theme.textColor};
-                            font-weight: 700;
-                            font-size: 1.125rem;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-                        "
-                        onmouseover="this.style.backgroundColor='${theme.backgroundColor}'; this.style.boxShadow='0 0 15px ${theme.accentColor}40';"
-                        onmouseout="this.style.backgroundColor='${theme.cardBg}'; this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.3)';"
-                        onfocus="this.style.outline='none'; this.style.borderColor='${theme.accentColor}'; this.style.boxShadow='0 0 0 3px ${theme.accentColor}40';"
-                        onblur="this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.3)';">
-                        ${comboNumbers.map(num => {
-            const combo = combos[`combo${num}`];
-            return `<option value="${num}" ${num === defaultCombo ? 'selected' : ''}>${combo.title || `Combo #${num}`}</option>`;
-        }).join('')}
-                    </select>
-                    <div style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: ${theme.accentColor};">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div id="${selectorId}-wrapper" class="combo-selector-wrapper" data-open="false" style="
+                    --csel-accent: ${theme.accentColor};
+                    --csel-accent-15: ${ComboSelector.colorWithAlpha(theme.accentColor, 0.15)};
+                    --csel-accent-20: ${ComboSelector.colorWithAlpha(theme.accentColor, 0.2)};
+                    --csel-accent-30: ${ComboSelector.colorWithAlpha(theme.accentColor, 0.3)};
+                    --csel-accent-40: ${ComboSelector.colorWithAlpha(theme.accentColor, 0.4)};
+                    --csel-card-bg: ${theme.cardBg};
+                    --csel-bg: ${theme.backgroundColor};
+                    --csel-text: ${theme.textColor};
+                ">
+                    <button type="button" id="${selectorId}" class="combo-selector-trigger" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="${selectorId}-label" aria-controls="${selectorId}-menu" data-value="${initialCombo}">
+                        <span class="combo-selector-trigger-text">
+                            <span class="combo-selector-trigger-title" id="${selectorId}-trigger-title">${initialLabel}</span>
+                            <span class="combo-selector-trigger-meta" id="${selectorId}-trigger-meta" style="${(initialComboObj.credits || initialComboObj.date) ? '' : 'display: none;'}">${buildTriggerMeta(initialComboObj)}</span>
+                        </span>
+                        <svg class="combo-selector-chevron" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
-                    </div>
+                    </button>
+                    <ul id="${selectorId}-menu" class="combo-selector-menu" role="listbox" aria-labelledby="${selectorId}-label" tabindex="-1">
+                        ${optionsHtml}
+                    </ul>
                 </div>
             </div>
         `;
 
-        const selector = document.getElementById(selectorId);
-        if (selector && onChangeCallback) {
-            selector.addEventListener('change', (e) => onChangeCallback(e.target.value));
-            onChangeCallback(defaultCombo);
-        }
-        return selector;
+        const wrapper = document.getElementById(`${selectorId}-wrapper`);
+        const trigger = document.getElementById(selectorId);
+        const menu = document.getElementById(`${selectorId}-menu`);
+        const triggerTitle = document.getElementById(`${selectorId}-trigger-title`);
+        const triggerMeta = document.getElementById(`${selectorId}-trigger-meta`);
+        const optionEls = Array.from(menu.querySelectorAll('.combo-selector-option'));
+
+        let activeIndex = Math.max(0, comboNumbers.indexOf(initialCombo));
+
+        const focusOption = (index) => {
+            optionEls.forEach(opt => opt.classList.remove('is-active'));
+            const opt = optionEls[index];
+            if (opt) {
+                opt.classList.add('is-active');
+                opt.scrollIntoView({ block: 'nearest' });
+            }
+        };
+
+        const openMenu = () => {
+            wrapper.setAttribute('data-open', 'true');
+            trigger.setAttribute('aria-expanded', 'true');
+            activeIndex = Math.max(0, comboNumbers.indexOf(trigger.dataset.value));
+            focusOption(activeIndex);
+        };
+
+        const closeMenu = () => {
+            wrapper.setAttribute('data-open', 'false');
+            trigger.setAttribute('aria-expanded', 'false');
+        };
+
+        const selectCombo = (num, { silent = false } = {}) => {
+            const combo = combos[`combo${num}`];
+            if (!combo) return;
+            trigger.dataset.value = num;
+            triggerTitle.textContent = combo.title || `Combo #${num}`;
+            if (combo.credits || combo.date) {
+                triggerMeta.style.display = '';
+                triggerMeta.innerHTML = buildTriggerMeta(combo);
+            } else {
+                triggerMeta.style.display = 'none';
+                triggerMeta.innerHTML = '';
+            }
+            optionEls.forEach(opt => opt.setAttribute('aria-selected', opt.dataset.value === num ? 'true' : 'false'));
+            if (!silent && onChangeCallback) onChangeCallback(num);
+        };
+
+        trigger.addEventListener('click', () => {
+            if (wrapper.getAttribute('data-open') === 'true') {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        trigger.addEventListener('keydown', (e) => {
+            if (!['ArrowDown', 'ArrowUp', 'Enter', ' ', 'Escape'].includes(e.key)) return;
+            e.preventDefault();
+            const isOpen = wrapper.getAttribute('data-open') === 'true';
+            if (e.key === 'Escape') {
+                closeMenu();
+            } else if (!isOpen) {
+                openMenu();
+            } else if (e.key === 'ArrowDown') {
+                activeIndex = Math.min(optionEls.length - 1, activeIndex + 1);
+                focusOption(activeIndex);
+            } else if (e.key === 'ArrowUp') {
+                activeIndex = Math.max(0, activeIndex - 1);
+                focusOption(activeIndex);
+            } else {
+                selectCombo(optionEls[activeIndex].dataset.value);
+                closeMenu();
+            }
+        });
+
+        optionEls.forEach((opt, index) => {
+            opt.addEventListener('click', () => {
+                selectCombo(opt.dataset.value);
+                closeMenu();
+                trigger.focus();
+            });
+            opt.addEventListener('mouseenter', () => {
+                activeIndex = index;
+                focusOption(index);
+            });
+        });
+
+        // Initialize display + notify the host page of the starting combo.
+        selectCombo(initialCombo, { silent: true });
+        if (onChangeCallback) onChangeCallback(initialCombo);
+
+        return trigger;
     }
 
     static setTheme(theme) {
@@ -481,7 +783,7 @@ class ComboSelector {
  * Uses CardLoader to handle image fetching and popups.
  */
 class ComboGuide {
-    static render(containerId, comboData) {
+    static render(containerId, comboData, archetypeSlug) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -494,10 +796,13 @@ class ComboGuide {
         container.innerHTML = '';
         const combos = comboData.combos || {};
         const imageMap = {};
+        const comboIds = [];
 
         Object.keys(combos).forEach((key, comboIndex) => {
             const combo = combos[key];
             const normalizedKey = key.replace('combo', '');
+            const comboId = `${archetypeSlug}-${key}`;
+            comboIds.push(comboId);
 
             const comboSection = document.createElement('div');
             comboSection.id = `combo-${normalizedKey}-content`;
@@ -591,6 +896,11 @@ class ComboGuide {
                 descDiv.innerHTML = descriptionHtml;
                 guideContainer.appendChild(descDiv.firstElementChild);
             }
+
+            // --- VOTE BAR ---
+            const voteBarDiv = document.createElement('div');
+            voteBarDiv.innerHTML = this.voteBarHtml(comboId, accent, textMain, theme.isDarkMode);
+            guideContainer.appendChild(voteBarDiv.firstElementChild);
 
             if (combo.steps) {
                 combo.steps.forEach((step, stepIndex) => {
@@ -731,10 +1041,121 @@ class ComboGuide {
             container.appendChild(comboSection);
         });
 
+        // --- UPLOAD YOUR OWN REPLAY CTA ---
+        // These combos are curated/hand-authored; make it obvious there's a
+        // way to contribute your own rather than leaving that undiscoverable.
+        const uploadCta = document.createElement('div');
+        uploadCta.style.cssText = `padding:1rem 0.5rem 0; text-align:center; font-size:0.82rem; color:${textMain}; opacity:0.85;`;
+        uploadCta.innerHTML = `<i class="fas fa-upload" style="margin-right:0.45rem;"></i>Got a replay of your own?
+            <a href="../pages/My-Replays.html#replays" style="color:${accent}; font-weight:600; text-decoration:none;">Upload it and share your combo guide &rarr;</a>`;
+        container.appendChild(uploadCta);
+
         // Defer card loading to existing CardLoader
         if (window.CardLoader) {
             setTimeout(() => window.CardLoader.loadCards(imageMap), 100);
         }
+
+        // Fetch vote scores/state for these combos and patch the (initially
+        // disabled/loading) vote bars once Supabase responds.
+        if (comboIds.length) ComboGuide._loadVotes(comboIds);
+    }
+
+    /**
+     * Vote bar HTML for a single combo, keyed by its derived comboId
+     * (`${archetypeSlug}-${comboKey}`). Starts disabled/loading; _loadVotes
+     * patches in the real score and enabled state once Supabase responds.
+     */
+    static voteBarHtml(comboId, accent, textMain, isDark) {
+        return `
+            <div style="padding:0.75rem 1.5rem; display:flex; align-items:center; gap:0.85rem; flex-wrap:wrap;
+                        border-bottom:1px solid ${accent}30; background-color: ${isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.4)'};">
+                <span style="font-size:0.78rem; color:${textMain}; opacity:0.75; flex-shrink:0;">Was this guide helpful?</span>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <button id="static-vote-up-${comboId}" data-active="0" disabled title="Log in to vote"
+                            onclick="castStaticVote('${comboId}', 1)"
+                            style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.4rem 0.9rem; border-radius:0.5rem;
+                                   background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#d4d4d4;
+                                   font-size:0.82rem; font-weight:600; cursor:default; font-family:inherit; transition:all 0.15s;">
+                        <i class="fas fa-thumbs-up" style="font-size:0.8rem;"></i> Yes
+                    </button>
+                    <span id="static-vote-score-${comboId}"
+                          style="font-size:0.9rem; font-weight:700; min-width:1.5rem; text-align:center; color:#a3a3a3;">&ndash;</span>
+                    <button id="static-vote-down-${comboId}" data-active="0" disabled title="Log in to vote"
+                            onclick="castStaticVote('${comboId}', -1)"
+                            style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.4rem 0.9rem; border-radius:0.5rem;
+                                   background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#d4d4d4;
+                                   font-size:0.82rem; font-weight:600; cursor:default; font-family:inherit; transition:all 0.15s;">
+                        <i class="fas fa-thumbs-down" style="font-size:0.8rem;"></i> No
+                    </button>
+                </div>
+                <span id="static-vote-login-${comboId}" style="display:inline-flex; align-items:center; gap:0.5rem;">
+                    <span style="font-size:0.72rem; color:${textMain}; opacity:0.6;">Log in to vote:</span>
+                    <button onclick="window.Auth && window.Auth.signInWithDiscord()" title="Log in with Discord"
+                            style="display:inline-flex; align-items:center; justify-content:center; width:1.85rem; height:1.85rem;
+                                   border-radius:50%; background:#5865F2; border:1px solid rgba(255,255,255,0.2);
+                                   color:#fff; font-size:0.82rem; cursor:pointer; font-family:inherit; transition:box-shadow 0.15s;"
+                            onmouseover="this.style.boxShadow='0 0 10px rgba(88,101,242,0.7)'"
+                            onmouseout="this.style.boxShadow='none'">
+                        <i class="fab fa-discord"></i>
+                    </button>
+                    <button onclick="window.Auth && window.Auth.signInWithGoogle()" title="Log in with Google"
+                            style="display:inline-flex; align-items:center; justify-content:center; width:1.85rem; height:1.85rem;
+                                   border-radius:50%; background:#4285F4; border:1px solid rgba(255,255,255,0.2);
+                                   color:#fff; font-size:0.78rem; cursor:pointer; font-family:inherit; transition:box-shadow 0.15s;"
+                            onmouseover="this.style.boxShadow='0 0 10px rgba(66,133,244,0.7)'"
+                            onmouseout="this.style.boxShadow='none'">
+                        <i class="fab fa-google"></i>
+                    </button>
+                </span>
+            </div>`;
+    }
+
+    /**
+     * Batch-fetch votes for every combo on the page in one query, then patch
+     * each vote bar's score/button state in place.
+     */
+    static async _loadVotes(comboIds) {
+        const client = window.Auth?._getClient?.();
+        if (!client) return;
+
+        const [session, { data: votes }] = await Promise.all([
+            window.Auth.getSession(),
+            client.from('staticcombovotes').select('comboid, userid, value').in('comboid', comboIds)
+        ]);
+
+        comboIds.forEach(comboId => {
+            const rows = (votes || []).filter(v => v.comboid === comboId);
+            const score = rows.reduce((sum, v) => sum + v.value, 0);
+            const userVote = session ? (rows.find(v => v.userid === session.user.id)?.value ?? 0) : 0;
+            ComboGuide._applyVoteState(comboId, score, userVote, !!session);
+        });
+    }
+
+    /**
+     * Sync a vote bar's DOM to a given score/userVote/enabled state.
+     */
+    static _applyVoteState(comboId, score, userVote, enabled) {
+        const upBtn = document.getElementById(`static-vote-up-${comboId}`);
+        const downBtn = document.getElementById(`static-vote-down-${comboId}`);
+        const scoreEl = document.getElementById(`static-vote-score-${comboId}`);
+        const loginEl = document.getElementById(`static-vote-login-${comboId}`);
+        if (!upBtn || !downBtn || !scoreEl) return;
+
+        if (loginEl) loginEl.style.display = enabled ? 'none' : 'inline-flex';
+
+        [[upBtn, 1], [downBtn, -1]].forEach(([btn, val]) => {
+            const active = userVote === val;
+            btn.dataset.active = active ? '1' : '0';
+            btn.disabled = !enabled;
+            btn.title = enabled ? '' : 'Log in to vote';
+            btn.style.cursor = enabled ? 'pointer' : 'default';
+            btn.style.background = active ? (val === 1 ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)') : 'rgba(255,255,255,0.06)';
+            btn.style.borderColor = active ? (val === 1 ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)') : 'rgba(255,255,255,0.15)';
+            btn.style.color = active ? (val === 1 ? '#4ade80' : '#f87171') : '#d4d4d4';
+        });
+
+        scoreEl.textContent = score;
+        scoreEl.style.color = score > 0 ? '#4ade80' : score < 0 ? '#f87171' : '#a3a3a3';
     }
 
     /**
@@ -840,6 +1261,8 @@ class DuelSimulator {
         this.cards = {};
         this.speed = 1200;
         this.resizeObserver = null;
+        this.lastEffectCard = null;
+        this.lastEffectDesc = null;
 
         this.init();
     }
@@ -856,6 +1279,13 @@ class DuelSimulator {
         this.logEl = container.querySelector('.sim-log');
         this.boardEl = container.querySelector('.duel-board');
         this.playBtn = container.querySelector('.btn-play');
+        this.lastEffectPanel = container.querySelector('.sim-last-effect');
+        this.lastEffectNameEl = container.querySelector('.sim-last-effect-cardname');
+        this.lastEffectTextEl = container.querySelector('.sim-last-effect-text');
+        const lastEffectCloseBtn = container.querySelector('.sim-last-effect-close');
+        if (lastEffectCloseBtn) {
+            lastEffectCloseBtn.addEventListener('click', () => this.clearLastEffect());
+        }
 
         // NOTE: Removed internal createPopup(). Using global CardLoader.showPopup instead.
 
@@ -952,6 +1382,14 @@ class DuelSimulator {
                 <button class="sim-btn sim-btn-nav btn-gy" title="View Graveyard"><i class="fas fa-skull"></i> GY</button>
                 <button class="sim-btn sim-btn-nav btn-banish" title="View Banished Cards"><i class="fas fa-fire"></i> Banish</button>
                 <button class="sim-btn sim-btn-sound btn-sound" title="Sound On"><i class="fas fa-volume-up"></i></button>
+            </div>
+            <div class="sim-last-effect" style="display:none;">
+                <div class="sim-last-effect-header">
+                    <span><i class="fas fa-bolt" style="font-size:0.65rem;margin-right:0.35rem;"></i>Last Effect</span>
+                    <button type="button" class="sim-last-effect-close" title="Dismiss">&times;</button>
+                </div>
+                <div class="sim-last-effect-cardname"></div>
+                <div class="sim-last-effect-text"></div>
             </div>
             <div class="sim-log"><div class="log-entry" style="color:#94a3b8">Ready to duel.</div></div>
         `;
@@ -1341,6 +1779,10 @@ class DuelSimulator {
                     }
                 }
 
+                if (isEffectActivation) {
+                    this.showLastEffectForCard(s.actions[0].card, s.text);
+                }
+
                 s.actions.forEach(action => {
                     if (isEffectActivation) {
                         this.playEffectAnimation(action.card);
@@ -1354,6 +1796,7 @@ class DuelSimulator {
             } else {
                 if (isEffectActivation) {
                     this.playEffectAnimation(s.card);
+                    this.showLastEffectForCard(s.card, s.text);
                 }
                 if (summonType) {
                     this.playSummonAnimation(s.card, summonType);
@@ -1488,6 +1931,17 @@ class DuelSimulator {
             this.log = oldLog;
             this.currentStep = target;
             this.log(`< Rewound to Step ${target}`);
+
+            // Restore the Last Effect panel to match the rewound-to step
+            // (loadCombo() -> reset() already cleared it above)
+            for (let i = target - 1; i >= 0; i--) {
+                const s = steps[i];
+                if (s.text && s.text.toLowerCase().includes('activate effect')) {
+                    const cardId = s.card || (s.actions && s.actions[0] && s.actions[0].card);
+                    if (cardId) this.showLastEffectForCard(cardId, s.text);
+                    break;
+                }
+            }
         }
     }
 
@@ -1499,7 +1953,42 @@ class DuelSimulator {
         this.tokenLayer.innerHTML = '';
         this.cards = {};
         this.logEl.innerHTML = '';
+        this.clearLastEffect();
         if (typeof window.CardLoader !== 'undefined') window.CardLoader.hideCardPreview();
+    }
+
+    /**
+     * Resolve the card's display name from an in-play card ID and show it in
+     * the Last Effect panel, preferring the full effect text from CardLoader's
+     * cache (populated by preloadAllImages) over the short combo step text.
+     */
+    showLastEffectForCard(cardId, stepText) {
+        const cardEntry = this.cards[cardId];
+        const cardName = cardEntry && cardEntry.data ? cardEntry.data.name : null;
+        if (!cardName) return;
+        const effectText = this.getEffectTextForCard(cardName) || stepText;
+        this.showLastEffect(cardName, effectText);
+    }
+
+    getEffectTextForCard(cardName) {
+        if (typeof window.CardLoader === 'undefined' || typeof window.CardLoader.getCachedCard !== 'function') return null;
+        const cached = window.CardLoader.getCachedCard(cardName);
+        return cached && cached.desc ? cached.desc : null;
+    }
+
+    showLastEffect(cardName, effectText) {
+        this.lastEffectCard = cardName;
+        this.lastEffectDesc = effectText;
+        if (!this.lastEffectPanel || !this.lastEffectNameEl || !this.lastEffectTextEl) return;
+        this.lastEffectNameEl.textContent = cardName;
+        this.lastEffectTextEl.textContent = effectText;
+        this.lastEffectPanel.style.display = '';
+    }
+
+    clearLastEffect() {
+        this.lastEffectCard = null;
+        this.lastEffectDesc = null;
+        if (this.lastEffectPanel) this.lastEffectPanel.style.display = 'none';
     }
 
     togglePlay(force) {
@@ -1712,6 +2201,40 @@ class DuelSimulator {
     }
 
 }
+
+// ============================================================================
+// STATIC COMBO VOTING
+// ============================================================================
+// Casts/toggles/switches a vote on a legacy (JSON-authored) combo, keyed by
+// its derived comboId ("${archetypeSlug}-${comboKey}"). Mirrors the
+// combovotes toggle pattern in community-combos.js's castVote, but against
+// the staticcombovotes table since these combos have no row in `combos`.
+window.castStaticVote = async function (comboId, value) {
+    const client = window.Auth?._getClient?.();
+    const session = await window.Auth?.getSession?.();
+    if (!client || !session) return;
+
+    const userId = session.user.id;
+    const upBtn = document.getElementById(`static-vote-up-${comboId}`);
+    const downBtn = document.getElementById(`static-vote-down-${comboId}`);
+    const scoreEl = document.getElementById(`static-vote-score-${comboId}`);
+    if (!upBtn || !downBtn || !scoreEl) return;
+
+    const currentVote = upBtn.dataset.active === '1' ? 1 : (downBtn.dataset.active === '1' ? -1 : 0);
+    const newVote = currentVote === value ? 0 : value;
+
+    try {
+        if (newVote === 0) {
+            await client.from('staticcombovotes').delete().eq('comboid', comboId).eq('userid', userId);
+        } else {
+            await client.from('staticcombovotes').upsert({ userid: userId, comboid: comboId, value: newVote });
+        }
+        const prevScore = parseInt(scoreEl.textContent, 10) || 0;
+        ComboGuide._applyVoteState(comboId, prevScore + (newVote - currentVote), newVote, true);
+    } catch (e) {
+        console.error('Static combo vote failed:', e.message);
+    }
+};
 
 // ============================================================================
 // AUTO-INITIALIZATION
