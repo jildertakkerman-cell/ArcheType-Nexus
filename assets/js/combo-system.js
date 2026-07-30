@@ -1,4 +1,32 @@
 /**
+ * Fetches vote rows for a batch of static combo ids from `staticcombovotes`
+ * in one query, reducing them into per-combo up/down/score/userVote. Shared
+ * by ComboSelector (list badges + sort) and ComboGuide (vote bar) so a page
+ * only pays for one Supabase round trip instead of two.
+ */
+async function fetchStaticComboVotes(comboIds) {
+    const client = window.Auth?._getClient?.();
+    if (!client || !comboIds.length) return { enabled: false, byId: {} };
+
+    const [session, { data: votes }] = await Promise.all([
+        window.Auth.getSession(),
+        client.from('staticcombovotes').select('comboid, userid, value').in('comboid', comboIds)
+    ]);
+
+    const byId = {};
+    comboIds.forEach(id => {
+        const rows = (votes || []).filter(v => v.comboid === id);
+        const up = rows.filter(v => v.value === 1).length;
+        const down = rows.filter(v => v.value === -1).length;
+        byId[id] = {
+            up, down, score: up - down,
+            userVote: session ? (rows.find(v => v.userid === session.user.id)?.value ?? 0) : 0
+        };
+    });
+    return { enabled: !!session, byId };
+}
+
+/**
  * ComboLoader - Utility for loading and initializing combo visualizer data
  * * This utility provides methods to:
  * - Load combo data from JSON files
@@ -141,11 +169,17 @@ class ComboLoader {
                 }
             };
 
+            // 3.5. Kick off a single shared vote fetch for every combo on this page;
+            // both the selector (badges + sort) and guide (vote bar) consume it.
+            const archetypeSlug = archetypeName.toLowerCase();
+            const comboIds = Object.keys(comboData.combos).map(key => `${archetypeSlug}-${key}`);
+            const votesPromise = fetchStaticComboVotes(comboIds);
+
             // 4. Render combo selector
-            ComboSelector.render(selectorContainerId, comboData, showCombo, selectorOptions);
+            ComboSelector.render(selectorContainerId, comboData, showCombo, { ...selectorOptions, archetypeSlug, votesPromise });
 
             // 5. Render combo guide (includes simulators)
-            ComboGuide.render(guideContainerId, comboData, archetypeName.toLowerCase());
+            ComboGuide.render(guideContainerId, comboData, archetypeSlug, votesPromise);
 
             // 6. Initialize all DuelSimulator instances
             const simulators = {};
@@ -293,24 +327,92 @@ class ComboSelector {
                 transition: transform 0.25s ease;
             }
             .combo-selector-wrapper[data-open="true"] .combo-selector-chevron { transform: rotate(180deg); }
-            .combo-selector-menu {
+            .combo-selector-panel {
                 position: absolute;
                 left: 0;
                 right: 0;
                 top: calc(100% + 0.5rem);
                 z-index: 60;
-                max-height: 22rem;
-                overflow-y: auto;
-                margin: 0;
-                padding: 0.4rem;
-                list-style: none;
+                max-height: 24rem;
+                display: none;
+                flex-direction: column;
+                overflow: hidden;
                 background-color: var(--csel-card-bg);
                 border: 2px solid var(--csel-accent);
                 border-radius: 0.5rem;
                 box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+            }
+            .combo-selector-wrapper[data-open="true"] .combo-selector-panel { display: flex; }
+            .combo-selector-search-row {
+                flex-shrink: 0;
+                padding: 0.6rem 0.65rem;
+                border-bottom: 1px solid var(--csel-accent-30);
+            }
+            .combo-selector-search-input {
+                width: 100%;
+                appearance: none;
+                background-color: var(--csel-bg);
+                border: 1px solid var(--csel-accent-40);
+                border-radius: 0.375rem;
+                padding: 0.5rem 0.7rem;
+                color: var(--csel-text);
+                font-size: 0.85rem;
+                font-family: inherit;
+            }
+            .combo-selector-search-input:focus {
+                outline: none;
+                border-color: var(--csel-accent);
+                box-shadow: 0 0 0 3px var(--csel-accent-40);
+            }
+            .combo-selector-no-results {
+                padding: 0.85rem 0.75rem;
+                font-size: 0.85rem;
+                opacity: 0.7;
+                text-align: center;
                 display: none;
             }
-            .combo-selector-wrapper[data-open="true"] .combo-selector-menu { display: block; }
+            .combo-selector-menu {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto;
+                margin: 0;
+                padding: 0.4rem;
+                list-style: none;
+            }
+            .combo-selector-panel::after {
+                content: '';
+                position: absolute;
+                left: 2px;
+                right: 2px;
+                bottom: 2px;
+                height: 2rem;
+                background: linear-gradient(to bottom, transparent, var(--csel-card-bg));
+                border-radius: 0 0 0.5rem 0.5rem;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
+            .combo-selector-wrapper[data-has-more="true"] .combo-selector-panel::after { opacity: 1; }
+            .combo-selector-option-top {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                font-size: 0.68rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+                color: #f59e0b;
+            }
+            .combo-selector-option-votes {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.55rem;
+                font-size: 0.72rem;
+                font-weight: 700;
+                flex-shrink: 0;
+            }
+            .combo-selector-option-votes .csel-vote-up { color: #4ade80; }
+            .combo-selector-option-votes .csel-vote-down { color: #f87171; }
             .combo-selector-option {
                 display: flex;
                 flex-direction: column;
@@ -390,12 +492,15 @@ class ComboSelector {
             labelText = 'Select a Combo',
             labelIcon = 'fas fa-layer-group',
             selectorId = 'combo-selector',
-            defaultCombo = '1'
+            defaultCombo = '1',
+            votesPromise = null,
+            searchThreshold = 8
         } = options;
 
         const combos = comboData.combos || {};
         const comboNumbers = Object.keys(combos).map(key => key.replace('combo', ''));
         const initialCombo = combos[`combo${defaultCombo}`] ? defaultCombo : (comboNumbers[0] || defaultCombo);
+        const showSearch = comboNumbers.length > searchThreshold;
 
         // Infer theme to get colors
         const theme = ComboSelector.inferTheme();
@@ -409,12 +514,25 @@ class ComboSelector {
         const initialComboObj = combos[`combo${initialCombo}`] || {};
         const initialLabel = initialComboObj.title || `Combo #${initialCombo}`;
 
+        // Populated once (if ever) votesPromise resolves; keyed by combo number.
+        const voteMap = {};
+        const voteBadgeHtml = (num) => {
+            const v = voteMap[num];
+            if (!v || (v.up + v.down) === 0) return '';
+            return `<span class="combo-selector-option-votes">
+                <span class="csel-vote-up"><i class="fas fa-thumbs-up"></i> ${v.up}</span>
+                <span class="csel-vote-down"><i class="fas fa-thumbs-down"></i> ${v.down}</span>
+            </span>`;
+        };
+
         // Build the small "submitted by / on" meta line shared by the trigger
         // button and each menu row.
-        const buildTriggerMeta = (combo) => {
+        const buildTriggerMeta = (combo, num) => {
             const parts = [];
             if (combo.credits) parts.push(`<span class="combo-selector-meta-credits">${creditsIconHtml}${combo.credits}</span>`);
             if (combo.date) parts.push(`<span class="combo-selector-meta-date">${dateIconHtml}${combo.date}</span>`);
+            const votes = voteBadgeHtml(num);
+            if (votes) parts.push(votes);
             return parts.join('<span class="combo-selector-meta-sep">•</span>');
         };
 
@@ -426,12 +544,12 @@ class ComboSelector {
             return `
                 <li role="option" class="combo-selector-option" data-value="${num}" aria-selected="${isSelected}" id="${selectorId}-option-${num}">
                     <span class="combo-selector-option-title">${label}</span>
-                    ${hasMeta ? `
-                    <span class="combo-selector-option-meta">
+                    <span class="combo-selector-option-meta" id="${selectorId}-option-meta-${num}" style="${hasMeta ? '' : 'display: none;'}">
+                        <span class="combo-selector-option-top" id="${selectorId}-option-top-${num}" style="display: none;"><i class="fas fa-crown"></i> Top voted</span>
                         ${combo.credits ? `<span class="combo-selector-option-credits">${creditsIconHtml}${combo.credits}</span>` : ''}
                         ${combo.date ? `<span class="combo-selector-option-date">${dateIconHtml}${combo.date}</span>` : ''}
+                        <span class="combo-selector-option-votes" id="${selectorId}-option-votes-${num}" data-combo-id="${options.archetypeSlug || ''}-combo${num}"></span>
                     </span>
-                    ` : ''}
                 </li>
             `;
         }).join('');
@@ -463,9 +581,19 @@ class ComboSelector {
                             <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
                     </button>
-                    <ul id="${selectorId}-menu" class="combo-selector-menu" role="listbox" aria-labelledby="${selectorId}-label" tabindex="-1">
-                        ${optionsHtml}
-                    </ul>
+                    <div id="${selectorId}-panel" class="combo-selector-panel">
+                        ${showSearch ? `
+                        <div class="combo-selector-search-row">
+                            <input type="text" id="${selectorId}-search" class="combo-selector-search-input"
+                                   placeholder="Filter combos..." autocomplete="off" aria-label="Filter combos"
+                                   aria-controls="${selectorId}-menu">
+                        </div>
+                        ` : ''}
+                        <ul id="${selectorId}-menu" class="combo-selector-menu" role="listbox" aria-labelledby="${selectorId}-label" tabindex="-1">
+                            ${optionsHtml}
+                        </ul>
+                        ${showSearch ? `<div id="${selectorId}-no-results" class="combo-selector-no-results">No combos match your search.</div>` : ''}
+                    </div>
                 </div>
             </div>
         `;
@@ -475,24 +603,91 @@ class ComboSelector {
         const menu = document.getElementById(`${selectorId}-menu`);
         const triggerTitle = document.getElementById(`${selectorId}-trigger-title`);
         const triggerMeta = document.getElementById(`${selectorId}-trigger-meta`);
+        const searchInput = showSearch ? document.getElementById(`${selectorId}-search`) : null;
+        const noResultsEl = showSearch ? document.getElementById(`${selectorId}-no-results`) : null;
+        // "All options" (bind listeners, resync after vote-driven reorder) vs.
+        // "visible options" (keyboard nav target - excludes filtered-out rows).
         const optionEls = Array.from(menu.querySelectorAll('.combo-selector-option'));
+        const getVisibleOptions = () => optionEls.filter(opt => opt.style.display !== 'none');
 
         let activeIndex = Math.max(0, comboNumbers.indexOf(initialCombo));
 
         const focusOption = (index) => {
+            const visible = getVisibleOptions();
             optionEls.forEach(opt => opt.classList.remove('is-active'));
-            const opt = optionEls[index];
+            const opt = visible[index];
             if (opt) {
                 opt.classList.add('is-active');
                 opt.scrollIntoView({ block: 'nearest' });
             }
         };
 
+        // Shows a fade hint at the bottom of the menu whenever it's scrolled
+        // to reveal more options below the fold (the menu is display:none
+        // while closed, so this must be recomputed each time it opens/resizes
+        // or the filtered set changes).
+        const updateHasMore = () => {
+            const hasMore = (menu.scrollHeight - menu.scrollTop - menu.clientHeight) > 4;
+            wrapper.dataset.hasMore = hasMore ? 'true' : 'false';
+        };
+        menu.addEventListener('scroll', updateHasMore, { passive: true });
+
+        // Filters options by title/credits substring match. Only wired up
+        // when the combo count exceeds searchThreshold (search row exists).
+        const applyFilter = (query) => {
+            const q = query.trim().toLowerCase();
+            let anyVisible = false;
+            optionEls.forEach(li => {
+                const combo = combos[`combo${li.dataset.value}`];
+                const match = !q || `${combo.title || ''} ${combo.credits || ''}`.toLowerCase().includes(q);
+                li.style.display = match ? '' : 'none';
+                if (match) anyVisible = true;
+            });
+            if (noResultsEl) noResultsEl.style.display = anyVisible ? 'none' : '';
+            activeIndex = 0;
+            focusOption(activeIndex);
+            updateHasMore();
+        };
+
+        if (searchInput) {
+            searchInput.addEventListener('input', () => applyFilter(searchInput.value));
+            searchInput.addEventListener('keydown', (e) => {
+                if (!['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) return;
+                if (e.key === 'Escape') {
+                    closeMenu();
+                    trigger.focus();
+                    return;
+                }
+                e.preventDefault();
+                const visible = getVisibleOptions();
+                if (e.key === 'ArrowDown') {
+                    activeIndex = Math.min(visible.length - 1, activeIndex + 1);
+                    focusOption(activeIndex);
+                } else if (e.key === 'ArrowUp') {
+                    activeIndex = Math.max(0, activeIndex - 1);
+                    focusOption(activeIndex);
+                } else if (e.key === 'Enter') {
+                    const opt = visible[activeIndex];
+                    if (opt) {
+                        selectCombo(opt.dataset.value);
+                        closeMenu();
+                        trigger.focus();
+                    }
+                }
+            });
+        }
+
         const openMenu = () => {
             wrapper.setAttribute('data-open', 'true');
             trigger.setAttribute('aria-expanded', 'true');
-            activeIndex = Math.max(0, comboNumbers.indexOf(trigger.dataset.value));
+            // Always start from a clean, unfiltered list on open.
+            if (searchInput) searchInput.value = '';
+            applyFilter('');
+            const visible = getVisibleOptions();
+            activeIndex = Math.max(0, visible.findIndex(el => el.dataset.value === trigger.dataset.value));
             focusOption(activeIndex);
+            updateHasMore();
+            if (searchInput) searchInput.focus();
         };
 
         const closeMenu = () => {
@@ -505,9 +700,10 @@ class ComboSelector {
             if (!combo) return;
             trigger.dataset.value = num;
             triggerTitle.textContent = combo.title || `Combo #${num}`;
-            if (combo.credits || combo.date) {
+            const votes = voteMap[num];
+            if (combo.credits || combo.date || (votes && (votes.up + votes.down) > 0)) {
                 triggerMeta.style.display = '';
-                triggerMeta.innerHTML = buildTriggerMeta(combo);
+                triggerMeta.innerHTML = buildTriggerMeta(combo, num);
             } else {
                 triggerMeta.style.display = 'none';
                 triggerMeta.innerHTML = '';
@@ -533,32 +729,81 @@ class ComboSelector {
             } else if (!isOpen) {
                 openMenu();
             } else if (e.key === 'ArrowDown') {
-                activeIndex = Math.min(optionEls.length - 1, activeIndex + 1);
+                activeIndex = Math.min(getVisibleOptions().length - 1, activeIndex + 1);
                 focusOption(activeIndex);
             } else if (e.key === 'ArrowUp') {
                 activeIndex = Math.max(0, activeIndex - 1);
                 focusOption(activeIndex);
             } else {
-                selectCombo(optionEls[activeIndex].dataset.value);
+                const opt = getVisibleOptions()[activeIndex];
+                if (opt) selectCombo(opt.dataset.value);
                 closeMenu();
             }
         });
 
-        optionEls.forEach((opt, index) => {
+        optionEls.forEach((opt) => {
             opt.addEventListener('click', () => {
                 selectCombo(opt.dataset.value);
                 closeMenu();
                 trigger.focus();
             });
             opt.addEventListener('mouseenter', () => {
-                activeIndex = index;
-                focusOption(index);
+                // Looked up at event time (rather than closed over) because
+                // votesPromise may reorder optionEls, and filtering may hide
+                // some, after these listeners bind.
+                activeIndex = getVisibleOptions().indexOf(opt);
+                focusOption(activeIndex);
             });
         });
 
         // Initialize display + notify the host page of the starting combo.
         selectCombo(initialCombo, { silent: true });
         if (onChangeCallback) onChangeCallback(initialCombo);
+
+        // Votes patch in asynchronously once Supabase responds: badges get
+        // filled in, the top-voted combo is marked, and the list is
+        // re-sorted best-first. This never changes which combo is currently
+        // displayed/selected - only the list's order and decoration.
+        if (votesPromise) {
+            votesPromise.then(({ byId }) => {
+                if (!byId) return;
+                Object.assign(voteMap, ...comboNumbers.map(num => {
+                    const comboId = `${options.archetypeSlug}-combo${num}`;
+                    return byId[comboId] ? { [num]: byId[comboId] } : {};
+                }));
+
+                const topScore = Math.max(0, ...comboNumbers.map(num => voteMap[num]?.score ?? 0));
+
+                comboNumbers.forEach(num => {
+                    const votesEl = document.getElementById(`${selectorId}-option-votes-${num}`);
+                    const topEl = document.getElementById(`${selectorId}-option-top-${num}`);
+                    const metaEl = document.getElementById(`${selectorId}-option-meta-${num}`);
+                    const votes = voteMap[num];
+                    if (votesEl) votesEl.innerHTML = voteBadgeHtml(num);
+                    const isTop = topScore > 0 && votes && votes.score === topScore;
+                    if (topEl) topEl.style.display = isTop ? '' : 'none';
+                    if (metaEl && ((votes && (votes.up + votes.down) > 0) || isTop)) metaEl.style.display = '';
+                });
+
+                // Re-sort options best-first (stable: ties/no-votes keep JSON order).
+                const sortedNums = [...comboNumbers].sort((a, b) => (voteMap[b]?.score ?? 0) - (voteMap[a]?.score ?? 0));
+                sortedNums.forEach(num => {
+                    const el = document.getElementById(`${selectorId}-option-${num}`);
+                    if (el) menu.appendChild(el); // moves the existing node; listeners survive
+                });
+
+                // Resync closures that track option order/identity in place
+                // (both are const bindings, so mutate contents rather than reassign).
+                comboNumbers.splice(0, comboNumbers.length, ...sortedNums);
+                optionEls.splice(0, optionEls.length, ...Array.from(menu.querySelectorAll('.combo-selector-option')));
+                activeIndex = Math.max(0, getVisibleOptions().findIndex(el => el.dataset.value === trigger.dataset.value));
+
+                // Refresh the trigger's meta line in case the selected combo now has a vote badge.
+                selectCombo(trigger.dataset.value, { silent: true });
+
+                if (wrapper.getAttribute('data-open') === 'true') updateHasMore();
+            }).catch(err => console.error('[ComboSelector] Failed to load votes:', err));
+        }
 
         return trigger;
     }
@@ -783,7 +1028,7 @@ class ComboSelector {
  * Uses CardLoader to handle image fetching and popups.
  */
 class ComboGuide {
-    static render(containerId, comboData, archetypeSlug) {
+    static render(containerId, comboData, archetypeSlug, votesPromise = null) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -1055,15 +1300,24 @@ class ComboGuide {
             setTimeout(() => window.CardLoader.loadCards(imageMap), 100);
         }
 
-        // Fetch vote scores/state for these combos and patch the (initially
-        // disabled/loading) vote bars once Supabase responds.
-        if (comboIds.length) ComboGuide._loadVotes(comboIds);
+        // Patch the (initially disabled/loading) vote bars once the shared
+        // vote fetch resolves. Falls back to fetching directly if this guide
+        // is ever rendered standalone without a pre-started promise.
+        if (comboIds.length) {
+            (votesPromise || fetchStaticComboVotes(comboIds)).then(({ enabled, byId }) => {
+                comboIds.forEach(comboId => {
+                    const v = byId?.[comboId];
+                    ComboGuide._applyVoteState(comboId, v?.score ?? 0, v?.up ?? 0, v?.down ?? 0, v?.userVote ?? 0, !!enabled);
+                });
+            }).catch(err => console.error('[ComboGuide] Failed to load votes:', err));
+        }
     }
 
     /**
      * Vote bar HTML for a single combo, keyed by its derived comboId
-     * (`${archetypeSlug}-${comboKey}`). Starts disabled/loading; _loadVotes
-     * patches in the real score and enabled state once Supabase responds.
+     * (`${archetypeSlug}-${comboKey}`). Starts disabled/loading; the caller's
+     * votesPromise patches in the real score/breakdown and enabled state
+     * once Supabase responds (see ComboGuide.render and _applyVoteState).
      */
     static voteBarHtml(comboId, accent, textMain, isDark) {
         return `
@@ -1080,6 +1334,8 @@ class ComboGuide {
                     </button>
                     <span id="static-vote-score-${comboId}"
                           style="font-size:0.9rem; font-weight:700; min-width:1.5rem; text-align:center; color:#a3a3a3;">&ndash;</span>
+                    <span id="static-vote-breakdown-${comboId}"
+                          style="font-size:0.72rem; font-weight:600; color:#a3a3a3; display:none;"></span>
                     <button id="static-vote-down-${comboId}" data-active="0" disabled title="Log in to vote"
                             onclick="castStaticVote('${comboId}', -1)"
                             style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.4rem 0.9rem; border-radius:0.5rem;
@@ -1111,33 +1367,13 @@ class ComboGuide {
     }
 
     /**
-     * Batch-fetch votes for every combo on the page in one query, then patch
-     * each vote bar's score/button state in place.
+     * Sync a vote bar's DOM to a given score/breakdown/userVote/enabled state.
      */
-    static async _loadVotes(comboIds) {
-        const client = window.Auth?._getClient?.();
-        if (!client) return;
-
-        const [session, { data: votes }] = await Promise.all([
-            window.Auth.getSession(),
-            client.from('staticcombovotes').select('comboid, userid, value').in('comboid', comboIds)
-        ]);
-
-        comboIds.forEach(comboId => {
-            const rows = (votes || []).filter(v => v.comboid === comboId);
-            const score = rows.reduce((sum, v) => sum + v.value, 0);
-            const userVote = session ? (rows.find(v => v.userid === session.user.id)?.value ?? 0) : 0;
-            ComboGuide._applyVoteState(comboId, score, userVote, !!session);
-        });
-    }
-
-    /**
-     * Sync a vote bar's DOM to a given score/userVote/enabled state.
-     */
-    static _applyVoteState(comboId, score, userVote, enabled) {
+    static _applyVoteState(comboId, score, up, down, userVote, enabled) {
         const upBtn = document.getElementById(`static-vote-up-${comboId}`);
         const downBtn = document.getElementById(`static-vote-down-${comboId}`);
         const scoreEl = document.getElementById(`static-vote-score-${comboId}`);
+        const breakdownEl = document.getElementById(`static-vote-breakdown-${comboId}`);
         const loginEl = document.getElementById(`static-vote-login-${comboId}`);
         if (!upBtn || !downBtn || !scoreEl) return;
 
@@ -1156,6 +1392,26 @@ class ComboGuide {
 
         scoreEl.textContent = score;
         scoreEl.style.color = score > 0 ? '#4ade80' : score < 0 ? '#f87171' : '#a3a3a3';
+
+        if (breakdownEl) {
+            breakdownEl.dataset.up = up;
+            breakdownEl.dataset.down = down;
+            if (up + down > 0) {
+                breakdownEl.style.display = '';
+                breakdownEl.innerHTML = `(<span style="color:#4ade80;">${up}<i class="fas fa-thumbs-up" style="font-size:0.6rem; margin-left:0.15rem;"></i></span> <span style="color:#f87171;">${down}<i class="fas fa-thumbs-down" style="font-size:0.6rem; margin-left:0.15rem;"></i></span>)`;
+            } else {
+                breakdownEl.style.display = 'none';
+            }
+        }
+
+        // Keep the selector's list badge for this combo in sync too, if present.
+        const selectorVotesEl = document.querySelector(`.combo-selector-option-votes[data-combo-id="${comboId}"]`);
+        if (selectorVotesEl) {
+            selectorVotesEl.innerHTML = (up + down) > 0 ? `
+                <span class="csel-vote-up"><i class="fas fa-thumbs-up"></i> ${up}</span>
+                <span class="csel-vote-down"><i class="fas fa-thumbs-down"></i> ${down}</span>
+            ` : '';
+        }
     }
 
     /**
@@ -2256,6 +2512,7 @@ window.castStaticVote = async function (comboId, value) {
     const upBtn = document.getElementById(`static-vote-up-${comboId}`);
     const downBtn = document.getElementById(`static-vote-down-${comboId}`);
     const scoreEl = document.getElementById(`static-vote-score-${comboId}`);
+    const breakdownEl = document.getElementById(`static-vote-breakdown-${comboId}`);
     if (!upBtn || !downBtn || !scoreEl) return;
 
     const currentVote = upBtn.dataset.active === '1' ? 1 : (downBtn.dataset.active === '1' ? -1 : 0);
@@ -2268,7 +2525,13 @@ window.castStaticVote = async function (comboId, value) {
             await client.from('staticcombovotes').upsert({ userid: userId, comboid: comboId, value: newVote });
         }
         const prevScore = parseInt(scoreEl.textContent, 10) || 0;
-        ComboGuide._applyVoteState(comboId, prevScore + (newVote - currentVote), newVote, true);
+        let up = parseInt(breakdownEl?.dataset.up, 10) || 0;
+        let down = parseInt(breakdownEl?.dataset.down, 10) || 0;
+        if (currentVote === 1) up--;
+        if (currentVote === -1) down--;
+        if (newVote === 1) up++;
+        if (newVote === -1) down++;
+        ComboGuide._applyVoteState(comboId, prevScore + (newVote - currentVote), up, down, newVote, true);
     } catch (e) {
         console.error('Static combo vote failed:', e.message);
     }
