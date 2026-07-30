@@ -187,7 +187,7 @@ class ReplayBrowser {
                     <div class="replay-settings">
                         <div style="display:flex; align-items:center; gap:0.5rem; flex:1;">
                             <i class="fas fa-tachometer-alt" style="color:var(--text-muted); font-size: 0.8rem;"></i>
-                            <input type="range" id="rb-speed" min="400" max="2400" step="200" value="1200" style="flex:1;">
+                            <input type="range" id="rb-speed" min="400" max="2400" step="200" value="1600" style="flex:1;">
                         </div>
                         <button class="sim-btn sim-btn-sound" id="rb-sound" title="Sound On"><i class="fas fa-volume-up"></i></button>
                     </div>
@@ -328,7 +328,7 @@ class ReplayBrowser {
         document.getElementById('rb-next-step').onclick = () => this.nextStep();
         document.getElementById('rb-next-turn').onclick = () => this._nextTurn();
         document.getElementById('rb-speed').oninput = (e) => {
-            this.speed = parseInt(e.target.value);
+            this.speed = 2800 - parseInt(e.target.value); // fuller bar = faster (shorter delay)
             if (this.isPlaying) {
                 clearInterval(this.playInterval);
                 this.playInterval = setInterval(() => this.nextStep(), this.speed);
@@ -369,8 +369,20 @@ class ReplayBrowser {
         return player === 0 ? this.p1Board : this.p2Board;
     }
 
+    // Tokens are never in the public card database (their name is always the generic
+    // "Token" string), so fetch their art directly by passcode instead of by name.
+    _resolveImageUrl(name, isToken, code) {
+        if (isToken && code) {
+            return Promise.resolve(`https://images.ygoprodeck.com/images/cards/${code}.jpg`);
+        }
+        if (name && typeof window.CardLoader !== 'undefined') {
+            return window.CardLoader.getCardImageUrl(name);
+        }
+        return Promise.resolve(null);
+    }
+
     _ensureToken(action) {
-        const { id, code, name, player, from } = action;
+        const { id, code, name, player, from, isToken } = action;
 
         // If token already exists, check if the card identity changed
         if (this.tokens.has(id)) {
@@ -381,11 +393,9 @@ class ReplayBrowser {
                 t.faceDown = false;
                 t.el._faceDown = false;
                 t.el.classList.remove('card-facedown-defense');
-                if (name && typeof window.CardLoader !== 'undefined') {
-                    window.CardLoader.getCardImageUrl(name).then(url => {
-                        if (url) t.el.style.backgroundImage = `url('${url}')`;
-                    });
-                }
+                this._resolveImageUrl(name, t.isToken, t.code).then(url => {
+                    if (url) t.el.style.backgroundImage = `url('${url}')`;
+                });
             } else if (!t.faceDown && isSetAction) {
                 // Card is being set face-down — revert to card back
                 t.faceDown = true;
@@ -407,12 +417,11 @@ class ReplayBrowser {
                     }
                 }
                 t.code = code;
+                t.isToken = !!isToken;
                 // Update the card image
-                if (name && typeof window.CardLoader !== 'undefined') {
-                    window.CardLoader.getCardImageUrl(name).then(url => {
-                        if (url) t.el.style.backgroundImage = `url('${url}')`;
-                    });
-                }
+                this._resolveImageUrl(name, t.isToken, t.code).then(url => {
+                    if (url) t.el.style.backgroundImage = `url('${url}')`;
+                });
                 // Update click handler
                 t.el.onclick = (e) => {
                     e.stopPropagation();
@@ -436,11 +445,10 @@ class ReplayBrowser {
                         this.tokens.delete(existingId);
                         this.tokens.set(id, t);
                         t.el.setAttribute('data-rb-id', id);
-                        if (name && typeof window.CardLoader !== 'undefined') {
-                            window.CardLoader.getCardImageUrl(name).then(url => {
-                                if (url) t.el.style.backgroundImage = `url('${url}')`;
-                            });
-                        }
+                        t.isToken = !!isToken;
+                        this._resolveImageUrl(name, t.isToken, t.code).then(url => {
+                            if (url) t.el.style.backgroundImage = `url('${url}')`;
+                        });
                         return;
                     }
                 }
@@ -467,7 +475,7 @@ class ReplayBrowser {
         if (action._stepType === 'set-monster') el.classList.add('card-facedown-defense');
 
         layer.appendChild(el);
-        this.tokens.set(id, { el, player, zone: zoneElId, code: code || 0, faceDown: isFaceDown });
+        this.tokens.set(id, { el, player, zone: zoneElId, code: code || 0, isToken: !!isToken, faceDown: isFaceDown });
 
         this._positionToken(el, player, zoneElId);
 
@@ -475,11 +483,11 @@ class ReplayBrowser {
             el.style.transition = 'left 0.5s cubic-bezier(0.34,1.56,0.64,1), top 0.5s cubic-bezier(0.34,1.56,0.64,1), width 0.3s, height 0.3s, opacity 0.3s';
         }));
 
-        if (!isFaceDown && name && typeof window.CardLoader !== 'undefined') {
-            window.CardLoader.getCardImageUrl(name).then(url => {
+        if (!isFaceDown) {
+            this._resolveImageUrl(name, isToken, code).then(url => {
                 if (url) {
                     el.style.backgroundImage = `url('${url}')`;
-                    if (el._hovered) {
+                    if (el._hovered && typeof window.CardLoader !== 'undefined') {
                         window.CardLoader.showCardPreview(url);
                     }
                 }

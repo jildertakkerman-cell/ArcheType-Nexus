@@ -1383,6 +1383,10 @@ class DuelSimulator {
                 <button class="sim-btn sim-btn-nav btn-banish" title="View Banished Cards"><i class="fas fa-fire"></i> Banish</button>
                 <button class="sim-btn sim-btn-sound btn-sound" title="Sound On"><i class="fas fa-volume-up"></i></button>
             </div>
+            <div class="sim-settings">
+                <i class="fas fa-tachometer-alt" style="color:var(--text-muted); font-size: 0.8rem;"></i>
+                <input type="range" class="sim-speed" min="400" max="2400" step="200" value="1600" style="flex:1;" title="Playback Speed">
+            </div>
             <div class="sim-last-effect" style="display:none;">
                 <div class="sim-last-effect-header">
                     <span><i class="fas fa-bolt" style="font-size:0.65rem;margin-right:0.35rem;"></i>Last Effect</span>
@@ -1405,6 +1409,13 @@ class DuelSimulator {
         container.querySelector('.btn-play').onclick = () => this.togglePlay();
         container.querySelector('.btn-gy').onclick = () => this.showGraveyardContents();
         container.querySelector('.btn-banish').onclick = () => this.showBanishedContents();
+        container.querySelector('.sim-speed').oninput = (e) => {
+            this.speed = 2800 - parseInt(e.target.value); // fuller bar = faster (shorter delay)
+            if (this.isPlaying) {
+                clearInterval(this.interval);
+                this.interval = setInterval(() => this.nextStep(), this.speed);
+            }
+        };
         const soundBtn = container.querySelector('.btn-sound');
         if (soundBtn) {
             soundBtn.onclick = () => {
@@ -1458,7 +1469,12 @@ class DuelSimulator {
         if (data.isDummy || String(data.id).startsWith('dummy-') || String(data.name).toLowerCase().startsWith('any ')) {
             setImg("https://images.ygoprodeck.com/images/cards/back_high.jpg");
         }
-        // Case 2: Use CardLoader to fetch URL (cached or API)
+        // Case 2: Tokens are never in the public card database (name is just the generic
+        // "Token" string), so fetch their art directly by passcode instead of by name.
+        else if (data.isToken && data.code) {
+            setImg(`https://images.ygoprodeck.com/images/cards/${data.code}.jpg`);
+        }
+        // Case 3: Use CardLoader to fetch URL (cached or API)
         else if (typeof window.CardLoader !== 'undefined') {
             // Set default back while loading
             setImg("https://images.ygoprodeck.com/images/cards/back_high.jpg");
@@ -1526,6 +1542,16 @@ class DuelSimulator {
     }
 
     setPosition(token, zoneId, cachedRects = null) {
+        // "zone-vanish" is not a real board location — cards that start here (mostly
+        // Tokens not yet Special Summoned) or that have vanished must not be rendered
+        // anywhere: no pile, no position, no count.
+        if (zoneId === 'zone-vanish') {
+            token.style.opacity = '0';
+            token.style.display = 'none';
+            token.style.pointerEvents = 'none';
+            return;
+        }
+
         const wrapper = document.getElementById(this.containerId);
 
         let boardRect, zoneRect;
@@ -1648,18 +1674,24 @@ class DuelSimulator {
             }
         }
 
-        const isToken = (c.data.type || '').toLowerCase().includes('token') || (c.data.name || '').toLowerCase().includes('token');
+        const isToken = c.data.isToken === true || (c.data.type || '').toLowerCase().includes('token') || (c.data.name || '').toLowerCase().includes('token');
         const isLeaving = ['zone-gy', 'zone-deck', 'zone-hand', 'zone-banish'].includes(targetZoneId);
+        // "zone-vanish" is not a real board zone — it's a signal that a Token ceases to
+        // exist (e.g. tributed/used as material) instead of physically going to the GY.
+        const isVanishTarget = targetZoneId === 'zone-vanish';
 
         if (c.vanishTimeout) {
             clearTimeout(c.vanishTimeout);
             c.vanishTimeout = null;
         }
 
-        if (isToken && isLeaving) {
-            this.log(`(Token removed)`);
+        if (isVanishTarget || (isToken && isLeaving)) {
+            this.log(isVanishTarget ? `(${c.data.name} vanishes)` : `(Token removed)`);
             c.element.style.opacity = "0";
             c.element.style.transform = "scale(0.5)";
+            // Note: data-zone is deliberately left untouched (rather than set to the vanish
+            // target) so the GY/Banish viewer panels, which filter by data-zone, never list
+            // a vanished Token — it never actually occupied that zone.
             c.vanishTimeout = setTimeout(() => c.element.style.display = 'none', 500);
             return;
         }
@@ -1691,12 +1723,16 @@ class DuelSimulator {
         c.element.style.display = 'block';
         c.element.style.opacity = '1';
         c.element.style.transform = 'scale(1)';
+        c.element.style.pointerEvents = 'auto';
 
         // Ensure high Z-Index during movement so it flies OVER other cards
         c.element.style.zIndex = '100';
 
-        if (!c.element.style.left) {
-            const currentZone = c.element.getAttribute('data-zone') || c.data.zone;
+        const currentZone = c.element.getAttribute('data-zone') || c.data.zone;
+        // Cards materializing out of "zone-vanish" (e.g. a Token being Special Summoned)
+        // were never actually positioned anywhere — skip the snap-to-current-position
+        // step so we don't call setPosition('zone-vanish'), which would just re-hide them.
+        if (!c.element.style.left && currentZone !== 'zone-vanish') {
             // Temporarily disable transition for initial placement if it was missing
             const originalTransition = c.element.style.transition;
             c.element.style.transition = 'none';
@@ -1823,6 +1859,8 @@ class DuelSimulator {
                 } else if (!s.actions && s.to === 'zone-gy') {
                     soundEvent = 'to-gy';
                 } else if (!s.actions && s.to === 'zone-banish') {
+                    soundEvent = 'to-banish';
+                } else if (!s.actions && s.to === 'zone-vanish') {
                     soundEvent = 'to-banish';
                 } else if (!s.actions && s.to === 'zone-hand') {
                     soundEvent = 'draw';
