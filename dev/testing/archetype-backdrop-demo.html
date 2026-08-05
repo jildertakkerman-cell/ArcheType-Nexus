@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archetype Backdrop Demo — Faded Card Art Styling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root{
+        --bg: #0c1524;
+        --card-bg: #141f33;
+        --accent: #38bdf8;
+        --text: #dbeafe;
+        --text-dim: #93a5c4;
+
+        /* Live-tunable via the control panel below */
+        --banner-opacity: 0.22;
+        --watermark-opacity: 0.10;
+        --ambient-opacity: 0.16;
+        --art-blur: 1px;
+        --art-desaturate: 25%;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+        margin:0;
+        font-family:'Inter', sans-serif;
+        background-color:var(--bg);
+        color:var(--text);
+        position:relative;
+    }
+
+    /* ---------------------------------------------------------
+       PATTERN 3 — Ambient page background
+       Two soft-edged glows anchored in opposite corners. Each is its
+       own element (not stacked background-images) so both stay visible —
+       radial-gradient masking feathers them into the page color instead
+       of ending on a hard edge.
+       --------------------------------------------------------- */
+    .ambient-art{
+        position:fixed;
+        width:60vmax; height:60vmax;
+        background-size:cover;
+        background-position:center;
+        filter: saturate(0.85);
+        opacity: var(--ambient-opacity);
+        -webkit-mask-image: radial-gradient(circle, black 0%, black 30%, transparent 72%);
+        mask-image: radial-gradient(circle, black 0%, black 30%, transparent 72%);
+        z-index:-1;
+        pointer-events:none;
+        transition: opacity 0.2s ease, filter 0.2s ease;
+    }
+    .ambient-art.a{ top:-3vmax; left:-18vmax; background-image: var(--art-ambient-1); }
+    .ambient-art.b{ bottom:-3vmax; right:-18vmax; background-image: var(--art-ambient-2); }
+    body::after{
+        /* Flat scrim, not a radial vignette — a vignette goes fully opaque at
+           the corners by construction, which erases the glows living exactly
+           there. A uniform dim is enough for contrast without hiding them. */
+        content:"";
+        position:fixed;
+        inset:0;
+        z-index:-1;
+        background: rgba(12,21,36,0.35);
+    }
+
+    .wrap{ max-width:1024px; margin:0 auto; padding: 2rem 1.25rem 6rem; }
+
+    .intro{
+        border-left:3px solid var(--accent);
+        background: rgba(56,189,248,0.06);
+        padding:1rem 1.25rem;
+        border-radius:0 0.5rem 0.5rem 0;
+        margin-bottom:2rem;
+        font-size:0.95rem;
+        color:var(--text-dim);
+        line-height:1.6;
+        max-width:700px;
+    }
+    .intro strong{ color:var(--text); }
+
+    h1{ font-size:1.75rem; font-weight:800; margin:0 0 0.25rem; }
+    h2.section-title{
+        font-size:1.1rem;
+        text-transform:uppercase;
+        letter-spacing:0.06em;
+        color:var(--accent);
+        border-bottom:1px solid rgba(148,163,184,0.2);
+        padding-bottom:0.5rem;
+        margin:3rem 0 1rem;
+    }
+    p.note{ color:var(--text-dim); font-size:0.875rem; margin:0 0 1rem; line-height:1.6; max-width:700px; }
+    code{ background:rgba(255,255,255,0.08); padding:0.1rem 0.35rem; border-radius:0.25rem; font-size:0.85em; }
+
+    /* ---------------------------------------------------------
+       PATTERN 1 — Hero banner collage
+       2-3 pieces of art behind the title, dark gradient scrim on top,
+       so only a soft impression of the artwork survives.
+       --------------------------------------------------------- */
+    .banner{
+        position:relative;
+        min-height:180px;
+        border-radius:1rem;
+        overflow:hidden;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        text-align:center;
+        padding:2rem;
+        border:1px solid rgba(148,163,184,0.25);
+        background-color: var(--card-bg);
+    }
+    .banner-art{
+        position:absolute; inset:0;
+        background-image: var(--art-banner);
+        background-size: 45%, 45%;
+        background-position: -5% 30%, 105% 30%;
+        background-repeat: no-repeat, no-repeat;
+        filter: blur(var(--art-blur)) grayscale(var(--art-desaturate));
+        opacity: var(--banner-opacity);
+        transition: opacity 0.2s ease, filter 0.2s ease;
+    }
+    .banner-scrim{
+        position:absolute; inset:0;
+        background: linear-gradient(180deg, rgba(12,21,36,0.35) 0%, rgba(12,21,36,0.85) 70%, var(--bg) 100%),
+                    radial-gradient(ellipse at center, transparent 30%, rgba(12,21,36,0.6) 100%);
+    }
+    .banner h1, .banner p{ position:relative; z-index:2; text-shadow:0 2px 10px rgba(0,0,0,0.8); }
+    .banner p{ color:#93c5fd; margin:0.35rem 0 0; }
+    .heading-underline{ border-bottom:2px solid var(--accent); padding-bottom:0.2rem; }
+
+    /* ---------------------------------------------------------
+       PATTERN 2 — Section watermark
+       One large art piece, edge-masked, sitting behind a themed section.
+       --------------------------------------------------------- */
+    .watermark-section{
+        position:relative;
+        border-radius:1rem;
+        border:1px solid rgba(148,163,184,0.25);
+        background-color: var(--card-bg);
+        padding:2rem;
+        overflow:hidden;
+    }
+    .watermark-art{
+        position:absolute;
+        top:0; right:0;
+        width:60%; height:100%;
+        background-image: var(--art-watermark);
+        background-size: cover;
+        background-position: center 15%;
+        filter: blur(var(--art-blur)) grayscale(var(--art-desaturate));
+        opacity: var(--watermark-opacity);
+        -webkit-mask-image: linear-gradient(to left, black 0%, black 40%, transparent 100%);
+        mask-image: linear-gradient(to left, black 0%, black 40%, transparent 100%);
+        transition: opacity 0.2s ease, filter 0.2s ease;
+    }
+    .watermark-section .content{ position:relative; z-index:2; max-width:60%; }
+    .watermark-section h3{ margin:0 0 0.5rem; font-size:1.25rem; }
+    .watermark-section ul{ margin:0.75rem 0 0; padding-left:1.1rem; color:var(--text-dim); line-height:1.7; }
+    .watermark-section li strong{ color:var(--text); }
+
+    @media (max-width: 640px){
+        .watermark-art{ width:100%; mask-image: linear-gradient(to top, black 0%, black 20%, transparent 90%); -webkit-mask-image: linear-gradient(to top, black 0%, black 20%, transparent 90%); }
+        .watermark-section .content{ max-width:100%; }
+    }
+
+    /* ---------------------------------------------------------
+       Control panel (demo tooling only — not part of the pattern)
+       --------------------------------------------------------- */
+    .panel{
+        position:fixed;
+        bottom:1rem; right:1rem;
+        z-index:50;
+        background:rgba(15,23,42,0.95);
+        backdrop-filter: blur(8px);
+        border:1px solid rgba(148,163,184,0.3);
+        border-radius:0.75rem;
+        padding:1rem 1.1rem;
+        width:260px;
+        font-size:0.8rem;
+        box-shadow:0 10px 40px rgba(0,0,0,0.5);
+    }
+    .panel h4{ margin:0 0 0.75rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim); }
+    .panel label{ display:flex; justify-content:space-between; margin-bottom:0.6rem; color:var(--text-dim); }
+    .panel input[type=range]{ width:100%; margin-top:0.25rem; accent-color: var(--accent); }
+    .panel .row{ margin-bottom:0.6rem; }
+    .panel output{ color:var(--text); font-variant-numeric: tabular-nums; }
+    .status{ font-size:0.75rem; color:var(--text-dim); margin-top:0.5rem; }
+
+    .badge{ display:inline-block; font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:999px; background:rgba(56,189,248,0.15); color:var(--accent); font-weight:600; letter-spacing:0.03em; margin-left:0.5rem; vertical-align:middle; }
+</style>
+</head>
+<body>
+
+<div class="ambient-art a"></div>
+<div class="ambient-art b"></div>
+
+<div class="wrap">
+    <h1>Archetype Backdrop — Design Prototype</h1>
+    <div class="intro">
+        This is a standalone demo, not a live page. It pulls real cropped card art for the
+        <strong>Blackwing</strong> archetype straight from the ygoprodeck API
+        (<code>images.ygoprodeck.com/images/cards_cropped/{id}.jpg</code>) and shows three ways
+        to use it as background texture. Use the panel in the bottom-right to tune opacity/blur live —
+        those are the exact values a shared CSS component would expose as variables.
+    </div>
+
+    <h2 class="section-title">Pattern 1 — Hero Banner Collage <span class="badge">above the fold</span></h2>
+    <p class="note">Two pieces of art anchored to the left/right edges, blurred and desaturated, under a
+        gradient scrim that fades to solid background toward the bottom. Only the title sits on top, so a
+        higher opacity (~20%) still reads as clean.</p>
+    <header class="banner">
+        <div class="banner-art"></div>
+        <div class="banner-scrim"></div>
+        <h1 class="heading-underline" style="font-size:2.25rem;">Blackwing</h1>
+        <p>An In-Depth Analysis of the Synchro Swarm</p>
+    </header>
+
+    <h2 class="section-title">Pattern 2 — Section Watermark <span class="badge">mid-page</span></h2>
+    <p class="note">One large art piece bleeds in from the edge of a themed section (e.g. a boss-monster
+        showcase), mask-faded so it dissolves into the background rather than ending on a hard edge. Kept
+        very low opacity (~8-10%) since body copy sits directly over part of it.</p>
+    <div class="watermark-section">
+        <div class="watermark-art"></div>
+        <div class="content">
+            <h3>Blackwing Full Armor Master</h3>
+            <ul>
+                <li><strong>Unaffected</strong> by other card effects.</li>
+                <li>Places <strong>Wedge Counters</strong> on opponent's monsters that activate effects.</li>
+                <li>Can take control of a monster with a Wedge Counter (once per turn).</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2 class="section-title">Pattern 3 — Ambient Page Background <span class="badge">whole page</span></h2>
+    <p class="note">Two glows anchored in opposite corners, fixed behind the entire page — you're seeing
+        them right now, top-left and bottom-right of this demo. Each is its own radial-masked element so
+        they feather into the background instead of ending on a hard edge. It's the same art as the
+        collage/watermark above but reused rather than re-fetched, so it costs no extra requests.</p>
+
+    <h2 class="section-title">Implementation notes</h2>
+    <p class="note">
+        • Contrast is enforced by a scrim <em>independent</em> of the art's opacity slider — even at 100%
+        opacity the text stays readable, because the gradient/radial overlay is a separate layer.<br>
+        • <code>filter: blur() grayscale()</code> is applied to the art, never to text.<br>
+        • Reuses card IDs already fetched by <code>CardLoader</code> for the page's combo-step images —
+        no extra API calls needed beyond swapping the URL path from <code>cards</code> to
+        <code>cards_cropped</code>.<br>
+        • On <code>prefers-reduced-motion</code> or low-end devices, skip the ambient layer's blur (it's
+        the most expensive paint) and keep only the banner.
+    </p>
+</div>
+
+<div class="panel">
+    <h4>Live Tuning</h4>
+    <div class="row">
+        <label>Banner opacity <output id="out-banner">22%</output></label>
+        <input type="range" id="banner-opacity" min="0" max="60" value="22">
+    </div>
+    <div class="row">
+        <label>Watermark opacity <output id="out-watermark">10%</output></label>
+        <input type="range" id="watermark-opacity" min="0" max="40" value="10">
+    </div>
+    <div class="row">
+        <label>Ambient opacity <output id="out-ambient">16%</output></label>
+        <input type="range" id="ambient-opacity" min="0" max="45" value="16">
+    </div>
+    <div class="row">
+        <label>Blur <output id="out-blur">1px</output></label>
+        <input type="range" id="art-blur" min="0" max="8" value="1">
+    </div>
+    <div class="row">
+        <label>Desaturate <output id="out-desat">25%</output></label>
+        <input type="range" id="art-desat" min="0" max="100" value="25">
+    </div>
+    <div class="status" id="fetch-status">Loading Blackwing art…</div>
+</div>
+
+<script>
+(function(){
+    const root = document.documentElement.style;
+    const bindings = [
+        ['banner-opacity', 'out-banner', v => v + '%', v => root.setProperty('--banner-opacity', v/100)],
+        ['watermark-opacity', 'out-watermark', v => v + '%', v => root.setProperty('--watermark-opacity', v/100)],
+        ['ambient-opacity', 'out-ambient', v => v + '%', v => root.setProperty('--ambient-opacity', v/100)],
+        ['art-blur', 'out-blur', v => v + 'px', v => root.setProperty('--art-blur', v + 'px')],
+        ['art-desat', 'out-desat', v => v + '%', v => root.setProperty('--art-desaturate', v + '%')],
+    ];
+    bindings.forEach(([inputId, outId, fmt, apply]) => {
+        const input = document.getElementById(inputId);
+        const out = document.getElementById(outId);
+        input.addEventListener('input', () => {
+            out.textContent = fmt(input.value);
+            apply(input.value);
+        });
+    });
+
+    const CROPPED_BASE = 'https://images.ygoprodeck.com/images/cards_cropped/';
+    const statusEl = document.getElementById('fetch-status');
+
+    // Curated Blackwing monsters that render well as blurred/cropped backdrops
+    // (large, high-contrast Synchro art reads better at low opacity than small pips)
+    const WANTED = [
+        'Blackwing Full Armor Master',
+        'Blackwing Armor Master',
+        'Blackwing - Boreastorm the Wicked Wind',
+        'Blackwing - Silverwind the Ascendant'
+    ];
+
+    async function fetchArt() {
+        try {
+            const res = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?archetype=Blackwing');
+            if (!res.ok) throw new Error('API status ' + res.status);
+            const json = await res.json();
+            const byName = {};
+            (json.data || []).forEach(c => { byName[c.name] = c; });
+
+            const ids = WANTED
+                .map(name => byName[name])
+                .filter(Boolean)
+                .map(c => c.id);
+
+            if (ids.length < 4) throw new Error('Not enough matching cards found');
+
+            const urls = ids.map(id => `url("${CROPPED_BASE}${id}.jpg")`);
+
+            root.setProperty('--art-banner', `${urls[0]}, ${urls[1]}`);
+            root.setProperty('--art-watermark', urls[2]);
+            root.setProperty('--art-ambient-1', urls[3]);
+            root.setProperty('--art-ambient-2', urls[0]);
+
+            statusEl.textContent = `Loaded ${ids.length} card art crops from ygoprodeck.`;
+        } catch (err) {
+            console.error('[demo] Failed to fetch card art:', err);
+            statusEl.textContent = 'Could not reach ygoprodeck API — check your connection.';
+        }
+    }
+
+    fetchArt();
+})();
+</script>
+
+</body>
+</html>

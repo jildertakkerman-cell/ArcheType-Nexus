@@ -11,6 +11,7 @@ window.CardLoader = (function () {
     // Configuration
     const CONFIG = {
         IMAGE_BASE_URL: 'https://storage.googleapis.com/yugioh-card-images-archetype-nexus/cards',
+        CROPPED_IMAGE_BASE_URL: 'https://storage.googleapis.com/yugioh-card-images-archetype-nexus/cards_cropped',
         API_URL: 'https://db.ygoprodeck.com/api/v7/cardinfo.php',
         BANLIST_API_URLS: {
             tcg: 'https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg',
@@ -1022,6 +1023,168 @@ window.CardLoader = (function () {
             console.error(`Failed to get image URL for "${cardName}":`, error);
             return null;
         }
+    }
+
+    /**
+     * Resolve the cropped (art-only, no frame/text) image URL for a card ID.
+     * Same GCS-first-then-CDN-fallback dance as getCardImageUrl, since our own
+     * cards_cropped mirror is still being backfilled card-by-card.
+     */
+    function resolveCroppedImageUrl(cardId) {
+        const gcsUrl = `${CONFIG.CROPPED_IMAGE_BASE_URL}/${encodeURIComponent(cardId)}.png`;
+        const fallbackUrl = `https://images.ygoprodeck.com/images/cards_cropped/${cardId}.jpg`;
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => resolve(gcsUrl);
+            img.onerror = () => resolve(fallbackUrl);
+            img.src = gcsUrl;
+        });
+    }
+
+    /**
+     * Get cropped (art-only) card image URL by name — used for background/backdrop styling.
+     */
+    async function getCardCroppedImageUrl(cardName) {
+        try {
+            const cardInfo = await fetchCardData(cardName);
+            if (!cardInfo) return null;
+            return resolveCroppedImageUrl(cardInfo.id);
+        } catch (error) {
+            console.error(`Failed to get cropped image URL for "${cardName}":`, error);
+            return null;
+        }
+    }
+
+    // Tracks which archetype the ambient backdrop has already been initialized for,
+    // so repeated calls (e.g. from multiple sections on the same page) are no-ops.
+    let ambientBackdropInitializedFor = null;
+
+    /**
+     * Injects a subtle two-corner card-art glow fixed behind the whole page for the
+     * given archetype. Self-contained: creates its own DOM nodes and pulls in the
+     * shared stylesheet if missing, so pages don't need any markup changes to opt in.
+     */
+    async function initAmbientBackdrop(archetypeName) {
+        if (!archetypeName || ambientBackdropInitializedFor === archetypeName) return;
+        ambientBackdropInitializedFor = archetypeName;
+
+        ensureBackdropStylesheet();
+        ensureBackdropElements();
+        applyBackdropThemeTint();
+
+        try {
+            // Prefer Supabase (same source as the archetype cards browser) so the
+            // backdrop stays consistent with the rest of the site; fall back to the
+            // YGOProDeck API if Supabase isn't configured or has no rows yet.
+            let cards = null;
+            const supabaseCards = await fetchArchetypeCardsFromSupabase(archetypeName);
+            if (supabaseCards && supabaseCards.length > 0) {
+                cards = supabaseCards.map(mapSupabaseCardToApiFormat);
+            } else {
+                const apiUrl = `${CONFIG.API_URL}?archetype=${encodeURIComponent(archetypeName)}`;
+                const res = await fetch(apiUrl);
+                if (!res.ok) throw new Error(`Archetype API status ${res.status}`);
+                const json = await res.json();
+                cards = json.data || [];
+            }
+
+            const EXTRA_DECK_TYPES = ['Fusion Monster', 'Synchro Monster', 'XYZ Monster', 'Link Monster'];
+            const isMonster = c => /Monster/.test(c.type || '');
+
+            // De-dupe by card ID before picking — Yu-Gi-Oh card databases (Supabase
+            // and YGOProDeck alike) commonly carry multiple rows for the same card
+            // (reprints, errata). Two such rows landing in the top two sorted slots
+            // would otherwise resolve to the same image on both sides.
+            const uniqueById = (arr) => {
+                const seen = new Set();
+                return arr.filter(c => {
+                    if (!c || c.id == null || seen.has(c.id)) return false;
+                    seen.add(c.id);
+                    return true;
+                });
+            };
+
+            let candidates = uniqueById(cards.filter(c => isMonster(c) && EXTRA_DECK_TYPES.includes(c.type)));
+            if (candidates.length < 2) candidates = uniqueById(cards.filter(isMonster));
+            // Last resort: broaden to every card in the archetype (including
+            // Spells/Traps) so two distinct images are still shown whenever the
+            // archetype has at least 2 distinct cards at all.
+            if (candidates.length < 2) candidates = uniqueById(cards);
+            if (candidates.length < 1) {
+                console.warn(`[CardLoader] No card art available for "${archetypeName}"; skipping ambient backdrop.`);
+                return;
+            }
+
+            // Favor higher level/rank/link and ATK — bigger, more dramatic art reads
+            // better blurred and faded than small/simple monsters.
+            candidates.sort((a, b) =>
+                (b.level || b.linkval || 0) - (a.level || a.linkval || 0) ||
+                (b.atk || 0) - (a.atk || 0)
+            );
+
+            const picks = [candidates[0], candidates.length > 1 ? candidates[1] : candidates[0]];
+            const urls = await Promise.all(picks.map(c => resolveCroppedImageUrl(c.id)));
+
+            document.documentElement.style.setProperty('--art-ambient-1', `url("${urls[0]}")`);
+            document.documentElement.style.setProperty('--art-ambient-2', `url("${urls[1] || urls[0]}")`);
+        } catch (error) {
+            console.error(`[CardLoader] Failed to init ambient backdrop for "${archetypeName}":`, error);
+        }
+    }
+
+    function ensureBackdropStylesheet() {
+        if (document.querySelector('link[data-archetype-backdrop]')) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '../assets/css/archetype-backdrop.css';
+        link.dataset.archetypeBackdrop = 'true';
+        document.head.appendChild(link);
+    }
+
+    function ensureBackdropElements() {
+        if (document.querySelector('.ambient-art.a')) return;
+        const a = document.createElement('div');
+        a.className = 'ambient-art a';
+        const b = document.createElement('div');
+        b.className = 'ambient-art b';
+        const scrim = document.createElement('div');
+        scrim.className = 'ambient-scrim';
+        // Insert in order [a, b, scrim] as body's first children so the scrim
+        // (last of the three) paints above both glows for contrast.
+        document.body.insertBefore(scrim, document.body.firstChild);
+        document.body.insertBefore(b, document.body.firstChild);
+        document.body.insertBefore(a, document.body.firstChild);
+    }
+
+    /**
+     * Every archetype page picks its own theme (Toon's bright goldenrod, Blackwing's
+     * dark navy, etc.) — the backdrop should always defer to that, never fight it.
+     * Reads the page's own resolved background color and: (1) tints the scrim to
+     * match it exactly, so dimming the art blends with the page instead of muddying
+     * it with a foreign dark color, and (2) turns the art down further on light
+     * pages, where dark card art reads as a smudge rather than a glow.
+     */
+    function applyBackdropThemeTint() {
+        let bg = getComputedStyle(document.body).backgroundColor;
+        if (!bg || /rgba?\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/.test(bg) || bg === 'transparent') {
+            bg = getComputedStyle(document.documentElement).backgroundColor || 'rgb(12, 21, 36)';
+        }
+
+        const match = bg.match(/rgba?\(([^)]+)\)/);
+        const [r, g, b] = match ? match[1].split(',').map(n => parseFloat(n)) : [12, 21, 36];
+
+        // WCAG relative luminance
+        const srgb = [r, g, b].map(c => {
+            c /= 255;
+            return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        });
+        const luminance = 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+        const isLight = luminance > 0.5;
+
+        const root = document.documentElement.style;
+        root.setProperty('--backdrop-scrim-color', bg);
+        root.setProperty('--backdrop-scrim-opacity', isLight ? '0.6' : '0.35');
+        root.setProperty('--ambient-opacity', isLight ? '0.07' : '0.16');
     }
 
     /**
@@ -3423,6 +3586,12 @@ window.CardLoader = (function () {
      */
     async function renderDeckResourcesCompact(containerId, archetypeName, options = {}) {
         console.log(`[CardLoader] renderDeckResourcesCompact called for: ${archetypeName}`);
+
+        // Fire-and-forget: nearly every archetype page calls this with its archetype
+        // name, so it's the most universal hook to auto-apply the ambient backdrop
+        // site-wide without needing per-page markup or script changes.
+        initAmbientBackdrop(archetypeName);
+
         const container = document.getElementById(containerId);
 
         if (!container) {
@@ -3714,6 +3883,11 @@ window.CardLoader = (function () {
      * @param {Object} options - Configuration options
      */
     async function renderArchetypeCardsBrowser(containerId, archetypeName, options = {}) {
+        // Fire-and-forget backup hook — initAmbientBackdrop is idempotent per
+        // archetype, so this just covers the handful of pages that don't call
+        // renderDeckResourcesCompact.
+        initAmbientBackdrop(archetypeName);
+
         const container = document.getElementById(containerId);
         if (!container) {
             console.error(`[CardLoader] Container with ID "${containerId}" not found`);
@@ -4056,6 +4230,8 @@ window.CardLoader = (function () {
         loadCardById, // Added this
         fetchCardDataById, // Added this
         getCardImageUrl,
+        getCardCroppedImageUrl,
+        initAmbientBackdrop,
         preloadCards,
         getCachedCard,
         clearCache,

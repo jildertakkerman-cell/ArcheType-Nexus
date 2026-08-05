@@ -1,0 +1,70 @@
+/* Archetype backdrop — ambient card-art glow
+ * Injected automatically by CardLoader.initAmbientBackdrop() for every
+ * archetype page (see card-loader.js). Two soft-edged glows anchored in
+ * opposite corners, fixed behind the whole page. Values tuned in
+ * dev/testing/archetype-backdrop-demo.html — keep both in sync if you
+ * change one.
+ *
+ * Deliberately scoped to only its own classes — no `body`/`html` rules.
+ * Every archetype page defines its own background/theme inline (Toon's
+ * bright goldenrod, Blackwing's dark navy, etc.), and this file is linked
+ * at runtime *after* those inline styles, so any same-selector rule here
+ * would win the cascade and silently override the page's own theme.
+ */
+
+:root {
+    --ambient-opacity: 0.16;
+}
+
+.ambient-art {
+    position: fixed;
+    width: 60vmax;
+    height: 60vmax;
+    background-size: cover;
+    background-position: center;
+    filter: saturate(0.85);
+    opacity: var(--ambient-opacity);
+    -webkit-mask-image: radial-gradient(circle, black 0%, black 30%, transparent 72%);
+    mask-image: radial-gradient(circle, black 0%, black 30%, transparent 72%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Vertical offset is intentionally much smaller than the horizontal one.
+   The art fills its box edge-to-edge (no slack for background-position to
+   exploit), so the box's own off-screen portion crops the source image
+   directly. Character art keeps the subject's head in roughly the top
+   third of the crop — a symmetric 18vmax offset there was cutting heads
+   off outright (confirmed by testing against the real Ancient Warriors
+   art at several offsets). Horizontal cropping doesn't carry the same
+   risk, so it keeps the fuller bleed for the corner-accent look. */
+.ambient-art.a {
+    top: -3vmax;
+    left: -18vmax;
+    background-image: var(--art-ambient-1);
+}
+
+.ambient-art.b {
+    bottom: -3vmax;
+    right: -18vmax;
+    background-image: var(--art-ambient-2);
+}
+
+/* Flat scrim (not a vignette — a radial vignette goes fully opaque at the
+   corners by construction, which would erase the glows living exactly
+   there). A uniform dim is enough to protect text contrast.
+   A dedicated element rather than body::after — some pages already define
+   their own body::after vignette, and hijacking that selector would
+   silently override it.
+   Color is set per-page by CardLoader to match that page's own background
+   (see applyBackdropThemeTint in card-loader.js) — every archetype page
+   picks its own theme, and the backdrop should blend into that, never
+   impose a foreign tint. */
+.ambient-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--backdrop-scrim-color, #0c1524);
+    opacity: var(--backdrop-scrim-opacity, 0.35);
+    pointer-events: none;
+}
