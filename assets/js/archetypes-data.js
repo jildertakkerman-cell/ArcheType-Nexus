@@ -29869,9 +29869,9 @@ const archetypes = [
                     </svg>`
     },
     {
-        name: "Ursartic",
+        name: "Ursarctic",
         description: "A deck featuring powerful bear monsters that can transform and evolve, offering high ATK stats and synergistic effects for beatdown strategies.",
-        filepath: "pages/Ursartic Deck Analysis.html",
+        filepath: "pages/Ursarctic Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="ursarticGradient" cx="50%" cy="50%" r="50%">
@@ -29894,7 +29894,7 @@ const archetypes = [
                         <circle cx="55" cy="40" r="3" fill="#000000"/>
                         <path d="M45 50 Q50 55 55 50" stroke="#000000" stroke-width="2" fill="none"/>
                         <circle cx="50" cy="35" r="2" fill="#8b4513"/>
-                        <text x="50" y="85" text-anchor="middle" font-size="10" fill="#8b4513" font-weight="bold">Ursartic</text>
+                        <text x="50" y="85" text-anchor="middle" font-size="10" fill="#8b4513" font-weight="bold">Ursarctic</text>
                     </svg>`
     },
     {
