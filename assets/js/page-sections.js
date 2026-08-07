@@ -729,10 +729,28 @@ async function initPageSections(archetypeName) {
 // flex/gap styling would otherwise apply to THEM instead of to the step
 // cards it was meant for. Copying it onto the holder means the step cards
 // get it back once the holder is reinserted into contentSlot.
+//
+// That class copy is also why a page like Abyss Actor's Extras/Director/
+// Shifter combo tabs needs an extra safeguard: those combo containers are
+// exactly the "reused in place" host described above, and the page's own
+// switchCombo() shows/hides them by toggling a plain "active" class on
+// `host` itself (looked up fresh by id every click). Once holder inherits
+// host's full class list, it carries that SAME "active"-gated visibility
+// class — but frozen at whatever state host happened to be in at extraction
+// time, and never updated again once holder is a nested descendant (nothing
+// re-applies "active" to it; switchCombo only ever touches elements it can
+// find by id). Tabs that weren't active at setup end up with their content
+// stuck invisible forever, regardless of which tab is actually selected. An
+// inline style always wins over a class-based rule, so pin holder's display
+// straight from host's own unconditional Tailwind "flex" utility (never
+// itself a state class) — that neutralizes whatever the copied toggle class
+// says, while an inactive ANCESTOR (the outer host, still hidden via that
+// same class) correctly keeps the whole thing hidden regardless.
 function _pcsExtractNodes(host) {
     if (!host.firstChild) return null;
     const holder = document.createElement('div');
     holder.className = host.className.replace(/\bcms-section\b/, '').trim();
+    if (host.classList.contains('flex')) holder.style.display = 'flex';
     while (host.firstChild) holder.appendChild(host.firstChild);
     return holder;
 }

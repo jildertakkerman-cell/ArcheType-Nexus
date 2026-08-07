@@ -1075,6 +1075,59 @@
     }
 
     // ------------------------------------------------------------------
+    // Shared helpers for the account-activity panels (Synergy Activity,
+    // My Contributions) — status chips and archetype-name → page-link
+    // resolution, since neither panel's Supabase rows carry a page URL,
+    // only an archetype name (archetypes-data.js has the filepaths).
+    // ------------------------------------------------------------------
+
+    const esc = window.escapeHtml;
+    const chip = s => `<span class="status-chip ${esc(s)}">${esc(s)}</span>`;
+
+    // archetypes-data.js is already loaded on this page — map archetype
+    // names to their analysis-page paths for clickable links.
+    // DB names drift from page names ("Swamp" vs "of the Swamp",
+    // "Snake-Eye" vs "Snake-Eyes"), so match in tiers: exact → normalized
+    // (letters/digits only) → unique prefix/suffix containment. A link is
+    // only produced when the match is unambiguous.
+    const pageEntries = [];
+    if (typeof archetypes !== 'undefined' && Array.isArray(archetypes)) {
+        archetypes.forEach(a => {
+            if (a.name && a.filepath) {
+                const lower = a.name.toLowerCase();
+                pageEntries.push({ lower, norm: lower.replace(/[^a-z0-9]/g, ''), filepath: a.filepath });
+            }
+        });
+    }
+
+    function findPage(name) {
+        const lower = name.toLowerCase();
+        let hit = pageEntries.find(p => p.lower === lower);
+        if (hit) return hit.filepath;
+        const norm = lower.replace(/[^a-z0-9]/g, '');
+        if (norm.length < 3) return null;
+        hit = pageEntries.find(p => p.norm === norm);
+        if (hit) return hit.filepath;
+        // Containment tier: guard against tiny norms producing false
+        // positives (e.g. "Fairy Tail" must not match page "F.A." via "fa")
+        const candidates = pageEntries.filter(p =>
+            p.norm.startsWith(norm) || p.norm.endsWith(norm) ||
+            (p.norm.length >= 5 && norm.startsWith(p.norm)));
+        return candidates.length === 1 ? candidates[0].filepath : null;
+    }
+
+    function archHtml(side) {
+        if (!side) return '<span>?</span>';
+        const name = side.archetypename || '?';
+        const icon = side.iconsvg ? `<span class="activity-arch-icon">${side.iconsvg}</span>` : '';
+        const filepath = findPage(name);
+        if (filepath) {
+            return `<a class="activity-arch" href="../${esc(filepath)}" title="Open the ${esc(name)} page">${icon}${esc(name)}</a>`;
+        }
+        return `<span class="activity-arch">${icon}${esc(name)}</span>`;
+    }
+
+    // ------------------------------------------------------------------
     // Synergy Activity panel — the user's own pairings, explanations, votes.
     // Loaded lazily on first open; RLS scopes everything to the signed-in
     // user (own rows visible regardless of moderation status).
@@ -1090,56 +1143,11 @@
         if (!session) return;
         const uid = session.user.id;
         const client = window.Auth._getClient();
-        const esc = window.escapeHtml;
 
         const A1 = 'a1:archetypes!archetypelinks_archetypeid1_fkey(archetypename, iconsvg)';
         const A2 = 'a2:archetypes!archetypelinks_archetypeid2_fkey(archetypename, iconsvg)';
 
-        // archetypes-data.js is already loaded on this page — map archetype
-        // names to their analysis-page paths for clickable links.
-        // DB names drift from page names ("Swamp" vs "of the Swamp",
-        // "Snake-Eye" vs "Snake-Eyes"), so match in tiers: exact → normalized
-        // (letters/digits only) → unique prefix/suffix containment. A link is
-        // only produced when the match is unambiguous.
-        const pageEntries = [];
-        if (typeof archetypes !== 'undefined' && Array.isArray(archetypes)) {
-            archetypes.forEach(a => {
-                if (a.name && a.filepath) {
-                    const lower = a.name.toLowerCase();
-                    pageEntries.push({ lower, norm: lower.replace(/[^a-z0-9]/g, ''), filepath: a.filepath });
-                }
-            });
-        }
-
-        function findPage(name) {
-            const lower = name.toLowerCase();
-            let hit = pageEntries.find(p => p.lower === lower);
-            if (hit) return hit.filepath;
-            const norm = lower.replace(/[^a-z0-9]/g, '');
-            if (norm.length < 3) return null;
-            hit = pageEntries.find(p => p.norm === norm);
-            if (hit) return hit.filepath;
-            // Containment tier: guard against tiny norms producing false
-            // positives (e.g. "Fairy Tail" must not match page "F.A." via "fa")
-            const candidates = pageEntries.filter(p =>
-                p.norm.startsWith(norm) || p.norm.endsWith(norm) ||
-                (p.norm.length >= 5 && norm.startsWith(p.norm)));
-            return candidates.length === 1 ? candidates[0].filepath : null;
-        }
-
-        function archHtml(side) {
-            if (!side) return '<span>?</span>';
-            const name = side.archetypename || '?';
-            const icon = side.iconsvg ? `<span class="activity-arch-icon">${side.iconsvg}</span>` : '';
-            const filepath = findPage(name);
-            if (filepath) {
-                return `<a class="activity-arch" href="../${esc(filepath)}" title="Open the ${esc(name)} page">${icon}${esc(name)}</a>`;
-            }
-            return `<span class="activity-arch">${icon}${esc(name)}</span>`;
-        }
-
         const pairName = l => l ? `${archHtml(l.a1)} <span class="activity-pair-sep">↔</span> ${archHtml(l.a2)}` : 'Unknown pairing';
-        const chip = s => `<span class="status-chip ${esc(s)}">${esc(s)}</span>`;
         const container = document.getElementById('activity-groups');
         if (!container) return;
 
@@ -1259,6 +1267,112 @@
     }
 
     // ------------------------------------------------------------------
+    // My Contributions panel — the user's own page-section rewrites
+    // (pagesections) and correction reports (pagecorrections), across
+    // every archetype they've submitted to. Loaded lazily on first open;
+    // RLS scopes everything to the signed-in user (own rows visible
+    // regardless of moderation status). "Approved" means different things
+    // for the two tables — a pagesections approval goes live immediately,
+    // a pagecorrections approval is a moderator confirming they'll hand-fix
+    // the static page (scripts/sql/008_page_corrections.sql) — so each row
+    // gets a short clarifying note rather than relying on the chip alone.
+    // ------------------------------------------------------------------
+
+    let _contributionActivityLoaded = false;
+
+    async function loadContributionActivity() {
+        if (_contributionActivityLoaded) return;
+        _contributionActivityLoaded = true;
+
+        const session = await window.Auth.getSession();
+        if (!session) return;
+        const uid = session.user.id;
+        const client = window.Auth._getClient();
+        const container = document.getElementById('contribution-groups');
+        if (!container) return;
+
+        let sections = [], corrections = [];
+        try {
+            [sections, corrections] = (await Promise.all([
+                client.from('pagesections')
+                    .select('sectionid, sectionkey, title, status, modnotes, createdon, archetypeid, archetypes!pagesections_archetypeid_fkey(archetypename, iconsvg)')
+                    .eq('userid', uid),
+                client.from('pagecorrections')
+                    .select('correctionid, quotedtext, body, status, modnotes, createdon, archetypeid, archetypes!pagecorrections_archetypeid_fkey(archetypename, iconsvg)')
+                    .eq('userid', uid),
+            ])).map(r => r.data || []);
+        } catch (e) {
+            container.innerHTML = '<div class="activity-empty">Could not load your contributions.</div>';
+            return;
+        }
+
+        const clip = (s, n) => esc((s || '').slice(0, n)) + ((s || '').length > n ? '…' : '');
+
+        // groups: archetypeid -> { arch, items[] }
+        const groups = new Map();
+        function group(archetypeid, arch) {
+            if (!groups.has(archetypeid)) groups.set(archetypeid, { arch, items: [] });
+            const g = groups.get(archetypeid);
+            if (!g.arch && arch) g.arch = arch;
+            return g;
+        }
+
+        sections.forEach(s => {
+            group(s.archetypeid, s.archetypes).items.push({
+                type: 'section', createdon: s.createdon, status: s.status, modnotes: s.modnotes,
+                label: esc(s.title || s.sectionkey || 'Untitled section'),
+            });
+        });
+        corrections.forEach(c => {
+            group(c.archetypeid, c.archetypes).items.push({
+                type: 'correction', createdon: c.createdon, status: c.status, modnotes: c.modnotes,
+                label: `"${clip(c.quotedtext || c.body, 80)}"`,
+            });
+        });
+
+        if (groups.size === 0) {
+            container.innerHTML = `<div class="activity-empty">
+                No contributions yet — open any archetype page and hit
+                <strong>[suggest edit]</strong> on a section, or flag an error in its text, to get started.</div>`;
+            return;
+        }
+
+        const newest = g => Math.max(...g.items.map(i => Date.parse(i.createdon) || 0));
+
+        function statusNote(item) {
+            if (item.status === 'rejected' && item.modnotes) return `Mod notes: ${esc(item.modnotes)}`;
+            if (item.type === 'section') {
+                if (item.status === 'approved') return 'Live on the page now';
+                if (item.status === 'superseded') return 'Was live, later replaced by a newer edit';
+            } else if (item.status === 'approved') {
+                return 'Confirmed — applied by hand on the next content pass';
+            }
+            return '';
+        }
+
+        container.innerHTML = [...groups.values()]
+            .sort((a, b) => newest(b) - newest(a))
+            .map(g => {
+                const header = `<div class="activity-group-header">${archHtml(g.arch)}</div>`;
+                const rows = g.items
+                    .sort((a, b) => Date.parse(b.createdon) - Date.parse(a.createdon))
+                    .map(item => {
+                        const glyph = item.type === 'section' ? '✎' : '⚑';
+                        const note = statusNote(item);
+                        return `
+                            <div class="activity-subrow">
+                                <span class="subrow-glyph glyph-reason">${glyph}</span>
+                                <div class="subrow-content">${item.label}
+                                    ${note ? `<div class="activity-group-notes">${note}</div>` : ''}
+                                </div>
+                                <div class="subrow-meta">${formatDateShort(item.createdon)} ${chip(item.status)}</div>
+                            </div>`;
+                    }).join('');
+                return `<div class="activity-group">${header}${rows}</div>`;
+            }).join('');
+    }
+
+    // ------------------------------------------------------------------
     // Account sidebar navigation (Google-Account style panels)
     // ------------------------------------------------------------------
 
@@ -1266,7 +1380,7 @@
         const nav = document.getElementById('account-nav');
         if (!nav) return;
 
-        const panels = { home: 'panel-home', settings: 'panel-settings', replays: 'panel-replays', synergies: 'panel-synergies' };
+        const panels = { home: 'panel-home', settings: 'panel-settings', replays: 'panel-replays', synergies: 'panel-synergies', contributions: 'panel-contributions' };
 
         function show(name) {
             if (!panels[name]) name = 'home';
@@ -1279,6 +1393,7 @@
             });
             if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
             if (name === 'synergies') loadSynergyActivity();
+            if (name === 'contributions') loadContributionActivity();
         }
 
         nav.querySelectorAll('.account-nav-item[data-panel]').forEach(btn => {

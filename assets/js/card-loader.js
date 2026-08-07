@@ -1028,16 +1028,25 @@ window.CardLoader = (function () {
     /**
      * Resolve the cropped (art-only, no frame/text) image URL for a card ID.
      * Same GCS-first-then-CDN-fallback dance as getCardImageUrl, since our own
-     * cards_cropped mirror is still being backfilled card-by-card.
+     * cards_cropped mirror is still being backfilled card-by-card. ygoprodeck's
+     * own cards_cropped mirror is also incomplete for some cards, so as a last
+     * resort fall back to the full (uncropped) image, which is reliably present
+     * on both hosts — better a framed card than no art at all.
      */
     function resolveCroppedImageUrl(cardId) {
-        const gcsUrl = `${CONFIG.CROPPED_IMAGE_BASE_URL}/${encodeURIComponent(cardId)}.png`;
-        const fallbackUrl = `https://images.ygoprodeck.com/images/cards_cropped/${cardId}.jpg`;
+        const gcsCroppedUrl = `${CONFIG.CROPPED_IMAGE_BASE_URL}/${encodeURIComponent(cardId)}.png`;
+        const cdnCroppedUrl = `https://images.ygoprodeck.com/images/cards_cropped/${cardId}.jpg`;
+        const fullFallbackUrl = `https://images.ygoprodeck.com/images/cards/${cardId}.jpg`;
         return new Promise(resolve => {
-            const img = new Image();
-            img.onload = () => resolve(gcsUrl);
-            img.onerror = () => resolve(fallbackUrl);
-            img.src = gcsUrl;
+            const gcsImg = new Image();
+            gcsImg.onload = () => resolve(gcsCroppedUrl);
+            gcsImg.onerror = () => {
+                const cdnImg = new Image();
+                cdnImg.onload = () => resolve(cdnCroppedUrl);
+                cdnImg.onerror = () => resolve(fullFallbackUrl);
+                cdnImg.src = cdnCroppedUrl;
+            };
+            gcsImg.src = gcsCroppedUrl;
         });
     }
 
