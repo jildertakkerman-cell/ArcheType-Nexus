@@ -261,6 +261,7 @@ async function _loadLinks() {
     }
 
     _links = rows
+        .filter(row => row.status !== 'rejected')
         .map(row => ({ ...row, other: row.archetypeid1 === _myArchetypeId ? row.a2 : row.a1 }))
         .sort((a, b) => _score(b.archetypelinkvotes) - _score(a.archetypelinkvotes));
 }
@@ -577,9 +578,15 @@ async function _doSearch(q) {
     if (candidateMatches.length) {
         html += candidateMatches.map(a => `
             <div class="suggest-row">
-                <div class="tier-icon">${a.iconsvg || ''}</div>
-                <div class="tier-name">${window.escapeHtml(a.archetypename)}</div>
-                <button class="suggest-btn" onclick="synSuggestLink(${a.archetypeid}, this)">＋ Suggest pairing</button>
+                <div class="suggest-row-head">
+                    <div class="tier-icon">${a.iconsvg || ''}</div>
+                    <div class="tier-name">${window.escapeHtml(a.archetypename)}</div>
+                </div>
+                <textarea class="suggest-reason-input" id="syn-suggest-reason-${a.archetypeid}" rows="2" maxlength="220" oninput="synUpdateSuggestCounter(${a.archetypeid})" placeholder="Why do these work well together? (required)"></textarea>
+                <div class="suggest-row-footer">
+                    <div class="char-counter" id="syn-suggest-counter-${a.archetypeid}">0 / 220</div>
+                    <button type="button" class="suggest-btn" id="syn-suggest-btn-${a.archetypeid}" disabled onclick="synSuggestLink(${a.archetypeid}, this)">＋ Suggest pairing</button>
+                </div>
             </div>`).join('');
     }
 
@@ -587,18 +594,38 @@ async function _doSearch(q) {
     resultsEl.innerHTML = html;
 }
 
+// Mirrors synUpdateCounter, but for the required reason attached to a brand
+// new pairing suggestion — the submit button stays disabled until it's valid.
+window.synUpdateSuggestCounter = function (archetypeId) {
+    const textarea = document.getElementById('syn-suggest-reason-' + archetypeId);
+    const counter = document.getElementById('syn-suggest-counter-' + archetypeId);
+    const btn = document.getElementById('syn-suggest-btn-' + archetypeId);
+    if (!textarea) return;
+    const val = textarea.value;
+    if (counter) counter.textContent = `${val.length} / 220`;
+    if (btn) btn.disabled = val.trim().length < 10 || val.length > 220;
+};
+
 window.synSuggestLink = async function (otherArchetypeId, btnEl) {
     const client = _client();
     if (!client) return;
     const session = await window.Auth?.getSession?.();
     if (!session) { _showLoginPrompt('suggest a pairing'); return; }
 
+    // A new pairing can't be submitted without saying why it works — the
+    // button is disabled until this holds, this is just the safety net.
+    const textarea = document.getElementById('syn-suggest-reason-' + otherArchetypeId);
+    const body = textarea ? textarea.value.trim() : '';
+    if (body.length < 10 || body.length > 220) return;
+
     const a1 = Math.min(_myArchetypeId, otherArchetypeId);
     const a2 = Math.max(_myArchetypeId, otherArchetypeId);
 
-    const { error } = await client
+    const { data: linkRow, error } = await client
         .from('archetypelinks')
-        .insert({ archetypeid1: a1, archetypeid2: a2, submittedby: session.user.id });
+        .insert({ archetypeid1: a1, archetypeid2: a2, submittedby: session.user.id })
+        .select('linkid')
+        .single();
 
     if (error) {
         if (btnEl) {
@@ -608,22 +635,36 @@ window.synSuggestLink = async function (otherArchetypeId, btnEl) {
         return;
     }
 
-    // Optimistic insert: show the new pairing as a pending row right away
-    // instead of a dead "Submitted" button (real linkid arrives on reload).
+    const { error: reasonError } = await client
+        .from('archetypelinkreasons')
+        .insert({ linkid: linkRow.linkid, userid: session.user.id, body });
+
+    // Optimistic insert: show the new pairing (with its reason) as a pending
+    // row right away instead of a dead "Submitted" button.
     const cand = _lastCandidates.find(c => c.archetypeid === otherArchetypeId);
     if (cand) {
         const newLink = {
-            linkid: -Date.now(),
+            linkid: linkRow.linkid,
             archetypeid1: a1, archetypeid2: a2,
             status: 'pending', submittedby: session.user.id,
-            archetypelinkvotes: [], archetypelinkreasons: [],
+            archetypelinkvotes: [],
+            archetypelinkreasons: reasonError ? [] : [{
+                reasonid: -Date.now(),
+                userid: session.user.id,
+                body,
+                status: 'pending',
+                profiles: { displayname: 'You' },
+                archetypelinkreasonvotes: [],
+            }],
             other: cand,
         };
         _links.push(newLink);
         const suggestRow = btnEl?.closest('.suggest-row');
         if (suggestRow) suggestRow.outerHTML = _rowHtml(newLink, 'unranked', session.user.id);
         await _renderList();
-        _flashSub('✔ Suggestion submitted — once approved, the community votes it up or down.');
+        _flashSub(reasonError
+            ? '✔ Pairing submitted, but your reason failed to save — try adding it again once the pairing is approved.'
+            : '✔ Suggestion submitted — once approved, the community votes it up or down.');
     } else if (btnEl) {
         btnEl.textContent = 'Submitted — pending review';
         btnEl.disabled = true;

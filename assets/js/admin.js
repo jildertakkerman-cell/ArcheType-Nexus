@@ -1,5 +1,5 @@
 /**
- * admin.js — Moderation panel: Combo guides, Synergy Links, Synergy Reasons.
+ * admin.js — Moderation panel: Combo guides, Synergy Links, Synergy Reasons, Section Rewrites.
  * Requires: supabase-config.js, auth.js, text-utils.js loaded first.
  */
 (function () {
@@ -28,7 +28,7 @@
     // a per-domain callback since combos/links/reasons render genuinely
     // different content.
     // ------------------------------------------------------------------
-    function createModerationTabGroup({ group, table, pkColumn, countBadgeId, fetchRows, renderCard }) {
+    function createModerationTabGroup({ group, table, pkColumn, countBadgeId, fetchRows, renderCard, approveFn }) {
         const cache = { pending: [], approved: [], rejected: [] };
 
         function renderTab(tab) {
@@ -61,7 +61,10 @@
 
         async function approve(id) {
             try {
-                await setStatus(id, 'approved');
+                // Most groups just flip status; `sections` needs the
+                // supersede-then-approve RPC so the one-live-version-per-key
+                // invariant can't be violated by a plain update.
+                if (approveFn) await approveFn(id); else await setStatus(id, 'approved');
                 removeCard(id);
                 for (const tab of ['pending', 'rejected']) {
                     const idx = cache[tab].findIndex(r => String(r[pkColumn]) === String(id));
@@ -153,7 +156,7 @@
     };
 
     window.switchMode = function (mode, btn) {
-        ['combos', 'links', 'reasons'].forEach(m => {
+        ['combos', 'links', 'reasons', 'sections'].forEach(m => {
             const el = document.getElementById(`mode-${m}`);
             if (el) el.style.display = m === mode ? '' : 'none';
         });
@@ -417,6 +420,59 @@
     }
 
     // ------------------------------------------------------------------
+    // Section Rewrites (pagesections — full replacements that go LIVE on
+    // approval via the approve_pagesection() RPC, unlike every other group
+    // here which just flips a status column).
+    // ------------------------------------------------------------------
+    function renderSectionCard(s, tab) {
+        const archName = s.archetypes?.archetypename || `Archetype #${s.archetypeid}`;
+        const actions = actionRow('sections', s.sectionid, tab, s.modnotes || '');
+        // "-alt-" in the key is the "+ Add a combo" convention (see
+        // _pcsSetupComboFamily/_pcsBuildNewComboForm in page-sections.js) —
+        // approving one adds a new tab, it never replaces existing content,
+        // so the messaging here needs to say something different from a
+        // normal edit.
+        const isNewCombo = s.sectionkey.includes('-alt-');
+        const label = isNewCombo
+            ? `New combo: "${window.escapeHtml(s.title || s.sectionkey)}"`
+            : window.escapeHtml(s.sectionkey);
+        const liveNote = tab === 'approved'
+            ? (isNewCombo
+                ? `<div class="combo-admin-sub" style="margin-top:0.3rem;color:#4ade80;">Live — showing as its own tab, existing content untouched.</div>`
+                : `<div class="combo-admin-sub" style="margin-top:0.3rem;color:#4ade80;">Live — replacing the AI draft for this section.</div>`)
+            : '';
+        return `
+            <div class="combo-admin-card" id="card-sections-${s.sectionid}">
+                <div class="combo-admin-card-header">
+                    <div class="combo-admin-meta">
+                        <div class="combo-admin-title">${window.escapeHtml(archName)} <span style="color:#737373;font-weight:400;">&middot; ${label}</span></div>
+                        <div class="combo-admin-sub" style="margin-top:0.3rem;white-space:pre-wrap;">${window.escapeHtml(s.body)}</div>
+                        <div class="combo-admin-sub" style="margin-top:0.3rem;">
+                            Submitted by <span>${window.escapeHtml(s.profiles?.displayname || 'Unknown')}</span> &middot; ${formatDate(s.createdon)}
+                        </div>
+                        ${liveNote}
+                        ${s.modnotes && tab !== 'pending' ? `<div class="combo-admin-sub" style="margin-top:0.3rem;color:#f87171;">Mod notes: ${window.escapeHtml(s.modnotes)}</div>` : ''}
+                    </div>
+                </div>
+                ${actions}
+            </div>`;
+    }
+
+    async function fetchSections(c) {
+        const { data, error } = await c
+            .from('pagesections')
+            .select(`
+                sectionid, archetypeid, sectionkey, title, body, status, modnotes, createdon,
+                profiles!pagesections_userid_fkey ( displayname ),
+                archetypes!pagesections_archetypeid_fkey ( archetypename )
+            `)
+            .in('status', ['pending', 'approved', 'rejected'])
+            .order('createdon', { ascending: false });
+        if (error) throw error;
+        return data || [];
+    }
+
+    // ------------------------------------------------------------------
     // Bootstrap
     // ------------------------------------------------------------------
     async function init() {
@@ -446,8 +502,18 @@
             group: 'reasons', table: 'archetypelinkreasons', pkColumn: 'reasonid',
             countBadgeId: 'pending-count-reasons', fetchRows: fetchReasons, renderCard: renderReasonCard,
         });
+        groups.sections = createModerationTabGroup({
+            group: 'sections', table: 'pagesections', pkColumn: 'sectionid',
+            countBadgeId: 'pending-count-sections', fetchRows: fetchSections, renderCard: renderSectionCard,
+            approveFn: async (id) => {
+                const { error } = await client().rpc('approve_pagesection', { p_sectionid: id });
+                if (error) throw error;
+            },
+        });
 
-        await Promise.all([groups.combos.init(), groups.links.init(), groups.reasons.init()]);
+        await Promise.all([
+            groups.combos.init(), groups.links.init(), groups.reasons.init(), groups.sections.init(),
+        ]);
     }
 
     document.addEventListener('DOMContentLoaded', init);

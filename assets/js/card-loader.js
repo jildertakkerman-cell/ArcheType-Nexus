@@ -1183,8 +1183,8 @@ window.CardLoader = (function () {
 
         const root = document.documentElement.style;
         root.setProperty('--backdrop-scrim-color', bg);
-        root.setProperty('--backdrop-scrim-opacity', isLight ? '0.6' : '0.35');
-        root.setProperty('--ambient-opacity', isLight ? '0.07' : '0.16');
+        root.setProperty('--backdrop-scrim-opacity', isLight ? '0.48' : '0.35');
+        root.setProperty('--ambient-opacity', isLight ? '0.13' : '0.16');
     }
 
     /**
