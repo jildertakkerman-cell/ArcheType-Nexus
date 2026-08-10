@@ -737,8 +737,12 @@ window.CardLoader = (function () {
      * Fetches and injects the suggestion form into the page.
      */
     async function loadSuggestionForm() {
-        if (document.body.dataset.page === 'index') {
-            console.log('Skipping suggestion form on index page');
+        // Non-content utility pages ("suggest an edit to THIS page" doesn't
+        // make sense on a directory listing or the moderator-only admin
+        // panel) — same opt-out convention as the pre-existing index skip,
+        // just extended to cover admin.html too.
+        if (['index', 'admin'].includes(document.body.dataset.page)) {
+            console.log(`Skipping suggestion form on ${document.body.dataset.page} page`);
             return;
         }
 

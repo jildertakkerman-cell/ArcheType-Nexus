@@ -13,16 +13,46 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/text-utils.js"></script>
 
+    <!-- Section-rewrite rendering, for the moderation preview: page-sections.js's
+         _pcsRenderBody/_pcsSectionStyle render a submission exactly as the live
+         page would (bold/italic/color/size/bullets/combo-step layout), instead
+         of showing raw markdown-lite source. card-loader.js resolves the real
+         card art for combo-walkthrough previews. archetypes-data.js supplies the
+         "View live page" link (filepath naming isn't consistent enough across
+         pages — "Deck Analysis" vs "Archetype Breakdown" vs others — to
+         reconstruct it any other way). None of these are wrapped in a module,
+         so their top-level functions/consts are ordinary globals admin.js can
+         call directly once loaded, no wiring needed beyond script order.
+         admin.js must load last, after all of these. -->
+    <script src="../assets/js/archetypes-data.js"></script>
+    <script src="../assets/js/page-sections.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+    <!-- Tailwind build + shared-archetype.css: the rendered preview below reuses
+         the exact classes deck pages render with (text-green-400, list-disc,
+         .card, .combo-step-card, .text-accent, ...), so both need to be loaded
+         here too or the preview would show unstyled text. -->
+    <link href="../output.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/shared-archetype.css">
+
     <link rel="stylesheet" href="../assets/css/replay-analyzer.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
 
     <style>
+        /* shared-archetype.css's .text-accent/.card/etc. all read this variable
+           with a fallback — every deck page sets its OWN accent color this same
+           way (inline, per page), so this just makes the admin page "a page
+           with amber as its accent," matching everything else here already
+           colored #f59e0b. There's no single "correct" per-archetype accent to
+           use in a queue spanning every archetype at once, so a consistent
+           admin-side color (with a note near the preview) beats guessing. */
+        :root { --accent-color: #f59e0b; }
         body {
             font-family: 'Inter', sans-serif;
             background: var(--bg-color, #0a0a0a);
@@ -247,9 +277,42 @@
             color: #525252;
         }
         .empty-state i { font-size: 2.5rem; margin-bottom: 0.75rem; display: block; }
+
+        /* ── Section Rewrites: rendered preview + before/after comparison ── */
+        .pcs-admin-live-link {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            font-size: 0.72rem; font-weight: 600; color: #93c5fd; text-decoration: none;
+            margin-left: 0.6rem; white-space: nowrap;
+        }
+        .pcs-admin-live-link:hover { text-decoration: underline; }
+        .pcs-admin-compare {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+            margin: 0.5rem 0;
+            /* Without this, grid's default stretch makes the shorter column's
+               bordered box balloon to match the taller one (e.g. a one-line
+               "no live version yet" note next to a multi-step combo preview)
+               — each side should size to its own content instead. */
+            align-items: start;
+        }
+        @media (max-width: 700px) {
+            .pcs-admin-compare { grid-template-columns: 1fr; }
+        }
+        .pcs-admin-compare-label {
+            font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+            color: #737373; margin-bottom: 0.35rem;
+        }
+        .pcs-admin-compare-label-new { color: #f59e0b; }
+        .pcs-admin-compare-body, .pcs-admin-preview-single {
+            background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 0.6rem; padding: 0.75rem 0.9rem; font-size: 0.85rem; line-height: 1.5;
+            color: #d4d4d4;
+        }
+        .pcs-admin-compare-body p, .pcs-admin-preview-single p { margin: 0 0 0.5rem; }
+        .pcs-admin-compare-body p:last-child, .pcs-admin-preview-single p:last-child { margin-bottom: 0; }
+        .pcs-admin-empty { color: #525252; font-style: italic; font-size: 0.82rem; margin: 0; }
     </style>
 </head>
-<body>
+<body data-page="admin">
 
 <div class="admin-wrap">
     <div class="admin-header">

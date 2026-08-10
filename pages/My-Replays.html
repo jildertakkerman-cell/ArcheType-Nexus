@@ -109,6 +109,19 @@
         .activity-heading i { color: #67e8f9; margin-right: 0.45rem; }
         .activity-empty { font-size: 0.78rem; color: #737373; padding: 0.3rem 0; }
 
+        /* Summary counts bar (e.g. "3 pending · 5 approved") — plain text
+           reusing the status-chip color tokens so it reads consistently
+           with the chips below it, without another chip shape competing
+           for attention above the toolbar. */
+        .contribution-summary {
+            display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem;
+            font-size: 0.75rem; color: #a3a3a3; margin-bottom: 0.75rem;
+        }
+        .contribution-summary .count-pending    { color: #fbbf24; font-weight: 600; }
+        .contribution-summary .count-approved   { color: #4ade80; font-weight: 600; }
+        .contribution-summary .count-rejected   { color: #f87171; font-weight: 600; }
+        .contribution-summary .count-superseded { color: #94a3b8; font-weight: 600; }
+
         /* Grouped-by-pairing layout: one header per pairing, sub-rows beneath */
         .activity-group { padding: 0.85rem 0; border-top: 1px solid rgba(255,255,255,0.06); }
         .activity-group:first-child { border-top: none; padding-top: 0.25rem; }
@@ -158,6 +171,59 @@
         .activity-arch-icon svg { width: 100%; height: 100%; }
         .activity-pair-sep { color: #67e8f9; font-weight: 400; margin: 0 0.1rem; }
         .activity-score { font-size: 0.72rem; color: #a3a3a3; white-space: nowrap; flex-shrink: 0; margin-top: 0.2rem; }
+
+        /* Filter/sort toolbar */
+        .activity-toolbar {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;
+            margin-bottom: 0.85rem; padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .activity-filter-group { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        .activity-filter-btn {
+            font-size: 0.72rem; font-weight: 600; color: #a3a3a3;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 999px; padding: 0.3rem 0.7rem; cursor: pointer;
+            transition: background .15s, color .15s, border-color .15s;
+        }
+        .activity-filter-btn:hover { color: #e5e5e5; border-color: rgba(255,255,255,0.18); }
+        .activity-filter-btn.active {
+            background: rgba(103,232,249,0.15); color: #67e8f9;
+            border-color: rgba(103,232,249,0.4);
+        }
+        .activity-toolbar-right { display: flex; gap: 0.5rem; margin-left: auto; }
+        .activity-select {
+            font-size: 0.72rem; color: #d4d4d4; background: #18181b;
+            border: 1px solid rgba(255,255,255,0.14); border-radius: 0.5rem;
+            padding: 0.3rem 0.5rem;
+        }
+        /* Most browsers paint the dropdown popup using these, not the
+           translucent .activity-select background, so without them the
+           option list falls back to the OS's light default. */
+        .activity-select option {
+            background: #18181b; color: #e5e5e5;
+        }
+        .activity-clear-filters {
+            background: none; border: none; color: #67e8f9; text-decoration: underline;
+            cursor: pointer; font-size: inherit; padding: 0;
+        }
+        .activity-show-more {
+            display: block; margin: 0.3rem 0 0 0.35rem; background: none; border: none;
+            color: #67e8f9; font-size: 0.75rem; cursor: pointer; padding: 0.15rem 0;
+        }
+        .activity-show-more:hover { text-decoration: underline; }
+
+        /* Vote-score sign coloring — a bare "+0" reads as ambiguous (no votes
+           vs. a tie), so zero gets a neutral color and no plus sign. */
+        .activity-score-val.zero { color: #737373; }
+        .activity-score-val.pos  { color: #4ade80; }
+        .activity-score-val.neg  { color: #f87171; }
+
+        .subrow-kind {
+            font-size: 0.68rem; color: #67e8f9; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.02em;
+            display: block; margin-bottom: 0.1rem;
+        }
+
         .account-nav-logout { margin-top: 1rem; }
         .account-content { flex: 1; min-width: 0; }
         .account-panel { animation: panelIn 0.2s ease-out; }
@@ -166,6 +232,9 @@
         @media (max-width: 768px) {
             /* Room for the fixed bottom dock */
             body { padding: 1.5rem 0.85rem calc(6.5rem + env(safe-area-inset-bottom)); }
+
+            .activity-toolbar { flex-direction: column; align-items: stretch; }
+            .activity-toolbar-right { margin-left: 0; }
 
             /* align-items must reset to stretch here: the desktop flex-start
                applies to the horizontal axis once direction is column, which
@@ -1084,6 +1153,28 @@
         <div class="account-panel" id="panel-synergies" style="display:none;">
             <div class="activity-section">
                 <div class="activity-heading"><i class="fas fa-link"></i>Synergy Activity</div>
+                <div class="activity-toolbar" id="synergy-toolbar" style="display:none;">
+                    <div class="activity-filter-group" role="group" aria-label="Filter by type">
+                        <button type="button" class="activity-filter-btn active" data-filter-type="suggestion">Suggestions</button>
+                        <button type="button" class="activity-filter-btn" data-filter-type="reason">Explanations</button>
+                        <button type="button" class="activity-filter-btn" data-filter-type="linkvote">Pair votes</button>
+                        <button type="button" class="activity-filter-btn" data-filter-type="reasonvote">Explanation votes</button>
+                    </div>
+                    <div class="activity-toolbar-right">
+                        <select id="synergy-status-filter" class="activity-select" aria-label="Filter by status">
+                            <option value="all">All statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="superseded">Superseded</option>
+                        </select>
+                        <select id="synergy-sort" class="activity-select" aria-label="Sort by">
+                            <option value="newest">Newest activity</option>
+                            <option value="name">Pairing name</option>
+                            <option value="status">Status</option>
+                        </select>
+                    </div>
+                </div>
                 <div id="activity-groups"><div class="activity-empty">Loading…</div></div>
             </div>
         </div>
@@ -1092,6 +1183,27 @@
         <div class="account-panel" id="panel-contributions" style="display:none;">
             <div class="activity-section">
                 <div class="activity-heading"><i class="fas fa-pen-to-square"></i>My Contributions</div>
+                <div class="contribution-summary" id="contribution-summary" style="display:none;"></div>
+                <div class="activity-toolbar" id="contribution-toolbar" style="display:none;">
+                    <div class="activity-filter-group" role="group" aria-label="Filter by type">
+                        <button type="button" class="activity-filter-btn active" data-filter-type="all">All</button>
+                        <button type="button" class="activity-filter-btn" data-filter-type="section">Section edits</button>
+                    </div>
+                    <div class="activity-toolbar-right">
+                        <select id="contribution-status-filter" class="activity-select" aria-label="Filter by status">
+                            <option value="all">All statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="superseded">Superseded</option>
+                        </select>
+                        <select id="contribution-sort" class="activity-select" aria-label="Sort by">
+                            <option value="newest">Newest activity</option>
+                            <option value="name">Archetype name</option>
+                            <option value="status">Status</option>
+                        </select>
+                    </div>
+                </div>
                 <div id="contribution-groups"><div class="activity-empty">Loading…</div></div>
             </div>
         </div>

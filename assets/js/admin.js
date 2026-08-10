@@ -28,7 +28,7 @@
     // a per-domain callback since combos/links/reasons render genuinely
     // different content.
     // ------------------------------------------------------------------
-    function createModerationTabGroup({ group, table, pkColumn, countBadgeId, fetchRows, renderCard, approveFn }) {
+    function createModerationTabGroup({ group, table, pkColumn, countBadgeId, fetchRows, renderCard, approveFn, afterRenderTab }) {
         const cache = { pending: [], approved: [], rejected: [] };
 
         function renderTab(tab) {
@@ -40,6 +40,10 @@
                 return;
             }
             container.innerHTML = rows.map(r => renderCard(r, tab)).join('');
+            // Optional per-group post-insert step — sections uses this to load
+            // combo-walkthrough card art, which needs the container elements to
+            // already exist in the live DOM (see sectionsAfterRenderTab).
+            if (afterRenderTab) afterRenderTab(tab, rows);
         }
 
         function updateCount() {
@@ -424,6 +428,41 @@
     // approval via the approve_pagesection() RPC, unlike every other group
     // here which just flips a status column).
     // ------------------------------------------------------------------
+    // Renders a submission's body through the SAME functions the live page
+    // uses (_pcsRenderBody/_pcsSectionStyle, from page-sections.js) instead of
+    // showing raw markdown-lite source — a moderator should see what they're
+    // approving, not have to mentally parse `[color=red]**bold**[/color]`.
+    // Stashes any cardMap onto `s._cardMaps` as a side effect: combo-walkthrough
+    // renders need window.CardLoader.loadCards(cardMap) called AFTER this HTML
+    // is actually in the live DOM (it looks containers up by the ids THIS call
+    // generated), so sectionsAfterRenderTab reads it back post-insert. Recomputing
+    // the render there instead (simpler-looking) would generate fresh ids that
+    // no longer match what's in the DOM — _pcsRenderStepsHtml's step-image ids
+    // aren't deterministic between calls.
+    function renderSectionBodyHtml(s, body) {
+        if (typeof window._pcsRenderBody !== 'function') {
+            return `<p style="white-space:pre-wrap;">${window.escapeHtml(body)}</p>`;
+        }
+        const style = window._pcsSectionStyle ? window._pcsSectionStyle(s.sectionkey) : {};
+        const rendered = window._pcsRenderBody(body, style);
+        if (rendered.cardMap && Object.keys(rendered.cardMap).length) {
+            (s._cardMaps || (s._cardMaps = [])).push(rendered.cardMap);
+        }
+        return rendered.html;
+    }
+
+    function findArchetypePageUrl(archetypeName) {
+        // archetypes comes from archetypes-data.js — a bare top-level `const`,
+        // not window-scoped, but still an ordinary global visible here since
+        // both scripts share the same page. Filenames aren't a fixed pattern
+        // ("Deck Analysis" vs "Archetype Breakdown" vs others), so this lookup
+        // is the only reliable way to get the real link — see Admin.html's
+        // script-tag comment.
+        if (typeof archetypes === 'undefined' || !Array.isArray(archetypes)) return null;
+        const match = archetypes.find(a => a.name === archetypeName);
+        return match ? `../${match.filepath}` : null;
+    }
+
     function renderSectionCard(s, tab) {
         const archName = s.archetypes?.archetypename || `Archetype #${s.archetypeid}`;
         const actions = actionRow('sections', s.sectionid, tab, s.modnotes || '');
@@ -431,7 +470,8 @@
         // _pcsSetupComboFamily/_pcsBuildNewComboForm in page-sections.js) —
         // approving one adds a new tab, it never replaces existing content,
         // so the messaging here needs to say something different from a
-        // normal edit.
+        // normal edit, and there's no "currently live" counterpart to compare
+        // against (there's nothing at this key yet).
         const isNewCombo = s.sectionkey.includes('-alt-');
         const label = isNewCombo
             ? `New combo: "${window.escapeHtml(s.title || s.sectionkey)}"`
@@ -441,12 +481,47 @@
                 ? `<div class="combo-admin-sub" style="margin-top:0.3rem;color:#4ade80;">Live — showing as its own tab, existing content untouched.</div>`
                 : `<div class="combo-admin-sub" style="margin-top:0.3rem;color:#4ade80;">Live — replacing the AI draft for this section.</div>`)
             : '';
+
+        s._cardMaps = []; // reset each render pass — see renderSectionBodyHtml
+
+        // Approved rows ARE the live version, nothing to compare against — one
+        // rendered panel. Pending/rejected get "Currently live" next to
+        // "Suggested change" side by side, since seeing the delta is the whole
+        // point of reviewing.
+        let previewHtml;
+        if (tab === 'approved') {
+            previewHtml = `<div class="pcs-admin-preview-single">${renderSectionBodyHtml(s, s.body)}</div>`;
+        } else {
+            const suggestedHtml = renderSectionBodyHtml(s, s.body);
+            const liveHtml = isNewCombo
+                ? `<p class="pcs-admin-empty">New combo tab — nothing live at this key yet.</p>`
+                : s.liveVersion
+                    ? renderSectionBodyHtml(s, s.liveVersion.body)
+                    : `<p class="pcs-admin-empty">— AI-drafted, no community edit live yet —</p>`;
+            previewHtml = `
+                <div class="pcs-admin-compare">
+                    <div>
+                        <div class="pcs-admin-compare-label">Currently live</div>
+                        <div class="pcs-admin-compare-body">${liveHtml}</div>
+                    </div>
+                    <div>
+                        <div class="pcs-admin-compare-label pcs-admin-compare-label-new">Suggested change</div>
+                        <div class="pcs-admin-compare-body">${suggestedHtml}</div>
+                    </div>
+                </div>`;
+        }
+
+        const pageUrl = findArchetypePageUrl(s.archetypes?.archetypename);
+        const liveLink = pageUrl
+            ? `<a class="pcs-admin-live-link" href="${pageUrl}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i> View live page</a>`
+            : '';
+
         return `
             <div class="combo-admin-card" id="card-sections-${s.sectionid}">
                 <div class="combo-admin-card-header">
                     <div class="combo-admin-meta">
-                        <div class="combo-admin-title">${window.escapeHtml(archName)} <span style="color:#737373;font-weight:400;">&middot; ${label}</span></div>
-                        <div class="combo-admin-sub" style="margin-top:0.3rem;white-space:pre-wrap;">${window.escapeHtml(s.body)}</div>
+                        <div class="combo-admin-title">${window.escapeHtml(archName)} <span style="color:#737373;font-weight:400;">&middot; ${label}</span>${liveLink}</div>
+                        ${previewHtml}
                         <div class="combo-admin-sub" style="margin-top:0.3rem;">
                             Submitted by <span>${window.escapeHtml(s.profiles?.displayname || 'Unknown')}</span> &middot; ${formatDate(s.createdon)}
                         </div>
@@ -456,6 +531,16 @@
                 </div>
                 ${actions}
             </div>`;
+    }
+
+    // Loads real card art into whatever combo-step containers renderSectionCard
+    // just inserted (must run AFTER container.innerHTML is set — see
+    // createModerationTabGroup's renderTab). Reads back the cardMaps stashed
+    // during that exact render pass rather than recomputing them, so the ids
+    // match what's actually in the DOM.
+    function sectionsAfterRenderTab(tab, rows) {
+        if (typeof window._pcsLoadCardImages !== 'function') return;
+        rows.forEach(r => (r._cardMaps || []).forEach(cardMap => window._pcsLoadCardImages(cardMap)));
     }
 
     async function fetchSections(c) {
@@ -469,7 +554,33 @@
             .in('status', ['pending', 'approved', 'rejected'])
             .order('createdon', { ascending: false });
         if (error) throw error;
-        return data || [];
+        const rows = data || [];
+
+        // Batch-fetch the currently-live counterpart for every row that needs
+        // a comparison (everything except already-approved rows — those ARE
+        // live — and new-combo-tab additions, which have no counterpart by
+        // definition). The unique index on (archetypeid, sectionkey, approved)
+        // in scripts/sql/009_page_sections.sql guarantees at most one approved
+        // row per pair, same invariant _pcsRenderHistory relies on
+        // (page-sections.js). archetypeid/sectionkey are matched independently
+        // here (Supabase has no simple "IN pairs" filter) and paired up
+        // client-side — a small over-fetch, harmless at moderation-queue volume.
+        const needsLive = rows.filter(r => r.status !== 'approved' && !r.sectionkey.includes('-alt-'));
+        if (needsLive.length) {
+            const archetypeIds = [...new Set(needsLive.map(r => r.archetypeid))];
+            const sectionKeys = [...new Set(needsLive.map(r => r.sectionkey))];
+            const { data: liveRows, error: liveError } = await c
+                .from('pagesections')
+                .select('archetypeid, sectionkey, body, createdon')
+                .eq('status', 'approved')
+                .in('archetypeid', archetypeIds)
+                .in('sectionkey', sectionKeys);
+            if (!liveError && liveRows) {
+                const liveByKey = new Map(liveRows.map(r => [`${r.archetypeid}::${r.sectionkey}`, r]));
+                needsLive.forEach(r => { r.liveVersion = liveByKey.get(`${r.archetypeid}::${r.sectionkey}`) || null; });
+            }
+        }
+        return rows;
     }
 
     // ------------------------------------------------------------------
@@ -505,6 +616,7 @@
         groups.sections = createModerationTabGroup({
             group: 'sections', table: 'pagesections', pkColumn: 'sectionid',
             countBadgeId: 'pending-count-sections', fetchRows: fetchSections, renderCard: renderSectionCard,
+            afterRenderTab: sectionsAfterRenderTab,
             approveFn: async (id) => {
                 const { error } = await client().rpc('approve_pagesection', { p_sectionid: id });
                 if (error) throw error;

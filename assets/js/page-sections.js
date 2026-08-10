@@ -42,10 +42,19 @@
  * sentences) — never an individual bullet or sentence.
  *
  * Content format is a small custom markdown-lite, not raw HTML or a full
- * markdown library: **bold**, [[Card Name]] (renders as the site's existing
- * accent-highlighted card-name style), and lines starting with "- " for
- * bullets. Text is HTML-escaped BEFORE those tokens are applied, so
- * submitted text can never inject markup.
+ * markdown library: **bold** (also Ctrl+B), *italic* (also Ctrl+I),
+ * [[Card Name]] (renders as the site's existing accent-highlighted
+ * card-name style), lines starting with "- " for bullets,
+ * [size=sm|lg|xl]...[/size], [font=serif|mono]...[/font], and
+ * [color=accent|red|orange|yellow|green|blue|purple|gray]...[/color]
+ * for the editor's size/font dropdowns and color-swatch buttons. Text is
+ * HTML-escaped BEFORE those tokens are applied, so submitted text can never
+ * inject markup — and size/font/color are each a closed allow-list mapped to
+ * fixed CSS classes (never raw CSS/hex from the user), so they can't be used
+ * to smuggle arbitrary styles either. color=accent reuses each page's own
+ * pre-existing .text-accent rule (every deck page already defines one inline
+ * for its [[Card Name]] highlighting), so that one token renders in a
+ * different color on every archetype page — the rest are a fixed palette.
  *
  * Requires: supabase-config.js, auth.js loaded first.
  * Schema/RLS/approve_pagesection(): scripts/sql/009_page_sections.sql.
@@ -200,8 +209,243 @@ function _pcsInjectStyle() {
         .pcs-hist-live { color: #4ade80; margin-left: 0.4rem; font-weight: 700; }
         .pcs-hist-body { color: #d4d4d4; }
         .pcs-hist-body p { margin: 0 0 0.4rem; }
+        .pcs-fmt-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem 0.9rem; margin-bottom: 0.5rem; }
+        .pcs-fmt-select {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+            color: #d4d4d4; font-size: 0.74rem; font-weight: 600; font-family: inherit;
+            padding: 0.25rem 0.4rem; border-radius: 0.35rem; cursor: pointer;
+        }
+        .pcs-fmt-select:hover, .pcs-fmt-select:focus { background: rgba(255,255,255,0.12); color: #fff; outline: none; }
+        .pcs-fmt-select option { background: #1f1f1f; color: #e5e5e5; }
+        .pcs-fmt-colors { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+        .pcs-fmt-color-label {
+            font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em;
+            color: #737373; margin-right: 0.05rem;
+        }
+        /* Swatches paint their own fill from currentColor, set by the SAME
+           class _pcsApplyStyleTokens wraps the text in — so a button here is
+           never a color picked in JS, it's always exactly what clicking it
+           will produce. .text-accent in particular reuses each page's own
+           pre-existing accent-highlight rule, so that one swatch shows a
+           different color on every archetype page automatically. */
+        .pcs-fmt-swatch {
+            width: 1.05rem; height: 1.05rem; border-radius: 50%; background: currentColor;
+            border: 1px solid rgba(255,255,255,0.35); cursor: pointer; padding: 0;
+        }
+        .pcs-fmt-swatch:hover { border-color: rgba(255,255,255,0.7); transform: scale(1.12); }
+        .pcs-font-serif { font-family: 'Georgia', serif; }
+        .pcs-font-mono { font-family: 'Roboto Mono', monospace; }
+        .pcs-tips { margin: 0 0 0.6rem; }
+        .pcs-tips-toggle {
+            background: none; border: none; color: #9ca3af; font-size: 0.74rem; font-weight: 600;
+            cursor: pointer; font-family: inherit; padding: 0; display: inline-flex; align-items: center; gap: 0.35rem;
+        }
+        .pcs-tips-toggle:hover, .pcs-tips-toggle:focus { color: #f59e0b; outline: none; }
+        .pcs-tips-toggle i { font-size: 0.62rem; transition: transform 0.15s ease; }
+        .pcs-tips-toggle.open i { transform: rotate(90deg); }
+        .pcs-tips-list {
+            margin: 0.45rem 0 0; padding-left: 1.15rem; color: #a3a3a3; font-size: 0.78rem; line-height: 1.55;
+            max-width: 34rem;
+        }
+        .pcs-tips-list li { margin-bottom: 0.3rem; }
+        .pcs-tips-list li:last-child { margin-bottom: 0; }
+        .pcs-tips-list code {
+            background: rgba(255,255,255,0.08); border-radius: 0.25rem; padding: 0.05rem 0.3rem;
+            font-family: 'Roboto Mono', monospace; font-size: 0.74rem; color: #e5e5e5;
+        }
     `;
     document.head.appendChild(style);
+}
+
+// Closed allow-lists for [size=...]/[font=...]/[color=...] — the ONLY
+// classes those tokens can ever resolve to. Never let a token value flow
+// into an inline style="" or a raw CSS value; a fixed class per key is what
+// keeps this safe to auto-publish once a moderator approves it, same as
+// [[Card Name]] never lets user text become an attribute.
+const PCS_SIZE_CLASS = { sm: 'text-sm', lg: 'text-lg', xl: 'text-xl' };
+// Generic CSS family keywords, not named webfonts — pages each load their
+// OWN different Google Fonts pairing (Cinzel/Lora on one, Creepster/Roboto
+// on another, etc.), so a token naming a specific font would silently break
+// on any page that never loaded it. 'serif'/'monospace' always resolve to
+// *some* real font in every browser; 'Roboto Mono' is offered first only as
+// a nicer-looking preference where a page happens to have it, with the
+// generic keyword right behind it as the guaranteed fallback.
+const PCS_FONT_CLASS = { serif: 'pcs-font-serif', mono: 'pcs-font-mono' };
+// "accent" reuses .text-accent, which every deck-analysis page ALREADY
+// defines inline (its own hex, different per page) for [[Card Name]]
+// highlighting — confirmed by checking actual page source, not a shared
+// theme file: assets/css/themes/*.css and shared-archetype.css exist in this
+// repo but aren't <link>'d from any page, so they're dead weight, not a real
+// per-page theming mechanism. Reusing the one class that genuinely IS wired
+// up on every page is what makes the "Theme" swatch legitimately per-page
+// without introducing a new site-wide CSS dependency. The rest are a small
+// fixed palette ("Color" row) — deliberately not page-dependent, so they
+// read the same everywhere.
+const PCS_COLOR_CLASS = {
+    accent: 'text-accent',
+    red: 'text-red-400', orange: 'text-orange-400', yellow: 'text-yellow-400',
+    green: 'text-green-400', blue: 'text-blue-400', purple: 'text-purple-400', gray: 'text-neutral-300',
+};
+
+// Wraps text[start,end) in a token pair. Selects the wrapped text afterward
+// (or the "text" placeholder, if nothing was selected) so a follow-up click
+// on another button re-wraps it instead of nesting, and so typing
+// immediately replaces the placeholder.
+//
+// Inserts via document.execCommand('insertText', ...) rather than assigning
+// textarea.value directly — a direct assignment replaces the whole value in
+// one shot outside the browser's own edit path, which wipes its native
+// undo/redo stack (Ctrl+Z/Ctrl+Y stop working, or jump straight back to
+// empty, for the rest of the session). execCommand's insertText goes through
+// the SAME internal path as real typing, so it stays undoable and fires
+// 'input' on its own — no manual dispatch needed on that path, which is what
+// the caller's preview listener (already bound to 'input') picks up. Falls
+// back to a direct assignment only if execCommand is unavailable (very old
+// or locked-down browsers) — formatting still works there, undo just won't
+// survive it, same as before this fix.
+function _pcsWrapSelection(textarea, openTag, closeTag) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.slice(start, end) || 'text';
+    const inserted = openTag + selected + closeTag;
+
+    textarea.focus();
+    textarea.setSelectionRange(start, end);
+    let insertedViaExecCommand = false;
+    try {
+        insertedViaExecCommand = document.execCommand('insertText', false, inserted);
+    } catch (e) { /* execCommand unsupported — fall through to direct assignment */ }
+
+    if (!insertedViaExecCommand) {
+        textarea.value = textarea.value.slice(0, start) + inserted + textarea.value.slice(end);
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    textarea.selectionStart = start + openTag.length;
+    textarea.selectionEnd = start + openTag.length + selected.length;
+}
+
+// Toolbar markup shared by the plain-textarea editor and each combo-step's
+// body textarea. Size/font are <select> dropdowns (apply-then-reset to their
+// placeholder option, like a one-shot action rather than persistent state);
+// colors are one-click swatch buttons grouped "Theme" (this page's own
+// accent color) vs "Color" (a small fixed palette) — swatches carry the
+// SAME class the text will actually render with, so what's on the button is
+// exactly what clicking it produces, never a color picked separately in JS.
+function _pcsFormatToolbarHtml() {
+    const swatch = (key, label) =>
+        `<button type="button" class="pcs-fmt-swatch ${PCS_COLOR_CLASS[key]}" data-fmt-color="${key}" title="${label}"></button>`;
+    return `<div class="pcs-fmt-toolbar">
+        <select class="pcs-fmt-select" data-fmt-select="size" title="Font size">
+            <option value="" selected>Size</option>
+            <option value="sm">Small</option>
+            <option value="lg">Large</option>
+            <option value="xl">Extra large</option>
+        </select>
+        <select class="pcs-fmt-select" data-fmt-select="font" title="Font">
+            <option value="" selected>Font</option>
+            <option value="serif">Serif</option>
+            <option value="mono">Monospace</option>
+        </select>
+        <div class="pcs-fmt-colors">
+            <span class="pcs-fmt-color-label">Theme</span>
+            ${swatch('accent', "This page's accent color")}
+            <span class="pcs-fmt-color-label">Color</span>
+            ${swatch('red', 'Red')}
+            ${swatch('orange', 'Orange')}
+            ${swatch('yellow', 'Yellow')}
+            ${swatch('green', 'Green')}
+            ${swatch('blue', 'Blue')}
+            ${swatch('purple', 'Purple')}
+            ${swatch('gray', 'Gray')}
+        </div>
+    </div>`;
+}
+
+// Binds one toolbar's controls to one textarea. Select some text (or don't —
+// a placeholder gets inserted either way), then pick a size/font from the
+// dropdown or click a color swatch; no need to remember or hand-type the
+// [size=]/[font=]/[color=] syntax. Also binds Ctrl/Cmd+B and Ctrl/Cmd+I on
+// the textarea itself for **bold**/*italic* — a plain <textarea> has no
+// native browser action bound to either shortcut (that's only a thing in
+// contenteditable/rich-text areas), so claiming them here doesn't fight
+// anything; preventDefault() just guards against a browser/extension
+// grabbing them (e.g. some browsers use Ctrl+B for a bookmarks-bar toggle
+// when focus ISN'T in a text field — irrelevant here, but preventDefault
+// makes the ownership explicit either way).
+function _pcsWireFormatToolbar(toolbarEl, textarea) {
+    toolbarEl.querySelectorAll('[data-fmt-select]').forEach(sel => {
+        sel.addEventListener('change', () => {
+            const value = sel.value;
+            if (!value) return;
+            const tag = sel.dataset.fmtSelect; // 'size' | 'font'
+            _pcsWrapSelection(textarea, `[${tag}=${value}]`, `[/${tag}]`);
+            sel.value = ''; // resets to the placeholder option — acts like a one-shot button, not a persistent mode
+        });
+    });
+    toolbarEl.querySelectorAll('[data-fmt-color]').forEach(btn => {
+        btn.addEventListener('click', () => _pcsWrapSelection(textarea, `[color=${btn.dataset.fmtColor}]`, '[/color]'));
+    });
+    textarea.addEventListener('keydown', e => {
+        if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+        const key = e.key.toLowerCase();
+        if (key === 'b') { e.preventDefault(); _pcsWrapSelection(textarea, '**', '**'); }
+        else if (key === 'i') { e.preventDefault(); _pcsWrapSelection(textarea, '*', '*'); }
+    });
+}
+
+// Collapsed-by-default syntax reference — the toolbar buttons already cover
+// size/font/color (they're self-labeled), so this only needs to document
+// what has no button: bullets, the auto-colored "Label:" convention, and
+// **bold**/*italic*/[[Card Name]] (bold/italic also have Ctrl+B/Ctrl+I —
+// see _pcsWireFormatToolbar — but not everyone finds shortcuts by guessing,
+// hence still listing them here). variant 'inline' (combo-step bodies,
+// which don't support bullets/list-labels — see _pcsInlineFormat, called
+// per line with no list grouping) drops the two bullet-only items. idSuffix
+// keeps ids unique when more than one editor is open on the page at once,
+// same convention as every other id in this file.
+function _pcsFormatTipsHtml(idSuffix, variant) {
+    const items = variant === 'inline'
+        ? `<li><code>**bold**</code> (Ctrl+B), <code>*italic*</code> (Ctrl+I), and <code>[[Card Name]]</code> work here too — card names render accent-highlighted.</li>`
+        : `<li><code>- </code> at the start of a line makes a bullet.</li>
+           <li><code>Short Label:</code> at the start of a bullet auto-bolds and colors it, matching the rest of the list.</li>
+           <li><code>**bold**</code> (Ctrl+B), <code>*italic*</code> (Ctrl+I), and <code>[[Card Name]]</code> also work — card names render accent-highlighted.</li>`;
+    return `<div class="pcs-tips">
+        <button type="button" class="pcs-tips-toggle" id="pcs-tips-toggle-${idSuffix}" aria-expanded="false">
+            <i class="fas fa-caret-right"></i> Formatting tips
+        </button>
+        <ul class="pcs-tips-list" id="pcs-tips-list-${idSuffix}" hidden>${items}</ul>
+    </div>`;
+}
+
+function _pcsWireFormatTips(idSuffix, root) {
+    const toggle = root.querySelector(`#pcs-tips-toggle-${idSuffix}`);
+    const list = root.querySelector(`#pcs-tips-list-${idSuffix}`);
+    toggle.addEventListener('click', () => {
+        const opening = list.hidden;
+        list.hidden = !opening;
+        toggle.classList.toggle('open', opening);
+        toggle.setAttribute('aria-expanded', String(opening));
+    });
+}
+
+// Applies the size/font/color allow-lists on top of whatever _pcsRenderBody/
+// _pcsInlineFormat already produced (bold/card tokens resolved first, so
+// these can wrap trusted output like <strong>, not raw user text). Content
+// is restricted to a single line (no \n, no further [ or ]) so a selection
+// that happens to span a paragraph/bullet break can never leave a <span>
+// straddling two separately-rendered lines — matches how the toolbar is
+// actually used (wrap a word/phrase), and fails closed (token just shows as
+// literal text) rather than corrupting markup if someone hand-types a
+// multi-line one.
+function _pcsApplyStyleTokens(html) {
+    let out = html.replace(/\[size=(sm|lg|xl)\]([^\[\]\n]{1,300})\[\/size\]/g,
+        (m, key, inner) => `<span class="${PCS_SIZE_CLASS[key]}">${inner}</span>`);
+    out = out.replace(/\[font=(serif|mono)\]([^\[\]\n]{1,300})\[\/font\]/g,
+        (m, key, inner) => `<span class="${PCS_FONT_CLASS[key]}">${inner}</span>`);
+    out = out.replace(/\[color=(accent|red|orange|yellow|green|blue|purple|gray)\]([^\[\]\n]{1,300})\[\/color\]/g,
+        (m, key, inner) => `<span class="${PCS_COLOR_CLASS[key]}">${inner}</span>`);
+    return out;
 }
 
 // Escapes first, THEN applies markup tokens — the escape step neutralizes any
@@ -227,6 +471,11 @@ function _pcsRenderBody(text, opts) {
     let out = window.escapeHtml(text);
     out = out.replace(/\[\[([^\[\]]{1,80})\]\]/g, '<strong class="text-accent font-bold">$1</strong>');
     out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // Runs AFTER bold — bold's ** pairs are already consumed by this point,
+    // so a leftover single * can only be a genuine italic marker, never the
+    // first half of a ** pair.
+    out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    out = _pcsApplyStyleTokens(out);
 
     // "## Step Title | Card Name" lines opt a combo-walkthrough submission
     // into the full step-card layout (numbered circle, real card image,
@@ -293,6 +542,11 @@ function _pcsInlineFormat(rawText) {
     let out = window.escapeHtml(rawText);
     out = out.replace(/\[\[([^\[\]]{1,80})\]\]/g, '<strong class="text-accent font-bold">$1</strong>');
     out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // Runs AFTER bold — bold's ** pairs are already consumed by this point,
+    // so a leftover single * can only be a genuine italic marker, never the
+    // first half of a ** pair.
+    out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    out = _pcsApplyStyleTokens(out);
     return out;
 }
 
@@ -1011,18 +1265,11 @@ async function _pcsRenderEditor(slot, ctx, originalHTML, sectionKey, style, onDo
 
     const draft = ctx.approved ? ctx.approved.body : _pcsHtmlToDraft(originalHTML);
 
-    // Help text matches what the renderer actually does for this section, so
-    // the instructions never promise styling it can't produce.
-    const helpBits = [
-        'Start a line with "- " for a bullet.',
-        'Start a bullet with "Short Label:" and it\'s automatically bolded and colored, matching the rest of this list — no need to format it yourself.',
-        '**bold** and [[Card Name]] (accent-highlighted) also work.',
-        "A moderator reviews this before it goes live — approved suggestions replace what's shown here for everyone.",
-    ];
-
     slot.innerHTML = `
-        <p class="pcs-muted">${helpBits.join(' ')}</p>
+        <p class="pcs-muted">Suggest a replacement for this section — approved edits show up for everyone.</p>
+        ${_pcsFormatTipsHtml(sectionKey)}
         <p class="pcs-policy"><i class="fas fa-shield-alt"></i> Suggestions are reviewed for spam and vandalism only, not for whether the reviewer agrees with them — if you play this deck, you know it better than the page does. <a href="../pages/Contributing.html" target="_blank" rel="noopener">Full review policy &rarr;</a></p>
+        ${_pcsFormatToolbarHtml()}
         <textarea id="pcs-body-${sectionKey}" rows="6" maxlength="4000">${window.escapeHtml(draft)}</textarea>
         <div class="pcs-preview-label">Preview</div>
         <div class="pcs-preview" id="pcs-preview-${sectionKey}"></div>
@@ -1033,6 +1280,8 @@ async function _pcsRenderEditor(slot, ctx, originalHTML, sectionKey, style, onDo
         <div class="pcs-msg" id="pcs-msg-${sectionKey}" style="display:none;"></div>`;
 
     const textarea = slot.querySelector(`#pcs-body-${sectionKey}`);
+    _pcsWireFormatToolbar(slot.querySelector('.pcs-fmt-toolbar'), textarea);
+    _pcsWireFormatTips(sectionKey, slot);
     const preview = slot.querySelector(`#pcs-preview-${sectionKey}`);
     let imageLoadTimer = null;
     const updatePreview = () => {
@@ -1148,6 +1397,7 @@ async function _pcsRenderComboEditor(host, ctx, opts) {
 
     host.innerHTML = `
         <p class="pcs-muted">${introText} Fill in each step's title, card, and what happens — use "+ Add step" for more.</p>
+        ${_pcsFormatTipsHtml(`combo-${uid}`, 'inline')}
         <p class="pcs-policy"><i class="fas fa-shield-alt"></i> Suggestions are reviewed for spam and vandalism only, not for whether the reviewer agrees with them — if you play this deck, you know it better than the page does. <a href="../pages/Contributing.html" target="_blank" rel="noopener">Full review policy &rarr;</a></p>
         ${opts.showTitleField ? `
         <label class="pcs-label" for="pcs-combo-title-${uid}">Combo name (shown as the tab label)</label>
@@ -1160,6 +1410,8 @@ async function _pcsRenderComboEditor(host, ctx, opts) {
             <button type="button" class="pcs-cancel" id="pcs-combo-cancel-${uid}">Cancel</button>
         </div>
         <div class="pcs-msg" id="pcs-combo-msg-${uid}" style="display:none;"></div>`;
+
+    _pcsWireFormatTips(`combo-${uid}`, host);
 
     const preview = host.querySelector(`#pcs-combo-preview-${uid}`);
     let imageLoadTimer = null;
@@ -1238,10 +1490,13 @@ function _pcsBuildStepsEditor(host, initialSteps, ctx, onChange) {
                 <div class="pcs-cardname-suggestions"></div>
             </div>
             <label class="pcs-label">What happens in this step</label>
+            ${_pcsFormatToolbarHtml()}
             <textarea class="pcs-step-body" rows="3" maxlength="600" placeholder="Activate ... to ...">${window.escapeHtml(step.body)}</textarea>`;
 
         wrap.querySelector('.pcs-step-title').addEventListener('input', e => { step.title = e.target.value; emit(); });
-        wrap.querySelector('.pcs-step-body').addEventListener('input', e => { step.body = e.target.value; emit(); });
+        const stepBodyTextarea = wrap.querySelector('.pcs-step-body');
+        stepBodyTextarea.addEventListener('input', e => { step.body = e.target.value; emit(); });
+        _pcsWireFormatToolbar(wrap.querySelector('.pcs-fmt-toolbar'), stepBodyTextarea);
 
         const cardInput = wrap.querySelector('.pcs-step-cardname');
         const statusEl = wrap.querySelector('.pcs-cardname-status');

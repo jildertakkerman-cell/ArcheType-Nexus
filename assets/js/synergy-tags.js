@@ -621,11 +621,15 @@ window.synSuggestLink = async function (otherArchetypeId, btnEl) {
     const a1 = Math.min(_myArchetypeId, otherArchetypeId);
     const a2 = Math.max(_myArchetypeId, otherArchetypeId);
 
-    const { data: linkRow, error } = await client
-        .from('archetypelinks')
-        .insert({ archetypeid1: a1, archetypeid2: a2, submittedby: session.user.id })
-        .select('linkid')
-        .single();
+    // Both inserts happen server-side in one transaction (see
+    // supabase/migrations/20260810_submit_synergy_pairing.sql) so a pairing
+    // can never be committed without its reason attached.
+    const { data: linkid, error } = await client
+        .rpc('submit_synergy_pairing', {
+            p_archetypeid1: a1,
+            p_archetypeid2: a2,
+            p_reason_body: body,
+        });
 
     if (error) {
         if (btnEl) {
@@ -635,20 +639,16 @@ window.synSuggestLink = async function (otherArchetypeId, btnEl) {
         return;
     }
 
-    const { error: reasonError } = await client
-        .from('archetypelinkreasons')
-        .insert({ linkid: linkRow.linkid, userid: session.user.id, body });
-
     // Optimistic insert: show the new pairing (with its reason) as a pending
     // row right away instead of a dead "Submitted" button.
     const cand = _lastCandidates.find(c => c.archetypeid === otherArchetypeId);
     if (cand) {
         const newLink = {
-            linkid: linkRow.linkid,
+            linkid,
             archetypeid1: a1, archetypeid2: a2,
             status: 'pending', submittedby: session.user.id,
             archetypelinkvotes: [],
-            archetypelinkreasons: reasonError ? [] : [{
+            archetypelinkreasons: [{
                 reasonid: -Date.now(),
                 userid: session.user.id,
                 body,
@@ -662,9 +662,7 @@ window.synSuggestLink = async function (otherArchetypeId, btnEl) {
         const suggestRow = btnEl?.closest('.suggest-row');
         if (suggestRow) suggestRow.outerHTML = _rowHtml(newLink, 'unranked', session.user.id);
         await _renderList();
-        _flashSub(reasonError
-            ? '✔ Pairing submitted, but your reason failed to save — try adding it again once the pairing is approved.'
-            : '✔ Suggestion submitted — once approved, the community votes it up or down.');
+        _flashSub('✔ Suggestion submitted — once approved, the community votes it up or down.');
     } else if (btnEl) {
         btnEl.textContent = 'Submitted — pending review';
         btnEl.disabled = true;

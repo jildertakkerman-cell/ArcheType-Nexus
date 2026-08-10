@@ -1127,6 +1127,19 @@
         return `<span class="activity-arch">${icon}${esc(name)}</span>`;
     }
 
+    const pairName = l => l ? `${archHtml(l.a1)} <span class="activity-pair-sep">↔</span> ${archHtml(l.a2)}` : 'Unknown pairing';
+    const newestActivity = g => Math.max(
+        g.suggested ? Date.parse(g.suggested.createdon) : 0,
+        ...g.items.map(i => Date.parse(i.createdon) || 0)
+    );
+    const voteGlyph = v => `<span class="subrow-glyph vote-dir ${v === 1 ? 'up' : 'down'}">${v === 1 ? '▲' : '▼'}</span>`;
+    const clip = (s, n) => esc((s || '').slice(0, n)) + ((s || '').length > n ? '…' : '');
+    const scoreHtml = score => {
+        const cls = score > 0 ? 'pos' : score < 0 ? 'neg' : 'zero';
+        const text = score > 0 ? '+' + score : String(score);
+        return `<span class="activity-score-val ${cls}">${text}</span>`;
+    };
+
     // ------------------------------------------------------------------
     // Synergy Activity panel — the user's own pairings, explanations, votes.
     // Loaded lazily on first open; RLS scopes everything to the signed-in
@@ -1134,6 +1147,11 @@
     // ------------------------------------------------------------------
 
     let _synergyActivityLoaded = false;
+    let _synergyGroups = null;          // grouped data, fetched once
+    let _synergyFilterType = 'suggestion'; // 'suggestion' | 'reason' | 'linkvote' | 'reasonvote' — no "all", one type at a time keeps each view scannable
+    let _synergyFilterStatus = 'all';   // 'all' | 'pending' | 'approved' | 'rejected' | 'superseded'
+    let _synergySort = 'newest';        // 'newest' | 'name' | 'status'
+    let _synergyExpanded = new Set();   // linkids the user manually expanded (show-more)
 
     async function loadSynergyActivity() {
         if (_synergyActivityLoaded) return;
@@ -1147,7 +1165,6 @@
         const A1 = 'a1:archetypes!archetypelinks_archetypeid1_fkey(archetypename, iconsvg)';
         const A2 = 'a2:archetypes!archetypelinks_archetypeid2_fkey(archetypename, iconsvg)';
 
-        const pairName = l => l ? `${archHtml(l.a1)} <span class="activity-pair-sep">↔</span> ${archHtml(l.a2)}` : 'Unknown pairing';
         const container = document.getElementById('activity-groups');
         if (!container) return;
 
@@ -1206,79 +1223,167 @@
         });
 
         if (groups.size === 0) {
+            _synergyGroups = [];
             container.innerHTML = `<div class="activity-empty">
                 No synergy activity yet — open any archetype page and hit the
                 <strong>🔗 Pairs Well With</strong> button to vote or suggest a pairing.</div>`;
             return;
         }
 
-        // ---- Render: newest activity first, pairing shown once per group ----
-        const newest = g => Math.max(
-            g.suggested ? Date.parse(g.suggested.createdon) : 0,
-            ...g.items.map(i => Date.parse(i.createdon) || 0)
-        );
+        _synergyGroups = [...groups.values()];
 
-        const voteGlyph = v => `<span class="subrow-glyph vote-dir ${v === 1 ? 'up' : 'down'}">${v === 1 ? '▲' : '▼'}</span>`;
-        const clip = (s, n) => esc((s || '').slice(0, n)) + ((s || '').length > n ? '…' : '');
+        const toolbar = document.getElementById('synergy-toolbar');
+        if (toolbar) toolbar.style.display = 'flex';
 
-        container.innerHTML = [...groups.values()]
-            .sort((a, b) => newest(b) - newest(a))
-            .map(g => {
-                const header = `
-                    <div class="activity-group-header">
-                        ${pairName(g.pair)}
-                        ${g.suggested ? chip(g.suggested.status) : ''}
-                        ${g.suggested ? `<span class="activity-group-meta">Suggested by you · ${formatDateShort(g.suggested.createdon)}</span>` : ''}
-                    </div>
-                    ${g.suggested?.status === 'rejected' && g.suggested.modnotes
-                        ? `<div class="activity-group-notes">Mod notes: ${esc(g.suggested.modnotes)}</div>` : ''}`;
+        document.querySelectorAll('#synergy-toolbar .activity-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#synergy-toolbar .activity-filter-btn')
+                    .forEach(b => b.classList.toggle('active', b === btn));
+                _synergyFilterType = btn.dataset.filterType;
+                renderSynergyActivity();
+            });
+        });
+        document.getElementById('synergy-status-filter')?.addEventListener('change', e => {
+            _synergyFilterStatus = e.target.value;
+            renderSynergyActivity();
+        });
+        document.getElementById('synergy-sort')?.addEventListener('change', e => {
+            _synergySort = e.target.value;
+            renderSynergyActivity();
+        });
+        // Delegated: rows are recreated on every render, so bind once on the
+        // stable container rather than re-binding per render.
+        container.addEventListener('click', e => {
+            const showMore = e.target.closest('.activity-show-more');
+            if (showMore) {
+                _synergyExpanded.add(showMore.dataset.linkid);
+                renderSynergyActivity();
+                return;
+            }
+            if (e.target.closest('.activity-clear-filters')) {
+                // Reset the status filter only — the type tab is the user's
+                // current navigation choice, not a "filter" to discard.
+                _synergyFilterStatus = 'all';
+                const statusSel = document.getElementById('synergy-status-filter');
+                if (statusSel) statusSel.value = 'all';
+                renderSynergyActivity();
+            }
+        });
 
-                const rows = g.items
-                    .sort((a, b) => Date.parse(b.createdon) - Date.parse(a.createdon))
-                    .map(item => {
-                        if (item.type === 'reason') {
-                            return `
-                                <div class="activity-subrow">
-                                    <span class="subrow-glyph glyph-reason">✎</span>
-                                    <div class="subrow-content">"${esc(item.body)}"
-                                        ${item.status === 'rejected' && item.modnotes ? `<div class="activity-group-notes">Mod notes: ${esc(item.modnotes)}</div>` : ''}
-                                    </div>
-                                    <div class="subrow-meta">${item.score >= 0 ? '+' : ''}${item.score} ${chip(item.status)}</div>
-                                </div>`;
-                        }
-                        if (item.type === 'linkvote') {
-                            return `
-                                <div class="activity-subrow">
-                                    ${voteGlyph(item.value)}
-                                    <div class="subrow-content">You ${item.value === 1 ? 'upvoted' : 'downvoted'} this pairing</div>
-                                    <div class="subrow-meta">${formatDateShort(item.createdon)}</div>
-                                </div>`;
-                        }
-                        return `
-                            <div class="activity-subrow">
-                                ${voteGlyph(item.value)}
-                                <div class="subrow-content">You ${item.value === 1 ? 'upvoted' : 'downvoted'} an explanation: "${clip(item.body, 60)}"</div>
-                                <div class="subrow-meta">${formatDateShort(item.createdon)}</div>
-                            </div>`;
-                    }).join('');
+        renderSynergyActivity();
+    }
 
-                return `<div class="activity-group">${header}${rows}</div>`;
+    // ---- Render: applies the current filter/sort state to _synergyGroups,
+    // entirely client-side (no refetch) so every control just calls this. ----
+    const STATUS_RANK = { pending: 0, approved: 1, rejected: 2, superseded: 3 };
+    const SHOW_LIMIT = 4;
+
+    function renderSynergyActivity() {
+        const container = document.getElementById('activity-groups');
+        if (!container || !_synergyGroups) return;
+
+        const statusOk = s => _synergyFilterStatus === 'all' || s === _synergyFilterStatus;
+        const itemOk = item => item.type === 'reason' ? statusOk(item.status) : _synergyFilterStatus === 'all';
+
+        const visible = _synergyGroups.map(g => {
+            if (_synergyFilterType === 'suggestion') {
+                return (g.suggested && statusOk(g.suggested.status)) ? { g, items: [] } : null;
+            }
+            const items = g.items.filter(i => i.type === _synergyFilterType && itemOk(i));
+            return items.length ? { g, items } : null;
+        }).filter(Boolean);
+
+        if (visible.length === 0) {
+            container.innerHTML = `<div class="activity-empty">No activity matches the current filters.
+                <button type="button" class="activity-clear-filters">Clear filters</button></div>`;
+            return;
+        }
+
+        visible.sort((a, b) => {
+            if (_synergySort === 'name') {
+                return (a.g.pair?.a1?.archetypename || '').localeCompare(b.g.pair?.a1?.archetypename || '');
+            }
+            if (_synergySort === 'status') {
+                const ar = a.g.suggested ? (STATUS_RANK[a.g.suggested.status] ?? 4) : 4;
+                const br = b.g.suggested ? (STATUS_RANK[b.g.suggested.status] ?? 4) : 4;
+                if (ar !== br) return ar - br;
+            }
+            return newestActivity(b.g) - newestActivity(a.g);
+        });
+
+        container.innerHTML = visible.map(({ g, items }) => {
+            const header = `
+                <div class="activity-group-header">
+                    ${pairName(g.pair)}
+                    ${g.suggested ? chip(g.suggested.status) : ''}
+                    ${g.suggested ? `<span class="activity-group-meta">Suggested by you · ${formatDateShort(g.suggested.createdon)}</span>` : ''}
+                </div>
+                ${g.suggested?.status === 'rejected' && g.suggested.modnotes
+                    ? `<div class="activity-group-notes">Mod notes: ${esc(g.suggested.modnotes)}</div>` : ''}`;
+
+            const sortedItems = [...items].sort((a, b) => Date.parse(b.createdon) - Date.parse(a.createdon));
+            const linkid = g.suggested?.linkid ?? '';
+            const expanded = _synergyExpanded.has(linkid);
+            const shownItems = expanded ? sortedItems : sortedItems.slice(0, SHOW_LIMIT);
+            const remaining = sortedItems.length - shownItems.length;
+
+            const rows = shownItems.map(item => {
+                if (item.type === 'reason') {
+                    return `
+                        <div class="activity-subrow">
+                            <span class="subrow-glyph glyph-reason">✎</span>
+                            <div class="subrow-content"><span class="subrow-kind">Your explanation</span>"${esc(item.body)}"
+                                ${item.status === 'rejected' && item.modnotes ? `<div class="activity-group-notes">Mod notes: ${esc(item.modnotes)}</div>` : ''}
+                            </div>
+                            <div class="subrow-meta">${scoreHtml(item.score)} ${chip(item.status)}</div>
+                        </div>`;
+                }
+                if (item.type === 'linkvote') {
+                    return `
+                        <div class="activity-subrow">
+                            ${voteGlyph(item.value)}
+                            <div class="subrow-content">You ${item.value === 1 ? 'upvoted' : 'downvoted'} this pairing</div>
+                            <div class="subrow-meta">${formatDateShort(item.createdon)}</div>
+                        </div>`;
+                }
+                return `
+                    <div class="activity-subrow">
+                        ${voteGlyph(item.value)}
+                        <div class="subrow-content"><span class="subrow-kind">Voted on an explanation</span>You ${item.value === 1 ? 'upvoted' : 'downvoted'}: "${clip(item.body, 60)}"</div>
+                        <div class="subrow-meta">${formatDateShort(item.createdon)}</div>
+                    </div>`;
             }).join('');
+
+            const showMore = remaining > 0
+                ? `<button type="button" class="activity-show-more" data-linkid="${esc(linkid)}">Show ${remaining} more…</button>`
+                : '';
+
+            return `<div class="activity-group">${header}${rows}${showMore}</div>`;
+        }).join('');
     }
 
     // ------------------------------------------------------------------
     // My Contributions panel — the user's own page-section rewrites
-    // (pagesections) and correction reports (pagecorrections), across
-    // every archetype they've submitted to. Loaded lazily on first open;
-    // RLS scopes everything to the signed-in user (own rows visible
-    // regardless of moderation status). "Approved" means different things
-    // for the two tables — a pagesections approval goes live immediately,
-    // a pagecorrections approval is a moderator confirming they'll hand-fix
-    // the static page (scripts/sql/008_page_corrections.sql) — so each row
-    // gets a short clarifying note rather than relying on the chip alone.
+    // (pagesections), across every archetype they've submitted to. Loaded
+    // lazily on first open; RLS scopes everything to the signed-in user
+    // (own rows visible regardless of moderation status). A pagesections
+    // approval goes live on the page immediately, so each row gets a short
+    // clarifying note rather than relying on the status chip alone.
     // ------------------------------------------------------------------
 
     let _contributionActivityLoaded = false;
+    let _contributionGroups = null;          // grouped data, fetched once
+    let _contributionFilterType = 'all';     // 'all' | 'section' — one type today, kept for symmetry with Synergy Activity
+    let _contributionFilterStatus = 'all';   // 'all' | 'pending' | 'approved' | 'rejected' | 'superseded'
+    let _contributionSort = 'newest';        // 'newest' | 'name' | 'status'
+    let _contributionExpanded = new Set();   // archetypeids the user manually expanded (show-more)
+
+    function contributionStatusNote(item) {
+        if (item.status === 'rejected' && item.modnotes) return `Mod notes: ${esc(item.modnotes)}`;
+        if (item.status === 'approved') return 'Live on the page now';
+        if (item.status === 'superseded') return 'Was live, later replaced by a newer edit';
+        return '';
+    }
 
     async function loadContributionActivity() {
         if (_contributionActivityLoaded) return;
@@ -1291,22 +1396,16 @@
         const container = document.getElementById('contribution-groups');
         if (!container) return;
 
-        let sections = [], corrections = [];
+        let sections = [];
         try {
-            [sections, corrections] = (await Promise.all([
-                client.from('pagesections')
-                    .select('sectionid, sectionkey, title, status, modnotes, createdon, archetypeid, archetypes!pagesections_archetypeid_fkey(archetypename, iconsvg)')
-                    .eq('userid', uid),
-                client.from('pagecorrections')
-                    .select('correctionid, quotedtext, body, status, modnotes, createdon, archetypeid, archetypes!pagecorrections_archetypeid_fkey(archetypename, iconsvg)')
-                    .eq('userid', uid),
-            ])).map(r => r.data || []);
+            const { data } = await client.from('pagesections')
+                .select('sectionid, sectionkey, title, status, modnotes, createdon, archetypeid, archetypes!pagesections_archetypeid_fkey(archetypename, iconsvg)')
+                .eq('userid', uid);
+            sections = data || [];
         } catch (e) {
             container.innerHTML = '<div class="activity-empty">Could not load your contributions.</div>';
             return;
         }
-
-        const clip = (s, n) => esc((s || '').slice(0, n)) + ((s || '').length > n ? '…' : '');
 
         // groups: archetypeid -> { arch, items[] }
         const groups = new Map();
@@ -1319,57 +1418,135 @@
 
         sections.forEach(s => {
             group(s.archetypeid, s.archetypes).items.push({
-                type: 'section', createdon: s.createdon, status: s.status, modnotes: s.modnotes,
+                type: 'section', archetypeid: s.archetypeid, createdon: s.createdon,
+                status: s.status, modnotes: s.modnotes,
                 label: esc(s.title || s.sectionkey || 'Untitled section'),
-            });
-        });
-        corrections.forEach(c => {
-            group(c.archetypeid, c.archetypes).items.push({
-                type: 'correction', createdon: c.createdon, status: c.status, modnotes: c.modnotes,
-                label: `"${clip(c.quotedtext || c.body, 80)}"`,
             });
         });
 
         if (groups.size === 0) {
+            _contributionGroups = [];
             container.innerHTML = `<div class="activity-empty">
                 No contributions yet — open any archetype page and hit
-                <strong>[suggest edit]</strong> on a section, or flag an error in its text, to get started.</div>`;
+                <strong>[suggest edit]</strong> on a section to get started.</div>`;
             return;
         }
 
-        const newest = g => Math.max(...g.items.map(i => Date.parse(i.createdon) || 0));
+        _contributionGroups = [...groups.values()];
 
-        function statusNote(item) {
-            if (item.status === 'rejected' && item.modnotes) return `Mod notes: ${esc(item.modnotes)}`;
-            if (item.type === 'section') {
-                if (item.status === 'approved') return 'Live on the page now';
-                if (item.status === 'superseded') return 'Was live, later replaced by a newer edit';
-            } else if (item.status === 'approved') {
-                return 'Confirmed — applied by hand on the next content pass';
+        const summary = document.getElementById('contribution-summary');
+        if (summary) {
+            const counts = { pending: 0, approved: 0, rejected: 0, superseded: 0 };
+            _contributionGroups.forEach(g => g.items.forEach(i => { if (counts[i.status] !== undefined) counts[i.status]++; }));
+            const parts = Object.entries(counts)
+                .filter(([, n]) => n > 0)
+                .map(([status, n]) => `<span class="count-${status}">${n} ${status}</span>`);
+            if (parts.length) {
+                summary.innerHTML = parts.join('<span> · </span>');
+                summary.style.display = '';
             }
-            return '';
         }
 
-        container.innerHTML = [...groups.values()]
-            .sort((a, b) => newest(b) - newest(a))
-            .map(g => {
-                const header = `<div class="activity-group-header">${archHtml(g.arch)}</div>`;
-                const rows = g.items
-                    .sort((a, b) => Date.parse(b.createdon) - Date.parse(a.createdon))
-                    .map(item => {
-                        const glyph = item.type === 'section' ? '✎' : '⚑';
-                        const note = statusNote(item);
-                        return `
-                            <div class="activity-subrow">
-                                <span class="subrow-glyph glyph-reason">${glyph}</span>
-                                <div class="subrow-content">${item.label}
-                                    ${note ? `<div class="activity-group-notes">${note}</div>` : ''}
-                                </div>
-                                <div class="subrow-meta">${formatDateShort(item.createdon)} ${chip(item.status)}</div>
-                            </div>`;
-                    }).join('');
-                return `<div class="activity-group">${header}${rows}</div>`;
+        const toolbar = document.getElementById('contribution-toolbar');
+        if (toolbar) toolbar.style.display = 'flex';
+
+        document.querySelectorAll('#contribution-toolbar .activity-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#contribution-toolbar .activity-filter-btn')
+                    .forEach(b => b.classList.toggle('active', b === btn));
+                _contributionFilterType = btn.dataset.filterType;
+                renderContributionActivity();
+            });
+        });
+        document.getElementById('contribution-status-filter')?.addEventListener('change', e => {
+            _contributionFilterStatus = e.target.value;
+            renderContributionActivity();
+        });
+        document.getElementById('contribution-sort')?.addEventListener('change', e => {
+            _contributionSort = e.target.value;
+            renderContributionActivity();
+        });
+        // Delegated: rows are recreated on every render, so bind once on the
+        // stable container rather than re-binding per render.
+        container.addEventListener('click', e => {
+            const showMore = e.target.closest('.activity-show-more');
+            if (showMore) {
+                _contributionExpanded.add(showMore.dataset.archetypeid);
+                renderContributionActivity();
+                return;
+            }
+            if (e.target.closest('.activity-clear-filters')) {
+                _contributionFilterStatus = 'all';
+                const statusSel = document.getElementById('contribution-status-filter');
+                if (statusSel) statusSel.value = 'all';
+                renderContributionActivity();
+            }
+        });
+
+        renderContributionActivity();
+    }
+
+    // ---- Render: applies the current filter/sort state to
+    // _contributionGroups, entirely client-side (no refetch). ----
+    function renderContributionActivity() {
+        const container = document.getElementById('contribution-groups');
+        if (!container || !_contributionGroups) return;
+
+        const statusOk = s => _contributionFilterStatus === 'all' || s === _contributionFilterStatus;
+        const typeOk = t => _contributionFilterType === 'all' || t === _contributionFilterType;
+
+        const visible = _contributionGroups.map(g => {
+            const items = g.items.filter(i => typeOk(i.type) && statusOk(i.status));
+            return items.length ? { g, items } : null;
+        }).filter(Boolean);
+
+        if (visible.length === 0) {
+            container.innerHTML = `<div class="activity-empty">No contributions match the current filters.
+                <button type="button" class="activity-clear-filters">Clear filters</button></div>`;
+            return;
+        }
+
+        const bestStatusRank = items => Math.min(...items.map(i => STATUS_RANK[i.status] ?? 4));
+        const newestItem = items => Math.max(...items.map(i => Date.parse(i.createdon) || 0));
+
+        visible.sort((a, b) => {
+            if (_contributionSort === 'name') {
+                return (a.g.arch?.archetypename || '').localeCompare(b.g.arch?.archetypename || '');
+            }
+            if (_contributionSort === 'status') {
+                const ar = bestStatusRank(a.items), br = bestStatusRank(b.items);
+                if (ar !== br) return ar - br;
+            }
+            return newestItem(b.items) - newestItem(a.items);
+        });
+
+        container.innerHTML = visible.map(({ g, items }) => {
+            const header = `<div class="activity-group-header">${archHtml(g.arch)}</div>`;
+
+            const sortedItems = [...items].sort((a, b) => Date.parse(b.createdon) - Date.parse(a.createdon));
+            const archetypeid = g.items[0]?.archetypeid ?? '';
+            const expanded = _contributionExpanded.has(String(archetypeid));
+            const shownItems = expanded ? sortedItems : sortedItems.slice(0, SHOW_LIMIT);
+            const remaining = sortedItems.length - shownItems.length;
+
+            const rows = shownItems.map(item => {
+                const note = contributionStatusNote(item);
+                return `
+                    <div class="activity-subrow">
+                        <span class="subrow-glyph glyph-reason">✎</span>
+                        <div class="subrow-content">${item.label}
+                            ${note ? `<div class="activity-group-notes">${note}</div>` : ''}
+                        </div>
+                        <div class="subrow-meta">${formatDateShort(item.createdon)} ${chip(item.status)}</div>
+                    </div>`;
             }).join('');
+
+            const showMore = remaining > 0
+                ? `<button type="button" class="activity-show-more" data-archetypeid="${esc(String(archetypeid))}">Show ${remaining} more…</button>`
+                : '';
+
+            return `<div class="activity-group">${header}${rows}${showMore}</div>`;
+        }).join('');
     }
 
     // ------------------------------------------------------------------
